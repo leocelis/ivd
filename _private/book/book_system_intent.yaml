@@ -1,0 +1,1125 @@
+# ==============================================================================
+# Intent-Verified Development: The Book
+# ==============================================================================
+# System-level intent for creating a top-selling book on IVD that teaches
+# principles, validates them through real projects, and proves effectiveness.
+#
+# Version: 1.3
+# Created: 2026-01-25
+# Status: Planning
+# Reference: ../ivd_system_intent.yaml (IVD Framework System Intent)
+# ==============================================================================
+
+scope:
+  level: "system"
+  type: "product"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this book accomplish?
+# ==============================================================================
+
+intent:
+  summary: "The definitive book on Intent-Verified Development (IVD): the framework for the AI Agents era that eliminates many-turns and hallucinations by having AI write, implement, and verify intent."
+  
+  goal: |
+    Produce a comprehensive book that fully explains Intent-Verified Development for the AI Agents era:
+    
+    Core Problem Solved:
+    - AI agents fill gaps in prompts with plausible but wrong assumptions (hallucinations)
+    - Working with AI requires many turns of correction (exhausting, expensive)
+    - Traditional artifacts (PRDs, user stories, prompts) are not verifiable by AI
+    
+    IVD Solution:
+    - The AI writes a structured intent artifact (not the human)
+    - The AI implements against the intent artifact
+    - The AI verifies its code against executable constraints
+    - Turns drop from many to one; hallucinations are caught at the source
+    
+    Book Structure:
+    1. Part I: Paradigm and principles (AI writes intent, AI verifies)
+    2. Part II: Practice (5 real projects with AI agents)
+    3. Part III: Validation (measurable results)
+    4. Part IV: Adoption (organizational playbook)
+    
+    A reader who finishes this book understands IVD completely and can immediately work with AI agents using intent-verified workflows.
+  
+  success_metric: |
+    Market Performance:
+    - #1 ranking in "AI & Machine Learning" category on Amazon
+    - 1,000+ reviews with 4.5+ star average
+    - 10,000+ copies sold in first year
+    - Featured in AI/tech publications and podcasts
+    
+    Technical Quality:
+    - All principles validated with real project data
+    - 10+ case studies with measurable outcomes
+    - Executable code examples and templates
+    - 95%+ reader satisfaction on "immediate applicability"
+    
+    Impact:
+    - 1,000+ teams adopt IVD from the book
+    - Community contributions to IVD framework
+    - Industry recognition and speaking engagements
+  
+  stakeholders:
+    - "Developers and engineers working with AI agents (Cursor, Copilot, Claude, GPT)"
+    - "Technical leads managing teams that use AI for implementation"
+    - "Indie developers and startups who rely on AI to build fast"
+    - "Anyone tired of many turns and hallucinations when working with AI"
+    - "Computer science educators teaching AI-assisted development"
+
+# ==============================================================================
+# BOOK STRUCTURE: Journey from Problem to Solution to Proof
+# ==============================================================================
+
+book_structure:
+  
+  front_matter:
+    - section: "Cover & Title Page"
+      status: "pending"
+      placeholder: |
+        Title: "Intent-Verified Development: The Framework for the AI Agents Era"
+        Subtitle: "Stop the Many-Turns. End the Hallucinations. Let AI Write, Build, and Verify."
+        Author: Leo Celis
+    
+    - section: "Table of Contents"
+      status: "pending"
+      placeholder: |
+        Detailed, multi-level TOC to support reference and teaching (pattern: Code Complete, CLRS, Design Patterns).
+        Auto-generated from chapter structure; readers should find sections by scan.
+    
+    - section: "Foreword"
+      status: "pending"
+      placeholder: |
+        By [Industry Leader - TBD]
+        - The AI revolution's missing piece
+        - Why intent matters more than code
+        - Personal experience with IVD adoption
+    
+    - section: "Preface: Why This Book Exists"
+      status: "pending"
+      placeholder: |
+        - Establish the problem and who this is for in the first 2 pages (pattern: Code Complete, Clean Code).
+        - The $10B problem: misalignment in human-AI collaboration
+        - My journey: discovering intent as the primary artifact
+        - What you'll learn, build, and validate
+        - How this book is different (evidence-based, tested, proven)
+        - Who should read this book
+    
+    - section: "How to Use This Book"
+      status: "pending"
+      placeholder: |
+        Three reading paths (each delivers value at exit; pattern: Code Complete):
+        1. Practitioner Path: Part I → Part II. Focus on doing; skip or skim Part III–IV. Exit: building with IVD.
+        2. Leader Path: Part I → Part III → Part IV. Understand ROI, proof, and adoption. Exit: making the case and scaling.
+        3. Complete Path: Read sequentially. Full mastery and reference.
+        Code repository, templates, and appendices (Quick Reference, Recipe Library) support dip-in use.
+        Community and support resources.
+
+  # ==========================================================================
+  # PART I: THE PARADIGM SHIFT
+  # ==========================================================================
+  
+  part_1_foundations:
+    title: "Part I: The Paradigm Shift - Why Intent is Primary"
+    purpose: "Establish the problem and the IVD paradigm; reader understands why intent is primary (theory-first; pattern: SICP, Code Complete)."
+    chapters:
+      
+      - chapter: 1
+        title: "The Alignment Crisis"
+        status: "pending"
+        key_points:
+          - "Traditional development: code is primary, docs are secondary (and wrong)"
+          - "Human-AI collaboration fragility: multiple iterations, compounding misalignment"
+          - "The $10B problem: 85-90% knowledge loss in software projects"
+          - "Real examples: projects that failed due to misalignment"
+        placeholder: |
+          1.1 The Expensive Pattern: "Build X" → "Here's X" → "No, I meant..."
+          1.2 Why Traditional Documentation Fails
+          1.3 The AI Amplification Effect: Misalignment at Machine Speed
+          1.4 The Core Question: What If Intent Was Verifiable?
+      
+      - chapter: 2
+        title: "Intent-Verified Development: A New Paradigm"
+        status: "complete"
+        key_points:
+          - "The fundamental shift: Intent → Code → Docs (not Code → Docs)"
+          - "Intent as a verifiable contract between human and AI"
+          - "The eight principles of IVD"
+          - "Why this works: executable understanding fails loudly"
+        placeholder: |
+          2.1 The Three Paradigms: Traditional → Literate → Intent-Verified
+          2.2 The Core Insight: Intent is Primary
+          2.3 The Contract Model: A Shared Artifact Both Parties Verify
+          2.4 IVD in Action: The PM/Dev CSV Example Revisited
+          2.5 The Eight Principles: An Overview
+          2.6 Why This Works: Executable Understanding Fails Loudly
+      
+      - chapter: 3
+        title: "The Eight Principles in Depth"
+        status: "pending"
+        key_points:
+          - "Each principle as a one-line rule + explanation (writing_style.principles_as_rules)"
+          - "Why each principle is essential (what breaks without it)"
+          - "How principles work together as a system"
+          - "Common violations and how to avoid them"
+        placeholder: |
+          3.1 Principle 1: Intent is Primary (one-line rule first, then 1–2 paragraphs)
+          3.2 Principle 2: Understanding Must Be Executable
+          3.3 Principle 3: Bidirectional Synchronization
+          3.4 Principle 4: Continuous Verification
+          3.5 Principle 5: Layered Understanding
+          3.6 Principle 6: AI as Understanding Partner
+          3.7 Principle 7: Understanding Survives Implementation
+          3.8 Principle 8: Innovation through Inversion (when to use, 4 steps, inversion_opportunities)
+          3.9 The System View: How Principles Reinforce Each Other
+      
+      - chapter: 4
+        title: "Intent Artifacts: The Core Mechanism"
+        status: "pending"
+        key_points:
+          - "What an intent artifact is (YAML structure)"
+          - "Four levels: System, Workflow, Module, Task"
+          - "Essential sections: scope, intent, constraints, verification"
+          - "Your first intent artifact (hands-on walkthrough)"
+        placeholder: |
+          4.1 Anatomy of an Intent Artifact
+          4.2 Choosing the Right Level and Where Intent Lives (decision tree; placement: system at root, workflow recommended workflows/ or alternative alongside coordinator when single-orchestrator, module/task co-located)
+          4.3 Writing Your First Module-Level Intent
+          4.4 From Intent to Implementation (the flow)
+          4.5 Common Mistakes and How to Fix Them
+          4.6 Template Library and Quick Reference
+
+  # ==========================================================================
+  # PART II: PRACTICE - Building Real Projects with IVD
+  # ==========================================================================
+  
+  part_2_practice:
+    title: "Part II: Practice - Building Real Projects with IVD"
+    purpose: "Build real projects with IVD; learn by doing. Exit: reader can build with IVD."
+    pedagogy_note: "Projects revisit and reinforce Part I concepts (spiral learning; pattern: Code Complete, Head First)."
+    chapters:
+      
+      - chapter: 5
+        title: "Project 1: AI Classification Agent (Agent Pattern)"
+        status: "pending"
+        project_type: "AI Agent"
+        complexity: "Beginner"
+        duration: "2-4 hours"
+        key_points:
+          - "Build a lead scoring classifier from scratch using IVD"
+          - "Apply the agent-classifier recipe"
+          - "Measure: baseline vs IVD (iterations, clarity, maintainability)"
+        placeholder: |
+          5.1 Project Overview: Lead Scoring for Sales Pipeline
+          5.2 Step 1: Write the Intent Artifact (Module-Level)
+          5.3 Step 2: Define Constraints and Success Criteria
+          5.4 Step 3: Implement with AI Assistant (Claude/GPT)
+          5.5 Step 4: Verify Alignment (Intent ↔ Code)
+          5.6 Results: Baseline (No IVD) vs IVD Approach
+          5.7 Key Takeaways and Pattern Recognition
+      
+      - chapter: 6
+        title: "Project 2: Multi-Step Workflow (Workflow Pattern)"
+        status: "pending"
+        project_type: "Workflow Orchestration"
+        complexity: "Intermediate"
+        duration: "4-6 hours"
+        key_points:
+          - "Build a data processing pipeline with 5+ steps"
+          - "Workflow-level intent (NEW in IVD v1.2)"
+          - "Context reduction: baseline (read 10 files) vs IVD (read 1 workflow)"
+        placeholder: |
+          6.1 Project Overview: ETL Pipeline for Analytics
+          6.2 The Problem: Understanding Multi-File Workflows
+          6.3 Step 1: Create Workflow-Level Intent
+          6.4 Step 2: Document Steps, Data Flow, Error Handling
+          6.5 Step 3: Optional - Field Mapping for Data Transformations (recipes/data-field-mapping.yaml)
+          6.6 Step 4: Implement Each Step (Module-Level Intents)
+          6.7 Step 5: End-to-End Verification
+          6.8 Measurement: AI Agent Context Needed (Baseline vs IVD)
+          6.9 Results: 80-90% Context Reduction Validated
+      
+      - chapter: 7
+        title: "Project 3: Background Job System (Infrastructure Pattern)"
+        status: "pending"
+        project_type: "Infrastructure"
+        complexity: "Intermediate"
+        duration: "3-5 hours"
+        key_points:
+          - "Build async job processing with retries, monitoring, idempotency"
+          - "Apply infra-background-job recipe"
+          - "Measure: knowledge durability (team member turnover simulation)"
+        placeholder: |
+          7.1 Project Overview: Celery-Based Job Queue
+          7.2 The Durability Challenge: "How Does This Work?"
+          7.3 Step 1: Intent Artifact with Recipe Reference
+          7.4 Step 2: Implementation Following Recipe Pattern
+          7.5 Step 3: Simulate Team Turnover (Context Reset)
+          7.6 Measurement: Onboarding Speed (Baseline vs IVD)
+          7.7 Results: Knowledge Retention After Context Loss
+      
+      - chapter: 8
+        title: "Project 4: API Integration (Integration Pattern)"
+        status: "pending"
+        project_type: "External Integration"
+        complexity: "Intermediate"
+        duration: "2-4 hours"
+        key_points:
+          - "Integrate external API (Stripe, Twilio, etc.)"
+          - "Task-level intents for critical functions"
+          - "Measure: iteration count to working integration"
+        placeholder: |
+          8.1 Project Overview: Stripe Payment Integration
+          8.2 Step 1: System-Level Intent (Why We're Integrating)
+          8.3 Step 2: Module-Level Intent (Payment Module)
+          8.4 Step 3: Optional - Field Mapping (Stripe API ↔ Internal DB) (recipes/data-field-mapping.yaml)
+          8.5 Step 4: Task-Level Intents (process_payment, handle_webhook)
+          8.6 Step 5: Implementation and Continuous Verification
+          8.7 Measurement: Iterations to Production-Ready
+          8.8 Results: Alignment Accuracy Improvement
+      
+      - chapter: 9
+        title: "Project 5: Multi-Agent Coordinator (Orchestration Pattern)"
+        status: "pending"
+        project_type: "Multi-Agent Orchestration"
+        complexity: "Intermediate-Advanced"
+        duration: "4-6 hours"
+        key_points:
+          - "Build a coordinator that routes to specialist agents"
+          - "Intent propagation: Human → Coordinator Intent → Agent Intents"
+          - "Apply coordinator-intent-propagation recipe"
+          - "Prevent coordination errors through structured intent at every delegation"
+        placeholder: |
+          9.1 Project Overview: Customer Intelligence Coordinator
+          9.2 The Coordination Problem: Ambiguous Routing, Wrong Parameters
+          9.3 Step 1: Define the Coordinator Intent (Which Agents, What Tasks)
+          9.4 Step 2: Write Agent-Level Intents for Each Specialist
+          9.5 Step 3: Implement Tools Are Truth, History Is Context
+          9.6 Step 4: Verify Before Synthesize
+          9.7 Measurement: Coordination Errors (Baseline vs IVD)
+          9.8 Recipe Reference: coordinator-intent-propagation.yaml
+      
+      - chapter: 10
+        title: "Project 6: Complete Feature (Full Stack)"
+        status: "pending"
+        project_type: "Full Feature"
+        complexity: "Advanced"
+        duration: "6-10 hours"
+        key_points:
+          - "Build user authentication end-to-end"
+          - "All four levels: System → Workflow → Module → Task"
+          - "Comprehensive measurement across all IVD metrics"
+        placeholder: |
+          10.1 Project Overview: User Auth with OAuth, Sessions, Permissions
+          10.2 System-Level Intent: Security Architecture
+          10.3 Workflow-Level Intents: Login Flow, Registration Flow, Password Reset
+          10.4 Module-Level Intents: Auth Service, Session Manager, Permission Controller
+          10.5 Task-Level Intents: verify_token(), hash_password(), check_permission()
+          10.6 Implementation Journey: From Intent to Production
+          10.7 Comprehensive Metrics: All IVD Claims Validated
+          10.8 Lessons: When to Use Each Intent Level
+
+  # ==========================================================================
+  # PART III: VALIDATION - Proving IVD Works
+  # ==========================================================================
+  
+  part_3_validation:
+    title: "Part III: Validation - Proving IVD Works with Data"
+    purpose: "Prove every claim with data; evidence-based credibility (pattern: Code Complete; differentiates from opinion-only books)."
+    chapters:
+      
+      - chapter: 11
+        title: "The Validation Framework"
+        status: "pending"
+        key_points:
+          - "How to measure IVD effectiveness scientifically"
+          - "Five validation categories: context, alignment, durability, recipes, meta"
+          - "Baseline vs IVD: controlled experiments"
+          - "Statistical significance and confidence intervals"
+        placeholder: |
+          11.1 Claims to Validate (85-95% knowledge capture, 40% faster onboarding, etc.)
+          11.2 Validation Category 1: Context Efficiency (token reduction)
+          11.3 Validation Category 2: Alignment Accuracy (iteration reduction)
+          11.4 Validation Category 3: Knowledge Durability (retention after reset)
+          11.5 Validation Category 4: Recipe Effectiveness (time savings)
+          11.6 Validation Category 5: Meta-Validation (self-governance)
+          11.7 Experimental Design and Methodology
+      
+      - chapter: 12
+        title: "Results: Context Efficiency"
+        status: "pending"
+        key_points:
+          - "Experiment design: baseline (read all files) vs IVD (read intents)"
+          - "Token counts with tiktoken"
+          - "Comprehension accuracy testing"
+          - "Results: 80-90% reduction validated"
+        placeholder: |
+          12.1 Hypothesis: IVD Reduces AI Agent Context by 80-90%
+          12.2 Experiment 1: Image Generation Workflow (7 files, ~20K tokens)
+          12.3 Experiment 2: Lead Qualification System (5 modules, ~15K tokens)
+          12.4 Experiment 3: Background Job Infrastructure (8 files, ~18K tokens)
+          12.5 Aggregated Results Across Projects
+          12.6 Statistical Analysis and Confidence Intervals
+          12.7 Validation Status: PROVEN
+      
+      - chapter: 13
+        title: "Results: Alignment Accuracy"
+        status: "pending"
+        key_points:
+          - "Iteration count: baseline vs IVD"
+          - "Human judge evaluation rubric"
+          - "Alignment scoring (0-10 scale)"
+          - "Results: 30-50% fewer iterations"
+        placeholder: |
+          13.1 Hypothesis: IVD Reduces Iterations by 30-50%
+          13.2 Experiment 1: Classification Agent (Baseline: 7 iterations, IVD: 3)
+          13.3 Experiment 2: API Integration (Baseline: 5 iterations, IVD: 2)
+          13.4 Experiment 3: Multi-Step Workflow (Baseline: 9 iterations, IVD: 4)
+          13.5 Why IVD Reduces Iterations (analysis)
+          13.6 Edge Cases and When Baseline Wins
+          13.7 Validation Status: PROVEN
+      
+      - chapter: 14
+        title: "Results: Knowledge Durability"
+        status: "pending"
+        key_points:
+          - "Team turnover simulation (context reset)"
+          - "Retention rate: baseline vs IVD"
+          - "Re-onboarding speed measurement"
+          - "Results: 90%+ retention, 40% faster onboarding"
+        placeholder: |
+          14.1 Hypothesis: IVD Preserves Knowledge Through Turnover
+          14.2 Experiment Design: Simulated Team Member Replacement
+          14.3 Baseline: "Read the Code and Figure It Out" (10-14 days)
+          14.4 IVD: "Read Intent Artifacts" (6-9 days)
+          14.5 Comprehension Tests Before/After Context Reset
+          14.6 Real Case Study: New Developer Onboarding at [Company]
+          14.7 Validation Status: PROVEN
+      
+      - chapter: 15
+        title: "Results: Recipe Effectiveness"
+        status: "pending"
+        key_points:
+          - "From-scratch vs recipe comparison"
+          - "Time tracking and code quality scoring"
+          - "Results: 30-50% time savings"
+        placeholder: |
+          15.1 Hypothesis: Recipes Reduce Implementation Time by 30-50%
+          15.2 Experiment 1: Classification Agent (Scratch: 6h, Recipe: 3.5h)
+          15.3 Experiment 2: Background Job (Scratch: 8h, Recipe: 4.5h)
+          15.4 Experiment 3: Workflow Orchestration (Scratch: 10h, Recipe: 6h)
+          15.5 Code Quality Analysis: Recipe vs Scratch
+          15.6 When Recipes Don't Help (edge cases)
+          15.7 Validation Status: PROVEN
+      
+      - chapter: 16
+        title: "Meta-Analysis and Comprehensive Results"
+        status: "pending"
+        key_points:
+          - "All claims validated: summary table"
+          - "Cost-benefit analysis (investment vs payoff)"
+          - "When IVD works best (project characteristics)"
+          - "ROI calculation for teams"
+        placeholder: |
+          16.1 Summary Table: All IVD Claims and Validation Status
+          16.2 Combined Effect: Context + Alignment + Durability + Recipes
+          16.3 Investment Analysis: Upfront Cost vs Long-Term Savings
+          16.4 Project Characteristics: When IVD Provides Maximum ROI
+          16.5 Team Size and IVD Benefits (solo vs small team vs large team)
+          16.6 The Compounding Effect: IVD Value Over Time
+          16.7 Skeptic's Corner: Addressing Common Objections with Data
+
+  # ==========================================================================
+  # PART IV: ADOPTION - Making IVD Work for Your Team
+  # ==========================================================================
+  
+  part_4_adoption:
+    title: "Part IV: Adoption - Making IVD Work for Your Team"
+    purpose: "Adopt and scale IVD in teams and organizations; from first week to ecosystem."
+    chapters:
+      
+      - chapter: 17
+        title: "Getting Started: The First Week"
+        status: "pending"
+        key_points:
+          - "Two paths: greenfield (new projects) vs brownfield (existing projects)"
+          - "Brownfield: Initialize IVD with project context (ivd init)"
+          - "Project context: code rules, architecture, tools, 'map to the stars' (key_paths)"
+          - "Child intents reference parent_intent (system intent)"
+          - "Start small: 3-5 critical modules, expand gradually"
+        placeholder: |
+          17.1 Two Starting Points: Greenfield vs Brownfield
+              - Greenfield: Start with first module, conventions emerge
+              - Brownfield: Initialize with ivd init, capture existing context
+          
+          17.2 Brownfield: Day 1 - Bootstrap IVD with Project Context
+              - Run ivd init to scan project
+              - Creates system_intent.yaml with:
+                * code_rules (.cursorrules, lint configs)
+                * architecture (ARCHITECTURE.md, ADRs, principles)
+                * tools_scripts (key scripts, CLIs)
+                * libraries_reuse (internal shared libs)
+                * key_paths ("map to the stars": entrypoints, modules, workflows, docs, tests)
+                * existing_docs (README, API.md, CONTRIBUTING)
+              - Review and enrich auto-generated context
+          
+          17.3 Day 2-3: First Intent Artifacts for Critical Modules
+              - Identify 3-5 critical modules (not entire codebase)
+              - Use ivd scaffold --level module --name <module>
+              - Auto-links parent_intent: "../../system_intent.yaml"
+              - AI loads project context when creating/modifying intents
+          
+          17.4 Day 4-5: Implement and Verify with Project Context
+              - New intents follow project code rules
+              - New intents reference architecture principles
+              - New intents reuse tools/scripts/libraries (no duplication)
+              - New intents navigate via key_paths (map to the stars)
+          
+          17.5 Week 1 Retrospective: What Worked, What Didn't
+              - Did project_context capture conventions correctly?
+              - Are child intents referencing parent correctly?
+              - Are new implementations reusing existing tools/libs?
+              - What's missing from key_paths or architecture?
+          
+          17.6 Setting Team Standards and Conventions
+              - Update system_intent.yaml as conventions emerge
+              - Document in project_context sections
+              - The "Intent First" Habit: How to Build It
+      
+      - chapter: 18
+        title: "Scaling IVD Across Your Organization"
+        status: "pending"
+        key_points:
+          - "From one team to many teams"
+          - "Creating organizational recipes"
+          - "IVD in code review and CI/CD"
+          - "Measuring adoption and impact"
+        placeholder: |
+          18.1 Pilot Team: Proving Value Before Scaling
+          18.2 Training Program: Enabling Multiple Teams
+          18.3 Recipe Library: Your Organization's Best Practices
+          18.4 Code Review with IVD: Intent Alignment Checks
+          18.5 CI/CD Integration: Automated Verification
+          18.6 Metrics Dashboard: Tracking ROI
+          18.7 Case Study: [Company] Scaled IVD to 50 Developers
+      
+      - chapter: 19
+        title: "Advanced Patterns and Techniques"
+        status: "pending"
+        key_points:
+          - "Intent artifact versioning and evolution"
+          - "Multi-team coordination with shared intents"
+          - "IVD for microservices architectures"
+          - "AI-editable configuration (Cline-style)"
+        placeholder: |
+          19.1 Versioning Intent Artifacts (semantic versioning for understanding)
+          19.2 Shared Intents Across Services (microservices coordination)
+          19.3 Intent-Driven API Contracts
+          19.4 Advanced Verification: Schema Validation and Linting
+          19.5 MCP Integration: Universal Protocol for AI Access
+          19.6 AI Agents That Improve Their Own Intent
+      
+      - chapter: 20
+        title: "IVD Ecosystem and Community"
+        status: "pending"
+        key_points:
+          - "Community recipes and contributions"
+          - "Integration with Cursor, Cline, Aider, GitHub Copilot"
+          - "IVD tools and automation (CLI, MCP server)"
+          - "Future roadmap and standards"
+        placeholder: |
+          20.1 Community Recipe Repository
+          20.2 Contributing Your Patterns
+          20.3 IDE Integration (Cursor Rules, Cline Config)
+          20.4 IVD MCP Server (universal AI access)
+          20.5 IVD CLI Tool (validate, generate, search)
+          20.6 Future Standards: Agent Portability and JSON Schema
+          20.7 Join the IVD Community
+      
+      - chapter: 21
+        title: "The Future of Intent-Verified Development"
+        status: "pending"
+        key_points:
+          - "Where IVD is heading (v2.0, v3.0)"
+          - "Integration with emerging AI tools"
+          - "Industry standardization efforts"
+          - "Your role in shaping IVD's future"
+        placeholder: |
+          21.1 IVD v2.0: MCP, Schema Validation, AI-Editable Config
+          21.2 IVD v3.0: Formal Verification and Automated Drift Detection
+          21.3 Industry Convergence: Why IVD Aligns with Major Players
+          21.4 Research Opportunities and Open Questions
+          21.5 Call to Action: Building the Future Together
+
+  # ==========================================================================
+  # BACK MATTER
+  # ==========================================================================
+  
+  back_matter:
+    - section: "Appendix A: IVD Quick Reference"
+      status: "pending"
+      placeholder: |
+        - The 8 Principles (one-page summary)
+        - Intent artifact template (blank YAML)
+        - Intent levels decision tree
+        - Optional sections: field_mapping for data/integrations (see recipes/data-field-mapping.yaml)
+        - Verification checklist
+        - Common patterns and anti-patterns
+    
+    - section: "Appendix B: Recipe Library"
+      status: "pending"
+      placeholder: |
+        Complete recipes included:
+        - agent-classifier.yaml
+        - workflow-orchestration.yaml
+        - coordinator-intent-propagation.yaml
+        - data-field-mapping.yaml
+        - infra-background-job.yaml
+        - doc-meeting-insights.yaml
+        - integration-api.yaml
+        - data-etl.yaml
+    
+    - section: "Appendix C: Validation Methodology"
+      status: "pending"
+      placeholder: |
+        Complete methodology for validating IVD claims:
+        - Experimental design
+        - Measurement tools
+        - Statistical analysis
+        - Reproducible test suite
+    
+    - section: "Appendix D: Tool Setup and Configuration"
+      status: "pending"
+      placeholder: |
+        - Cursor IDE: .cursorrules setup
+        - Cline: .clinerules configuration
+        - Aider: .aider.conf.yml setup
+        - GitHub Copilot: custom instructions
+        - IVD CLI tool installation
+        - IVD MCP server deployment
+    
+    - section: "Appendix E: Case Studies"
+      status: "pending"
+      placeholder: |
+        Real-world IVD adoption stories:
+        - Startup: Solo developer building SaaS with IVD
+        - Midsize: 15-person team migrating to IVD
+        - Enterprise: 200+ developer organization scaling IVD
+        - Open Source: Community project using IVD
+    
+    - section: "Appendix F: Research References"
+      status: "pending"
+      placeholder: |
+        Academic and industry sources:
+        - Literate Programming (Knuth, 1984)
+        - Design by Contract (Meyer, 1986)
+        - Model Context Protocol (Anthropic, 2024)
+        - Agent knowledge standards (industry survey)
+        - 50+ citations with full references
+    
+    - section: "Glossary"
+      status: "pending"
+      placeholder: |
+        Key terms defined:
+        - Intent Artifact
+        - Bidirectional Synchronization
+        - Continuous Verification
+        - Recipe
+        - MCP (Model Context Protocol)
+        - System/Workflow/Module/Task levels
+    
+    - section: "Acknowledgments"
+      status: "pending"
+      placeholder: |
+        - Research contributors
+        - Early adopters and feedback providers
+        - Open source community
+        - Family and supporters
+    
+    - section: "About the Author"
+      status: "pending"
+      placeholder: |
+        Build trust via author credibility (pattern: K&R, McConnell, Fowler, Uncle Bob).
+        Include: origin, journey to IVD (why you wrote this), expertise (projects, employers, relevant work),
+        and why the reader should trust this book—tie to evidence in the book (case studies, experiments).
+        Contact and community.
+    
+    - section: "Index"
+      status: "pending"
+      placeholder: "Auto-generated from keywords and concepts"
+
+# ==============================================================================
+# WRITING STYLE (from research/best_selling_programming_books.md)
+# ==============================================================================
+# Patterns from Code Complete, Clean Code, Pragmatic Programmer, Design Patterns.
+# ==============================================================================
+
+writing_style:
+  voice:
+    primary: "mentor-like, direct"
+    person: "second person ('you')"
+    mood: "imperative, actionable; tell the reader what to do"
+    examples: "Care about your craft (Pragmatic). The only way to go fast is to go well (Clean Code)."
+  
+  tone:
+    target: "high depth, high accessibility (Code Complete, Clean Code pattern)"
+    balance: "Dense where needed, but always structured with checklists and summaries so it stays scannable and applicable."
+    avoid: "Purely academic (SICP/CLRS) or purely informal; we are expert and practical."
+  
+  code_and_prose:
+    part_1_3_4: "Prose leads; code and intent-artifact examples illustrate. Prose explains and generalizes."
+    part_2: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning (AtBS, Head First pattern)."
+  
+  clarity_tactics:
+    - "Analogies and metaphors: e.g. 'Intent as contract,' 'executable understanding,' 'alignment not hope,' 'from hope it works to prove it works'"
+    - "Diagrams: flow, structure, intent-to-code relationship (Design Patterns, Code Complete pattern)"
+    - "Chapter and section summaries: 'Key Points' or 'Summary' at chapter end (Code Complete)"
+    - "Checklists: verification, adoption, pre-flight (Code Complete); use in chapters and Appendix A"
+    - "Rules and lists: short rules for principles; IVD's 8 principles as memorable, tweetable one-liners"
+    - "Exercises and projects: Part II projects; optional end-of-chapter exercises where they add value"
+  
+  analogies_and_metaphors:
+    canonical:
+      - "Intent as a verifiable contract between human and AI"
+      - "Executable understanding fails loudly"
+      - "Alignment, not hope"
+      - "From 'Hope It Works' to 'Prove It Works'"
+      - "Intent is primary; code and docs follow"
+    use: "Weave these into preface, Part I, and Part III; reuse where they reinforce."
+  
+  quotable_lines:
+    requirement: "Include 1–2 memorable, tweetable lines per chapter where natural (Pragmatic, Clean Code pattern)."
+    examples: "Intent is primary. Understanding must be executable. Verify, don't hope."
+  
+  principles_as_rules:
+    requirement: "The 7 IVD principles must be stateable as short, memorable rules (Clean Code: 'Do one thing,' 'Stepdown')."
+    format: "One-line rule + 1–2 paragraphs explanation; repeat the rule in chapter summaries and Appendix A."
+  
+  formatting_conventions:
+    emphasis:
+      bold: "Use for KEY TERMS on first introduction (e.g., **Intent-Verified Development**), emphasis in Key Points bullets (e.g., **Traditional development: code is primary**), and quotable lines (e.g., **We have been building at the speed of misunderstanding.**)"
+      italic: "Use for emphasis within sentences (e.g., '*code is primary*'), book/article titles (e.g., *Code Complete*), technical terms in prose context (e.g., 'the *intent* artifact'), and quoted speech/dialogue (e.g., '*Build X.*')"
+      code: "Use for code snippets (`variable_name`), file paths (`intent.yaml`), commands (`ivd validate`), and technical identifiers"
+    
+    quotations:
+      inline_quotes: "Use double quotes for short phrases, dialogue, and examples (e.g., 'The PM said: \"Add export to CSV.\"')"
+      block_quotes: "Use '> ' for longer quotes or emphasized statements (sparingly; prefer bold for emphasis)"
+      quotable_lines: "Format as bold in prose; repeat in Key Points (e.g., **We have been building at the speed of misunderstanding.**)"
+    
+    structure:
+      paragraph_length: "3-6 sentences typical; 1-2 sentences for emphasis; 7+ for dense exposition (break with subheadings if > 10 sentences)"
+      sentence_variety: "Mix short (impact) and long (explanation); avoid 3+ consecutive long sentences"
+      lists: "Use bulleted lists for 3+ related items; use '—' (em dash) for inline lists of 2 items"
+    
+    headings:
+      chapter_title: "# Chapter N: Title"
+      section: "## N.M Section Title"
+      subsection: "### Subsection (rare; prefer flat structure)"
+      key_points: "## Key Points (always at chapter end)"
+    
+    special_elements:
+      footnotes: "[^N] inline reference; definitions at section end with blank line between each"
+      diagrams: "[Placeholder for diagram] with alt text; actual diagram in assets/"
+      code_blocks: "```language (e.g., ```yaml, ```python); always include language tag"
+      examples: "Embed in prose with italic framing for dialogue (e.g., '*Build X.*') or quotes for examples (e.g., '\"Add export to CSV\"')"
+    
+    forbidden:
+      - "No ALL CAPS for emphasis (use bold)"
+      - "No excessive exclamation marks (!!!)"
+      - "No emoji (unless user explicitly requests)"
+      - "No underscores for emphasis (markdown renders as italic; use *italic* or **bold** explicitly)"
+
+# ==============================================================================
+# CHAPTER WRITING PROCESS
+# ==============================================================================
+
+chapter_writing_process:
+  reference: "chapter_writing_process.yaml"
+  description: "Canonical 7-step process for writing each chapter: verify prerequisites, create folder, create intent, write manuscript, cross-check, update chapter status, update book status."
+  validated_by: "Chapters 1 and 2 (both complete)"
+
+# ==============================================================================
+# IMPLEMENTATION PHASES
+# ==============================================================================
+
+phases:
+  phase_1_content_creation:
+    duration: "3-4 months"
+    deliverables:
+      - "All chapters written (first draft)"
+      - "All projects built and tested"
+      - "All experiments run and data collected"
+      - "Code repository created with examples"
+    validation:
+      - "Technical review by 3+ experts"
+      - "Beta reader feedback (10+ readers)"
+      - "All code examples executable"
+      - "All data validated and reproducible"
+  
+  phase_2_validation:
+    duration: "1-2 months"
+    deliverables:
+      - "All claims validated with experiments"
+      - "Statistical analysis complete"
+      - "Case studies written"
+      - "Peer review complete"
+    validation:
+      - "Each claim has >= 3 validation experiments"
+      - "Results are reproducible by independent parties"
+      - "Confidence intervals and statistical significance calculated"
+  
+  phase_3_production:
+    duration: "1 month"
+    deliverables:
+      - "Professional editing complete"
+      - "Cover design finished"
+      - "EPUB and PDF formatted for Kindle"
+      - "Code repository polished"
+      - "Landing page and marketing materials"
+    validation:
+      - "Kindle formatting validated"
+      - "All links and references checked"
+      - "Beta reader final approval"
+  
+  phase_4_launch:
+    duration: "1 month"
+    deliverables:
+      - "Amazon Kindle published"
+      - "Launch campaign executed"
+      - "Initial reviews collected"
+      - "Community engagement started"
+    validation:
+      - "50+ reviews in first month"
+      - "Top 10 in AI category"
+      - "1,000+ copies sold"
+  
+  phase_5_growth:
+    duration: "ongoing"
+    deliverables:
+      - "Second edition planning (based on feedback)"
+      - "Speaking engagements and workshops"
+      - "Community contributions integrated"
+      - "Updated recipes and patterns"
+    validation:
+      - "#1 ranking achieved and maintained"
+      - "10,000+ copies sold"
+      - "Industry recognition"
+
+# ==============================================================================
+# RATIONALE: Why this structure?
+# ==============================================================================
+
+rationale:
+  decision: "Four-part, 20-chapter, validation-led structure with Amazon success focus"
+  
+  reasoning: |
+    1. Problem → Paradigm → Practice → Proof → Adoption
+       - Part I establishes the alignment crisis and IVD as paradigm shift (theory-first; purpose per part)
+       - Part II builds real projects (learn by doing); spiral: projects revisit Part I concepts
+       - Part III proves claims with data (credibility)
+       - Part IV enables team adoption
+       - Readers can stop at any layer and have value
+    
+    2. Validation-led credibility (pattern: Code Complete)
+       - Every IVD claim must be backed by experiments (Part III)
+       - Code examples and validation-experiments/ are first-class
+       - Evidence-based positioning differentiates from opinion-only books
+    
+    3. Market-driven (Amazon, adoption)
+       - Structure and metrics target category rank, reviews, sales
+       - Appendices (recipes, validation methodology, tools) support practitioners and dip-in reference
+       - Rationale and alternatives from prior ROADMAP preserved in merged intent
+    
+    4. First-mover in a wave (pattern: Design Patterns, K&R, Code Complete)
+       - IVD names and codifies intent-first, AI-aligned development at the right moment in the AI-assisted dev wave
+    
+    5. Timeless principles + timely tooling (pattern: bestsellers)
+       - Emphasize timeless: intent, verification, alignment. Timely: Cursor, Cline, MCP, AI agents. Principles outlast tools.
+  
+  evidence: "../ivd_system_intent.yaml (principles, verification); ../research/validation_methodology.md; ../research/best_selling_programming_books.md"
+  date: "2026-01-25"
+  stakeholder: "IVD Framework Maintainer"
+
+# ==============================================================================
+# ALTERNATIVES: Why NOT other approaches?
+# ==============================================================================
+
+alternatives:
+  - name: "Paradigm-first 7–11 chapter (prior ROADMAP)"
+    rejected_because: |
+      - Fewer chapters, less room for validation and proof
+      - No dedicated Part III for experiments; weaker evidence-based pitch
+      - Appendices-heavy; core narrative lighter on practice and adoption
+    when_it_works: "Shorter, theory-focused books; IVD needs proof and practice"
+  
+  - name: "Theory-only, no projects"
+    rejected_because: "IVD must be immediately actionable; principles need implementation and validation"
+    when_it_works: "Academic or conceptual treatments only"
+  
+  - name: "Tutorial-first (start with first artifact)"
+    rejected_because: "Readers need paradigm and problem context before HOW; otherwise feels like 'just another tool'"
+    when_it_works: "Tools with established paradigms"
+
+# ==============================================================================
+# SOURCE MATERIAL: Core references for writers
+# ==============================================================================
+
+source_material:
+  - "../purpose.md"
+  - "../ivd_system_intent.yaml"
+  - "../framework.md"
+  - "cookbook.md"
+  - "cheatsheet.md"
+  - "recipe-spec.md"
+  - "templates/intent.yaml"
+  - "templates/intent_levels_guide.md"
+  - "templates/task_level_quick_ref.md"
+  - "templates/examples/task-level-intent-example.yaml"
+  - "templates/examples/workflow-lead-qualification-example.yaml"
+  - "recipes/agent-classifier.yaml"
+  - "recipes/workflow-orchestration.yaml"
+  - "recipes/infra-background-job.yaml"
+  - "recipes/doc-meeting-insights.yaml"
+  - "research/validation_methodology.md"
+  - "research/agent_knowledge_standards.md"
+  - "research/ivd_implementation_roadmap.md"
+  - "research/best_selling_programming_books.md"
+  - "_private/from_lp_to_ivd.md"
+  - "research/lp_research.md"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  evidence_based:
+    requirement: "Every claim must be validated with data from real projects"
+    rationale: "Credibility comes from proof, not promises"
+    validation: "All experiments documented with reproducible methodology"
+  
+  immediately_actionable:
+    requirement: "Readers can apply IVD within 24 hours of reading Part I"
+    rationale: "Value comes from doing, not just understanding"
+    validation: "Beta readers successfully create first intent artifact same day"
+  
+  market_driven:
+    requirement: "Book structure and content optimized for Amazon success"
+    rationale: "Top-selling requires understanding what readers want and how Amazon ranks"
+    validation: "Title, subtitle, keywords, and description A/B tested pre-launch"
+  
+  code_quality:
+    requirement: "All code examples are production-ready, tested, and documented"
+    rationale: "Readers should copy-paste and ship, not debug"
+    validation: "All code in repository with passing tests and CI/CD"
+  
+  visual_communication:
+    requirement: "Complex concepts have diagrams, tables, and visual aids"
+    rationale: "Understanding is faster with visual + text"
+    validation: "20+ diagrams, all chapters have visual elements"
+  
+  accessibility:
+    requirement: "Written for developers with 2+ years experience, no PhD required"
+    rationale: "Broad adoption requires accessibility"
+    validation: "Beta readers from diverse backgrounds understand content"
+  
+  no_timeline_references:
+    requirement: "Zero timeline references in book content (days, weeks, months)"
+    rationale: "Aligns with ivd_system_intent and workspace rules"
+    validation: "grep -i 'days|weeks|months|timeline' manuscript/**/*.md | grep -v 'test:' | wc -l == 0"
+  
+  source_material_accuracy:
+    requirement: "All source_material and referenced paths must exist in IVD package"
+    rationale: "Book must not cite missing files"
+    validation: "Verify all source_material and in-text paths exist"
+  
+  kindle_compliance:
+    requirement: "EPUB output must meet Amazon Kindle requirements"
+    rationale: "Publishing target"
+    validation: "epubcheck build/*.epub passes"
+  
+  master_intent_alignment:
+    requirement: "Book content must not contradict ../ivd_system_intent.yaml"
+    rationale: "Canon consistency"
+    validation: "Manual review: book aligns with master intent"
+  
+  chapter_takeaways:
+    requirement: "Each chapter ends with a 'Key Points' or 'Summary' block; where applicable, include a 'Checklist' (e.g. verification, adoption, pre-flight)"
+    rationale: "Scannability and application; pattern: Code Complete. Readers who skim still get takeaways."
+    validation: "Manual or grep: each chapter file contains 'Key Points' or 'Summary' section; checklists in Ch4, 16–20, Appendix A"
+  
+  quotable_principles:
+    requirement: "The 7 IVD principles and core ideas (e.g. 'Intent as contract') must be stateable as short, memorable, tweetable rules. See writing_style.quotable_lines and principles_as_rules."
+    rationale: "Memorable, citable, shareable; pattern: Clean Code, Pragmatic Programmer"
+    validation: "Manual: each principle has a one-line rule in Ch3 and in Appendix A; 1–2 quotable lines per chapter where natural"
+  
+  author_sourced_examples:
+    requirement: |
+      Case studies and narratives that illustrate real-world failure or success must derive from the
+      author's direct experience (anonymized as needed), or be explicitly labeled as industry composite
+      or third-party when the author was not directly involved. The book is anchored by the author's
+      own journey (Preface) and, where possible, the author's own examples. No invented, unanchored
+      fiction. Composite is the exception, not the default.
+    rationale: "Author credibility; research (best_selling_programming_books.md 6.1): Fowler, McConnell, GoF, Hunt & Thomas use examples from their practice, consulting, or design work. Composites are not the pattern."
+    validation: "Manual: each case study or detailed failure/success narrative has attribution (author's experience, or 'composite'/'industry' with explicit label). Preface contains author's journey."
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  success_criteria:
+    - metric: "Amazon ranking"
+      target: "#1 in AI & Machine Learning category"
+      measurement: "Amazon Best Sellers Rank"
+    
+    - metric: "Sales volume"
+      target: "10,000+ copies in year 1"
+      measurement: "Amazon KDP sales dashboard"
+    
+    - metric: "Reader satisfaction"
+      target: "4.5+ star average with 1,000+ reviews"
+      measurement: "Amazon review aggregation"
+    
+    - metric: "Technical validation"
+      target: "All claims proven with data"
+      measurement: "Validation experiments in Part III"
+    
+    - metric: "Community adoption"
+      target: "1,000+ teams adopt IVD"
+      measurement: "Community survey and GitHub stars"
+    
+    - metric: "Industry recognition"
+      target: "Featured in 10+ publications/podcasts"
+      measurement: "Media tracking"
+  
+  test_path: "validation_experiments/*.py"
+  evidence: "experiment_results/*.md"
+
+# ==============================================================================
+# RISKS AND MITIGATION
+# ==============================================================================
+
+risks:
+  technical_risk:
+    risk: "Validation experiments don't prove claims"
+    probability: "low"
+    impact: "high"
+    mitigation: "Run experiments early, adjust claims if needed, conservative estimates"
+  
+  market_risk:
+    risk: "Amazon algorithm changes, category competition increases"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Focus on quality and reviews, organic marketing, community building"
+  
+  timing_risk:
+    risk: "AI development landscape shifts before publication"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Focus on timeless principles, quick publication timeline, update strategy"
+  
+  adoption_risk:
+    risk: "IVD is too complex for average developer"
+    probability: "low"
+    impact: "high"
+    mitigation: "Simple start (Part I in 2 hours), progressive complexity, strong examples"
+
+# ==============================================================================
+# IMPLEMENTATION NOTES
+# ==============================================================================
+
+implementation:
+  current: "Planning phase - outline complete, ready for content creation"
+  
+  target_length: "500–750 pp (25–38 pp/chapter average) to balance comprehensiveness (Code Complete) with accessibility; adjust after first draft. Bestsellers range ~350–1300 pp."
+  
+  distribution_options:
+    free_excerpt: "Consider free web edition of Part I + Project 1 (Ch5) to drive adoption and print/ebook sales (pattern: Automate the Boring Stuff, SICP)."
+    target_publishers: "O'Reilly, Pragmatic Bookshelf, Addison-Wesley, Manning, No Starch—strong dev audiences; evidence and recipes suit."
+  
+  production_workflow:
+    - "Write in Markdown (manuscript/)"
+    - "Validate Markdown and links"
+    - "Convert to EPUB (Pandoc) → build/epub/"
+    - "Convert to PDF (Pandoc) → build/pdf/"
+    - "Validate EPUB (epubcheck), Kindle Preview"
+    - "Final review and publication"
+  
+  next_steps:
+    - "Set up book repository with chapter folders"
+    - "Create writing schedule (3-4 months, phase 1)"
+    - "Start with Part I, Chapter 1 (proven content from existing IVD docs)"
+    - "Build Project 1 (Chapter 5) in parallel to validate approach"
+    - "Run first validation experiment (context efficiency)"
+  
+  tools:
+    - "Markdown for writing (portable, versionable)"
+    - "Pandoc for EPUB/PDF generation"
+    - "GitHub for version control and collaboration"
+    - "Amazon KDP for publishing"
+    - "Python for validation experiments"
+  
+  repository_structure: |
+    ivd-book/
+    ├── manuscript/
+    │   ├── front-matter/
+    │   ├── part-1-foundations/
+    │   │   ├── chapter-01-alignment-crisis.md
+    │   │   ├── chapter-02-new-paradigm.md
+    │   │   └── ...
+    │   ├── part-2-practice/
+    │   ├── part-3-validation/
+    │   ├── part-4-adoption/
+    │   └── back-matter/
+    ├── code-examples/
+    │   ├── project-1-classification/
+    │   ├── project-2-workflow/
+    │   └── ...
+    ├── validation-experiments/
+    │   ├── context-efficiency/
+    │   ├── alignment-accuracy/
+    │   └── ...
+    ├── assets/
+    │   ├── diagrams/
+    │   └── images/
+    └── build/
+        ├── epub/
+        └── pdf/
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.3"
+    date: "2026-01-25"
+    changes: |
+      author_sourced_examples: Case studies and failure/success narratives must derive from the
+      author's direct experience (anonymized) or be explicitly labeled as composite/third-party.
+      Rationale: research 6.1—Fowler, McConnell, GoF, Hunt & Thomas use examples from their
+      practice/consulting/design work; composites are not the pattern. Chapter intents (e.g. Ch1)
+      and research doc 6.1 updated.
+  - version: "1.2"
+    date: "2026-01-25"
+    changes: |
+      Informed by research/best_selling_programming_books.md.
+      Added: writing_style (voice, tone, code-prose, clarity_tactics, analogies_and_metaphors,
+      quotable_lines, principles_as_rules). Enhanced: front_matter (TOC: detailed multi-level;
+      Preface: establish problem in first 2 pages; How to Use: path exits, dip-in). Part purposes
+      and part_2 pedagogy_note (spiral). About the Author: credibility, origin, expertise.
+      New constraints: chapter_takeaways (Key Points/Summary/Checklist), quotable_principles.
+      Rationale: first-mover, timeless+timely, evidence-based pattern. source_material: research
+      best_selling_programming_books.md. implementation: target_length 500–750 pp,
+      distribution_options (free excerpt, target publishers).
+  - version: "1.1"
+    date: "2026-01-25"
+    changes: |
+      Merged IVD_BOOK_ROADMAP into this intent (canon: single system-level intent in book/).
+      Added: rationale, alternatives, source_material; operational constraints
+      (no_timeline_references, source_material_accuracy, kindle_compliance, master_intent_alignment);
+      production_workflow. Deleted ivd/IVD_BOOK_ROADMAP.yaml.
+  - version: "1.0"
+    date: "2026-01-25"
+    changes: "Initial book structure created with complete outline, chapters, and placeholders"

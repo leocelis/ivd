@@ -1,0 +1,197 @@
+# community_adoption_intent.yaml
+# Intent Artifact for IVD Community Adoption Plan
+#
+# IVD: THE FRAMEWORK FOR THE AI AGENTS ERA
+# =========================================
+# Private adoption plan: decouple IVD from ADA, launch as standalone
+# framework, prove with alpha users, then open to community + sell book.
+
+parent_intent: "../../ivd_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "process"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "community_adoption"
+  category: "adoption"
+  tags: ["community", "launch", "mcp", "book", "alpha"]
+  status: "planned"
+
+intent:
+  summary: "Decouple IVD from ADA, launch standalone framework with private alpha, prove it, then open to community and sell book"
+  goal: |
+    Create a standalone IVD repo (decoupled from ADA) with spec, docs, templates,
+    recipes, and an IVD MCP server. Launch privately as alpha with a small group of
+    users and use it internally on client projects. Once proven and book ready, open
+    to the community to build adoption and sell the book as the deep-dive product.
+
+    The end state: IVD is a product-agnostic methodology anyone can adopt without
+    ADA. The MCP server (hosted by us on existing DO infra) provides optional
+    tooling. The book is the premium offering for the community.
+  success_metric: "3+ alpha users actively using IVD on real projects; book manuscript complete; community launch with public repo"
+  stakeholders: ["Leo Celis"]
+
+# WHAT must hold true?
+constraints:
+  - name: "standalone_repo"
+    requirement: "IVD repo contains zero ADA-specific code or imports; usable without ADA"
+    test: "manual review: no ada.* imports, no ADA config references"
+    consequence_if_violated: "IVD perceived as ADA-only tool; kills community adoption"
+
+  - name: "no_tool_required"
+    requirement: "A user can adopt IVD with only the repo (copy templates, write YAML, any editor); MCP is optional"
+    test: "manual: follow getting-started path without MCP; produce first intent successfully"
+    consequence_if_violated: "Adoption friction too high; users bounce before trying"
+
+  - name: "single_getting_started_path"
+    requirement: "One obvious numbered path from landing (README) to first intent; no ambiguity on where to start"
+    test: "manual: new user follows path in one sitting (<30 min)"
+    consequence_if_violated: "Users lost in docs; research shows time searching info correlates negatively with loyalty"
+
+  - name: "mcp_api_key_gated"
+    requirement: "IVD MCP server requires API key; only alpha users have keys during private phase"
+    test: "manual: request without key returns 401; request with valid key succeeds"
+    consequence_if_violated: "Uncontrolled access before framework is proven"
+
+  - name: "ivd_mcp_separate_service"
+    requirement: "IVD MCP runs as its own managed app on DO (not a worker, not inside ada-mcp); separate from ADA MCP"
+    test: "DO app spec shows ivd-mcp as independent service with its own route and domain"
+    consequence_if_violated: "IVD coupled to ADA infra; can't evolve or scale independently"
+
+  - name: "book_positioned_as_deep_dive"
+    requirement: "Book is marketed as 'go deeper' for people who already know IVD from the repo/community, not as the entry point"
+    test: "README and getting-started link to book as 'Explanation / Deep Dive', not as prerequisite"
+    consequence_if_violated: "Book competes with free docs instead of complementing them"
+
+# WHY this approach?
+rationale:
+  decision: |
+    Decouple IVD into standalone repo, launch private alpha, then open + book.
+    Based on framework adoption research (Myllärniemi et al. 2018, Aalto):
+    - Adoption is a journey (selection → onboarding → continuous use)
+    - Three boundary resources: API/spec, development tools, information/docs
+    - Peer experience drives selection; enjoyment and usability drive loyalty
+    - Time spent searching info or installing correlates negatively with loyalty
+    
+    Documentation structured per Diataxis (diataxis.fr):
+    - Tutorial (learn by doing), How-to (task-focused), Reference (lookup), Explanation (book)
+    
+    MCP hosting: remote server we control (Streamable HTTP / SSE on DO App Platform),
+    users connect by URL + API key. Based on MCP official docs (modelcontextprotocol.io):
+    - Remote MCP via SSE/Streamable HTTP for "you host, users connect"
+    - Official example: modelcontextprotocol/example-remote-server
+    
+    Distribution: methodology = spec + docs + templates (CWL model); tools are optional
+    implementations. Users acquire by: selection (problem fit + peers), onboarding
+    (quick start, copy templates), daily use (how-tos, reference, community).
+  evidence: |
+    - Myllärniemi et al. (2018): "Development as a Journey" (Springer Open)
+    - Diataxis framework (diataxis.fr)
+    - MCP official docs (modelcontextprotocol.io)
+    - CWL (commonwl.org) as vendor-neutral spec distribution model
+  date: "2026-02-06"
+  stakeholder: "Leo Celis"
+
+# WHY NOT alternatives?
+alternatives:
+  - name: "keep_ivd_inside_ada_repo"
+    rejected_because: "IVD perceived as ADA-only; can't build independent community; limits adoption to ADA users"
+    date_tested: "2026-02-06"
+
+  - name: "npm_package_distribution"
+    rejected_because: "IVD is a methodology (spec + docs + templates), not a code library; npm is for code packages. MCP tools are separate optional tooling"
+    date_tested: "2026-02-06"
+
+  - name: "mcp_as_worker_on_ada"
+    rejected_because: "Workers have no HTTP routes; MCP requires SSE/HTTP endpoint for clients to connect. Must be a managed web service"
+    date_tested: "2026-02-06"
+
+  - name: "public_launch_without_alpha"
+    rejected_because: "No peer signal, no proven usage, no case studies. Research shows peer experience drives framework selection. Alpha first proves IVD works, generates stories"
+    date_tested: "2026-02-06"
+
+# WHAT could go wrong?
+risks:
+  - condition: "Alpha users don't engage or drop off"
+    action: "Check onboarding friction; simplify getting-started path; provide 1:1 support"
+    monitor: "Direct feedback from alpha users"
+    severity: "high"
+
+  - condition: "IVD docs too coupled to ADA terminology or examples"
+    action: "Review all docs for ADA-specific references; replace with generic examples"
+    monitor: "Alpha user feedback: 'I don't use ADA, is this for me?'"
+    severity: "medium"
+
+  - condition: "MCP server costs grow before revenue"
+    action: "Small DO instance ($5-10/month); scale only when needed; API key limits abuse"
+    monitor: "DO billing dashboard"
+    severity: "low"
+
+  - condition: "Book not ready when community opens"
+    action: "Community can launch without book; book follows when ready. Repo + getting-started is the MVP"
+    monitor: "Book manuscript progress"
+    severity: "medium"
+
+# WHERE is this implemented?
+implementation:
+  current: "framework/ivd/_private/community/community_adoption_intent.yaml"
+  version: 1
+  tests: null  # process plan; verification is manual (phases, constraints)
+  documentation: "framework/ivd/_private/community/"
+
+# Phases (high-level execution order)
+phases:
+  - phase: 1
+    name: "Standalone IVD Repo"
+    description: |
+      Create new repo with IVD core assets:
+      - Spec: framework.md, principles, artifact schema
+      - Docs: README (front door), PURPOSE, cookbook, cheatsheet
+      - Templates: intent.yaml, recipe.yaml, examples
+      - Recipes: existing recipes (agent-classifier, workflow-orchestration, etc.)
+      - Embeddings: brain/ivd/ (for MCP doc search)
+      - MCP server code: IVD tools only (ivd_search, ivd_validate, ivd_scaffold, etc.)
+      - Getting started: one numbered path (read what → do what → copy what)
+      - No ADA-specific code or imports
+    deliverables:
+      - "Standalone IVD GitHub repo (private initially)"
+      - "README as front door with single getting-started path"
+      - "IVD MCP server deployable as own DO managed app"
+
+  - phase: 2
+    name: "Private Alpha"
+    description: |
+      Deploy IVD MCP as its own managed app on DO (separate from ADA).
+      Invite 2-3 alpha users (developers or teams).
+      Use IVD internally on client projects.
+      Gather feedback on: onboarding friction, doc clarity, MCP usefulness, real-world fit.
+      Iterate on docs and tools based on feedback.
+    deliverables:
+      - "IVD MCP live on DO with API key auth"
+      - "2-3 alpha users onboarded and using IVD"
+      - "IVD used on at least 1 client project internally"
+      - "Feedback collected and incorporated"
+
+  - phase: 3
+    name: "Community Launch + Book"
+    description: |
+      Open the IVD repo to the public.
+      Add community place (GitHub Discussions or similar).
+      Add "Used with / Implementations" section (alpha case studies).
+      Publish or announce the book as the deep-dive for the community.
+      Optionally: register IVD MCP on the official MCP Registry.
+    deliverables:
+      - "Public IVD repo"
+      - "Community channel active"
+      - "1-2 visible case studies / implementations"
+      - "Book available (or announced with timeline)"
+
+# WHEN was this changed?
+changelog:
+  - version: 1
+    date: "2026-02-06"
+    change: "Initial intent: IVD community adoption plan"
+    reason: "Decouple IVD from ADA to build standalone framework and community that will buy the book"
+    evidence: "Research: Myllärniemi 2018 (framework adoption), Diataxis (docs), MCP official docs (hosting), CWL (vendor-neutral spec model)"

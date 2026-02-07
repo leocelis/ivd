@@ -1,0 +1,220 @@
+# ==============================================================================
+# Chapter 1: The Alignment Crisis
+# ==============================================================================
+# Module-level intent for the first chapter of the IVD book. Establishes the
+# problem: misalignment in traditional and AI-assisted development.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_1_foundations.chapters[0]
+# Version: 1.1
+# Created: 2026-01-25
+# Status: Pending
+# ==============================================================================
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Establish the alignment crisis in the AI Agents era: prompts, PRDs, and user stories are not verifiable by AI, leading to many turns and hallucinations. Set up the core question that IVD answers."
+  
+  goal: |
+    By the end of this chapter, the reader:
+    1. Understands the core pain point of the AI Agents era: many turns and hallucinations.
+    2. Sees why traditional artifacts (PRDs, user stories, prompts) fail with AI—they are not verifiable by the AI.
+    3. Understands the scale: the $10B problem, 70–90% knowledge loss, hundreds of billions in waste.
+    4. Feels the pain through concrete examples (AI fills gaps, you correct, repeat).
+    5. Asks: "What if intent was verifiable by the AI?"—the hook into Chapter 2.
+    
+    This chapter does NOT yet present IVD. It names the problem: AI agents guess, and guessing is hallucination.
+  
+  success_metric: |
+    - Reader can restate the "Prompt → Here's X → No, I meant..." pattern in their own words
+    - Reader understands why PRDs, user stories, and prompts fail with AI (not verifiable)
+    - Reader knows the terms "many turns" and "hallucinations" as the core pain points
+    - Chapter ends with "What if intent was verifiable by the AI?" as a natural bridge to Ch2
+  
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_1 purpose: establish the problem)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "1.1"
+      title: "The Expensive Pattern: \"Build X\" → \"Here's X\" → \"No, I meant...\""
+      required_content:
+        - "Concrete illustration of the request–deliver–correction loop"
+        - "Why it is expensive (time, trust, compounding)"
+        - "Applies to human–human and human–AI; AI as amplifier"
+    
+    - id: "1.2"
+      title: "Why Traditional Artifacts Fail: PRDs, User Stories, and Prompts"
+      required_content:
+        - "PRDs, user stories, prompts are prose—not verifiable by AI"
+        - "The AI reads prose and fills in gaps (guesses = hallucinations)"
+        - "These artifacts were designed for humans, not AI agents"
+    
+    - id: "1.3"
+      title: "The AI Amplification Effect: Many Turns, Many Hallucinations"
+      required_content:
+        - "AI agents produce fast, plausible, but wrong output (hallucinations)"
+        - "Core pain points: many turns (back-and-forth) and hallucinations (AI fills gaps)"
+        - "The cost compounds: context overload, exhaustion, distrust"
+        - "Industry statistics: 70–90% knowledge loss, $260B+ annual waste"
+    
+    - id: "1.4"
+      title: "The Core Question: What If Intent Was Verifiable?"
+      required_content:
+        - "Pose the question as the pivot into IVD"
+        - "Do not answer it here; Ch2 does"
+        - "One clear, quotable formulation (writing_style.quotable_lines)"
+  
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "1–2 quotable, tweetable lines (constraint: quotable_principles)"
+      - "No IVD solution yet—problem only"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Traditional artifacts (PRDs, user stories, prompts) fail with AI—not verifiable by the AI"
+  - "The AI Agents era pain points: many turns and hallucinations (AI fills gaps with guesses)"
+  - "The scale: 70–90% knowledge loss, hundreds of billions in annual waste"
+  - "The hinge: what if intent was verifiable by the AI? What if the AI wrote the intent?"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section"
+  
+  - name: "quotable_principles"
+    requirement: "1–2 memorable, tweetable lines (e.g. in 1.5 or 1.1)"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is quotable on its own"
+  
+  - name: "writing_style_part_1"
+    requirement: "Prose leads; examples illustrate. Mentor-like, direct, second person. High depth, high accessibility."
+    source: "book_system_intent.writing_style (voice, tone, code_and_prose.part_1_3_4)"
+    validation: "Manual: voice and tone match"
+  
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms and Key Points, italic for emphasis and dialogue, code formatting for technical terms, proper paragraph structure (3-6 sentences typical, 1-2 for emphasis, 7-10 for dense exposition, >10 MUST be broken with subheadings or split), footnotes with blank lines between."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions (bold/italic/code usage, NO paragraphs >10 sentences without subheadings, footnote spacing)"
+  
+  - name: "evidence_for_case_study"
+    requirement: "Case study (1.4): claims sourced or marked composite/illustrative; no invented, unsourced statistics"
+    source: "book_system_intent.constraints.evidence_based"
+    validation: "1.4 has inline or end attribution; any $/numbers traceable or labeled"
+  
+  - name: "author_sourced_examples"
+    requirement: "Case study (1.4) must derive from the author's direct experience (anonymized) or be explicitly labeled as industry composite. Prefer author's experience. Pattern: research 6.1 'Author experience and case studies'; book_system_intent.constraints.author_sourced_examples"
+    source: "book_system_intent.constraints.author_sourced_examples; research/best_selling_programming_books.md 6.1"
+    validation: "1.4 is from author's experience (anon.) or has explicit 'composite'/'industry' label; no unanchored fiction"
+  
+  - name: "no_solution_yet"
+    requirement: "Do not present IVD or intent artifacts as the solution in this chapter; problem only. The phrase 'what if intent was verifiable' (1.5) is allowed—it is the question, not the answer."
+    source: "book_system_intent.book_structure (Ch1 sets up; Ch2 introduces IVD)"
+    validation: "No exposition of IVD, intent artifacts, or the eight principles; 1.5 may use 'intent' and 'verifiable' in the question"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 1 establishes the problem only; IVD enters in Chapter 2."
+  
+  reasoning: |
+    - Part I purpose (book_system_intent): "Establish the problem and the IVD paradigm; reader understands why intent is primary (theory-first)."
+    - First-mover, problem-first structure: like Code Complete (foundation = the problem) and many bestsellers. Reader must feel the pain before the cure.
+    - The "What if intent was verifiable?" (1.5) is the hinge: it creates desire for Ch2 without spoiling the paradigm shift.
+    - Case study (1.4) provides credibility; pattern from bestsellers: establish problem with concrete, relatable examples.
+  
+  evidence: "book/book_system_intent.yaml (part_1_foundations.purpose, book_structure); research/best_selling_programming_books.md (structure, case study)"
+  date: "2026-01-25"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-1-foundations/chapter-01-alignment-crisis/chapter_01_alignment_crisis_intent.yaml"
+  output: "manuscript/part-1-foundations/chapter-01-alignment-crisis/chapter.md"
+  status: "complete"
+  version: 2
+  
+  process:
+    reference: "book/chapter_writing_process.yaml"
+    current_step: "step_7_complete"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+  
+changelog:
+  - version: 1.0
+    date: 2026-01-25
+    changes: "Initial chapter intent for Chapter 1 'The Alignment Crisis'; structure with 1.1–1.5 including separate case study section."
+  - version: 2.0
+    date: 2026-01-25
+    changes: "Removed section 1.4 (separate case study) as redundant; concrete examples in 1.1–1.3 (PM/dev CSV, AI prompts) sufficient. Renumbered 1.5 → 1.4. Updated goal, success_metric, deliverables, constraints, and verification."
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (1.1–1.5) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary and 1–2 quotable lines"
+      validates: "constraints.chapter_takeaways, quotable_principles"
+    - check: "Case study (1.4) has attribution or composite label"
+      validates: "constraints.evidence_for_case_study"
+    - check: "Case study (1.4) is from author's experience (anonymized) or explicitly labeled composite; no unanchored fiction"
+      validates: "constraints.author_sourced_examples"
+    - check: "No IVD solution in Ch1 (only the question in 1.5)"
+      validates: "constraints.no_solution_yet"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "2.1"
+    date: "2026-01-26"
+    change: "Major reframe: IVD is for the AI Agents era. Updated intent, goal, key_points, and deliverables to focus on: many turns, hallucinations, AI writes intent. Removed 'PM/dev' framing in favor of 'you prompt AI'."
+    reason: "IVD is NOT for traditional PM > Developer workflows. IVD is the framework for AI agents to write, implement, and verify intent. Without this, IVD is just another artifact like PRDs."
+  - version: "1.1"
+    date: "2026-01-25"
+    change: "1.4 required_content: prefer author's direct experience; composite only when labeled. New constraint author_sourced_examples. Rationale: research 6.1, book_system_intent.author_sourced_examples."
+    reason: "Case study must not be unanchored fiction; author credibility (research)."
+  - version: "1.0"
+    date: "2026-01-25"
+    change: "Initial chapter intent; derived from book/book_system_intent.yaml"
+    reason: "IVD: intent before implementation; one intent per chapter folder"

@@ -1,5 +1,7 @@
 # IVD Private / Historical Documentation
 
+⚠️ **NOTE**: This directory is committed during the private alpha phase to enable multi-device work on the book and community strategy. It will be **removed before public launch** (Phase 3 - community adoption).
+
 This directory contains historical evolution documents and private planning artifacts. It is **not** part of the core IVD framework and is skipped by embedding tools (prefix `_`).
 
 ## Contents

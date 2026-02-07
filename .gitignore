@@ -1,6 +1,6 @@
-# Private content - never committed
-_private/community/
-_private/book/
+# Private content
+# NOTE: _private/ is committed during private alpha phase for multi-device work.
+# It will be removed before public community launch (Phase 3).
 
 # Environment
 .env
