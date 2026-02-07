@@ -1,0 +1,537 @@
+# {module}_intent.yaml
+# Intent Artifact Template for Intent-Verified Development (IVD)
+# 
+# IVD: THE FRAMEWORK FOR THE AI AGENTS ERA
+# =========================================
+# The AI writes this intent artifact, not the human.
+# The AI implements against this intent (code, docs, architecture, research, etc.).
+# The AI verifies its output against the constraints.
+# Hallucinations are caught. Turns drop to one.
+#
+# SCOPE: Any AI-produced artifact (code, architecture, docs, research, books, processes)
+#
+# WORKFLOW:
+#   1. Human describes what they want (natural language)
+#   2. AI writes this structured intent artifact
+#   3. Human reviews: "Is this what I meant?"
+#   4. AI implements against the intent
+#   5. AI verifies: "Does my output pass the constraints?"
+#
+# NAMING PATTERNS (required for tool discovery):
+#   System:   {project}_system_intent.yaml   (e.g., system_intent.yaml, book_system_intent.yaml)
+#   Workflow: {workflow}_intent.yaml         (e.g., lead_qualification_intent.yaml)
+#   Module:   {module}_intent.yaml           (e.g., reviewer_intent.yaml) - REQUIRED pattern for tools
+#   Variant:  {variant}_{module}_intent.yaml (e.g., erik_reviewer_intent.yaml)
+#   Task:     {function}_intent.yaml         (e.g., review_article_intent.yaml)
+#
+# PLACEMENT (required for tool discovery):
+#   System:   /system_intent.yaml or /{project}_system_intent.yaml (repo root)
+#   Workflow: /workflows/{name}_intent.yaml  OR  {coordinator_dir}/{name}_intent.yaml (when single-orchestrator; see framework.md)
+#   Module:   /{module}/{module}_intent.yaml (alongside implementation) - use {module}_intent.yaml, not bare intent.yaml
+#   Task:     /{module}/intents/{task}_intent.yaml (intents/ subfolder required for level detection)
+#
+# EXAMPLES (Non-Code):
+#   Book:     /book/book_system_intent.yaml (book root)
+#   Chapter:  /book/manuscript/chapter-01/intent.yaml (alongside chapter.md)
+#   Research: /research/analysis_intent.yaml (alongside findings.md)
+#
+# REFERENCE: framework.md "Multi-Intent Naming Convention" section
+
+# Optional: Reference a recipe if this follows a pattern
+# recipe: "agent-classifier"
+# recipe_version: "1.0"
+
+# Parent intent: Establish hierarchy (recommended for all non-system intents)
+# Uncomment and set the relative path to your parent intent:
+# parent_intent: "../../system_intent.yaml"
+#
+# Hierarchy patterns:
+#   Task → Module:   parent_intent: "../{module}_intent.yaml"
+#   Module → Workflow: parent_intent: "../../workflows/{workflow}_intent.yaml"
+#   Module → System: parent_intent: "../../system_intent.yaml"
+#   Workflow → System: parent_intent: "../system_intent.yaml"
+
+# SCOPE: What level is this intent for?
+scope:
+  level: "module"  # "system" | "workflow" | "module" | "task"
+  type: "feature"  # "product" | "process" | "feature" | "agent" | "function" | "class" | "api" | "service"
+  granularity: "coarse"  # "coarse" (system/workflow/module) | "fine" (task/function)
+
+# ----------------------------------------------------------------------------
+# METADATA: Optional - for feature inventory and duplicate prevention (large projects)
+# ----------------------------------------------------------------------------
+# Enables derived feature list: "what exists?" without a separate inventory file.
+# Recommended when project has many modules or multiple teams.
+# metadata:
+#   feature_id: "csv_export"           # Stable, unique slug (lowercase, snake_case)
+#   category: "data_export"            # Group for filtering (e.g. auth, reporting, api)
+#   tags: ["admin", "compliance"]     # Searchable keywords
+#   status: "implemented"             # implemented | planned | deprecated
+#   introduced_version: "1.2.0"       # Optional: when added
+#   deprecated_version: null          # Optional: when deprecated (if status: deprecated)
+
+# ----------------------------------------------------------------------------
+# INVERSION OPPORTUNITIES (Optional - Principle 8: Innovation through Inversion)
+# ----------------------------------------------------------------------------
+# Document default assumptions and proposed inversions considered when designing
+# this feature. Use ivd_propose_inversions to brainstorm; then capture chosen/rejected here.
+# inversion_opportunities:
+#   problem: "Describe the specific problem this intent solves (e.g., CSV processing)"
+#   dominant_belief: "The conventional or 'obvious' way to solve this problem."
+#   proposed_inversions:
+#     - name: "Inversion 1 (e.g., Don't load file into memory)"
+#       description: "The opposite approach being considered."
+#       rationale: "Why this inversion is promising (e.g., performance for large files)."
+#       status: "chosen"   # chosen | rejected | deferred
+#     - name: "Inversion 2 (e.g., Don't parse on server)"
+#       description: "Another inverted approach."
+#       rationale: "Why it was considered/rejected (e.g., security concerns)."
+#       status: "rejected"
+
+# ----------------------------------------------------------------------------
+# PROJECT CONTEXT (Optional - SYSTEM-LEVEL ONLY)
+# ----------------------------------------------------------------------------
+# Use this section for system-level intents to capture project-wide context.
+# Child intents (workflow/module/task) reference the parent system intent via parent_intent.
+#
+# This enables:
+# - Reusing project conventions when creating new intents
+# - "Map to the stars" navigation (key paths, routes, entrypoints)
+# - Consistent architecture and code rules across all intents
+#
+# When to use:
+# - System-level (root) intent for a project/product
+# - When installing IVD in an existing project (use ivd_init to scaffold)
+# - When project has established conventions, architecture, tools
+#
+# Skip this section for:
+# - Workflow, module, or task-level intents (reference parent_intent instead)
+# - Greenfield projects with no existing conventions
+
+# project_context:
+#   code_rules:
+#     - path: ".cursorrules"
+#       description: "Cursor IDE rules and conventions"
+#     - path: ".eslintrc.json"
+#       description: "JavaScript linting rules"
+#     - path: "pyproject.toml"
+#       description: "Python formatting and tooling (black, ruff)"
+#   
+#   architecture:
+#     - path: "docs/ARCHITECTURE.md"
+#       description: "High-level system architecture and design principles"
+#     - path: "docs/architecture/ADR-*.md"
+#       description: "Architecture Decision Records"
+#     - principle: "Event-driven microservices with async messaging"
+#     - principle: "No direct database access from frontend"
+#   
+#   tools_scripts:
+#     - path: "scripts/deploy.sh"
+#       description: "Deployment automation"
+#     - path: "scripts/db_migrate.py"
+#       description: "Database migration runner"
+#     - path: "tools/data_pipeline/extract.py"
+#       description: "Data extraction utilities"
+#   
+#   libraries_reuse:
+#     - library: "internal/auth_utils"
+#       description: "Authentication and authorization utilities"
+#       when_to_use: "All auth-related features"
+#     - library: "internal/logging"
+#       description: "Structured logging with correlation IDs"
+#       when_to_use: "All modules and workflows"
+#   
+#   key_paths:
+#     entrypoints:
+#       - path: "api/main.py"
+#         description: "FastAPI application entrypoint"
+#       - path: "worker/celery_app.py"
+#         description: "Background job worker"
+#     
+#     modules:
+#       - path: "agent/"
+#         description: "AI agents (classifiers, extractors, coordinators)"
+#       - path: "entity/"
+#         description: "Core business entities (User, Lead, etc.)"
+#       - path: "integrations/"
+#         description: "External service integrations (CRM, payment)"
+#     
+#     workflows:
+#       - path: "workflows/"
+#         description: "Multi-step business processes"
+#     
+#     docs:
+#       - path: "docs/"
+#         description: "Project documentation"
+#       - path: "docs/runbooks/"
+#         description: "Operational runbooks"
+#     
+#     tests:
+#       - path: "tests/"
+#         description: "Test suites (unit, integration, e2e)"
+#   
+#   existing_docs:
+#     - path: "README.md"
+#       description: "Project overview and quick start"
+#     - path: "docs/CONTRIBUTING.md"
+#       description: "Contribution guidelines"
+#     - path: "docs/API.md"
+#       description: "API reference"
+
+# WHAT should this do?
+intent:
+  summary: "One-line description"
+  goal: "Detailed explanation of purpose"
+  success_metric: "How to measure success"
+  stakeholders: ["Who cares about this"]
+
+# ----------------------------------------------------------------------------
+# WORKFLOW: Multi-step process (REQUIRED for workflow-level intents)
+# ----------------------------------------------------------------------------
+# Use this section for workflow-level intents (end-to-end processes)
+# Documents the sequence of operations across multiple modules/functions
+
+workflow:
+  summary: "High-level description of what this workflow accomplishes"
+  trigger: "What initiates this workflow (API call, event, schedule, etc.)"
+  
+  steps:
+    - step: 1
+      name: "Step name (verb + noun)"
+      file: "path/to/file.py"
+      function: "function_name()" 
+      class: "ClassName"  # Optional if part of class
+      description: "What this step does and why"
+      input: "What data comes into this step"
+      output: "What data comes out of this step"
+      business_logic: "Key business rules or decisions"
+      performance: "p95 < 100ms"  # Optional performance target
+      
+    - step: 2
+      name: "Next step"
+      file: "path/to/another_file.py"
+      function: "another_function()"
+      description: "..."
+      input: "Output from step 1"
+      output: "..."
+      business_logic: "..."
+      depends_on: [1]  # Optional: explicit dependencies
+  
+  data_flow:
+    - "High-level description of data transformations"
+    - "Input → Step 1 → Step 2 → ... → Output"
+    - "What data shape changes happen"
+  
+  error_handling:
+    - step: 1
+      failure_mode: "What can go wrong"
+      action: "What happens when it fails"
+      fallback: "Alternative path or default behavior"
+      
+    - step: 2
+      failure_mode: "..."
+      action: "..."
+      retry_strategy: "Exponential backoff, 3 attempts"
+  
+  orchestration:
+    type: "sequential | parallel | mixed"
+    coordinator: "path/to/coordinator.py"
+    description: |
+      How steps are coordinated:
+      - Sequential: Steps run one after another
+      - Parallel: Steps run simultaneously
+      - Mixed: Some sequential, some parallel
+  
+  performance:
+    end_to_end_latency: "p95 < 5 seconds"
+    throughput: ">= 100 workflows/minute"
+    bottleneck_steps: ["step 3", "step 5"]
+  
+  monitoring:
+    - metric: "workflow_completion_rate"
+      target: ">= 95%"
+      dashboard: "path/to/dashboard"
+    - metric: "workflow_duration"
+      target: "p95 < 5s"
+      alert_threshold: "p95 > 10s"
+
+# ----------------------------------------------------------------------------
+# FIELD MAPPING: Data sources, targets, and transformations (OPTIONAL)
+# ----------------------------------------------------------------------------
+# Use this section for workflow-level or module-level intents that involve
+# data movement, integration, or transformation between systems.
+#
+# When to use:
+# - API integrations (CRM, payment, external services)
+# - ETL pipelines and data synchronization
+# - Database to database transfers
+# - Data import/export features
+# - Reporting and analytics data feeds
+#
+# Skip this section when:
+# - No external data sources (internal-only logic)
+# - Trivial 1:1 passthrough mapping
+# - No data quality or compliance requirements
+#
+# See: recipes/data-field-mapping.yaml for complete pattern and examples
+
+# field_mapping:
+#   summary: "Brief description of what data is being mapped and why"
+#   
+#   sources:
+#     - system: "source_system_name"
+#       type: "database | api | file | stream"
+#       location: "table_name or api_endpoint or file_path"
+#       access: "connection string or API key reference"
+#       schema_reference: "path/to/schema or API spec URL"
+#   
+#   targets:
+#     - system: "target_system_name"
+#       type: "database | api | file | stream"
+#       location: "table_name or api_endpoint or file_path"
+#       access: "connection string or API key reference"
+#       schema_reference: "path/to/schema or API spec URL"
+#   
+#   mappings:
+#     - source_field: "source.table.column or API.field.path"
+#       target_field: "target.table.column or API.field.path"
+#       transformation: "none | description of transformation"
+#       data_type: "source_type → target_type"
+#       required: true  # true | false
+#       default_value: "value if source is null"
+#       validation: "validation rules"
+#       example:
+#         source: "example source value"
+#         target: "example target value after transformation"
+#       notes: "special handling or edge cases"
+#   
+#   business_rules:
+#     - rule: "Business rule affecting mapping"
+#       applies_to: "which fields"
+#       rationale: "why this rule exists"
+#   
+#   transformations:
+#     - name: "transformation name"
+#       input_fields: ["list of source fields"]
+#       output_field: "target field produced"
+#       logic: "description or pseudocode"
+#       example: "input → output"
+#   
+#   verification:
+#     schema_validation:
+#       - check: "What to validate"
+#         test: "path/to/test"
+#         frequency: "on deploy | continuous"
+#     
+#     sample_validation:
+#       - description: "What sample data to verify"
+#         test: "path/to/test"
+#         sample_path: "path/to/sample/data"
+#     
+#     data_quality:
+#       - metric: "completeness | accuracy | consistency"
+#         target: "threshold"
+#         monitor: "dashboard or alert"
+
+# ----------------------------------------------------------------------------
+# INTERFACE: What goes in, what comes out? (REQUIRED for task-level intents)
+# ----------------------------------------------------------------------------
+# Use this section for task-level intents (functions, API endpoints, agents)
+# Skip for module-level or workflow-level intents (unless clear I/O)
+
+interface:
+  signature: "function_name(param1: Type, param2: Type) -> ReturnType"
+  
+  inputs:
+    - name: "parameter_name"
+      type: "str | int | dict | list | CustomType"
+      description: "What this input represents and its purpose"
+      required: true  # true | false
+      default: "default_value"  # if not required
+      constraints:
+        - "length >= 1"
+        - "format: email"
+        - "range: 0-100"
+      example: "example_value"
+      validation: "How input is validated"
+      
+    - name: "optional_parameter"
+      type: "dict"
+      description: "Optional configuration"
+      required: false
+      default: "{}"
+      example: {"key": "value"}
+  
+  outputs:
+    - name: "result"
+      type: "dict | list | bool | CustomType"
+      description: "What gets returned and what it represents"
+      structure: |
+        {
+          "status": "success|error",
+          "data": {...},
+          "metadata": {...}
+        }
+      constraints:
+        - "status must be 'success' or 'error'"
+        - "data present when status=success"
+      example:
+        status: "success"
+        data: {"score": 0.85}
+        metadata: {"timestamp": "2026-01-23T10:00:00Z"}
+      
+    - name: "side_effects"
+      type: "effects"
+      description: "What else changes (database writes, API calls, etc.)"
+      effects:
+        - "Updates database table: leads"
+        - "Sends event to: analytics_queue"
+        - "Logs to: CloudWatch"
+  
+  exceptions:
+    - exception: "ValueError"
+      when: "Input validation fails"
+      handling: "Raise with descriptive message"
+      
+    - exception: "APIError"
+      when: "External service unavailable"
+      handling: "Retry with exponential backoff (3 attempts)"
+  
+  dependencies:
+    - dependency: "external_service"
+      type: "API"
+      required: true
+      fallback: "Cache or default value"
+      
+    - dependency: "database_connection"
+      type: "database"
+      required: true
+      fallback: "None (fail fast)"
+
+# ----------------------------------------------------------------------------
+# BEHAVIOR: How should this behave? (REQUIRED for task-level intents)
+# ----------------------------------------------------------------------------
+# Use this section for task-level intents (functions, methods)
+# Skip for workflow-level or module-level intents
+
+behavior:
+  preconditions:
+    - "Input must be non-empty"
+    - "User must be authenticated"
+    - "Rate limit not exceeded"
+  
+  postconditions:
+    - "Result is always returned (success or error)"
+    - "Side effects are atomic (all or nothing)"
+    - "Logs capture full execution trace"
+  
+  invariants:
+    - "Function is idempotent (same input = same output)"
+    - "No global state modification"
+    - "Thread-safe execution"
+  
+  performance:
+    - metric: "latency"
+      target: "p95 < 200ms"
+      critical_threshold: "p95 > 500ms"
+      
+    - metric: "throughput"
+      target: ">= 100 requests/second"
+      critical_threshold: "< 50 requests/second"
+      
+    - metric: "memory"
+      target: "< 100MB per request"
+      critical_threshold: "> 500MB per request"
+
+# WHAT must hold true?
+constraints:
+  - name: "constraint_id"
+    requirement: "metric >= threshold"
+    test: "path/to/test.py::test_name"
+    consequence_if_violated: "What breaks if this fails"
+
+# WHY this approach?
+rationale:
+  decision: "Key decision made"
+  reasoning: |
+    Explain the reasoning behind design choices:
+    - Why this algorithm/approach?
+    - Why these input/output structures?
+    - Why these performance targets?
+    - What trade-offs were accepted?
+  evidence: "Link to validation (notebook, doc, etc.)"
+  date: "YYYY-MM-DD"
+  stakeholder: "Who approved this"
+
+# WHY NOT alternatives?
+alternatives:
+  - name: "alternative_approach"
+    rejected_because: "Reason"
+    experiment: "path/to/comparison"
+    date_tested: "YYYY-MM-DD"
+
+# WHAT could go wrong?
+risks:
+  - condition: "When does this become a problem?"
+    action: "What should happen?"
+    monitor: "Where to watch for this"
+    severity: "high|medium|low"
+
+# WHERE is this implemented?
+implementation:
+  current: "path/to/file.py"
+  function: "function_name"  # For task-level intents
+  class: "ClassName"  # If part of a class
+  version: 1
+  tests: "path/to/tests/"
+  documentation: "path/to/docs.md"
+
+# HOW to verify this works? (Test cases for task-level intents)
+verification:
+  test_cases:
+    - name: "happy_path"
+      description: "Normal successful execution"
+      input:
+        param1: "valid_value"
+        param2: 123
+      expected_output:
+        status: "success"
+        data: {"result": "expected"}
+      validates_constraint: "output_structure"
+      
+    - name: "edge_case_empty_input"
+      description: "Handle empty input gracefully"
+      input:
+        param1: ""
+        param2: 0
+      expected_output:
+        status: "error"
+        error: "Input validation failed"
+      validates_constraint: "input_validation"
+      
+    - name: "error_handling"
+      description: "External service failure"
+      input:
+        param1: "valid"
+      mock: "external_service returns 503"
+      expected_output:
+        status: "error"
+        error: "Service unavailable"
+      validates_constraint: "resilience"
+  
+  property_tests:
+    - property: "idempotency"
+      test: "Same input always produces same output"
+      verification: "tests/test_properties.py::test_idempotent"
+      
+    - property: "type_safety"
+      test: "Invalid types raise TypeError"
+      verification: "tests/test_types.py::test_type_validation"
+
+# WHEN was this changed?
+changelog:
+  - version: 1
+    date: "YYYY-MM-DD"
+    change: "Initial implementation"
+    reason: "Why this was created"
+    evidence: "Link to validation if any"

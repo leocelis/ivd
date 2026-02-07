@@ -1,0 +1,283 @@
+# ==============================================================================
+# IVD Recipe: Teaching Before Intent
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-02-04
+# Category: workflow_patterns
+# Principle: 6 (AI as Understanding Partner) - extension "Teaching before intent"
+# Status: Canonical (addresses critical bottleneck: lack of technical knowledge)
+# ==============================================================================
+
+recipe:
+  name: "Teaching Before Intent"
+  version: "1.0"
+  status: "canonical"  # Critical gap: knowledge is main bottleneck in project critical paths
+  category: "workflow_patterns"
+  created: "2026-02-04"
+  author: "IVD Framework"
+
+  description: |
+    When the user lacks the technical knowledge to understand domain concepts,
+    patterns, or technologies needed for the task, provide structured teaching
+    BEFORE the standard "describe → AI writes intent" flow. The AI creates an
+    educational artifact explaining key concepts, tradeoffs, and patterns; the
+    user reviews, asks clarifying questions, confirms understanding; then the
+    standard IVD flow applies (discovery if needed → describe → intent → implement).
+    
+    This addresses the critical bottleneck: lack of technical knowledge is the
+    main blocker in project critical paths. Users can't review intent if they
+    don't understand the concepts it references.
+
+  applies_to:
+    - "User needs ETL but doesn't know what ETL is"
+    - "User says 'I don't know what X is' or 'Can you explain Y?'"
+    - "Reverse engineering: AI writes intent from existing code using domain-specific patterns (saga, CDC, eventual consistency) but user can't review it without context"
+    - "Onboarding: user is new to codebase/domain and sees unfamiliar concepts in intent"
+    - "User uses vague/incorrect terminology (signals unfamiliarity with domain)"
+
+  when_to_use:
+    - "User explicitly asks for explanation ('What is X?')"
+    - "User can't evaluate discovery options because they don't understand the terms (batch vs streaming ETL, etc.)"
+    - "Reverse engineering existing code: intent references patterns user hasn't seen"
+    - "User is new to domain/codebase and needs context before they can describe goals"
+    - "AI detects knowledge gap from user's language (vague terms, incorrect concepts)"
+
+  when_NOT_to_use:
+    - "User already understands the domain/concepts (go straight to discovery or intent)"
+    - "Concept is trivial or self-explanatory from context"
+    - "User has experience with the technology (they know, just can't articulate goal → use discovery instead)"
+    - "User explicitly says 'just build it, I'll figure it out' (respect their choice)"
+
+# ------------------------------------------------------------------------------
+# STEPS (workflow pattern)
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  steps:
+    - step: 1
+      name: "Detect knowledge gap"
+      description: "User explicitly asks for explanation, or AI detects unfamiliarity from language/context"
+      signals:
+        - "User: 'I don't know what X is' or 'Can you explain Y?'"
+        - "User uses vague/incorrect terminology"
+        - "Reverse engineering: intent contains domain patterns user hasn't seen"
+        - "User can't evaluate discovery options (doesn't understand the tradeoffs)"
+        - "User is new to codebase/domain (from context)"
+
+    - step: 2
+      name: "Offer teaching"
+      description: "AI offers: 'Would you like me to explain [concept] first?' or proceeds directly if user asked explicitly"
+      output: "User confirms or AI proceeds if explicit request"
+
+    - step: 3
+      name: "Create educational artifact"
+      description: "AI writes structured YAML explaining the concept, why it matters, key tradeoffs, examples"
+      actions:
+        - "Use educational artifact structure (see below)"
+        - "Explain concept clearly (what it is, why it matters for this task)"
+        - "Include key_concepts (sub-concepts user needs to understand)"
+        - "Include tradeoffs (decisions they'll need to make, options with pros/cons)"
+        - "Include common_patterns (standard approaches in this domain)"
+        - "Include verification (questions to confirm understanding)"
+
+    - step: 4
+      name: "User reviews and asks questions"
+      description: "User reads artifact, asks clarifying questions, AI refines explanation until user confirms understanding"
+      output: "User says 'I understand' or answers verification questions correctly"
+
+    - step: 5
+      name: "Proceed to IVD flow"
+      description: "Now that user has the knowledge, continue with: discovery (if needed) → describe → AI writes intent → review → implement → verify"
+      reference: "framework.md Principle 6 workflow"
+
+educational_artifact_structure:
+  description: |
+    A structured YAML artifact (not prose) explaining a concept the user needs
+    to understand. This artifact is verifiable (includes questions to check
+    understanding) and follows Principle 5 (Layered Understanding).
+  
+  format: |
+    education:
+      concept: "[Concept name]"
+      
+      what_it_is: |
+        [Clear explanation of what this concept is, in 2-3 sentences]
+      
+      why_it_matters_here: |
+        [Why this concept is relevant to the user's current task/project]
+      
+      key_concepts:
+        - name: "[Sub-concept 1]"
+          definition: "[What this sub-concept is]"
+          example: "[Concrete example relevant to user's context]"
+        
+        - name: "[Sub-concept 2]"
+          definition: "[What this sub-concept is]"
+          example: "[Concrete example relevant to user's context]"
+      
+      tradeoffs:
+        - decision: "[Key decision user will need to make]"
+          options:
+            - name: "[Option A]"
+              when: "[When to use this option]"
+              pros: ["[Advantage 1]", "[Advantage 2]"]
+              cons: ["[Disadvantage 1]", "[Disadvantage 2]"]
+            
+            - name: "[Option B]"
+              when: "[When to use this option]"
+              pros: ["[Advantage 1]", "[Advantage 2]"]
+              cons: ["[Disadvantage 1]", "[Disadvantage 2]"]
+      
+      common_patterns:
+        - "[Pattern 1: brief description]"
+        - "[Pattern 2: brief description]"
+        - "[Pattern 3: brief description]"
+      
+      next_steps: |
+        [What happens next: discovery (if needed) → describe → intent → implement]
+      
+      verification:
+        - question: "[Question to test understanding of concept]"
+          answer: "[Expected answer]"
+        
+        - question: "[Question to test understanding of tradeoffs]"
+          answer: "[Expected answer]"
+  
+  example:
+    concept: "ETL (Extract, Transform, Load)"
+    what_it_is: |
+      ETL is a data pipeline pattern: Extract data from sources, Transform it to
+      match target schema/business rules, Load it into a destination system.
+      It's the standard pattern for moving data between systems.
+    
+    why_it_matters_here: |
+      Your project needs to move lead data from Salesforce to your analytics
+      warehouse daily. ETL is the standard pattern for this kind of data sync.
+    
+    key_concepts:
+      - name: "Extract"
+        definition: "Read data from source system (API, database, file)"
+        example: "Pull leads from Salesforce REST API using LastModifiedDate filter"
+      
+      - name: "Transform"
+        definition: "Apply business rules, normalize schema, enrich data"
+        example: "Convert Salesforce Status__c to your lead_stage enum; calculate lead_score"
+      
+      - name: "Load"
+        definition: "Write data to destination system"
+        example: "Insert/update rows in PostgreSQL analytics.leads table using UPSERT"
+    
+    tradeoffs:
+      - decision: "Batch vs Streaming"
+        options:
+          - name: "Batch (traditional ETL)"
+            when: "Daily/hourly sync is acceptable latency"
+            pros: ["Simpler", "Lower cost", "Easier debugging", "Can handle large volumes"]
+            cons: ["Data lag (minutes to hours)", "Not real-time", "Scheduled runs only"]
+          
+          - name: "Streaming (real-time)"
+            when: "Need sub-second latency, event-driven architecture"
+            pros: ["Real-time", "Event-driven", "Immediate visibility"]
+            cons: ["More complex", "Higher cost", "Harder to debug", "Need message queue"]
+      
+      - decision: "Incremental vs Full Refresh"
+        options:
+          - name: "Incremental"
+            when: "Large dataset, frequent updates"
+            pros: ["Faster (only changed records)", "Lower load on systems"]
+            cons: ["More complex", "Need tracking (LastModifiedDate, CDC)"]
+          
+          - name: "Full refresh"
+            when: "Small dataset, infrequent updates"
+            pros: ["Simpler", "No tracking needed", "Guaranteed consistency"]
+            cons: ["Slower", "Higher load", "Can't scale to large datasets"]
+    
+    common_patterns:
+      - "Incremental batch: daily sync using LastModifiedDate (most common)"
+      - "Full refresh nightly: replace all data (simple, for small datasets)"
+      - "CDC (Change Data Capture): stream changes as they happen (advanced, real-time)"
+      - "Idempotent loads: UPSERT or DELETE+INSERT to handle reruns safely"
+    
+    next_steps: |
+      Now that you understand ETL basics, we can:
+      1. Use discovery to pick the right pattern (batch incremental vs streaming vs full refresh)
+      2. You describe the specific requirements
+      3. I write the intent for the ETL workflow
+      4. Implement and verify
+    
+    verification:
+      - question: "What are the 3 steps of ETL?"
+        answer: "Extract (read from source), Transform (apply rules/normalize), Load (write to destination)"
+      
+      - question: "When would you use batch ETL vs streaming?"
+        answer: "Batch for daily/hourly sync (simpler, cheaper). Streaming for real-time/sub-second needs (more complex, event-driven)."
+      
+      - question: "What's the difference between incremental and full refresh?"
+        answer: "Incremental: only sync changed records (faster, needs tracking). Full refresh: replace all data (simpler, slower)."
+
+best_practices:
+  - "Keep educational artifacts FOCUSED: one concept at a time, not encyclopedia"
+  - "Use examples from user's actual project/context (not generic examples)"
+  - "Include verification questions to confirm understanding (Principle 2: Understanding Must Be Executable)"
+  - "After teaching, proceed to IVD flow (don't stop at education)"
+  - "If user already knows concept: skip teaching, go to discovery/intent"
+  - "For reverse engineering: add 'education' section to intent itself (contextual learning)"
+
+common_pitfalls:
+  - "Teaching when user already knows the concept (wastes time, tests patience)"
+  - "Long prose explanations instead of structured artifact (can't verify understanding)"
+  - "Generic examples unrelated to user's context (hard to apply)"
+  - "No verification (can't confirm user actually understands before proceeding)"
+  - "Teaching without proceeding to IVD flow (user learns but doesn't build anything)"
+
+# ------------------------------------------------------------------------------
+# REVERSE ENGINEERING USE CASE
+# ------------------------------------------------------------------------------
+
+reverse_engineering_pattern:
+  description: |
+    When AI writes intent from existing code (reverse engineering), the user
+    may not understand patterns/concepts the code uses. Add an 'education'
+    section to the intent itself so the user learns while reviewing.
+  
+  approach:
+    - "AI detects: intent references domain-specific patterns user may not know"
+    - "AI adds optional 'education' section to intent YAML"
+    - "User reads education section first, then reviews intent with new understanding"
+    - "If user still unclear: AI expands explanation or creates standalone educational artifact"
+  
+  example_intent_with_education:
+    intent:
+      summary: "Distributed transaction coordinator using Saga pattern"
+      goal: "Ensure payment + inventory + shipping either all succeed or all rollback"
+      
+      education:  # Optional section when user needs concept explanation
+        concepts:
+          - name: "Saga pattern"
+            definition: "Distributed transaction pattern: sequence of local transactions, each with compensating transaction for rollback"
+            why_here: "This code implements Saga to coordinate payment, inventory, shipping without distributed locks"
+            tradeoff: "Eventual consistency (no ACID) but scales horizontally"
+          
+          - name: "Compensating transaction"
+            definition: "Undo operation that reverses a completed step (e.g. refund payment, release inventory)"
+            why_here: "If shipping fails, compensating transactions refund payment and release inventory"
+        
+        next_steps: |
+          Review the constraints below. If Saga pattern is unclear, ask me to explain further.
+      
+      constraints:
+        # ... rest of intent ...
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  principle: "Principle 6: AI as Understanding Partner"
+  extension: "Teaching before intent (ivd_system_intent.yaml principle_6_ai_partner.extensions)"
+  framework_section: "framework.md → When the User Lacks Technical Knowledge: Teaching Before Intent"
+  implementation_guide: "framework.md → Step 0a: Teaching When You Don't Understand the Domain"
+  research: "research/teaching_before_intent.md"
+  related_patterns:
+    - "discovery-before-intent.yaml (for goal uncertainty, not knowledge gaps)"
+    - "Principle 5: Layered Understanding (educational artifacts follow this structure)"

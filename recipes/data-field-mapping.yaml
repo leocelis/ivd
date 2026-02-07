@@ -1,0 +1,350 @@
+# ==============================================================================
+# IVD Recipe: Data Field Mapping Pattern
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-01-26
+# Category: data_patterns
+# ==============================================================================
+
+recipe:
+  name: "Data Field Mapping Pattern"
+  version: "1.0"
+  category: "data_patterns"
+  created: "2026-01-26"
+  author: "IVD Framework Team"
+  
+  description: |
+    Optional pattern for documenting field mappings, data sources, and transformations
+    in integrations, ETL pipelines, data synchronization, and reporting systems.
+    
+    Makes explicit:
+    - Where each field comes from (source system, table, column, API)
+    - Where each field goes to (target system, table, column, API)
+    - How fields are transformed (if any)
+    - Data type conversions and validation rules
+    
+    This pattern supports IVD Principles 2 and 5:
+    - Principle 2: Field mappings are verifiable through schema checks and sample validation
+    - Principle 5: Layered understanding includes sources, transformations, and rationale
+    
+    Use this pattern when:
+    - Building integrations between systems (CRM ↔ internal DB, API ↔ database)
+    - Creating ETL pipelines or data synchronization workflows
+    - Documenting data contracts between services
+    - Field mapping errors are high-cost (wrong data, compliance issues)
+    
+    Skip this pattern when:
+    - No external data sources or targets (internal-only logic)
+    - Mapping is trivial (1:1 passthrough with no transformation)
+    - System has no data quality or compliance requirements
+  
+  applies_to:
+    - "API integrations (Salesforce, Stripe, HubSpot, etc.)"
+    - "ETL pipelines and data warehousing"
+    - "Database synchronization between systems"
+    - "Data import/export features"
+    - "Reporting and analytics data feeds"
+    - "Multi-system data workflows"
+  
+  when_to_use:
+    - "Integrating with external APIs or databases"
+    - "Field mapping is non-trivial (transformations, conversions, business rules)"
+    - "Wrong mapping causes bugs, data loss, or compliance issues"
+    - "Multiple developers need to understand or maintain the mapping"
+    - "AI agents need to modify or extend the integration"
+    - "Onboarding requires understanding data flow between systems"
+  
+  when_NOT_to_use:
+    - "Pure business logic with no external data (use module/task intent only)"
+    - "1:1 field passthrough with no transformation (no mapping complexity)"
+    - "Internal-only data structures (no integration or sync)"
+    - "Trivial data movement (copy entire object, no field-level concern)"
+
+  placement:
+    in_intent: "Optional `field_mapping` section in workflow-level or module-level intent"
+    when: "Intent describes data movement, integration, or transformation"
+    reference: "templates/intent.yaml field_mapping section (commented)"
+
+# ------------------------------------------------------------------------------
+# TEMPLATE: Field Mapping Section
+# ------------------------------------------------------------------------------
+
+field_mapping_template:
+  summary: "Brief description of what data is being mapped and why"
+  
+  sources:
+    - system: "[Source system name or identifier]"
+      type: "[database | api | file | stream]"
+      location: "[Table name, API endpoint, file path, or stream topic]"
+      access: "[How to access: connection string, API key reference, file mount]"
+      schema_reference: "[Link to schema doc, API spec, or DDL if available]"
+  
+  targets:
+    - system: "[Target system name or identifier]"
+      type: "[database | api | file | stream]"
+      location: "[Table name, API endpoint, file path, or stream topic]"
+      access: "[How to access: connection string, API key reference, file mount]"
+      schema_reference: "[Link to schema doc, API spec, or DDL if available]"
+  
+  mappings:
+    - source_field: "[source_system.table.column or API field path]"
+      target_field: "[target_system.table.column or API field path]"
+      transformation: "[none | description of transformation]"
+      data_type: "[source_type → target_type if different]"
+      required: true  # true | false
+      default_value: "[value if source is null/missing]"
+      validation: "[validation rules or constraints]"
+      example:
+        source: "[example source value]"
+        target: "[example target value after transformation]"
+      notes: "[any special handling, edge cases, or business rules]"
+  
+  business_rules:
+    - rule: "[Business rule that affects mapping]"
+      applies_to: "[which fields or conditions]"
+      rationale: "[why this rule exists]"
+  
+  transformations:
+    - name: "[transformation name or description]"
+      input_fields: ["[list of source fields used]"]
+      output_field: "[target field produced]"
+      logic: "[description or pseudocode of transformation]"
+      example: "[input values → output value]"
+  
+  verification:
+    schema_validation:
+      - check: "[What to validate: field exists, type matches, etc.]"
+        test: "[path/to/test or command to run]"
+        frequency: "[on deploy | on change | continuous]"
+    
+    sample_validation:
+      - description: "[What sample data to verify]"
+        test: "[path/to/test comparing sample source vs target]"
+        sample_path: "[path to sample data or test fixtures]"
+    
+    data_quality:
+      - metric: "[completeness | accuracy | consistency]"
+        target: "[threshold, e.g., >= 95% fields populated]"
+        monitor: "[dashboard or alert]"
+
+# ------------------------------------------------------------------------------
+# EXAMPLE: Salesforce Integration
+# ------------------------------------------------------------------------------
+
+example:
+  summary: "Lead qualification workflow syncing qualified leads to Salesforce CRM"
+  
+  sources:
+    - system: "internal_db"
+      type: "database"
+      location: "leads table"
+      access: "postgres://app_user@db.internal:5432/production"
+      schema_reference: "db/schema/leads.sql"
+  
+  targets:
+    - system: "salesforce"
+      type: "api"
+      location: "Lead object via REST API"
+      access: "Salesforce credentials in env: SALESFORCE_API_KEY"
+      schema_reference: "https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_lead.htm"
+  
+  mappings:
+    - source_field: "internal_db.leads.email"
+      target_field: "salesforce.Lead.Email"
+      transformation: "none"
+      data_type: "string → string"
+      required: true
+      validation: "must be valid email format"
+      example:
+        source: "john.doe@example.com"
+        target: "john.doe@example.com"
+    
+    - source_field: "internal_db.leads.company_name"
+      target_field: "salesforce.Lead.Company"
+      transformation: "none"
+      data_type: "string → string"
+      required: true
+      validation: "length >= 1"
+      example:
+        source: "Acme Corp"
+        target: "Acme Corp"
+    
+    - source_field: "internal_db.leads.score"
+      target_field: "salesforce.Lead.Lead_Score__c"
+      transformation: "round(score * 100)"
+      data_type: "float → integer (custom field)"
+      required: true
+      validation: "range 0-100"
+      example:
+        source: 0.87
+        target: 87
+      notes: "Salesforce custom field expects integer 0-100; internal score is 0.0-1.0"
+    
+    - source_field: "internal_db.leads.created_at"
+      target_field: "salesforce.Lead.LeadSource"
+      transformation: "map to 'Website' if source is web form, 'API' if source is integration"
+      data_type: "timestamp → string (enum)"
+      required: false
+      default_value: "Other"
+      example:
+        source: "2026-01-24T10:00:00Z (from web form)"
+        target: "Website"
+  
+  business_rules:
+    - rule: "Only sync leads with qualified=true"
+      applies_to: "all mappings"
+      rationale: "Sales team only wants qualified leads in Salesforce"
+    
+    - rule: "Lead owner set to round-robin assigned rep"
+      applies_to: "salesforce.Lead.OwnerId"
+      rationale: "Distribute leads evenly across sales team"
+  
+  transformations:
+    - name: "Score normalization"
+      input_fields: ["internal_db.leads.score"]
+      output_field: "salesforce.Lead.Lead_Score__c"
+      logic: "round(score * 100)"
+      example: "0.87 → 87"
+    
+    - name: "Lead source mapping"
+      input_fields: ["internal_db.leads.source_type"]
+      output_field: "salesforce.Lead.LeadSource"
+      logic: |
+        if source_type == 'web_form': return 'Website'
+        elif source_type == 'api': return 'API'
+        else: return 'Other'
+      example: "'web_form' → 'Website'"
+  
+  verification:
+    schema_validation:
+      - check: "Salesforce Lead object has all required fields (Email, Company, Lead_Score__c)"
+        test: "tests/test_salesforce_schema.py::test_required_fields_exist"
+        frequency: "on deploy"
+      
+      - check: "Internal leads table has all source fields"
+        test: "tests/test_leads_schema.py::test_source_fields_exist"
+        frequency: "on deploy"
+    
+    sample_validation:
+      - description: "Compare 10 random synced leads: internal DB vs Salesforce"
+        test: "tests/test_sync_accuracy.py::test_sample_leads_match"
+        sample_path: "tests/fixtures/sample_leads.json"
+      
+      - description: "Verify score transformation (0.0-1.0 → 0-100) on sample data"
+        test: "tests/test_transformations.py::test_score_normalization"
+        sample_path: "tests/fixtures/sample_scores.csv"
+    
+    data_quality:
+      - metric: "completeness"
+        target: ">= 95% of synced leads have all required fields populated"
+        monitor: "dashboard: /monitoring/salesforce_sync"
+      
+      - metric: "accuracy"
+        target: "100% of scores in range 0-100 (no out-of-range values)"
+        monitor: "alert on Salesforce API validation errors"
+
+# ------------------------------------------------------------------------------
+# CONSTRAINTS TO VERIFY
+# ------------------------------------------------------------------------------
+
+constraints_template:
+  - name: "schema_conformance"
+    requirement: "All source and target fields exist in their respective schemas"
+    test: "tests/test_schema_conformance.py::test_all_fields_exist"
+    consequence_if_violated: "Runtime errors on missing fields; data loss"
+  
+  - name: "transformation_correctness"
+    requirement: "All transformations produce valid target data types and values"
+    test: "tests/test_transformations.py::test_all_transformations"
+    consequence_if_violated: "Data corruption; API validation errors; failed sync"
+  
+  - name: "sample_data_accuracy"
+    requirement: "Sample source data produces expected target data after mapping"
+    test: "tests/test_mapping.py::test_sample_data_round_trip"
+    consequence_if_violated: "Wrong data in target system; user-facing bugs"
+  
+  - name: "required_fields_populated"
+    requirement: "All fields marked required=true are populated in target"
+    test: "tests/test_required_fields.py::test_no_null_required_fields"
+    consequence_if_violated: "Sync failures; incomplete records; compliance gaps"
+
+# ------------------------------------------------------------------------------
+# RATIONALE
+# ------------------------------------------------------------------------------
+
+rationale:
+  decision: "Add optional field_mapping section for data-heavy intents"
+  
+  reasoning: |
+    Field mapping and data sources are often undocumented or only in prose, leading to:
+    - Bugs from wrong or outdated mappings
+    - Slow onboarding (developers reverse-engineer mappings from code)
+    - AI agents can't understand or modify integrations
+    - Compliance risks from unclear data lineage
+    
+    This pattern makes mappings:
+    - Explicit (source → target, transformation, validation)
+    - Verifiable (schema checks, sample validation, data quality tests)
+    - Discoverable (in intent artifact alongside workflow/module)
+    
+    Fits IVD model:
+    - Intent: "These fields map thus; these are the sources and targets"
+    - Constraints: "Mapping is correct" → test via schema and sample checks
+    - Verification: Automated checks catch mapping errors before production
+    
+    Optional section (not mandatory): only for intents where mapping matters.
+  
+  evidence: "Real failure modes in integrations, ETL, and sync systems; gap analysis in IVD framework"
+  date: "2026-01-26"
+  stakeholder: "IVD Framework Team"
+
+alternatives:
+  - name: "Keep mapping in prose (workflow business_logic or notes)"
+    rejected_because: "Prose is not verifiable; AI can't parse or validate; mapping errors stay hidden until runtime"
+    when_it_works: "Trivial 1:1 mapping with no risk; one-time script with no maintenance"
+  
+  - name: "Separate mapping document outside intent"
+    rejected_because: "Separate docs drift from code; intent should be single source of truth for what the artifact does"
+    when_it_works: "Legacy systems with existing mapping docs; intent references the external doc"
+  
+  - name: "Add 'Data' level (fifth level after System/Workflow/Module/Task)"
+    rejected_because: "Not a granularity (level); it's a kind of content (section). Most intents don't need it."
+    when_it_works: "Never; mapping is a section, not a level"
+
+# ------------------------------------------------------------------------------
+# IMPLEMENTATION
+# ------------------------------------------------------------------------------
+
+implementation:
+  status: "canonical"
+  version: 1
+  
+  integration:
+    template: "templates/intent.yaml includes commented field_mapping section"
+    framework_docs: "framework.md documents optional section and when to use it"
+    levels_guide: "intent_levels_guide.md mentions this recipe for workflow/module data intents"
+    system_intent: "ivd_system_intent.yaml allows optional sections per this recipe"
+  
+  verification:
+    - check: "Recipe follows recipe-spec.yaml structure"
+      test: "Manual review against recipe-spec.yaml"
+    
+    - check: "Example is complete and realistic"
+      test: "Salesforce integration example has all template sections"
+    
+    - check: "Recipe is referenced in framework docs"
+      test: "framework.md, intent_levels_guide.md, recipes/README.md list this recipe"
+    
+    - check: "Recipe is used in workflow example"
+      test: "templates/examples/workflow-lead-qualification-example.yaml includes field_mapping section for Step 5 (Salesforce sync)"
+
+# ------------------------------------------------------------------------------
+# CHANGELOG
+# ------------------------------------------------------------------------------
+
+changelog:
+  - version: "1.0"
+    date: "2026-01-26"
+    change: "Initial recipe for data field mapping pattern"
+    reason: "Gap in IVD framework: field mapping and sources only in prose; no structured, verifiable way to document data contracts"
+    evidence: "Framework review and use case analysis (integrations, ETL, sync)"

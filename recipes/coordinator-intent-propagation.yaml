@@ -1,0 +1,312 @@
+# ==============================================================================
+# IVD Recipe: Coordinator Intent Propagation Pattern
+# ==============================================================================
+# Pattern for how intent flows from human → coordinator → specialist agents
+# in multi-agent architectures.
+#
+# Reference: research/coordinator_agent_design_patterns.md
+# Version: 1.0
+# Created: 2026-01-26
+# ==============================================================================
+
+recipe:
+  name: "Coordinator Intent Propagation"
+  version: "1.0"
+  category: "agent_patterns"
+  created: "2026-01-26"
+  
+  description: |
+    In multi-agent systems, a coordinator receives user intent and delegates 
+    to specialist agents. This pattern defines how intent artifacts propagate:
+    
+    Human → Coordinator Intent → Agent-level Intents
+    
+    The coordinator interprets the user's request and produces either:
+    1. A single intent for one specialist agent
+    2. Multiple intents for orchestrated workflow across agents
+    
+  problem_solved: |
+    Coordination errors from ambiguous user requests. Without structured intent 
+    at the coordinator level, the coordinator guesses which agent to route to 
+    and what parameters to pass. Many turns ensue.
+    
+  applies_to:
+    - "Multi-agent systems with coordinator/orchestrator"
+    - "Systems with specialized domain agents"
+    - "Workflow orchestration across multiple agents"
+    
+  when_to_use:
+    - "Building coordinator that routes to 2+ specialist agents"
+    - "User requests span multiple agent capabilities"
+    - "Coordination errors are causing many turns"
+    
+  when_NOT_to_use:
+    - "Single-agent systems"
+    - "Direct tool calls without orchestration"
+    - "Simple routing that doesn't need structured intent"
+
+# ==============================================================================
+# CORE PRINCIPLE
+# ==============================================================================
+
+core_principle:
+  statement: "Tools are truth, history is context"
+  explanation: |
+    Your tools list defines what you CAN do.
+    Chat history tells you what was DISCUSSED.
+    
+    To know current system state → CALL A TOOL
+    To know what user wants → READ THEIR REQUEST + CHAT HISTORY FOR CONTEXT
+  
+  key_insight: |
+    Most coordinator failures stem from conflating chat history (context for 
+    understanding user intent) with system state (requiring tool calls to verify).
+
+# ==============================================================================
+# INTENT PROPAGATION PATTERN
+# ==============================================================================
+
+intent_propagation:
+  overview: |
+    Intent flows from human through coordinator to specialist agents.
+    At each delegation point, structured intent is written.
+    
+  steps:
+    - step: 1
+      action: "User describes request"
+      format: "Natural language"
+      example: "Show me sales trends for top customers and check their support tickets"
+      
+    - step: 2
+      action: "Coordinator AI writes coordinator-level intent"
+      content:
+        - "Which agent(s) to route to"
+        - "What each agent should accomplish"
+        - "How results will be combined"
+      
+    - step: 3
+      action: "For each agent, coordinator writes agent-level intent"
+      content:
+        - "Specific task for that agent"
+        - "Constraints and success criteria"
+        - "How to verify completion"
+        
+    - step: 4
+      action: "Agents implement against their intents"
+      verification: "Each agent verifies its output against constraints"
+      
+    - step: 5
+      action: "Coordinator synthesizes verified results"
+      verification: "Combined result satisfies original user request"
+
+# ==============================================================================
+# EXAMPLE: MULTI-AGENT QUERY
+# ==============================================================================
+
+example:
+  scenario: "User asks about customers across multiple domains"
+  
+  user_request: "Show me sales trends for top customers and check their support tickets"
+  
+  coordinator_intent:
+    summary: "Multi-agent query: sales trends + support tickets for top customers"
+    agents_needed:
+      - agent: "sales_intelligence"
+        task: "Get sales trends for top 10 customers by revenue"
+        reason: "User asked for 'sales trends' - sales domain"
+      - agent: "customer_support"
+        task: "Get open support tickets for those same customers"
+        reason: "User asked for 'support tickets' - support domain"
+    synthesis:
+      strategy: "Combine sales trends with support status for each customer"
+      output: "Table showing customer, sales trend, open ticket count"
+      
+  agent_intents:
+    - agent: "sales_intelligence"
+      intent:
+        summary: "Get sales trends for top 10 customers by revenue"
+        constraints:
+          - name: "top_customers"
+            requirement: "Return top 10 by total revenue"
+            verification: "Results sorted by revenue, limited to 10"
+          - name: "trend_data"
+            requirement: "Include trend direction (up/down/flat)"
+            verification: "Each customer has trend field"
+        success_criteria:
+          - "Results include: customer_id, customer_name, total_revenue, trend"
+          - "Exactly 10 customers returned"
+          
+    - agent: "customer_support"
+      intent:
+        summary: "Get open support tickets for specified customers"
+        constraints:
+          - name: "customer_filter"
+            requirement: "Filter by customer_ids from sales agent"
+            verification: "Only customers from sales result included"
+          - name: "ticket_status"
+            requirement: "Only open tickets (not closed/resolved)"
+            verification: "All tickets have status='open'"
+        success_criteria:
+          - "Results include: customer_id, ticket_count, max_severity"
+          - "Tickets filtered to open status only"
+
+# ==============================================================================
+# ACTION DETECTION RULES
+# ==============================================================================
+
+action_detection:
+  purpose: "Help coordinator distinguish conversation from action requests"
+  
+  rules:
+    - name: "Verb Test"
+      rule: |
+        If user message contains action verb (generate, create, show, get, 
+        fetch, run, execute, update, delete, check), it's likely an action.
+      examples:
+        action: ["Show me the data", "Generate a report", "Delete old records"]
+        conversation: ["I'm thinking about the data", "Tell me about reports"]
+        
+    - name: "Current State Test"
+      rule: |
+        If the answer requires knowing current system state (does X exist? 
+        what is the URL?), it requires a tool call.
+      examples:
+        needs_tool: ["What's the status of order 123?", "Does that file exist?"]
+        no_tool: ["What should order statuses be?", "How do files work?"]
+        
+    - name: "Data Retrieval Test"
+      rule: |
+        If user asks for specific data (ID, URL, file, image, record), 
+        call the appropriate retrieval tool.
+      examples:
+        retrieval: ["Get me article 22777", "Show the image for that record"]
+        
+    - name: "Verify Override"
+      rule: |
+        Even if chat history contains the answer, if the request is about 
+        current state, call the tool to verify. Never trust history for facts.
+
+# ==============================================================================
+# KEY PRINCIPLES
+# ==============================================================================
+
+key_principles:
+  - name: "Tools are truth, history is context"
+    rule: "Coordinator uses tools to verify current state, never assumes from chat history"
+    anti_pattern: "Returning file path from chat history without calling tool to verify it exists"
+    reference: "research/COORDINATOR_AGENT_DESIGN_PATTERNS.md"
+    
+  - name: "Intent at every routing decision"
+    rule: "Before routing to an agent, coordinator writes what that agent should accomplish"
+    anti_pattern: "Coordinator routes with vague 'handle this' instruction"
+    
+  - name: "Verify before synthesize"
+    rule: "Each agent verifies its output before coordinator combines results"
+    anti_pattern: "Coordinator combines unverified outputs"
+    
+  - name: "Orchestrator never executes"
+    rule: "The coordinator routes and synthesizes; it doesn't execute work itself"
+    anti_pattern: "Coordinator answering data questions from memory instead of routing to agent"
+
+# ==============================================================================
+# COMMON FAILURES AND SOLUTIONS
+# ==============================================================================
+
+common_failures:
+  - name: "Chat History Poisoning"
+    description: "Coordinator returns data from chat history instead of calling tool"
+    example: |
+      Chat history: "File path is images/generated/xyz.png"
+      User: "Show me the image"
+      BAD: Coordinator returns path from history
+      GOOD: Coordinator calls image retrieval tool
+    solution: "Treat chat history as topics discussed, not facts to return"
+    
+  - name: "False Negative from History"
+    description: "Coordinator refuses action because history says it failed before"
+    example: |
+      Chat history: "Assistant said: I don't have access to images"
+      User: "Show me the image" (tool WAS added since then)
+      BAD: "As I mentioned, I don't have access..."
+      GOOD: Check current tool list, call tool if available
+    solution: "History shows what was discussed, not current capabilities"
+    
+  - name: "Ambiguous Routing"
+    description: "Coordinator picks wrong agent due to unclear user request"
+    example: |
+      User: "Check the customer"
+      BAD: Routes to random agent, wrong context
+      GOOD: Ask clarifying question: "Check customer for sales data or support tickets?"
+    solution: "When request is ambiguous, ask ONE clarifying question"
+
+# ==============================================================================
+# IMPLEMENTATION TEMPLATE
+# ==============================================================================
+
+implementation:
+  coordinator_prompt_structure: |
+    ### CORE PRINCIPLE: TOOLS ARE TRUTH, HISTORY IS CONTEXT
+    [One clear statement of the principle]
+    
+    ### AVAILABLE AGENTS
+    [List of specialist agents with their capabilities]
+    
+    ### TOOL CALLING
+    [When to call tools - action verbs, current state queries]
+    
+    ### AGENT SELECTION
+    [How to choose which specialist agent to route to]
+    
+    ### CONVERSATIONAL CONTEXT
+    [Frame chat history explicitly as "what was discussed, not what IS"]
+    
+  chat_history_framing: |
+    ### CONVERSATIONAL CONTEXT (FOR UNDERSTANDING USER INTENT ONLY)
+    
+    **CRITICAL:** The information below is what was DISCUSSED, not what IS.
+    - To understand what the user wants → read this context
+    - To get current system state → call the appropriate tool
+    - NEVER answer data/retrieval requests from this context - always call tools
+    
+    **Previous Discussion Topics:**
+    {summary}
+    
+    **Recent Conversation:**
+    {history}
+
+# ==============================================================================
+# VALIDATION CHECKLIST
+# ==============================================================================
+
+validation:
+  checklist:
+    - "[ ] Coordinator never returns data directly from chat history"
+    - "[ ] Every action request triggers a tool call"
+    - "[ ] Each agent receives structured intent, not vague instructions"
+    - "[ ] Agent outputs are verified before synthesis"
+    - "[ ] Ambiguous requests trigger clarifying questions (ONE question)"
+    - "[ ] Chat history is framed as 'topics discussed' in prompt"
+    
+  test_scenarios:
+    - scenario: "User asks for data that's in chat history"
+      expected: "Coordinator calls tool to get current data"
+      
+    - scenario: "User asks vague multi-domain question"
+      expected: "Coordinator writes intents for multiple agents, synthesizes"
+      
+    - scenario: "User references capability that was unavailable before"
+      expected: "Coordinator checks current tools, doesn't refuse based on history"
+
+# ==============================================================================
+# REFERENCES
+# ==============================================================================
+
+references:
+  internal:
+    - "research/coordinator_agent_design_patterns.md"
+    - "_private/ai_driven_development_guide.md (The Coordinator Pattern)"
+    - "recipes/workflow-orchestration.yaml"
+  external:
+    - "OpenAI Agents Documentation (2026) - Tool-First Architecture"
+    - "Microsoft Magentic-One - Multi-agent Orchestration"
+    - "LangGraph Documentation - Routing Decision Trees"

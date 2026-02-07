@@ -1,0 +1,2171 @@
+# Intent-Verified Development (IVD): The Framework for the AI Agents Era
+
+**Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
+**Status:** Production Ready  
+**Version:** 1.3  
+**Created:** January 23, 2026  
+**Updated:** January 31, 2026 (Explicit scope: any AI-produced artifact, not just code)
+
+> **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
+
+---
+
+## Table of Contents
+
+1. [The Evolution](#the-evolution)
+2. [Core Principles](#core-principles)
+3. [Intent Artifacts](#intent-artifacts)
+4. [Feature Inventory (Large Projects)](#feature-inventory-large-projects)
+5. [Recipes (NEW in v1.1)](#recipes-reusable-patterns)
+6. [Verification System](#verification-system)
+7. [Implementation Guide](#implementation-guide)
+8. [Real-World Example](#real-world-example)
+9. [Comparison Matrix](#comparison-matrix)
+10. [Extending IVD Framework](#extending-ivd-framework)
+
+---
+
+## The Evolution
+
+### From Traditional to IVD
+
+**Traditional Development:**
+```
+Human writes requirements (PRD, user story) → Human developer implements
+```
+*Worked when humans asked clarifying questions. AI doesn't ask—it guesses.*
+
+**Literate Programming (Knuth, 1984):**
+```
+Write explanation → Write code matching it → Tools verify format
+```
+*Beautiful for human readers. AI cannot verify prose.*
+
+**AI-Assisted Development (Current Default):**
+```
+Human writes prompt → AI guesses intent → Builds wrong → Many turns of correction
+```
+*The many-turns and hallucinations problem.*
+
+**Intent-Verified Development (AI Agents Era):**
+```
+Human describes → AI writes intent → AI implements → AI verifies → Done first try
+```
+*The AI writes the intent, implements against it, catches its own hallucinations.*
+
+---
+
+## Core Principles
+
+### Principle 1: Intent is Primary
+
+**Not code. Not documentation. Not prompts. Structured intent.**
+
+```
+HUMAN DESCRIBES (natural language)
+    ↓
+AI WRITES INTENT (structured YAML)
+    ↓
+┌───────────────────────────────────┐
+│ AI Produces:                       │
+│ • Implementation (code, docs, etc.)│
+│ • Tests (verification)             │
+│ • Documentation (explanation)      │
+└───────────────────────────────────┘
+    ↓
+AI VERIFIES: Does output match intent constraints?
+```
+
+**Scope:** Code, architecture, documentation, research, books, processes—any AI-produced artifact.
+
+**Why:**
+- Prompts are informal—AI guesses, hallucinates
+- PRDs/user stories are prose—AI reads and guesses
+- Structured intent is verifiable—AI writes, implements, verifies
+
+---
+
+### Principle 2: Understanding Must Be Executable
+
+**Prose documentation can be wrong. Executable understanding fails loudly.**
+
+**Traditional:**
+```python
+def qualify_lead(score: float) -> bool:
+    """Returns True if score >= 0.70"""
+    return score >= 0.70
+```
+
+**Intent-Verified:**
+```python
+@intent("Qualify leads with score >= 0.70")
+@constraint("precision >= 0.80")
+@constraint("recall >= 0.60")
+@validates_with("tests/test_lead_qualification.py")
+def qualify_lead(score: float) -> bool:
+    return score >= 0.70
+```
+
+**The decorators are executable:**
+- `@intent` declares what this should do
+- `@constraint` declares what must hold true
+- `@validates_with` links to tests that verify
+
+**System can check:** Do tests verify the constraints? Does implementation match intent?
+
+---
+
+### Principle 3: Bidirectional Synchronization
+
+**One-way flow (Knuth):** Literate source → tangled code + woven docs
+
+**Bidirectional (IVD):** Any change propagates to others, with verification
+
+```
+        INTENT
+       ↗  ↑  ↖
+      /   |   \
+     ↓    |    ↓
+  CODE ←→ | ←→ DOCS
+     ↓    |    ↓
+      \   |   /
+       ↘  ↓  ↙
+    VERIFICATION
+```
+
+**When threshold changes from 0.70 to 0.75:**
+1. System detects: "Intent says 0.70, code now says 0.75"
+2. System asks: "Update intent? Or revert code?"
+3. If intent updates → Docs regenerate, tests rerun
+4. If code reverts → Implementation restored to match intent
+
+---
+
+### Principle 4: Continuous Understanding Verification
+
+**Static docs become stale on day 2. Verify continuously.**
+
+```bash
+$ ada verify lead_qualifier
+
+Checking: agent/lead_qualifier/
+✅ Intent artifact found: lead_qualifier_intent.yaml
+✅ Implementation matches intent: threshold = 0.70
+✅ Constraints satisfied:
+   - precision = 0.85 (>= 0.80) ✓
+   - recall = 0.70 (>= 0.60) ✓
+✅ Evidence is current: playground/lead_analysis_2025-12.ipynb (recently run)
+✅ Tests passing: 12/12 ✓
+⚠️  Risk alert: precision at 0.82, approaching minimum threshold
+
+UNDERSTANDING VERIFIED ✓
+```
+
+**Every PR, every deploy, every change:** Verify understanding still matches reality.
+
+---
+
+### Principle 5: Layered Understanding
+
+**Not just "WHY" - multiple layers, each verifiable:**
+
+```
+Layer 1: INTENT
+"Qualify high-probability leads for sales team"
+→ Executable as: acceptance criteria, business metrics
+
+Layer 2: CONSTRAINTS  
+"Must maintain precision >= 0.80 and recall >= 0.60"
+→ Executable as: property-based tests, invariants
+
+Layer 3: RATIONALE
+"0.70 threshold chosen based on Dec 2025 experiment"
+→ Executable as: link to notebook that can be re-run
+
+Layer 4: ALTERNATIVES
+"Considered 0.60 (rejected: too many false positives) and 0.80 (rejected: insufficient volume)"
+→ Executable as: comparison experiments still runnable
+
+Layer 5: RISKS
+"If precision drops below 0.75, sales quality suffers"
+→ Executable as: monitoring alerts, rollback triggers
+```
+
+**Each layer is verifiable, not just readable.**
+
+---
+
+### Principle 6: AI as Understanding Partner
+
+**The AI writes the intent, implements against it, and verifies—not just syncs.**
+
+This is the key principle for the AI Agents era:
+
+```
+You: "Add export to CSV for admin compliance reporting"
+
+AI: "I'll write the intent artifact first."
+    [Writes structured YAML with constraints and tests]
+    
+AI: "Here's the intent I wrote:
+     - Summary: Export user data to CSV for admin compliance
+     - Constraints: admin_only, column_schema, date_format, performance
+     - Tests: test_admin_required, test_column_schema, etc.
+     
+     Does this capture what you meant?"
+
+You: "Yes, exactly."
+
+AI: [Implements against intent, runs tests, all pass]
+    "Done. All constraints verified."
+```
+
+**The workflow:**
+1. Human describes (natural language)
+2. AI writes intent (structured YAML)
+3. Human reviews intent (clarification before code)
+4. AI implements against intent
+5. AI verifies (catches hallucinations)
+
+**Why this matters:** Clarification at intent stage, not after code. Turns drop to one.
+
+### When the User Lacks Technical Knowledge: Teaching Before Intent
+
+Sometimes the user lacks the technical knowledge to understand domain concepts, patterns, or technologies needed for the task. They can't review intent if they don't understand what "ETL," "Saga pattern," or "CDC" means. They can't evaluate discovery options if the terminology is unfamiliar.
+
+**This is the critical bottleneck:** Lack of technical knowledge blocks the entire IVD flow before it can even start.
+
+**When to use:** User says "I don't know what X is," user can't evaluate discovery options because they don't understand the terms, reverse engineering (AI writes intent from existing code but user can't review patterns they haven't seen), or user is new to domain/codebase.
+
+**Pattern (Step 0a):**
+1. AI detects knowledge gap (user asks explicitly, or AI detects from language/context).
+2. AI offers: "Would you like me to explain [concept] first?"
+3. AI creates **structured educational artifact** (YAML with verification questions) explaining: what the concept is, why it matters here, key sub-concepts, tradeoffs, common patterns.
+4. User reviews, asks clarifying questions, confirms understanding (verification questions check).
+5. Standard flow: discovery (if needed) → describe → AI writes intent → review → implement → verify.
+
+**Example:** User needs ETL but doesn't know what ETL is → AI creates educational artifact explaining Extract/Transform/Load, batch vs streaming, incremental vs full refresh, with verification questions → user understands → then discovery (which ETL pattern?) → describe → intent.
+
+**Tools:** Use `ivd_teach_concept` to create educational artifact. **Recipe:** `recipes/teaching-before-intent.yaml`. **Research:** `research/teaching_before_intent.md`.
+
+**For reverse engineering:** When AI writes intent from existing code, add an optional `education` section to the intent itself so the user learns domain patterns while reviewing.
+
+**This is Principle 6 (AI as understanding partner):** the AI helps the user gain the knowledge they need before they can participate in the IVD flow.
+
+### When the User Cannot Yet Describe: Discovery Before Intent *(Experimental)*
+
+Sometimes the user doesn't have enough knowledge to give clear instructions or know what to ask—new to the domain, unfamiliar with the codebase, or unsure of the goal. IVD still applies: use an optional **discovery step** before "Human describes."
+
+> **Status: Experimental** — This pattern is being validated. Use it and report results to help promote it to canonical.
+
+**When to use:** User says "I'm not sure what we need," or the problem is in a new domain, or the user is exploring.
+
+**Pattern:**
+1. AI proposes 2–3 candidate goals or patterns (e.g. from recipes, existing features in the repo, or inversion ideas).
+2. AI summarizes each option in one line with a short tradeoff.
+3. User picks or narrows ("that one, but for compliance not sales").
+4. Standard flow: user describes (now with a direction) → AI writes intent → review → implement → verify.
+
+**Tools:** Use `ivd_discover_goal` (or list recipes + list features) to gather options; then proceed to intent writing. **Recipe:** `recipes/discovery-before-intent.yaml`. **Research:** `research/discovery_before_intent.md`.
+
+This is still Principle 6 (AI as understanding partner)—the AI helps the user form intent when they can't yet articulate it.
+
+### Early Verification: Linguistic Mirroring
+
+Before formal constraint tests, you can detect misalignment through **linguistic mirroring**.
+
+**The pattern:** When the AI echoes your key terms in its response, it signals alignment. When it substitutes different terminology, it signals potential misalignment.
+
+```
+✅ ALIGNED (AI echoes key terms):
+Human: "Add admin compliance CSV export with ISO dates"
+AI: "I'll write the intent for the admin compliance CSV export.
+     Constraints: admin_only, ISO 8601 date format..."
+     
+❌ MISALIGNED (AI substitutes terms):
+Human: "Add admin compliance CSV export with ISO dates"
+AI: "I'll create a data dump feature for users..."
+```
+
+**Why this works:** The AI's choice of vocabulary reveals its internal understanding. If it understood "admin compliance", it will use those words. If it generalized to "users" or "data dump", it filled a gap incorrectly.
+
+**When to use:** 
+- During the "AI writes intent" step
+- Before running formal constraint tests
+- As a quick sanity check in conversation
+
+**This is not a replacement for verification.** It's an early signal. Formal constraint tests (Principle 2) are still required.
+
+### Principle 6 in Multi-Agent Systems
+
+When multiple agents collaborate, Principle 6 applies at every level:
+
+```
+Human describes
+    ↓
+Coordinator AI writes COORDINATOR INTENT
+    ├─→ What agents to route to
+    ├─→ What each should accomplish
+    └─→ How to synthesize results
+    ↓
+For each agent, Coordinator writes AGENT INTENT
+    ├─→ Specific task
+    ├─→ Constraints
+    └─→ Verification criteria
+    ↓
+Each Agent implements against its intent
+    ↓
+Each Agent verifies its output
+    ↓
+Coordinator synthesizes verified results
+```
+
+**The key insight:** Intent doesn't stop at the coordinator. The coordinator produces intent artifacts for each specialist agent. This prevents "coordination errors" where the coordinator routes correctly but passes wrong parameters.
+
+**Core principle:** Tools are truth, history is context. The coordinator uses tools to verify current state—never assumes from chat history.
+
+**Recipe:** `recipes/coordinator-intent-propagation.yaml`
+**Research:** `research/coordinator_agent_design_patterns.md`
+
+---
+
+### Principle 7: Understanding Survives Implementation
+
+**Implementation changes. Languages change. Intent persists.**
+
+```yaml
+# lead_qualifier_intent.yaml v3
+
+intent:
+  goal: "Qualify high-probability leads for sales team"
+  success_metric: "Sales conversion rate >= 15%"
+
+constraints:
+  - precision >= 0.80
+  - recall >= 0.60
+
+implementation_history:
+  - version: 1
+    language: Python
+    approach: "Rule-based thresholds"
+    deprecated: "2025-11-01"
+    reason: "Too brittle for changing data"
+  
+  - version: 2
+    language: Python
+    approach: "ML classifier"
+    deprecated: "2025-12-15"
+    reason: "Overfitting, poor generalization"
+  
+  - version: 3 (current)
+    language: Python
+    approach: "Statistical threshold with data quality gate"
+    file: "agent/lead_qualifier/scoring.py"
+    
+rationale:
+  decision: "threshold = 0.70"
+  evidence: "playground/lead_analysis_2025-12.ipynb"
+  stakeholder: "VP Sales, approved 2025-12-15"
+```
+
+**When you rewrite in Go, or replace with vendor service, intent transfers.**
+
+---
+
+### Principle 8: Innovation through Inversion
+
+**Innovation comes from inverting dominant beliefs—state the default, invert it, evaluate, implement.**
+
+The conventional way to solve a problem is often a "dominant belief." By explicitly stating the default and considering the *opposite* approach, we surface non-obvious solutions. IVD supports this with:
+
+1. **State the Default:** What is the conventional or obvious way to solve this?
+2. **Invert:** What would the opposite approach look like?
+3. **Evaluate:** Is the inversion promising? (pros, cons, feasibility)
+4. **Implement:** If chosen, capture in intent (e.g. `inversion_opportunities`) and verify.
+
+Intent artifacts can include an optional **inversion_opportunities** block: problem, dominant belief(s), and proposed inversions with rationale and status (chosen | rejected | deferred). Use the **ivd_propose_inversions** MCP tool to brainstorm inversions; then document chosen/rejected ones in the intent.
+
+**When to use Principle 8:**
+- **Use** when you are *designing* (new or major intent): the problem has a conventional or "obvious" approach, and you care about performance, scale, security, or maintainability. Apply before locking the design.
+- **Skip** when the change is small (bug fix, config, refactor), when there is no clear default approach, or when the obvious solution is good enough and you are not optimizing for alternatives.
+
+---
+
+## Intent Artifacts
+
+### What is an Intent Artifact?
+
+A **structured, version-controlled file** that declares:
+- What the system should do (goal)
+- Why it should do it (rationale)
+- What constraints must hold (requirements)
+- What alternatives were rejected (context)
+- What risks exist (monitoring needs)
+
+**Format:** YAML (structured, readable, diffable, version-controllable)
+
+---
+
+### Intent Artifact Schema
+
+```yaml
+# {module}_intent.yaml
+
+# Reference parent intent (for workflow/module/task that's part of larger system)
+# Recommended for all non-system intents to establish hierarchy
+parent_intent: "../../system_intent.yaml"  # Relative path to parent
+# Examples:
+#   Task → Module: "../{module}_intent.yaml"
+#   Module → Workflow: "../../workflows/{workflow}_intent.yaml"
+#   Module → System: "../../system_intent.yaml"
+#   Workflow → System: "../system_intent.yaml"
+
+# WHAT should this do?
+intent:
+  summary: "One-line description"
+  goal: "Detailed explanation of purpose"
+  success_metric: "How to measure success"
+  stakeholders: ["Who cares about this"]
+
+# OPTIONAL: Project context (SYSTEM-LEVEL ONLY - for existing projects)
+# project_context:
+#   code_rules: [{path, description}]        # .cursorrules, lint configs
+#   architecture: [{path, description}]      # ARCHITECTURE.md, ADRs, principles
+#   tools_scripts: [{path, description}]     # Key scripts, CLIs, utilities
+#   libraries_reuse: [{library, when_to_use}] # Shared internal libraries
+#   key_paths:                               # "Map to the stars"
+#     entrypoints: [{path, description}]     # API main, worker entry
+#     modules: [{path, description}]         # agent/, entity/, integrations/
+#     workflows: [{path, description}]       # workflows/
+#     docs: [{path, description}]            # docs/, runbooks/
+#     tests: [{path, description}]           # tests/
+#   existing_docs: [{path, description}]     # README, API.md, CONTRIBUTING
+
+# OPTIONAL: Feature inventory (large projects - avoid duplication)
+# metadata:
+#   feature_id: "csv_export"           # Stable, unique slug (lowercase, snake_case)
+#   category: "data_export"           # Group for filtering (auth, reporting, api)
+#   tags: ["admin", "compliance"]     # Searchable keywords
+#   status: "implemented"             # implemented | planned | deprecated
+#   introduced_version: "1.2.0"       # Optional
+#   deprecated_version: null          # Optional (if status: deprecated)
+
+# OPTIONAL: Innovation through Inversion (Principle 8)
+# inversion_opportunities:
+#   problem: "e.g., CSV processing for large files"
+#   dominant_belief: "Load entire file into memory, then parse"
+#   proposed_inversions:
+#     - name: "Stream rows, never load file"
+#       description: "Process row-by-row"
+#       rationale: "Better for large files; no random access"
+#       status: "chosen"   # chosen | rejected | deferred
+
+# OPTIONAL: Field Mapping (for data-heavy intents)
+# field_mapping:
+#   summary: "Brief description of what data is being mapped"
+#   sources:
+#     - system: "source_system_name"
+#       type: "database | api | file"
+#       location: "table or endpoint"
+#   targets:
+#     - system: "target_system_name"
+#       type: "database | api | file"
+#       location: "table or endpoint"
+#   mappings:
+#     - source_field: "source.field"
+#       target_field: "target.field"
+#       transformation: "description"
+#       required: true
+#   verification:
+#     schema_validation:
+#       - check: "fields exist in schemas"
+#         test: "path/to/test"
+# 
+# Use this section for:
+# - API integrations (CRM, payment, external services)
+# - ETL pipelines and data synchronization
+# - Data import/export features
+# See: recipes/data-field-mapping.yaml for complete pattern
+
+# WHAT must hold true?
+constraints:
+  - name: "constraint_id"
+    requirement: "precision >= 0.80"
+    test: "path/to/test.py::test_name"
+    consequence_if_violated: "What breaks if this fails"
+
+# WHY this approach?
+rationale:
+  decision: "Key decision made"
+  evidence: "Link to validation (notebook, doc, etc.)"
+  date: "2026-01-23"
+  stakeholder: "Who approved this"
+
+# WHY NOT alternatives?
+alternatives:
+  - name: "alternative_approach"
+    rejected_because: "Reason"
+    experiment: "path/to/comparison"
+    date_tested: "2026-01-15"
+
+# WHAT could go wrong?
+risks:
+  - condition: "When does this become a problem?"
+    action: "What should happen?"
+    monitor: "Where to watch for this"
+    severity: "high|medium|low"
+
+# WHERE is this implemented?
+implementation:
+  current: "path/to/file.py"
+  version: 3
+  tests: "path/to/tests/"
+  documentation: "path/to/docs.md"
+
+# WHEN was this changed?
+changelog:
+  - version: 3
+    date: "2026-01-23"
+    change: "Updated threshold from 0.65 to 0.70"
+    reason: "Precision was too low"
+    evidence: "playground/threshold_tuning_2026-01.ipynb"
+```
+
+---
+
+### Where Intent Artifacts Live
+
+```
+project/
+├── agent/
+│   ├── lead_qualifier/
+│   │   ├── scoring.py              # Implementation
+│   │   ├── scoring_intent.yaml     # ← Intent artifact
+│   │   └── tests/                  # Verification
+├── playground/
+│   └── lead_analysis_2025-12.ipynb # Evidence
+└── docs/
+    └── agents/
+        └── lead_qualifier_DESIGN.md # Generated from intent
+```
+
+**Intent artifact lives alongside implementation**, not in separate docs folder.
+
+---
+
+### Intent for Any AI-Produced Artifact
+
+**IVD is not just for code.** Any artifact produced by AI should have its paired intent—its point of origin, its original intention.
+
+#### Scope: Beyond Code
+
+The framework supports intent artifacts for:
+
+- **Code** (functions, agents, services)
+- **Architecture** (system designs, diagrams, decisions)
+- **Documentation** (guides, specifications, runbooks)
+- **Research** (analysis, experiments, findings)
+- **Books & Content** (chapters, articles, manuscripts)
+- **Processes** (workflows, methodologies, procedures)
+- **Data** (schemas, transformations, pipelines)
+
+**Core principle:** If AI produced it, it should have verifiable intent.
+
+---
+
+#### Co-location for Non-Code Artifacts
+
+The "intent alongside implementation" principle applies universally:
+
+**Books:**
+```
+book/
+├── book_system_intent.yaml        # Intent for entire book
+└── manuscript/
+    └── part-1-foundations/
+        └── chapter-01-alignment-crisis/
+            ├── intent.yaml         # Intent for this chapter
+            └── chapter.md          # Implementation (manuscript)
+```
+
+**Research:**
+```
+research/
+├── best_selling_programming_books_intent.yaml  # Intent
+└── best_selling_programming_books.md          # Implementation (findings)
+```
+
+**Architecture:**
+```
+architecture/
+├── decisions/
+│   ├── adr_001_intent.yaml        # Intent for decision
+│   └── adr_001_database_choice.md # Implementation (ADR)
+```
+
+**Processes:**
+```
+processes/
+├── chapter_writing_process_intent.yaml   # Intent (defines process)
+└── examples/                              # Implementation (process outputs)
+```
+
+**Why this matters:**
+
+1. **Traceability:** Every artifact traces back to its original intent
+2. **Verifiability:** AI can verify non-code outputs against constraints
+3. **Evolution:** When book chapters need revision, intent survives
+4. **Context:** Future AI agents understand WHY something was created
+5. **Consistency:** Same methodology for code and non-code work
+
+**Example constraint for book chapter:**
+
+```yaml
+# chapter-01/intent.yaml
+constraints:
+  - name: "paragraph_length"
+    requirement: "Most paragraphs 3-5 sentences, max 7"
+    test: "visual inspection and readability review"
+    
+  - name: "author_sourced_examples"
+    requirement: "All examples must be labeled as author-sourced or industry-typical"
+    test: "grep for unlabeled 'example' instances"
+```
+
+**Example constraint for research:**
+
+```yaml
+# research/analysis_intent.yaml
+constraints:
+  - name: "source_validation"
+    requirement: "All claims backed by URL or citation"
+    test: "Every finding has 'source:' field with URL"
+    
+  - name: "recency"
+    requirement: "Sources from 2024-2026 unless historical context"
+    test: "Check all URLs and citations for date"
+```
+
+---
+
+### Feature Inventory (Large Projects)
+
+In large projects, **knowing what features exist** prevents duplication and helps AI agents (and humans) load context quickly. IVD supports this **without a separate inventory file**—inventory is **derived** from intent artifacts.
+
+#### How It Works
+
+1. **Optional metadata on intents:** Add a `metadata` block to intent artifacts (see schema above) with:
+   - **feature_id:** Stable, unique slug (e.g. `csv_export`, `lead_qualifier`). Use lowercase snake_case.
+   - **category:** Group for filtering (e.g. `data_export`, `auth`, `reporting`, `api`). Define a short list per project.
+   - **tags:** Searchable keywords (e.g. `admin`, `compliance`, `reporting`).
+   - **status:** `implemented` | `planned` | `deprecated`.
+   - **introduced_version** / **deprecated_version:** Optional; for history.
+
+2. **Derived inventory:** Use the IVD feature-list tool (e.g. `ivd_list_features`) to scan all `*_intent.yaml` files and return an aggregated list. No separate `feature_inventory.yaml`—inventory is always generated from source, so it cannot drift. IVD placement and tools are **per-project** (co-locate with code in that repo); MCP tools accept an optional `project_root` for use in any repository.
+
+3. **Check before building:** Before adding a new feature, list features (filter by category or tags), check if something equivalent already exists, then scaffold or extend. Prevents duplicate work.
+
+#### When to Use
+
+- **Recommended** for large or multi-team projects where "what already exists?" is hard to see.
+- **Optional** for small projects; omit `metadata` and IVD works as before.
+
+#### Conventions
+
+- **feature_id:** Unique in the repo; lowercase snake_case.
+- **category:** Agreed short list per project (e.g. 5–10 categories).
+- **status:** Exactly one of `implemented`, `planned`, `deprecated`.
+
+---
+
+### Optional Section: Project Context (System-Level Only)
+
+For **system-level intents in existing projects**, IVD supports an **optional `project_context` section** that captures project-wide conventions, architecture, tools, and key paths—enabling all child intents to reuse and reference them.
+
+#### When to Use
+
+Use the `project_context` section when:
+- **System-level intent** for a project/product (not workflow/module/task)
+- **Existing project** (brownfield) with established conventions, architecture, docs
+- **Installing IVD** via `ivd init` in a codebase that already has structure
+- **Multiple teams** need consistent reference to project conventions
+
+Skip this section when:
+- **Greenfield project** with no existing conventions (conventions emerge as you build)
+- **Workflow, module, or task-level** intents (reference `parent_intent` instead)
+- **Single-developer hobby project** where conventions are implicit
+
+#### What It Provides
+
+The `project_context` section documents:
+- **Code rules:** `.cursorrules`, lint configs, formatting standards
+- **Architecture:** Design principles, ADRs, ARCHITECTURE.md references
+- **Tools/scripts:** Key scripts, CLIs, utilities (so new intents reference, not duplicate)
+- **Libraries to reuse:** Internal shared libraries and when to use them
+- **Key paths ("map to the stars"):** Navigable map of entrypoints, modules, workflows, docs, tests
+- **Existing docs:** README, API docs, runbooks, CONTRIBUTING
+
+#### Why It Matters
+
+Without project context:
+- **Duplication:** New intents recreate existing tools, scripts, libraries
+- **Inconsistency:** New intents don't follow project conventions or architecture
+- **Lost navigation:** AI agents and developers don't know where key code lives
+- **Ignored docs:** New intents don't reference existing documentation
+
+With project context:
+- **Reuse:** New intents reference existing tools, scripts, libraries (no duplication)
+- **Consistency:** New intents follow project code rules and architecture principles
+- **Navigation:** "Map to the stars" (key_paths) shows where entrypoints, modules, workflows, docs, tests live
+- **Integration:** New intents link to and extend existing documentation
+
+#### Example Structure
+
+```yaml
+# system_intent.yaml (project root)
+
+project_context:
+  code_rules:
+    - path: ".cursorrules"
+      description: "Cursor IDE rules and conventions"
+    - path: "pyproject.toml"
+      description: "Python formatting (black), linting (ruff), type checking (mypy)"
+  
+  architecture:
+    - path: "docs/ARCHITECTURE.md"
+      description: "High-level system architecture and design principles"
+    - path: "docs/architecture/"
+      description: "Architecture Decision Records (ADRs)"
+    - principle: "Event-driven microservices with async messaging (RabbitMQ)"
+    - principle: "No direct database access from frontend; all via API"
+    - principle: "Idempotent operations for all background jobs"
+  
+  tools_scripts:
+    - path: "scripts/deploy.sh"
+      description: "Deployment automation (staging, production)"
+    - path: "scripts/db_migrate.py"
+      description: "Database migration runner (Alembic wrapper)"
+    - path: "tools/data_pipeline/extract.py"
+      description: "Data extraction utilities for ETL"
+  
+  libraries_reuse:
+    - library: "internal/auth_utils"
+      description: "Authentication and authorization utilities (JWT, RBAC)"
+      when_to_use: "All auth-related features; never reimplement auth logic"
+    - library: "internal/logging"
+      description: "Structured logging with correlation IDs and tracing"
+      when_to_use: "All modules and workflows; use log_context decorator"
+  
+  key_paths:
+    entrypoints:
+      - path: "api/main.py"
+        description: "FastAPI application entrypoint (REST API)"
+      - path: "worker/celery_app.py"
+        description: "Background job worker (Celery)"
+    
+    modules:
+      - path: "agent/"
+        description: "AI agents (classifiers, extractors, coordinators)"
+      - path: "entity/"
+        description: "Core business entities (User, Lead, Organization)"
+      - path: "integrations/"
+        description: "External service integrations (Salesforce, Stripe, Twilio)"
+    
+    workflows:
+      - path: "workflows/"
+        description: "Multi-step business processes (lead_qualification, onboarding)"
+    
+    docs:
+      - path: "docs/"
+        description: "Project documentation (architecture, API, runbooks)"
+      - path: "docs/runbooks/"
+        description: "Operational runbooks for common incidents"
+    
+    tests:
+      - path: "tests/"
+        description: "Test suites (unit, integration, e2e)"
+  
+  existing_docs:
+    - path: "README.md"
+      description: "Project overview and quick start"
+    - path: "docs/API.md"
+      description: "API reference (autogenerated from OpenAPI spec)"
+    - path: "docs/CONTRIBUTING.md"
+      description: "Contribution guidelines and development setup"
+```
+
+#### Child Intents Reference Parent
+
+Once system intent has project context, child intents reference it:
+
+```yaml
+# agent/lead_scorer/lead_scorer_intent.yaml
+
+parent_intent: "../../system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "agent"
+
+intent:
+  summary: "Lead scoring agent for CRM pipeline"
+  goal: |
+    Classify leads as qualified/unqualified using ML model.
+    
+    Project context:
+    - Follows event-driven architecture (principle from parent)
+    - Uses internal/logging for structured logging (library from parent)
+    - Reuses internal/auth_utils for API authentication (library from parent)
+  
+  success_metric: "Precision >= 85%"
+  stakeholders: ["VP Sales"]
+
+# Implementation references parent context
+implementation:
+  current: "agent/lead_scorer/scorer.py"
+  reuses:
+    - library: "internal/logging"
+      usage: "@log_context decorator for all public methods"
+    - library: "internal/auth_utils"
+      usage: "API key validation before scoring"
+  
+  follows_architecture:
+    - "Event-driven: Publishes 'lead.scored' events to RabbitMQ"
+    - "Idempotent: Same lead ID + data = same score (no side effects)"
+```
+
+**The benefit:** AI agents creating or modifying this intent:
+1. Read `parent_intent: "../../system_intent.yaml"`
+2. Load project context (code rules, architecture, tools, libraries, key paths)
+3. Follow conventions automatically (event-driven, use logging, reuse auth)
+4. Reference existing tools/scripts instead of duplicating
+5. Navigate via key_paths ("map to the stars") to find related code
+
+---
+
+### Optional Section: Field Mapping (Data-Heavy Intents)
+
+For intents that document data movement, integration, or transformation between systems, IVD supports an **optional `field_mapping` section** that makes field mappings, data sources, and transformations explicit and verifiable.
+
+#### When to Use
+
+Use the `field_mapping` section when:
+- **API integrations** (Salesforce, Stripe, HubSpot, external services)
+- **ETL pipelines** and data synchronization
+- **Database-to-database** transfers
+- **Data import/export** features
+- **Reporting and analytics** data feeds
+- **Field mapping errors** are high-cost (wrong data, compliance issues, data loss)
+
+Skip this section when:
+- No external data sources or targets (internal-only logic)
+- Trivial 1:1 passthrough mapping with no transformation
+- No data quality or compliance requirements
+
+#### What It Provides
+
+The `field_mapping` section documents:
+- **Sources:** Which systems, tables, APIs, or files data comes from
+- **Targets:** Which systems, tables, APIs, or files data goes to
+- **Mappings:** Source field → target field, with transformations and validation
+- **Business rules:** Rules that affect mapping (e.g., "only sync qualified leads")
+- **Transformations:** How data is converted (e.g., score 0.0-1.0 → 0-100)
+- **Verification:** Schema validation, sample data checks, data quality metrics
+
+#### Why It Matters
+
+Field mappings are often undocumented or only in prose, leading to:
+- **Bugs** from wrong or outdated mappings
+- **Slow onboarding** (developers reverse-engineer mappings from code)
+- **AI agents can't understand** or modify integrations
+- **Compliance risks** from unclear data lineage
+
+This section makes mappings:
+- **Explicit:** Source → target, transformation, validation
+- **Verifiable:** Schema checks, sample validation, data quality tests (Principle 2)
+- **Discoverable:** In intent artifact alongside workflow/module (Principle 5: Layered Understanding)
+
+#### Example Structure
+
+```yaml
+# In workflow-level or module-level intent
+
+field_mapping:
+  summary: "Sync qualified leads from internal DB to Salesforce CRM"
+  
+  sources:
+    - system: "internal_db"
+      type: "database"
+      location: "leads table"
+  
+  targets:
+    - system: "salesforce"
+      type: "api"
+      location: "Lead object"
+  
+  mappings:
+    - source_field: "internal_db.leads.email"
+      target_field: "salesforce.Lead.Email"
+      transformation: "none"
+      required: true
+    
+    - source_field: "internal_db.leads.score"
+      target_field: "salesforce.Lead.Lead_Score__c"
+      transformation: "round(score * 100)"
+      data_type: "float → integer"
+      example:
+        source: 0.87
+        target: 87
+  
+  verification:
+    schema_validation:
+      - check: "All fields exist in schemas"
+        test: "tests/test_schema_conformance.py"
+    
+    sample_validation:
+      - description: "Compare 10 random synced leads"
+        test: "tests/test_sync_accuracy.py"
+```
+
+**See:** `recipes/data-field-mapping.yaml` for complete pattern, examples, and verification strategies.
+
+---
+
+### Intent Levels: System, Workflow, Module, Task
+
+**IVD supports four levels of intent granularity** to match different documentation needs:
+
+```
+SYSTEM LEVEL      →  Entire product or platform
+    ↓
+WORKFLOW LEVEL    →  Multi-step process (NEW in v1.2)
+    ↓
+MODULE LEVEL      →  Feature, agent, component
+    ↓
+TASK LEVEL        →  Function, method, API endpoint
+```
+
+---
+
+#### System-Level Intents
+
+**For:** Entire products, platforms, or strategic initiatives
+
+**Characteristics:**
+- Broad scope (entire product/platform)
+- Multiple stakeholders
+- Phases and milestones
+- High-level success metrics
+
+**Example:** Product development roadmap, multi-quarter platform migration
+
+**File location:** `system_intent.yaml` or `{project}_system_intent.yaml` at repository root
+
+---
+
+#### Workflow-Level Intents (NEW in v1.2)
+
+**For:** Multi-step processes that span multiple modules or functions
+
+**Characteristics:**
+- Documents end-to-end process flow
+- Maps each step to specific files/functions
+- Captures business logic at each step
+- Defines error handling and data flow
+- **Critical for AI agent understanding**
+
+**Example:** Lead qualification workflow (validate → enrich → score → qualify → sync to CRM)
+
+**File location:**
+- **Recommended:** `workflows/{workflow_name}_intent.yaml`
+  - *Why:* Centralized location enables `find workflows/ -name "*_intent.yaml"` discovery
+  - *AI benefit:* Single search location, lower token cost, consistent context
+- **Alternative:** Alongside coordinator file
+  - *When:* Workflow is tightly coupled to a single orchestrator AND will never be referenced independently
+  - *Trade-off:* Harder to discover all workflows programmatically
+- *Decision:* Use `workflows/` by default; use "alongside coordinator" only when the workflow has a single orchestrator and is not referenced elsewhere.
+
+**Why workflow-level matters:**
+
+Traditional documentation forces choice between:
+- ❌ **Module-level** - Documents components, but not how they work together
+- ❌ **Task-level** - Documents functions, but not the sequence
+
+Workflow-level fills the gap:
+- ✅ **End-to-end process** - Complete flow in one file
+- ✅ **Step-by-step sequence** - Explicit execution order
+- ✅ **File/function mapping** - Know exactly which code runs when
+- ✅ **Business logic context** - Why each step exists
+- ✅ **AI-friendly** - Agent reads ONE file to understand entire workflow
+- ✅ **Cost reduction** - 80-90% less context needed for AI agents
+
+**Workflow schema (key sections):**
+
+```yaml
+scope:
+  level: "workflow"
+  type: "process"
+
+workflow:
+  summary: "What this workflow accomplishes"
+  trigger: "What initiates the workflow"
+  
+  steps:
+    - step: 1
+      name: "Descriptive step name"
+      file: "path/to/module.py"
+      function: "function_name()"
+      description: "What this step does"
+      input: "What data comes in"
+      output: "What data goes out"
+      business_logic: "Key rules and decisions"
+      
+    - step: 2
+      name: "Next step"
+      file: "path/to/another_module.py"
+      # ... and so on
+  
+  data_flow:
+    - "High-level data transformations"
+    - "Input → Step 1 → Step 2 → ... → Output"
+  
+  error_handling:
+    - step: 1
+      failure_mode: "What can go wrong"
+      action: "What happens when it fails"
+      fallback: "Alternative behavior"
+  
+  orchestration:
+    type: "sequential | parallel | mixed"
+    coordinator: "path/to/coordinator.py"
+```
+
+**When to create workflow intent:**
+- Process has 3+ distinct steps across multiple files
+- AI agents ask "how does this work end-to-end?"
+- Onboarding requires understanding the full flow
+- Business stakeholders need technical workflow visibility
+
+**Real-world examples:**
+- Lead qualification (5 steps: receive → enrich → score → qualify → sync)
+- Article generation (7 steps: trigger → plan → research → draft → fact-check → images → publish)
+- ETL pipeline (4 steps: extract → transform → validate → load)
+- Order processing (6 steps: receive → validate → inventory check → payment → fulfillment → notification)
+
+**See:** `templates/examples/workflow-lead-qualification-example.yaml` for complete example  
+**Recipe:** `recipes/workflow-orchestration.yaml` for workflow pattern template
+
+---
+
+#### Module-Level Intents
+
+**For:** Features, agents, components with clear boundaries
+
+**Characteristics:**
+- Medium scope (feature-level)
+- Single module or feature
+- Business logic decisions
+- Architecture choices
+- Integration points
+
+**Example:** Lead qualifier agent, fact checker agent, background job processor
+
+**File location:** `{module}/{module}_intent.yaml` alongside implementation
+
+**Note:** For tooling compatibility (MCP tools use glob `**/*_intent.yaml`), module intents must use the `{module}_intent.yaml` pattern. A bare `intent.yaml` without the module name prefix will not be discovered by `ivd_find_artifacts` or `ivd_list_features`.
+
+---
+
+#### Task-Level Intents
+
+**For:** Individual functions, methods, or API endpoints
+
+**Characteristics:**
+- Fine scope (function-level)
+- Single function/task
+- Clear inputs/outputs
+- Specific behavior contract
+- Edge cases matter
+
+**Example:** `qualify_lead()` function, `extract_claims()` function, `POST /api/leads` endpoint
+
+**File location:** `{module}/intents/{function}_intent.yaml`
+  - *Why:* Subdirectory prevents module clutter; clear separation from module-level intent
+  - *AI benefit:* `find */intents/ -name "*_intent.yaml"` finds all task-level intents
+  - *Tooling:* Tools detect task-level by `intents/` in path; flat placement not supported by discovery tools
+
+---
+
+#### Multi-Intent Naming Convention
+
+A module may require multiple intent artifacts for variants, personas, or configurations:
+
+| Pattern | Use Case | Example | Discovery Pattern |
+|---------|----------|---------|-------------------|
+| `{module}_intent.yaml` | Primary module intent | `reviewer_intent.yaml` | `{module}_intent.yaml` |
+| `{variant}_{module}_intent.yaml` | Variant (persona, config) | `erik_reviewer_intent.yaml` | `*_{module}_intent.yaml` |
+| `intents/{function}_intent.yaml` | Task-level intents | `intents/review_article_intent.yaml` | `intents/*_intent.yaml` |
+
+**Naming Rules:**
+1. **Primary intent** uses bare module name: `{module}_intent.yaml`
+2. **Variants** prepend descriptor: `{variant}_{module}_intent.yaml`
+3. **Task-level** uses `intents/` subdirectory: `intents/{function}_intent.yaml`
+
+**AI Agent Discovery:**
+```bash
+# Find all module-level intents (primary + variants):
+find agent/ -maxdepth 2 -name "*_intent.yaml" ! -path "*/intents/*"
+
+# Find all task-level intents:
+find agent/ -path "*/intents/*_intent.yaml"
+
+# Find all variants of a specific module:
+find agent/reviewer/ -name "*_reviewer_intent.yaml"
+```
+
+**Why variants exist:**
+- Multiple personas (Erik reviewer vs Sarah reviewer)
+- Configuration variants (strict vs lenient)
+- Experimental vs production intents
+
+---
+
+#### Level Selection Guide
+
+**Default to MODULE-level** unless:
+- ✅ System-level: Multiple teams, multi-quarter scope, strategic initiative
+- ✅ Workflow-level: 3+ steps across multiple modules, AI needs process understanding
+- ✅ Task-level: Critical function used across modules, complex I/O contract, public API
+
+**The rule:** Use the **highest level** that captures necessary detail.
+
+**Example hierarchy:**
+
+```
+SYSTEM: AI Development Book (book_system_intent.yaml)
+  └─ WORKFLOW: Meeting extraction workflow (workflows/meeting_extraction_intent.yaml)
+      ├─ MODULE: Meeting extractor agent (agent/meeting_extractor/meeting_extractor_intent.yaml)
+      │   └─ TASK: extract_insights() function (agent/meeting_extractor/intents/extract_insights_intent.yaml)
+      └─ MODULE: Fact checker agent (agent/fact_checker/fact_checker_intent.yaml)
+```
+
+**See:** `templates/intent_levels_guide.md` for complete guide on level selection
+
+---
+
+## Recipes: Reusable Patterns
+
+### What is an IVD Recipe?
+
+**NEW in IVD v1.1:** Recipes are reusable pattern templates that capture how to solve common development problems.
+
+**The key distinction:**
+
+| Intent Artifact | Recipe |
+|----------------|--------|
+| **Specific** to one implementation | **Reusable** across many implementations |
+| Documents "what we built" | Documents "how to build similar things" |
+| Lives next to code | Lives in recipes directory |
+| Changes with that module | Changes when pattern improves |
+| Example: `lead_scorer_intent.yaml` | Example: `agent-classifier.yaml` |
+
+---
+
+### Why Recipes Matter
+
+**The problem recipes solve:**
+
+Without recipes:
+- Every developer reinvents solutions to common problems
+- Patterns exist in developers' heads, not documented
+- New team members learn slowly through trial and error
+- Quality varies wildly across similar implementations
+- Best practices don't propagate
+
+With recipes:
+- ✅ Start from proven patterns
+- ✅ Consistent approach to similar problems
+- ✅ Faster development (template vs from scratch)
+- ✅ Best practices built in
+- ✅ Knowledge sharing across team
+
+---
+
+### Recipe Structure
+
+```yaml
+# recipe_[pattern_name].yaml
+
+recipe:
+  name: "Pattern Name"
+  description: "What problem this solves"
+  when_to_use: [...]
+  when_NOT_to_use: [...]
+
+# Template sections (filled in for specific implementation)
+intent_template: {...}
+constraints_template: {...}
+rationale_template: {...}
+alternatives_template: {...}
+risks_template: {...}
+
+# Pattern guidance
+implementation_pattern: {...}
+verification_pattern: {...}
+best_practices: [...]
+common_pitfalls: [...]
+
+# Real examples
+examples: [...]
+```
+
+**Full specification:** See `recipe-spec.md`
+
+---
+
+### Recipe Categories
+
+**1. Workflow Patterns** (NEW in v1.2) - Multi-step processes
+- `workflow-orchestration.yaml` - Process orchestration (lead qualification, ETL, etc.)
+- `workflow-pipeline.yaml` - Data pipelines
+- `workflow-event-driven.yaml` - Event-driven workflows
+
+**2. Agent Patterns** - Building AI agents
+- `agent-classifier.yaml` - Classification agents
+- `agent-extractor.yaml` - Data extraction
+- `agent-coordinator.yaml` - Orchestration
+- `agent-fact-checker.yaml` - Fact verification
+
+**3. Integration Patterns** - External system integration
+- `recipe_api_integration.yaml` - REST API integrations
+- `recipe_webhook_handler.yaml` - Webhook processing
+- `recipe_database_sync.yaml` - Database synchronization
+
+**4. Data Patterns** - Data processing
+- `recipe_data_validation_pipeline.yaml` - Data quality
+- `recipe_etl_workflow.yaml` - Extract, transform, load
+- `recipe_batch_processor.yaml` - Batch processing
+
+**5. Infrastructure Patterns** - Operations
+- `infra-monitoring.yaml` - Observability
+- `infra-background-job.yaml` - Async job processing
+- `infra-retry.yaml` - Resilience patterns
+
+---
+
+### How Recipes and Intent Artifacts Work Together
+
+```
+RECIPE (reusable pattern)
+    ↓
+Provides template structure
+    ↓
+INTENT ARTIFACT (specific implementation)
+    ↓
+References recipe, fills in specifics
+    ↓
+IMPLEMENTATION (code)
+    ↓
+Follows pattern from recipe
+    ↓
+VERIFICATION (tests)
+    ↓
+Validates constraints from intent
+```
+
+**Example:**
+
+```yaml
+# recipes/agent-classifier.yaml
+# This is the REUSABLE PATTERN
+
+recipe:
+  name: "AI Classifier Agent Pattern"
+  applies_to:
+    - "Classification requiring context understanding"
+    - "Quality thresholds are critical"
+    
+intent_template:
+  summary: "[Domain] classifier for [use case]"
+  goal: "Classify [items] into [categories] for [stakeholder]"
+  success_metric: "[Metric] >= [target]%"
+  
+constraints_template:
+  - name: "classification_accuracy"
+    requirement: "accuracy >= [0.80-0.95 typical]"
+    test: "tests/test_[module]_accuracy.py"
+```
+
+```yaml
+# agent/lead_scorer/scorer_intent.yaml
+# This is the SPECIFIC IMPLEMENTATION
+
+recipe: "agent-classifier"  # ← Links to pattern
+recipe_version: "1.0"
+
+# Now fill in the template with specifics:
+intent:
+  summary: "Lead scoring classifier for CRM"  # Specific
+  goal: "Classify leads as qualified/unqualified for sales team"  # Specific
+  success_metric: "Precision >= 85%"  # Specific
+  stakeholders: ["VP Sales (Jane Smith)"]  # Specific
+
+constraints:
+  - name: "classification_accuracy"
+    requirement: "precision >= 0.85"  # Specific (recipe said 0.80-0.95 typical)
+    test: "tests/test_scorer_accuracy.py"  # Specific
+    consequence_if_violated: "Sales team wastes time on unqualified leads"  # Specific
+```
+
+---
+
+### Using Recipes
+
+**Step 1: Find the right recipe**
+```bash
+ada recipe list
+ada recipe search "classifier"
+```
+
+**Step 2: Apply recipe to your implementation**
+```bash
+# Copy intent template
+cp templates/intent.yaml agent/my_classifier/my_classifier_intent.yaml
+
+# Reference recipe in my_classifier_intent.yaml:
+# recipe: "agent-classifier"
+# recipe_version: "1.0"
+```
+
+**Step 3: Fill in specifics**
+
+Generated intent artifact has:
+- ✅ Structure from recipe (complete)
+- 🔲 Placeholders for your specifics (fill these in)
+- 📝 Comments explaining what to provide
+
+**Step 4: Implement following the pattern**
+
+Recipe provides:
+- Directory structure
+- Code structure
+- Key files and functions
+- Best practices
+- Common pitfalls to avoid
+
+---
+
+### Creating New Recipes
+
+**When to create a recipe:**
+- ✅ You've solved the same problem 2-3 times
+- ✅ Pattern is generalizable across domains
+- ✅ Other teams could benefit
+- ✅ Onboarding would be faster with this template
+
+**Recipe creation:**
+```bash
+ada recipe create \
+  --from-intent agent/successful_module/module_intent.yaml \
+  --name recipe_my_pattern
+```
+
+---
+
+### Recipe Evolution
+
+Recipes improve over time:
+
+```yaml
+changelog:
+  - version: "1.2"
+    date: "2026-02-15"
+    change: "Added error handling best practices"
+    reason: "Production incidents revealed missing error cases"
+    
+  - version: "1.1"
+    date: "2026-01-30"
+    change: "Added performance optimization patterns"
+    reason: "Performance issues in 3 implementations"
+```
+
+**Recipe versioning ensures:**
+- Old intent artifacts still reference their recipe version
+- New implementations get latest best practices
+- Evolution is documented and traceable
+
+---
+
+### Benefits of Recipes
+
+**For Developers:**
+- 🚀 Faster development (start from proven pattern)
+- 📚 Learn patterns quickly
+- ✅ Higher quality (recipes include best practices)
+- 🎯 Consistency across similar implementations
+
+**For Teams:**
+- 📖 Knowledge sharing (patterns documented)
+- 🔄 Consistency (similar problems solved similarly)
+- ⚡ Onboarding (new devs learn patterns fast)
+- 📈 Quality improvement (recipes evolve with lessons)
+
+**For Organization:**
+- 💰 Reduced development cost (less reinvention)
+- 📊 Standardization (predictable patterns)
+- 🛡️ Risk reduction (proven patterns)
+- 🎓 Institutional knowledge (patterns preserved)
+
+---
+
+## Verification System
+
+### Continuous Verification Commands
+
+```bash
+# Verify single module
+$ ada verify agent/lead_qualifier
+
+# Verify entire codebase
+$ ada verify --all
+
+# Verify before commit
+$ ada verify --staged
+
+# Deep verification (re-run experiments)
+$ ada verify --deep agent/lead_qualifier
+```
+
+---
+
+### What Gets Verified
+
+| Check | Verifies |
+|-------|----------|
+| **Intent exists** | Module has declared intent |
+| **Implementation matches** | Code implements what intent declares |
+| **Constraints hold** | Tests validate all stated constraints |
+| **Evidence is current** | Linked experiments/notebooks still run |
+| **Alternatives documented** | Rejected approaches are recorded |
+| **Risks monitored** | Monitoring exists for stated risks |
+| **Documentation synced** | Docs reflect current intent |
+| **Tests comprehensive** | Coverage matches intent scope |
+
+---
+
+### Verification Reports
+
+```
+INTENT VERIFICATION REPORT
+Module: agent/lead_qualifier/scoring.py
+Intent Artifact: scoring_intent.yaml v3
+
+✅ ALIGNMENT CHECKS
+   Code threshold (0.70) matches intent ✓
+   Function signature matches intent ✓
+   Edge cases handled per intent ✓
+
+✅ CONSTRAINT VALIDATION
+   precision >= 0.80: PASS (actual: 0.85)
+   recall >= 0.60: PASS (actual: 0.70)
+
+✅ EVIDENCE VERIFICATION
+   playground/lead_analysis_2025-12.ipynb:
+   - Last run: recently
+   - Results match rationale ✓
+   - All cells executed successfully ✓
+
+⚠️  RISK MONITORING
+   Risk: "precision drops below 0.75"
+   Current: 0.82 (within safe range)
+   Status: MONITORING (approaching threshold)
+   Action: Continue monitoring, no intervention needed
+
+✅ DOCUMENTATION SYNC
+   Design doc reflects current intent ✓
+   ADR-089 matches decision ✓
+   Comments in code cite intent artifact ✓
+
+OVERALL: VERIFIED ✓
+Confidence: 95%
+Last verified: 2026-01-23 14:30:00 UTC
+```
+
+---
+
+## Implementation Guide
+
+### Step 0a: Teaching When You Don't Understand the Domain *(Optional)*
+
+**When:** You lack the technical knowledge to understand concepts, patterns, or technologies needed for the task.
+
+**Signals:**
+- You say "I don't know what X is" or "Can you explain Y?"
+- You're reviewing intent but can't understand patterns it references (Saga, CDC, etc.)
+- You're new to the domain/codebase and see unfamiliar concepts
+- Discovery proposed options but you don't understand the terminology
+
+**Process:**
+1. **AI detects knowledge gap** (you ask explicitly, or AI detects from your language/context)
+2. **AI offers:** "Would you like me to explain [concept] first?"
+3. **AI creates educational artifact** (structured YAML) explaining:
+   - What the concept is
+   - Why it matters for your task
+   - Key sub-concepts with examples
+   - Tradeoffs (decisions you'll need to make, options with pros/cons)
+   - Common patterns
+   - Verification questions (to confirm you understand)
+4. **You review**, ask clarifying questions, confirm understanding
+5. **Proceed:** Now with the knowledge, continue to Step 0b (if needed) or Step 1
+
+**Example:**
+
+```yaml
+education:
+  concept: "ETL (Extract, Transform, Load)"
+  what_it_is: |
+    ETL is a data pipeline pattern: Extract data from sources, Transform it to
+    match target schema/business rules, Load it into a destination system.
+  
+  why_it_matters_here: |
+    Your project needs to sync lead data from Salesforce to PostgreSQL daily.
+  
+  key_concepts:
+    - name: "Extract"
+      definition: "Read data from source system (API, database, file)"
+      example: "Pull leads from Salesforce REST API"
+    
+    - name: "Transform"
+      definition: "Apply business rules, normalize schema"
+      example: "Convert Salesforce Status to lead_stage enum"
+    
+    - name: "Load"
+      definition: "Write data to destination"
+      example: "UPSERT into PostgreSQL analytics.leads table"
+  
+  tradeoffs:
+    - decision: "Batch vs Streaming"
+      options:
+        - name: "Batch"
+          when: "Daily/hourly sync acceptable"
+          pros: ["Simpler", "Lower cost"]
+          cons: ["Data lag (hours)"]
+  
+  verification:
+    - question: "What are the 3 steps of ETL?"
+      answer: "Extract, Transform, Load"
+```
+
+**Tools:** `ivd_teach_concept(concept="ETL", user_context="sync Salesforce leads daily")`
+
+**Recipe:** `recipes/teaching-before-intent.yaml`
+
+**Why this matters:** Lack of technical knowledge is the main bottleneck in project critical paths. You can't review intent if you don't understand the concepts it references.
+
+---
+
+### Step 0b: Discovery When You're Not Sure What to Build *(Experimental, Optional)*
+
+**When:** You don't know *what* to build (goal uncertainty), but you have the technical knowledge to evaluate options once presented.
+
+**Note:** If you lack the technical knowledge to understand the *options* themselves, use Step 0a (Teaching) first.
+
+**Signals:**
+- You say "I'm not sure what we need" or "What are the options?"
+- New domain or unfamiliar codebase
+- Exploring what's possible before committing
+
+**Process:**
+1. **AI detects** need for discovery
+2. **AI proposes** 2–3 candidate directions (from recipes, existing features, inversion ideas)
+3. **You pick or refine** ("that one, but for X not Y")
+4. **Proceed:** Now with a direction, continue to Step 1 (describe → AI writes intent)
+
+**Tools:** `ivd_discover_goal(domain_or_context="data_export", user_hint="compliance")`
+
+**Recipe:** `recipes/discovery-before-intent.yaml`
+
+---
+
+### Step 0: Installing IVD in an Existing Project (Brownfield)
+
+**When adopting IVD in an existing project with code and docs already in place:**
+
+```bash
+# 1. Initialize IVD - creates system intent with project context
+$ ivd init --project-root /path/to/your/project
+
+Scanning project...
+- Found: .cursorrules
+- Found: docs/ARCHITECTURE.md
+- Found: scripts/ (5 scripts)
+- Found: agent/ (3 agents)
+- Found: docs/ (10 docs)
+
+Generated: system_intent.yaml
+
+Project context captured:
+✓ Code rules: .cursorrules, pyproject.toml
+✓ Architecture: docs/ARCHITECTURE.md, 3 ADRs
+✓ Tools/scripts: 5 scripts in scripts/
+✓ Key paths: entrypoints, modules, workflows, docs, tests
+✓ Existing docs: README.md, API.md, CONTRIBUTING.md
+
+Next steps:
+1. Review and enrich system_intent.yaml
+2. Create intents for critical modules (ivd scaffold)
+3. Reference parent_intent: "../../system_intent.yaml" in child intents
+```
+
+**The workflow for existing projects:**
+
+1. **Discover:** Run `ivd init` to scan project and create system_intent.yaml
+2. **Enrich:** Review and add architecture principles, conventions not auto-detected
+3. **Prioritize:** Identify 3-5 critical modules to create intents for first
+4. **Create:** Use `ivd scaffold` for those modules, referencing parent_intent
+5. **Expand:** Gradually add intents for more modules as you modify them
+
+**Key differences from greenfield:**
+- **System intent first:** Capture existing conventions and "map to the stars" (key paths)
+- **Reference parent:** Child intents reference system intent via `parent_intent`
+- **Reuse, don't duplicate:** New intents reference existing tools, scripts, libraries
+- **Incremental:** Don't create intents for entire codebase at once; start with critical paths
+
+---
+
+### Step 1: Create Intent Artifact for Existing Module
+
+**For a module that already exists:**
+
+```bash
+$ ada intent create agent/lead_qualifier/scoring.py
+
+Analyzing: agent/lead_qualifier/scoring.py
+
+Found threshold: 0.70
+Found data_quality check: 0.80
+
+Searching for rationale...
+- Checking git history... found commit
+- Checking playground/... found lead_analysis_2025-12.ipynb
+- Checking docs/... found partial explanation
+
+Loading project context from system_intent.yaml...
+- Code rules: .cursorrules (loaded)
+- Architecture principles: Event-driven, no direct DB access
+- Reusable libraries: internal/auth_utils, internal/logging
+
+Generated: scoring_intent.yaml
+
+Please review and complete:
+- [✓] Intent goal extracted
+- [✓] Constraints identified from code
+- [✓] Evidence linked from git/playground
+- [✓] Parent intent: ../../system_intent.yaml (auto-linked)
+- [✓] Project context: code rules, architecture loaded
+- [?] Stakeholder approval (needs human input)
+- [?] Alternatives (needs human input)
+- [?] Risk monitoring (needs human input)
+```
+
+---
+
+### Step 2: Validate and Enrich
+
+**Human reviews generated intent artifact:**
+
+```yaml
+# scoring_intent.yaml (generated, needs review)
+
+intent:
+  summary: "Qualify leads based on score and data quality"
+  goal: "Filter leads to sales team to maximize conversion rate"
+  success_metric: "???" # ← NEEDS INPUT
+  stakeholders: ["???"] # ← NEEDS INPUT
+
+constraints:
+  - name: "score_threshold"
+    requirement: "score >= 0.70"
+    test: "tests/test_scoring.py::test_threshold" # ← Verify this exists
+    
+rationale:
+  decision: "threshold = 0.70"
+  evidence: "playground/lead_analysis_2025-12.ipynb" # ← Found automatically
+  date: "2025-12-15" # ← From git
+  stakeholder: "???" # ← NEEDS INPUT
+
+alternatives: [] # ← NEEDS INPUT
+
+risks: [] # ← NEEDS INPUT
+```
+
+**Human completes missing pieces:**
+
+```yaml
+intent:
+  success_metric: "Sales conversion rate >= 15%"
+  stakeholders: ["VP Sales", "Sales Operations"]
+
+rationale:
+  stakeholder: "VP Sales (Jane Smith)"
+
+alternatives:
+  - name: "threshold_0.60"
+    rejected_because: "Sales feedback: too many low-quality leads"
+    date_tested: "2025-12-01"
+  - name: "threshold_0.80"
+    rejected_because: "Insufficient pipeline volume"
+    date_tested: "2025-12-01"
+
+risks:
+  - condition: "precision drops below 0.75"
+    action: "Alert sales leadership"
+    monitor: "dashboards/lead_quality.json"
+    severity: "high"
+```
+
+---
+
+### Step 3: Enable Continuous Verification
+
+**Add to CI/CD:**
+
+```yaml
+# .github/workflows/verify.yml
+
+name: Intent Verification
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Verify Intent Alignment
+        run: |
+          ada verify --all
+          ada verify --deep --changed-only
+```
+
+**Add pre-commit hook:**
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/bash
+ada verify --staged || exit 1
+```
+
+---
+
+### Step 4: Update Intent When Code Changes
+
+**Workflow:**
+
+```
+Developer changes threshold: 0.70 → 0.75
+
+$ git add agent/lead_qualifier/scoring.py
+$ git commit -m "Increase threshold to 0.75"
+
+[Pre-commit hook runs]
+❌ Intent verification FAILED:
+   - Code says threshold = 0.75
+   - Intent says threshold = 0.70
+   - DRIFT DETECTED
+
+Choose action:
+1. Update intent to match code (threshold → 0.75)
+2. Revert code to match intent (threshold → 0.70)
+3. Skip verification (not recommended)
+
+> 1
+
+Updating scoring_intent.yaml...
+Re-running validation experiments...
+Updating documentation...
+
+✅ Intent updated and verified
+✅ Commit proceeding
+```
+
+---
+
+## Real-World Example
+
+### Before IVD (Traditional)
+
+```python
+# agent/lead_qualifier/scoring.py
+
+def qualify_lead(score: float, data_quality: float) -> bool:
+    """Qualify lead based on score and data quality."""
+    if score >= 0.70 and data_quality >= 0.80:
+        return True
+    return False
+```
+
+**Problems:**
+- No explanation of WHY 0.70 and 0.80
+- No link to validation evidence
+- No record of alternatives considered
+- No way to verify understanding matches reality
+- Knowledge lost when developer leaves
+
+---
+
+### After IVD
+
+**Intent Artifact:**
+
+```yaml
+# agent/lead_qualifier/lead_qualifier_intent.yaml
+
+intent:
+  summary: "Qualify high-probability leads for sales team"
+  goal: |
+    Filter pipeline to send only leads with high conversion probability
+    to sales team. Balance quality (minimize wasted sales time) vs
+    quantity (maintain sufficient pipeline for revenue goals).
+  success_metric: "Sales conversion rate >= 15%"
+  stakeholders: ["VP Sales (Jane Smith)", "Sales Operations"]
+
+constraints:
+  - name: "minimum_precision"
+    requirement: "precision >= 0.80"
+    test: "tests/test_lead_qualification.py::test_precision_threshold"
+    consequence_if_violated: "Sales team wastes time on low-quality leads"
+    
+  - name: "minimum_recall"
+    requirement: "recall >= 0.60"
+    test: "tests/test_lead_qualification.py::test_recall_threshold"
+    consequence_if_violated: "Insufficient pipeline volume for revenue goals"
+
+rationale:
+  decision: |
+    Score threshold: 0.70
+    Data quality threshold: 0.80
+    Both must pass for qualification
+  evidence: "playground/lead_analysis_2025-12.ipynb"
+  date: "2025-12-15"
+  stakeholder: "VP Sales (Jane Smith)"
+  methodology: |
+    Tested thresholds 0.60, 0.65, 0.70, 0.75, 0.80 on 500 historical leads.
+    Measured precision, recall, and gathered sales team feedback.
+    0.70 provided best balance: 85% precision, 70% recall.
+
+alternatives:
+  - name: "rule_based_classification"
+    rejected_because: "Too brittle, couldn't adapt to changing lead characteristics"
+    experiment: "playground/rule_based_comparison_2025-11.ipynb"
+    date_tested: "2025-11-15"
+    
+  - name: "ml_classifier_v1"
+    rejected_because: "Overfitting on training data, poor generalization"
+    experiment: "playground/ml_classifier_eval_2025-12.ipynb"
+    date_tested: "2025-12-01"
+    
+  - name: "threshold_0.60"
+    rejected_because: "Only 75% precision - sales feedback negative"
+    experiment: "playground/threshold_comparison_2025-12.ipynb"
+    date_tested: "2025-12-10"
+    
+  - name: "threshold_0.80"
+    rejected_because: "Only 50% recall - insufficient pipeline volume"
+    experiment: "playground/threshold_comparison_2025-12.ipynb"
+    date_tested: "2025-12-10"
+
+risks:
+  - condition: "precision drops below 0.75"
+    action: "Alert VP Sales, review threshold increase"
+    monitor: "dashboards/lead_quality.json"
+    severity: "high"
+    
+  - condition: "recall drops below 0.50"
+    action: "Alert Sales Ops, review threshold decrease"
+    monitor: "dashboards/pipeline_volume.json"
+    severity: "medium"
+    
+  - condition: "market conditions change significantly"
+    action: "Re-run validation experiment, consider re-tuning"
+    monitor: "quarterly review"
+    severity: "medium"
+
+implementation:
+  current: "agent/lead_qualifier/scoring.py"
+  version: 3
+  tests: "tests/test_lead_qualification.py"
+  documentation: "docs/agents/lead_qualifier_DESIGN.md"
+  deployment: "production since 2025-12-20"
+
+changelog:
+  - version: 3
+    date: "2025-12-15"
+    change: "Implemented statistical threshold with data quality gate"
+    reason: "ML classifier overfitted, rule-based too brittle"
+    evidence: "playground/approach_comparison_2025-12.ipynb"
+    approved_by: "VP Sales (Jane Smith)"
+    
+  - version: 2
+    date: "2025-12-01"
+    change: "Attempted ML classifier"
+    reason: "Wanted adaptive classification"
+    deprecated: "2025-12-15"
+    deprecated_reason: "Overfitting issues"
+    
+  - version: 1
+    date: "2025-11-01"
+    change: "Initial rule-based implementation"
+    deprecated: "2025-12-01"
+    deprecated_reason: "Too brittle for changing data"
+```
+
+**Implementation (Clean):**
+
+```python
+# agent/lead_qualifier/scoring.py
+# Intent: scoring_intent.yaml v3
+
+from typing import Tuple
+
+# Constants from intent artifact
+SCORE_THRESHOLD = 0.70  # See scoring_intent.yaml for rationale
+DATA_QUALITY_THRESHOLD = 0.80
+
+def qualify_lead(score: float, data_quality: float) -> bool:
+    """
+    Qualify lead for sales team.
+    
+    Full intent and rationale in: scoring_intent.yaml
+    
+    Constraints (verified in tests):
+    - Precision >= 0.80
+    - Recall >= 0.60
+    
+    Args:
+        score: Predictive score (0.0-1.0) from lead scoring model
+        data_quality: Data completeness score (0.0-1.0)
+    
+    Returns:
+        True if lead qualifies, False otherwise
+    """
+    return (
+        score >= SCORE_THRESHOLD and
+        data_quality >= DATA_QUALITY_THRESHOLD
+    )
+```
+
+**Verification:**
+
+```bash
+$ ada verify agent/lead_qualifier/
+
+✅ Intent artifact: scoring_intent.yaml v3
+✅ Implementation matches: thresholds correct
+✅ Constraints satisfied:
+   - precision = 0.85 (>= 0.80) ✓
+   - recall = 0.70 (>= 0.60) ✓
+✅ Evidence current: playground/lead_analysis_2025-12.ipynb (recently run)
+✅ Tests: 12/12 passing ✓
+✅ Risks monitored: dashboards configured ✓
+⚠️  Note: precision at 0.82, within acceptable range but monitor trend
+
+UNDERSTANDING VERIFIED ✓
+Next review: 2026-04-01 (quarterly)
+```
+
+---
+
+## Comparison Matrix
+
+| Aspect | Traditional | Literate (Knuth) | Pragmatic LP | Intent-Verified |
+|--------|-------------|------------------|--------------|-----------------|
+| **Primary artifact** | Code | Documentation | Code + docs | Intent |
+| **Understanding format** | Comments | Prose | Rich comments | Structured YAML |
+| **Can diverge?** | Always | No (single source) | Yes (AI helps) | No (verified) |
+| **Verification** | None | Manual reading | Manual review | Continuous automated |
+| **AI role** | None | None | Synchronizer | Understanding partner |
+| **Survives rewrites** | No | Tied to impl | No | Yes |
+| **Tooling** | Standard | Specialized | Standard | Standard + verifier |
+| **Adoption** | Universal | Failed | Growing | Experimental |
+| **Knowledge capture** | 10-15% | 60-80% | 60-80% | 85-95% |
+
+---
+
+## Benefits
+
+### For Development
+- **Faster onboarding:** Intent artifacts provide complete context
+- **Safer changes:** Verification catches when code drifts from intent
+- **Better decisions:** Alternatives and rationale preserved
+- **Less duplicate work:** Past experiments documented
+
+### For Maintenance
+- **Understanding persists:** Intent survives team turnover
+- **Evolution tracked:** Changelog shows why things changed
+- **Risks identified:** Know what monitoring is needed
+- **Validation easy:** Can re-run evidence experiments
+
+### For Collaboration
+- **Clear contracts:** Intent declares what module should do
+- **Better reviews:** Review intent alignment, not just code syntax
+- **Stakeholder approval:** Link to business decisions
+- **Cross-team clarity:** Other teams understand module purpose
+
+---
+
+## Challenges
+
+### Initial Investment
+- Creating intent artifacts for existing code takes time
+- Requires discipline to maintain
+- Team must learn new practices
+
+### Tooling Gap
+- `ada verify` system doesn't exist yet (needs building)
+- Integration with existing tools needed
+- CI/CD pipelines need updates
+
+### Cultural Shift
+- Developers must think "intent first"
+- Requires buy-in from entire team
+- Management must value knowledge preservation
+
+---
+
+## Getting Started
+
+### Start Small
+Don't convert everything at once:
+
+1. **Pick one critical module** with complex business logic (if you don't know what to build, use discovery first *(Experimental)*—see Step 0b and `recipes/discovery-before-intent.yaml`)
+2. **Create intent artifact** for it
+3. **Set up basic verification** (manual at first)
+4. **Learn from experience**
+5. **Expand gradually**
+
+### Good Candidates for First Intent Artifacts
+- Complex thresholds or validation rules
+- Business logic with stakeholder approval
+- Modules with high bug rates
+- Code that confuses new developers
+- Systems with compliance requirements
+
+### Tools to Build
+1. `ada intent create` - Generate intent from existing code
+2. `ada verify` - Check alignment
+3. Pre-commit hooks
+4. CI/CD integration
+5. Intent → documentation generator
+
+---
+
+## Future Vision
+
+### Short Term (2026)
+- Prototype `ada verify` system
+- Create intent artifacts for ADA's critical modules
+- Document patterns and best practices
+- Train team on IVD thinking
+
+### Medium Term (2027)
+- Full verification in CI/CD
+- Intent artifacts as PR requirement for critical paths
+- Automated intent drift detection
+- Intent-aware code review tools
+
+### Long Term (2028+)
+- Industry adoption of intent artifacts
+- IDE integration (intent-aware completion)
+- AI that reasons about intent alignment
+- Intent becomes standard part of codebases
+
+---
+
+## Extending IVD Framework
+
+**Want to add a new intent level, section, or recipe pattern?**
+
+### Master Framework Intent
+
+All extensions to IVD must follow the rules defined in `ivd_system_intent.yaml`:
+
+**The master intent documents:**
+- **8 Core Principles** (immutable) - Each with sub-principles, validation checks, and rejection criteria
+- **4 Extension Rules** - Adding intent levels, sections, recipes, and documentation standards
+- **4 Validation Levels** - Principle alignment, structural integrity, verification coverage, real-world validation
+- **Canonization Process** - 6 steps from proposal to canonical status
+- **6 Immutable Constraints** - Rules that must always hold true
+
+### Before Proposing a Change
+
+**Read `ivd_system_intent.yaml` to understand:**
+
+1. **What makes something canonical IVD?**
+   - Must align with all 8 principles
+   - Must pass all 4 validation levels
+   - Must have comprehensive examples (500+ lines)
+   - Must be validated in production
+
+2. **What's the process for adding something?**
+   - Identify gap (5+ real-world cases)
+   - Design schema (structured YAML)
+   - Create comprehensive example
+   - Create recipe pattern (if applicable)
+   - Update all core docs
+   - Validate against all principles
+
+3. **What will be rejected?**
+   - Violates any of the 8 principles
+   - Timeline references in documentation
+   - No test paths for constraints
+   - No evidence for rationale
+   - No real-world validation
+   - Overlaps with existing patterns
+   - Adds bureaucracy without value
+
+### High Bar for Additions
+
+**IVD evolves slowly and deliberately:**
+- Each addition must justify its existence
+- Each addition must be production-validated
+- Each addition must have comprehensive documentation
+- Each addition must pass strict validation
+
+**Why?** IVD is about durable understanding. Better to evolve slowly with confidence than quickly with chaos.
+
+---
+
+## Conclusion
+
+**Intent-Verified Development** is the framework for the **AI Agents era**:
+
+- **AI writes the intent** (not humans writing prose)
+- **AI implements against the intent** (with constraints to verify)
+- **AI catches its own hallucinations** (through executable tests)
+- **Turns drop from many to one** (clarification at intent stage)
+
+It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies**. Traditional artifacts (PRDs, user stories, prompts) are prose the AI reads and guesses at. IVD provides structured intent the AI can write, verify, and self-correct against.
+
+**The paradigm shift:** From "prompt the AI and hope" to "AI writes intent, implements, verifies."
+
+---
+
+## Further Reading
+
+### IVD Documentation
+- `README.md` - Quick start guide
+- `cookbook.md` - Practical implementation guide
+- `ivd_system_intent.yaml` - System intent (rules for extending IVD)
+- `cheatsheet.md` - Quick reference
+- `templates/intent_levels_guide.md` - When to use which intent level
+
+### Research and Context
+- `research/lp_research.md` - LP history and theory (Knuth's original vision)
+- `_private/from_lp_to_ivd.md` - Evolution path from LP to IVD
+
+---
+
+**Version:** 1.3  
+**Status:** Production Ready  
+**Maintained by:** ADA Development Team  
+**Key Insight:** The AI writes the intent, implements against it, verifies—eliminating many-turns and hallucinations.
