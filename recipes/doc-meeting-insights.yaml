@@ -7,7 +7,7 @@ recipe:
   author: "Leo Celis / AI Assistant"
   
   master_intent_alignment:
-    supports_intent: "framework/ivd/ivd_system_intent.yaml"
+    supports_intent: "ivd_system_intent.yaml"
     supports_phase: "Continuous knowledge capture and pattern extraction"
     contributes_to: "Building executable understanding through systematic meeting processing and insight extraction"
     validates_constraint: "conceptual_focus (100% project-agnostic patterns), completeness (all meetings processed)"
@@ -135,7 +135,7 @@ risks_template:
 
 implementation_pattern:
   structure: |
-    framework/ivd/_private/                  # IVD's own training archive
+_private/                  # IVD's own training archive
     ├── meetings.md                          # Raw meeting transcripts (1,283 lines, 18 meetings)
     ├── ai_driven_development_guide.md       # Extracted insights (8,870 lines, evolved into IVD)
     ├── meetings_index.md                    # Processing tracker (18 meetings indexed)
@@ -228,7 +228,7 @@ verification_pattern:
 
 examples:
   - name: "AI-Driven Development Guide from Training Sessions"
-    location: "framework/ivd/_private/"
+    location: "_private/"
     domain: "Software Development / AI Integration"
     meetings_processed: 18
     concepts_extracted: "~150+"
@@ -249,11 +249,11 @@ examples:
       - "Generic examples (Source A, [region_code]) preserve pattern while removing specifics"
 
 references:
-  - "framework/ivd/ivd_system_intent.yaml - System intent for IVD framework"
-  - "framework/ivd/_private/ai_driven_development_guide.md - Output example (historical)"
-  - "framework/ivd/_private/meetings_index.md - Tracking pattern"
-  - "framework/ivd/_private/meetings.md - Source material example"
-  - "framework/ivd/recipe-spec.md - Recipe specification"
+  - "ivd_system_intent.yaml - System intent for IVD framework"
+  - "_private/ai_driven_development_guide.md - Output example (historical)"
+  - "_private/meetings_index.md - Tracking pattern"
+  - "_private/meetings.md - Source material example"
+  - "recipe-spec.md - Recipe specification"
   - "Pattern: Literate Programming (Donald Knuth) - Inspiration for documentation approach"
 
 alignment_to_ivd_framework:
@@ -308,13 +308,13 @@ meta:
     - version: "1.0"
       date: "2026-01-23"
       change: "Initial recipe based on 18 meetings processed"
-      evidence: "framework/ivd/_private/meetings_index.md shows 18 meetings processed"
+      evidence: "_private/meetings_index.md shows 18 meetings processed"
       validated_by: "Leo Celis (user requested recipe creation)"
     
     - version: "1.1"
       date: "2026-01-26"
       change: "Fixed broken references, aligned with IVD principles, processed meetings 18-20"
-      evidence: "framework/ivd/_private/ now contains all source materials and outputs"
+      evidence: "_private/ now contains all source materials and outputs"
       validated_by: "Recipe compliance audit completed"
     
     - version: "1.2"

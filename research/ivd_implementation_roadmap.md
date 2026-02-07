@@ -564,7 +564,7 @@ tests/validation/
 │   ├── test_token_reduction.py
 │   ├── test_comprehension_accuracy.py
 │   └── fixtures/
-│       ├── ada_image_generation_workflow.yaml
+│       ├── sample_image_generation_workflow.yaml
 │       └── source_files/
 ├── alignment_accuracy/
 │   ├── test_iteration_count.py

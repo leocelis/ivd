@@ -35,7 +35,7 @@
 
 | Aspect | Addressed? | Where | Notes |
 |--------|------------|--------|--------|
-| Intent for a module that already exists | **Partially** | framework.md "Step 1: Create Intent Artifact for Existing Module" | Describes `ada intent create <path>` that analyzes existing code, extracts constants, searches git/playground/docs. |
+| Intent for a module that already exists | **Partially** | framework.md "Step 1: Create Intent Artifact for Existing Module" | Describes `ivd intent create <path>` that analyzes existing code, extracts constants, searches git/playground/docs. |
 | Workflow for “existing project” (brownfield) | **No** | — | No dedicated “existing project” or “brownfield” workflow. No “discover project first, then create intents that fit.” |
 | Consider existing conventions before writing intent | **No** | — | No step “load project code rules and architecture before writing intent.” |
 

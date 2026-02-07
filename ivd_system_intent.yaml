@@ -1272,7 +1272,7 @@ risks:
 # ==============================================================================
 
 implementation:
-  current: "ada/ada/framework/ivd/"
+  current: "/"
   
   enforcement_mechanisms:
     - mechanism: "This system intent file"

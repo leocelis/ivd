@@ -537,7 +537,7 @@ That's why it exists.
 **Governed by:** `ivd_system_intent.yaml`  
 **Version:** 1.2  
 **Created:** January 24, 2026  
-**Author:** ADA AI System + Leo Celis
+**Author:** Leo Celis
 
 ---
 

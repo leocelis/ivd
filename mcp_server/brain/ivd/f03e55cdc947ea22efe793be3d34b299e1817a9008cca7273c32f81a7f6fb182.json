@@ -1,0 +1,11 @@
+{
+  "doc_hash": "f03e55cdc947ea22efe793be3d34b299e1817a9008cca7273c32f81a7f6fb182",
+  "file_path": "/Users/leocelis/workspace/leocelis/ivd/research/README.md",
+  "file_name": "README.md",
+  "num_chunks": 1,
+  "chunks": [
+    "# IVD Research\n\nResearch documents supporting IVD framework design and validation.\n\n## Contents\n\n- **agent_knowledge_standards.md** - Industry standards for AI agent knowledge management\n- **best_selling_programming_books.md** - Research on successful programming books (for IVD book)\n- **best_selling_programming_books_intent.yaml** - Research intent artifact\n- **coordinator_agent_design_patterns.md** - Multi-agent coordination patterns\n- **teaching_before_intent.md** - When the user lacks technical knowledge: teaching step under Principle 6 (canonical)\n- **discovery_before_intent.md** - When the user doesn't know what to ask: discovery step under Principle 6 (experimental)\n- **intention_research.md** - What intention is: philosophy (Anscombe, Bratman, Davidson, Searle), formal logic (BDI), AI (2025\u20132026); relevance to IVD and creativity\n- **intent_artifact_placement_research.md** - Research on optimal intent artifact placement (20 sources, 1,003 lines)\n- **ivd_existing_projects_and_project_map_gaps.md** - Gap analysis for existing projects, project context, and project map\n- **ivd_implementation_roadmap.md** - Building blocks for IVD implementation\n- **lp_research.md** - Literate Programming history and theory (3,219 lines)\n- **validation_methodology.md** - How to validate IVD effectiveness\n\n## Purpose\n\nThese documents provide:\n\n- Evidence-based design decisions\n- Validation methodology\n- Historical context (Literate Programming to IVD)\n- Industry alignment research"
+  ],
+  "cost_usd": 6.620000000000001e-06,
+  "processed_at": "2026-02-07T17:42:53.399851"
+}

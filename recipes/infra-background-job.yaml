@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "infrastructure_patterns"
   created: "2026-01-23"
-  author: "ADA Platform Team"
+  author: "Leo Celis"
   
   description: |
     Standard pattern for building background jobs using Celery for asynchronous
@@ -155,7 +155,7 @@ implementation_pattern:
   
   code_structure: |
     # [job_name]_job.py
-    from ada.job.celery_app import celery
+    from your_app.celery_app import celery
     from job.[job_name].processor import Processor
     
     @celery.task(
@@ -364,8 +364,8 @@ typical_performance:
 
 references:
   documentation:
-    - "ada/job/celery_app.py - Celery configuration"
-    - "tools/devops/run_worker.sh - Worker startup script"
+    - "your_app/celery_app.py - Celery configuration"
+    - "scripts/run_worker.sh - Worker startup script"
     - "Celery Best Practices (Official Docs)"
     
   research:
@@ -394,5 +394,5 @@ changelog:
     date: "2026-01-23"
     change: "Initial recipe creation based on fact_checker job pattern"
     reason: "Pattern used successfully in multiple jobs, ready to template"
-    author: "Leo Celis / ADA Platform Team"
+    author: "Leo Celis"
     evidence: "job/fact_checker/generate_lore_fact_check_report_job.py"

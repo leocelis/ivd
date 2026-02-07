@@ -146,7 +146,7 @@ def qualify_lead(score: float) -> bool:
 **Static docs become stale on day 2. Verify continuously.**
 
 ```bash
-$ ada verify lead_qualifier
+$ ivd verify lead_qualifier
 
 Checking: agent/lead_qualifier/
 ✅ Intent artifact found: lead_qualifier_intent.yaml
@@ -1323,8 +1323,8 @@ constraints:
 
 **Step 1: Find the right recipe**
 ```bash
-ada recipe list
-ada recipe search "classifier"
+ivd recipe list
+ivd recipe search "classifier"
 ```
 
 **Step 2: Apply recipe to your implementation**
@@ -1365,7 +1365,7 @@ Recipe provides:
 
 **Recipe creation:**
 ```bash
-ada recipe create \
+ivd recipe create \
   --from-intent agent/successful_module/module_intent.yaml \
   --name recipe_my_pattern
 ```
@@ -1424,16 +1424,16 @@ changelog:
 
 ```bash
 # Verify single module
-$ ada verify agent/lead_qualifier
+$ ivd verify agent/lead_qualifier
 
 # Verify entire codebase
-$ ada verify --all
+$ ivd verify --all
 
 # Verify before commit
-$ ada verify --staged
+$ ivd verify --staged
 
 # Deep verification (re-run experiments)
-$ ada verify --deep agent/lead_qualifier
+$ ivd verify --deep agent/lead_qualifier
 ```
 
 ---
@@ -1638,7 +1638,7 @@ Next steps:
 **For a module that already exists:**
 
 ```bash
-$ ada intent create agent/lead_qualifier/scoring.py
+$ ivd intent create agent/lead_qualifier/scoring.py
 
 Analyzing: agent/lead_qualifier/scoring.py
 
@@ -1743,8 +1743,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Verify Intent Alignment
         run: |
-          ada verify --all
-          ada verify --deep --changed-only
+          ivd verify --all
+          ivd verify --deep --changed-only
 ```
 
 **Add pre-commit hook:**
@@ -1752,7 +1752,7 @@ jobs:
 ```bash
 # .git/hooks/pre-commit
 #!/bin/bash
-ada verify --staged || exit 1
+ivd verify --staged || exit 1
 ```
 
 ---
@@ -1957,7 +1957,7 @@ def qualify_lead(score: float, data_quality: float) -> bool:
 **Verification:**
 
 ```bash
-$ ada verify agent/lead_qualifier/
+$ ivd verify agent/lead_qualifier/
 
 ✅ Intent artifact: scoring_intent.yaml v3
 ✅ Implementation matches: thresholds correct
@@ -2021,7 +2021,7 @@ Next review: 2026-04-01 (quarterly)
 - Team must learn new practices
 
 ### Tooling Gap
-- `ada verify` system doesn't exist yet (needs building)
+- `ivd verify` system doesn't exist yet (needs building)
 - Integration with existing tools needed
 - CI/CD pipelines need updates
 
@@ -2051,8 +2051,8 @@ Don't convert everything at once:
 - Systems with compliance requirements
 
 ### Tools to Build
-1. `ada intent create` - Generate intent from existing code
-2. `ada verify` - Check alignment
+1. `ivd intent create` - Generate intent from existing code
+2. `ivd verify` - Check alignment
 3. Pre-commit hooks
 4. CI/CD integration
 5. Intent → documentation generator
@@ -2062,8 +2062,8 @@ Don't convert everything at once:
 ## Future Vision
 
 ### Short Term (2026)
-- Prototype `ada verify` system
-- Create intent artifacts for ADA's critical modules
+- Prototype `ivd verify` system
+- Create intent artifacts for critical modules
 - Document patterns and best practices
 - Train team on IVD thinking
 
@@ -2167,5 +2167,5 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 
 **Version:** 1.3  
 **Status:** Production Ready  
-**Maintained by:** ADA Development Team  
+**Maintained by:** Leo Celis  
 **Key Insight:** The AI writes the intent, implements against it, verifies—eliminating many-turns and hallucinations.

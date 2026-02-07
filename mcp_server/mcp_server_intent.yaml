@@ -1,0 +1,321 @@
+# mcp_server_intent.yaml
+# Module-Level Intent: IVD MCP Server
+#
+# Co-located with implementation per IVD placement rules:
+#   mcp_server/mcp_server_intent.yaml (alongside mcp_server/ code)
+
+parent_intent: "../ivd_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "service"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "mcp_server"
+  category: "tooling"
+  tags: ["mcp", "tools", "embeddings", "knowledge-base", "ai-agents"]
+  status: "implemented"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Standalone MCP server that gives AI agents full access to the IVD framework through 14 tools backed by committed embeddings."
+
+  goal: |
+    Provide a self-contained Model Context Protocol (MCP) server that:
+    
+    1. Exposes 14 IVD tools for AI agents (Cursor, Claude, etc.)
+    2. Uses a committed knowledge base (embeddings) for semantic search
+    3. Runs locally via stdio for development (Cursor integration)
+    4. Deploys remotely via SSE for production
+    5. Has zero external dependencies on other projects
+    
+    Tools exposed (14):
+      ivd_get_context, ivd_load_recipe, ivd_list_recipes, ivd_load_template,
+      ivd_validate, ivd_init, ivd_scaffold, ivd_find_artifacts,
+      ivd_check_placement, ivd_list_features, ivd_propose_inversions,
+      ivd_discover_goal, ivd_teach_concept, ivd_search
+    
+    The knowledge base (brain/) contains pre-generated vector embeddings of the
+    entire IVD framework: core docs, recipes, templates, research, and the book.
+    These embeddings MUST be committed to the repository so that:
+    
+    - MCP tools (especially ivd_search) work immediately after clone
+    - No OpenAI API key is required to USE the tools (only to REGENERATE embeddings)
+    - The knowledge base is versioned alongside the content it represents
+    - Multi-device workflows work without re-running embedding generation
+    
+    This is a deliberate design decision: embeddings are a build artifact that
+    we version-control, not a runtime dependency that we regenerate on every use.
+
+  success_metric: |
+    - All 14 tools callable via MCP protocol (stdio and SSE transports)
+    - ivd_search returns relevant results from committed embeddings
+    - Clone-to-working: zero setup beyond installing dependencies
+    - Embedding regeneration only needed when content changes
+    - Self-contained: no imports from external projects
+
+  stakeholders:
+    - "AI agents consuming IVD tools (Cursor MCP, Claude Desktop)"
+    - "Developers using IVD in their projects"
+    - "IVD framework maintainer (embedding regeneration)"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  - name: "embeddings_committed"
+    requirement: "brain/ directory and all its contents MUST be committed to git"
+    test: "git ls-files brain/ | wc -l > 0"
+    consequence_if_violated: |
+      ivd_search breaks on fresh clone. Users need an OpenAI API key just to
+      query. Multi-device workflow breaks. This is the core design decision.
+
+  - name: "zero_setup_query"
+    requirement: "All 14 tools must work after clone + pip install (no API key for querying)"
+    test: "Clone repo, pip install, run ivd_get_context — returns valid response"
+    consequence_if_violated: |
+      Adoption barrier. Users who just want to use IVD tools shouldn't need
+      an OpenAI account or API key.
+
+  - name: "self_contained"
+    requirement: "Zero imports from external projects (no ada.*, no external repos)"
+    test: "grep -r 'from ada' mcp_server/ returns nothing; grep -r 'import ada' returns nothing"
+    consequence_if_violated: |
+      Module becomes coupled to another project. Breaks independent deployment.
+
+  - name: "embedding_content_scope"
+    requirement: |
+      Embeddings must include: framework docs, recipes, templates, research, book.
+      Embeddings must exclude: mcp_server/, _private/, .venv/, .git/.
+    test: "Run embed.py with --dry-run, verify included/excluded directories"
+    consequence_if_violated: |
+      Including mcp_server code pollutes semantic search with implementation details.
+      Excluding book/research loses valuable IVD content from search results.
+
+  - name: "transport_dual"
+    requirement: "Server must support both stdio (local) and SSE (remote) transports"
+    test: "python -m mcp_server --help shows transport options"
+    consequence_if_violated: |
+      stdio is required for Cursor local integration.
+      SSE is required for DigitalOcean remote deployment.
+
+  - name: "auth_gated_remote"
+    requirement: "SSE transport requires API key authentication; stdio does not"
+    test: "SSE request without key returns 401; stdio works without key"
+    consequence_if_violated: |
+      Remote server is open to the public. Local development is blocked by auth.
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Commit embeddings to git; treat them as versioned build artifacts"
+
+  reasoning: |
+    Why commit embeddings instead of generating on-the-fly or gitignoring?
+    
+    1. Clone-to-working experience
+       Cloning the repo and running pip install should be enough to use all
+       14 MCP tools, including semantic search. No API key needed to query.
+    
+    2. Versioned knowledge
+       Embeddings represent the state of IVD content at a point in time.
+       Version-controlling them means we can see what the knowledge base
+       looked like at any commit. This aligns with Principle 7 (Understanding
+       Survives Implementation) — the knowledge base persists alongside the
+       content it represents.
+    
+    3. Multi-device workflow
+       The maintainer works across multiple laptops. Committed embeddings
+       mean pulling the repo gives you the full working system everywhere.
+    
+    4. Regeneration is explicit
+       Embeddings are regenerated via devops/embed.sh only when content
+       changes. This is a deliberate act, not an automatic process.
+       The maintainer reviews what changed before committing updated embeddings.
+    
+    5. Size is manageable
+       IVD content is ~50-100 files. The embedding files (.npy + .json) are
+       small enough that git handles them without issue. This is NOT a
+       large-scale embedding store — it's a focused knowledge base.
+    
+    Trade-offs accepted:
+    - Slightly larger repo size (embeddings add ~few MB) — acceptable
+    - Embeddings can drift from content if not regenerated — mitigated by
+      devops/embed.sh workflow and this intent documenting the process
+    - Binary .npy files don't diff well in git — acceptable; we version them
+      for availability, not for line-by-line review
+
+  evidence: "Validated through local Cursor MCP integration testing"
+  date: "2026-02-07"
+  stakeholder: "Leo Celis"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Gitignore embeddings, generate on first use"
+    rejected_because: |
+      - Requires OpenAI API key for every user, even to just query
+      - First-use latency (must generate before first search)
+      - No multi-device portability without regeneration
+      - Breaks the clone-to-working principle
+    when_it_works: |
+      Large-scale embedding stores (millions of vectors) where committed
+      storage is impractical. Not applicable to IVD's focused content.
+
+  - name: "Separate embeddings repository"
+    rejected_because: |
+      - Two repos to manage adds overhead
+      - Embeddings drift from content if not synced
+      - Complicates the clone workflow
+    when_it_works: |
+      When the embedding store is shared across multiple projects or when
+      embeddings are generated by a CI pipeline and published as artifacts.
+
+  - name: "Runtime embedding generation (no pre-built brain)"
+    rejected_because: |
+      - Every tool invocation that needs search would require API key
+      - Latency on every search query (generate → query)
+      - Costs accumulate per query instead of per content change
+    when_it_works: |
+      Applications where content changes frequently (e.g., live documentation)
+      and stale embeddings are unacceptable.
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Embeddings drift from content (content updated, embeddings not regenerated) — ivd_search returns stale or missing results"
+    action: |
+      - After content changes, run devops/embed.sh to regenerate
+      - Review diff of brain/ files before committing
+      - This intent documents the process as a constraint
+    monitor: "Compare last embed.sh run date vs last content commit date"
+    severity: "medium"
+
+  - condition: "Brain directory grows too large for git — repo clone becomes slow"
+    action: |
+      - Monitor brain/ size (currently ~few MB, acceptable)
+      - If it exceeds 50MB, consider git-lfs for .npy files
+      - IVD content is ~100 files, unlikely to produce large embeddings
+    monitor: "du -sh mcp_server/brain/ after each regeneration"
+    severity: "low"
+
+  - condition: "OpenAI embedding model deprecated or changed — existing embeddings incompatible with new model"
+    action: |
+      - Model is configured in knowledge/config.py (currently text-embedding-3-small)
+      - Full regeneration via devops/embed.sh handles model changes
+      - Pin model version in config to prevent silent changes
+    monitor: "OpenAI API changelog"
+    severity: "low"
+
+  - condition: "API key leaked in committed .env — unauthorized API usage"
+    action: |
+      - .env is gitignored (verified in .gitignore)
+      - .env.example contains placeholder values only
+      - devops scripts load .env at runtime, never commit it
+    monitor: "git log -- .env should return nothing"
+    severity: "high"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "mcp_server/"
+  version: 1
+  tests: "N/A (manual smoke testing via devops/search.sh)"
+  documentation: "mcp_server/.env.example"
+
+  # Component map (file paths verifiable via ls)
+  components:
+    - file: "server.py"
+      purpose: "MCP protocol server — stdio (local) and SSE (remote) transports"
+    - file: "registry.py"
+      purpose: "Tool registration and dispatch — maps tool names to handlers"
+    - file: "auth.py"
+      purpose: "API key authentication for remote (SSE) deployment"
+    - dir: "tools/"
+      purpose: "14 tool implementations (one concern per file)"
+      files:
+        - "context.py      — ivd_get_context"
+        - "recipes.py      — ivd_load_recipe, ivd_list_recipes"
+        - "templates.py    — ivd_load_template"
+        - "validate.py     — ivd_validate"
+        - "scaffold.py     — ivd_init, ivd_scaffold, ivd_find_artifacts, ivd_check_placement"
+        - "discover.py     — ivd_list_features, ivd_discover_goal"
+        - "inversions.py   — ivd_propose_inversions"
+        - "learning.py     — ivd_teach_concept"
+        - "search.py       — ivd_search"
+    - dir: "knowledge/"
+      purpose: "Embedding engine — generation, storage, retrieval, chunking"
+      files:
+        - "brain.py     — Storage, retrieval, directory scanning"
+        - "embedder.py  — OpenAI embedding generation + similarity search"
+        - "processor.py — Text extraction and chunking"
+        - "config.py    — Model, dimensions, chunk size config"
+    - dir: "brain/ivd/"
+      purpose: "Committed embeddings (.npy vectors + .json metadata/chunks)"
+    - dir: "devops/"
+      purpose: "Embedding generation and local query tooling"
+      files:
+        - "embed.sh  — Bash wrapper: venv + .env + embed.py"
+        - "embed.py  — Scans repo, generates embeddings into brain/ivd/"
+        - "search.sh — Bash wrapper: venv + .env + search.py"
+        - "search.py — CLI to query embeddings locally"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  smoke_tests:
+    - name: "tools_respond"
+      description: "All 14 tools return valid responses via stdio"
+      command: "python -m mcp_server (stdio mode, send tool calls)"
+      validates_constraint: "transport_dual"
+
+    - name: "search_works_after_clone"
+      description: "ivd_search returns results without OpenAI API key set"
+      command: "unset OPENAI_API_KEY && python mcp_server/devops/search.py 'What are the 8 principles?'"
+      validates_constraint: "zero_setup_query, embeddings_committed"
+
+    - name: "no_external_imports"
+      description: "Zero ada.* or external project imports"
+      command: "grep -r 'from ada\\|import ada' mcp_server/ (expect no matches)"
+      validates_constraint: "self_contained"
+
+    - name: "brain_committed"
+      description: "brain/ files are tracked by git"
+      command: "git ls-files mcp_server/brain/ | wc -l (expect > 0)"
+      validates_constraint: "embeddings_committed"
+
+  embedding_regeneration:
+    when: "After any content change to framework docs, recipes, templates, research, or book"
+    how: "cd ivd && mcp_server/devops/embed.sh"
+    verify: "mcp_server/devops/search.sh 'test query' — confirm results include new content"
+    commit: "git add mcp_server/brain/ && git commit"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: 1
+    date: "2026-02-07"
+    change: "Initial module intent for MCP server"
+    reason: |
+      Document the design decision to commit embeddings, the 14-tool architecture,
+      dual-transport strategy, and self-contained deployment model. Captures the
+      rationale for why brain/ is version-controlled (clone-to-working, multi-device,
+      no API key to query).
+    evidence: "Working local Cursor MCP integration with committed embeddings"

@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "workflow_patterns"
   created: "2026-01-24"
-  author: "ADA Platform Team"
+  author: "Leo Celis"
   
   description: |
     Standard pattern for documenting complex multi-step workflows that span multiple
@@ -379,7 +379,7 @@ examples:
     files:
       - "api/slack/commands.py (step 1: trigger)"
       - "agent/creative/agent.py (steps 2, 4: plan, generate)"
-      - "ada_libs/google/search_intelligence.py (step 3: research)"
+      - "libs/google/search_intelligence.py (step 3: research)"
       - "agent/fact_checker/utils.py (step 5: fact-check)"
       - "job/creative/generate_article_images_job.py (step 6: images)"
       - "integrations/wordpress/publish.py (step 7: publish)"

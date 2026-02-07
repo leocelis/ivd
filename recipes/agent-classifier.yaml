@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "agent_patterns"
   created: "2026-01-23"
-  author: "ADA Platform Team"
+  author: "Leo Celis"
   
   description: |
     Standard pattern for building AI agents that classify inputs into categories
@@ -403,5 +403,5 @@ changelog:
     date: "2026-01-23"
     change: "Initial recipe creation based on fact_checker, lead_scorer patterns"
     reason: "Pattern used successfully in 3+ agents, ready to template"
-    author: "Leo Celis / ADA Platform Team"
+    author: "Leo Celis"
     evidence: "agent/fact_checker/, agent/lead_scorer/ implementations"

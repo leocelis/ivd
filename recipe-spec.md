@@ -259,13 +259,13 @@ Patterns for infrastructure and operations:
 
 ```bash
 # List all recipes
-ada recipe list
+ivd recipe list
 
 # Search recipes by category
-ada recipe list --category agent_patterns
+ivd recipe list --category agent_patterns
 
 # Search recipes by keyword
-ada recipe search "classifier"
+ivd recipe search "classifier"
 ```
 
 ### **Step 2: Review the Recipe**
@@ -285,7 +285,7 @@ cat recipes/agent-classifier.yaml
 
 ```bash
 # Apply recipe to create intent artifact
-ada recipe apply recipe_ai_classifier_agent \
+ivd recipe apply recipe_ai_classifier_agent \
   --module agent/my_classifier \
   --interactive
 
@@ -339,7 +339,7 @@ Create a recipe when:
 
 ```bash
 # Start from successful implementation
-ada recipe create \
+ivd recipe create \
   --from-intent agent/successful_module/module_intent.yaml \
   --name recipe_my_pattern
 
@@ -461,13 +461,13 @@ Validates constraints from intent
 
 ```bash
 # Recipe management
-ada recipe list                          # List all recipes
-ada recipe show [recipe_name]            # View recipe
-ada recipe apply [recipe] --module [path] # Apply to implementation
-ada recipe create --from-intent [path]   # Create new recipe
+ivd recipe list                          # List all recipes
+ivd recipe show [recipe_name]            # View recipe
+ivd recipe apply [recipe] --module [path] # Apply to implementation
+ivd recipe create --from-intent [path]   # Create new recipe
 
 # Verification includes recipe compliance
-ada verify agent/my_module
+ivd verify agent/my_module
 
 Checking: agent/my_module/
 ✅ Intent artifact found: my_module_intent.yaml
@@ -477,7 +477,7 @@ Checking: agent/my_module/
 ⚠️  Recipe has newer version (1.2) - consider upgrading
 
 # Recipe evolution
-ada recipe upgrade agent/my_module       # Upgrade to latest recipe version
+ivd recipe upgrade agent/my_module       # Upgrade to latest recipe version
 ```
 
 ---

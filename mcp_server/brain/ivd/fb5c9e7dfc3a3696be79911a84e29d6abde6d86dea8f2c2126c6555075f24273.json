@@ -1,0 +1,11 @@
+{
+  "doc_hash": "fb5c9e7dfc3a3696be79911a84e29d6abde6d86dea8f2c2126c6555075f24273",
+  "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/README.md",
+  "file_name": "README.md",
+  "num_chunks": 1,
+  "chunks": [
+    "# IVD Book Project\n\n**Intent-Verified Development: The Framework for the AI Agents Era**\n\n## Status\n\nPart 1 (Foundations) - In Progress\n\n- Chapter 1: The Alignment Crisis (Complete)\n- Chapter 2: Intent-Verified Development: A New Paradigm (Complete)\n\n## Structure\n\nSee `book_system_intent.yaml` for complete book intent, structure, and requirements.\n\n## Contents\n\n- **book_system_intent.yaml** - Master intent for the entire book\n- **chapter_writing_process.yaml** - Canonical 7-step process for writing chapters\n- **manuscript/** - Book chapters organized by part\n\n## Writing Process\n\nAll chapters follow the process defined in `chapter_writing_process.yaml`:\n\n1. Verify prerequisites\n2. Create chapter folder\n3. Create chapter intent\n4. Write manuscript\n5. Cross-check against intents\n6. Update chapter status\n7. Update book status"
+  ],
+  "cost_usd": 3.8000000000000005e-06,
+  "processed_at": "2026-02-07T17:43:04.223808"
+}

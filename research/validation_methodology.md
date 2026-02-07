@@ -94,8 +94,8 @@ def test_context_reduction():
         "agent/creative/agent.py",
         "agent/creative/lore_image_utils.py",
         "agent/creative/image_generation_utils.py",
-        "ada_libs/image/utils.py",
-        "ada_libs/image/config.py",
+        "libs/image/utils.py",
+        "libs/image/config.py",
         "rest_api/image.py",
         "job/creative/generate_article_images_job.py",
     ]
@@ -907,16 +907,16 @@ def generate_dashboard(results_dir: str):
 
 ## First Validation Experiment
 
-### Immediate Test: Context Efficiency on ADA
+### Immediate Test: Context Efficiency
 
-**Subject:** Image generation workflow in ADA
+**Subject:** Image generation workflow (multi-agent system)
 
 **Files involved:**
 - `agent/creative/agent.py`
 - `agent/creative/lore_image_utils.py`
 - `agent/creative/image_generation_utils.py`
-- `ada_libs/image/utils.py`
-- `ada_libs/image/config.py`
+- `libs/image/utils.py`
+- `libs/image/config.py`
 - `rest_api/image.py`
 - `job/creative/generate_article_images_job.py`
 
@@ -942,7 +942,7 @@ def generate_dashboard(results_dir: str):
 
 ### Phase 1: Foundation (Immediate)
 - **Meta-validation:** Document existing evidence ✓ (completed)
-- **Context efficiency:** Run first test on ADA image generation
+- **Context efficiency:** Run first test on image generation workflow
 - **Build validation tools:** Token counter, comprehension tester
 
 ### Phase 2: Core Metrics (Next)
@@ -1015,7 +1015,7 @@ constraints:
 **What we need:** Empirical evidence from repeatable tests  
 **How we get it:** Execute validation suite using tools defined here
 
-**Next step:** Run first context efficiency test on ADA image generation workflow
+**Next step:** Run first context efficiency test on image generation workflow
 
 **Evidence will be stored in:** `tests/validation/*/results/*.json`
 
