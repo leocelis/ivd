@@ -80,7 +80,12 @@ cmd_status() {
     local app_id
     app_id=$(require_app)
 
-    doctl apps get "$app_id" --format ID,DefaultIngress,ActiveDeployment.Phase,UpdatedAt
+    info "App:"
+    doctl apps get "$app_id" --format ID,Spec.Name,DefaultIngress
+
+    echo ""
+    info "Latest deployment:"
+    doctl apps list-deployments "$app_id" --format ID,Phase,Progress,Cause 2>/dev/null | head -3
 }
 
 cmd_health() {
@@ -96,11 +101,10 @@ cmd_health() {
     fi
 
     info "Checking: ${ingress}/health"
-    local response
-    response=$(curl -s -w "\n%{http_code}" "${ingress}/health" 2>/dev/null)
     local http_code body
-    http_code=$(echo "$response" | tail -1)
-    body=$(echo "$response" | head -n -1)
+    body=$(curl -s -o /dev/null -w "%{http_code}" "${ingress}/health" 2>/dev/null)
+    http_code="$body"
+    body=$(curl -s "${ingress}/health" 2>/dev/null)
 
     if [ "$http_code" = "200" ]; then
         success "Health check passed (HTTP $http_code)"
@@ -187,7 +191,8 @@ cmd_deploy() {
         elapsed=$((elapsed + interval))
 
         local phase
-        phase=$(doctl apps get "$app_id" --format ActiveDeployment.Phase --no-header 2>/dev/null || echo "UNKNOWN")
+        phase=$(doctl apps list-deployments "$app_id" --format Phase --no-header 2>/dev/null | head -1)
+        phase="${phase:-UNKNOWN}"
 
         info "  Deployment status: $phase (${elapsed}s / ${max_wait}s)"
 
