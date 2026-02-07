@@ -39,7 +39,7 @@ def find_artifacts_tool(scope: str = "all", project_root_arg: Optional[str] = No
 
     for pattern in search_patterns[scope]:
         for fp in root.glob(pattern):
-            if "framework/ivd" in str(fp) or "templates" in str(fp) or "mcp_server" in str(fp):
+            if "templates" in str(fp) or "mcp_server" in str(fp):
                 continue
             try:
                 rel = fp.relative_to(root)
@@ -158,7 +158,7 @@ def list_features_tool(
     features = []
     for pattern in ["**/*_intent.yaml", "**/*_system_intent.yaml"]:
         for fp in search_root.glob(pattern):
-            if "framework/ivd" in str(fp) or "templates" in str(fp) or "mcp_server" in str(fp):
+            if "templates" in str(fp) or "mcp_server" in str(fp):
                 continue
             try:
                 with open(fp, "r", encoding="utf-8") as f:

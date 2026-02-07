@@ -90,12 +90,15 @@ constraints:
 
   - name: "embedding_content_scope"
     requirement: |
-      Embeddings must include: framework docs, recipes, templates, research, book.
+      Private alpha: embeddings include framework docs, recipes, templates, research, book.
       Embeddings must exclude: mcp_server/, _private/, .venv/, .git/.
+      Before public launch (Phase 3): book/ must be removed from embeddings.
+      See _private/community/community_adoption_intent.yaml for full public launch plan.
     test: "Run embed.py with --dry-run, verify included/excluded directories"
     consequence_if_violated: |
       Including mcp_server code pollutes semantic search with implementation details.
       Excluding book/research loses valuable IVD content from search results.
+      Including book in public embeddings gives away paid content for free.
 
   - name: "transport_dual"
     requirement: "Server must support both stdio (local) and SSE (remote) transports"
