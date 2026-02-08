@@ -6,11 +6,11 @@ IVD MCP Tool Registry — registration and dispatch for all 14 tools.
 
 import json
 import time
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 from mcp.types import Tool
-from termcolor import colored
 
+from mcp_server.logger import extract_key_id, extract_origin_ip, log_tool_call
 from mcp_server.tools import (
     get_context_tool,
     load_recipe_tool,
@@ -27,8 +27,6 @@ from mcp_server.tools import (
     teach_concept_tool,
     ivd_search_tool,
 )
-
-LOG = "IVD MCP"
 
 
 # =============================================================================
@@ -177,29 +175,77 @@ TOOL_HANDLERS: Dict[str, Callable] = {
 # Dispatch
 # =============================================================================
 
-def call_tool(tool_name: str, arguments: dict) -> str:
-    """Execute a tool with the given arguments."""
-    print(colored(f"[{LOG}] Tool call: {tool_name}", "cyan"))
-
+def call_tool(
+    tool_name: str,
+    arguments: dict,
+    api_key: Optional[str] = None,
+    request: Optional[Any] = None,
+) -> str:
+    """
+    Execute a tool with the given arguments.
+    
+    Args:
+        tool_name: Name of the tool to execute
+        arguments: Tool arguments
+        api_key: API key (optional, for logging)
+        request: Request object (optional, for IP extraction)
+    
+    Returns:
+        Tool execution result as string
+    """
     start = time.time()
 
     if tool_name not in TOOL_HANDLERS:
+        # Log unknown tool attempt
+        log_tool_call(
+            tool=tool_name,
+            duration_ms=0,
+            status="error",
+            key_id=extract_key_id(api_key),
+            origin_ip=extract_origin_ip(request),
+            payload_preview=json.dumps(arguments),
+            response_preview="",
+            error=f"Unknown tool '{tool_name}'",
+        )
         return f"Error: Unknown tool '{tool_name}'"
 
     try:
         handler = TOOL_HANDLERS[tool_name]
         result = handler(**arguments)
 
-        elapsed = time.time() - start
+        elapsed_ms = int((time.time() - start) * 1000)
+        
         if isinstance(result, (dict, list)):
             result_str = json.dumps(result, indent=2, default=str)
         else:
             result_str = str(result)
 
-        print(colored(f"[{LOG}] {tool_name} completed in {elapsed:.2f}s", "green"))
+        # Log successful tool call
+        log_tool_call(
+            tool=tool_name,
+            duration_ms=elapsed_ms,
+            status="ok",
+            key_id=extract_key_id(api_key),
+            origin_ip=extract_origin_ip(request),
+            payload_preview=json.dumps(arguments),
+            response_preview=result_str,
+        )
+        
         return result_str
 
     except Exception as e:
-        elapsed = time.time() - start
-        print(colored(f"[{LOG}] Error in {tool_name}: {e} ({elapsed:.2f}s)", "red"))
+        elapsed_ms = int((time.time() - start) * 1000)
+        
+        # Log failed tool call
+        log_tool_call(
+            tool=tool_name,
+            duration_ms=elapsed_ms,
+            status="error",
+            key_id=extract_key_id(api_key),
+            origin_ip=extract_origin_ip(request),
+            payload_preview=json.dumps(arguments),
+            response_preview="",
+            error=str(e),
+        )
+        
         return f"Error executing {tool_name}: {e}"

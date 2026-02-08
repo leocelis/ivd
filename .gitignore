@@ -9,6 +9,10 @@ __pycache__/
 .venv/
 venv/
 
+# Logs
+mcp_server/logs/*.log
+mcp_server/logs/*.log.*
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,0 +1,466 @@
+# ==============================================================================
+# IVD Recipe: Structured Logging Pattern
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-02-08
+# Category: infrastructure_patterns
+# ==============================================================================
+
+recipe:
+  name: "Structured Logging Pattern"
+  version: "1.0"
+  category: "infrastructure_patterns"
+  created: "2026-02-08"
+  author: "Leo Celis"
+
+  description: |
+    Standard pattern for adding structured, JSON-line logging to any service
+    or tool dispatch layer. Replaces ad-hoc print() calls with structured log
+    events that can be parsed, filtered, aggregated, and forwarded by any log
+    platform (DigitalOcean, CloudWatch, Datadog, ELK, etc.).
+
+    Key characteristics:
+    - Structured JSON lines on stdout (Twelve-Factor App compliant)
+    - One canonical log line per operation (Stripe pattern)
+    - Environment-aware formatting (pretty for dev, JSON for prod)
+    - Fire-and-forget (logging never blocks or crashes the operation)
+    - Key dimensions: who, what, when, how long, outcome
+    - Privacy-aware (hash identifiers, never log secrets)
+
+  applies_to:
+    - "API servers logging request/response cycles"
+    - "Tool dispatch layers logging tool calls and results"
+    - "Background jobs logging execution and outcomes"
+    - "MCP servers tracking tool usage and errors"
+    - "CLI tools logging operations for debugging"
+
+  when_to_use:
+    - "Service has ad-hoc print() or colored() logging that needs structure"
+    - "Need to answer 'who is using what, how often, and is it working?'"
+    - "Deploying to a platform that captures stdout (DO, K8s, Lambda, etc.)"
+    - "Need usage analytics without adding an external analytics service"
+    - "Debugging production issues requires structured, searchable logs"
+
+  when_NOT_to_use:
+    - "Need real-time dashboards and funnels (use PostHog/Mixpanel instead)"
+    - "Need long-term retention beyond platform log window (add a log sink)"
+    - "Compliance requires immutable audit logs (use append-only audit store)"
+    - "Logging adds unacceptable latency (sub-microsecond hot paths)"
+
+# ------------------------------------------------------------------------------
+# TEMPLATE SECTIONS
+# ------------------------------------------------------------------------------
+
+intent_template:
+  summary: "Structured logging for [service name] — [what to track]"
+  goal: "Replace ad-hoc logging with structured JSON events so [stakeholder] can answer [key questions] using platform log tools"
+  success_metric: "Every [operation] emits exactly one structured log line with [required dimensions]"
+  stakeholders:
+    - "[Service owner / operator]"
+    - "[Alpha users / developers consuming the service]"
+
+constraints_template:
+  - name: "one_line_per_operation"
+    requirement: "Each [operation] produces exactly one structured log line on completion"
+    typical_values: "1 log line per request/tool-call/job — not per step"
+    test: "tests/test_logging.py::test_one_line_per_operation"
+    consequence_if_violated: "Log noise; hard to count operations; aggregation breaks"
+
+  - name: "structured_json_in_prod"
+    requirement: "Log lines are valid JSON when ENVIRONMENT != 'development'"
+    typical_values: "json.dumps() with no newlines in values"
+    test: "tests/test_logging.py::test_json_output_format"
+    consequence_if_violated: "Platform log parsers can't index fields; grep is the only tool"
+
+  - name: "required_dimensions"
+    requirement: "Every log line includes: event, ts, duration_ms, status"
+    typical_values: |
+      event: string (operation name, e.g. 'tool_call')
+      ts: ISO 8601 UTC timestamp
+      duration_ms: int (wall-clock milliseconds)
+      status: 'ok' | 'error'
+    test: "tests/test_logging.py::test_required_dimensions"
+    consequence_if_violated: "Can't filter, aggregate, or alert on missing fields"
+
+  - name: "no_secrets_logged"
+    requirement: "Never log API keys, tokens, passwords, or PII in plaintext"
+    typical_values: "Hash identifiers (SHA-256 prefix), redact secrets"
+    test: "tests/test_logging.py::test_no_secrets"
+    consequence_if_violated: "Security breach; credential leakage via log platform"
+
+  - name: "fire_and_forget"
+    requirement: "Logging failures never crash or slow the operation"
+    typical_values: "try/except around log emission; never raise from logger"
+    test: "tests/test_logging.py::test_logging_failure_is_silent"
+    consequence_if_violated: "Logging bug takes down production service"
+
+rationale_template:
+  decision: "Structured JSON logging to stdout for [service]"
+  reasoning: |
+    - Ad-hoc print()/colored() output is not parseable by log platforms
+    - Structured JSON enables filtering by any dimension (tool, user, status)
+    - Stdout logging is Twelve-Factor App compliant and works on any platform
+    - One canonical log line per operation (Stripe pattern) reduces noise
+    - No external dependency needed — just json.dumps() to stdout
+    - Privacy: hash API keys, never log secrets or PII in plaintext
+  evidence: |
+    - structlog best practices: https://www.structlog.org/en/latest/logging-best-practices.html
+    - Stripe canonical log lines: widely adopted in production services
+    - Twelve-Factor App (Factor XI: Logs): https://12factor.net/logs
+    - OpenTelemetry MCP semantic conventions: https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/
+  stakeholder: "[Service maintainer]"
+
+alternatives_template:
+  - name: "keep_print_statements"
+    typical_rejection_reason: "Unstructured; can't filter, aggregate, or alert on specific dimensions"
+    when_it_works: "Local-only development scripts that never deploy to production"
+
+  - name: "external_analytics_service"
+    typical_rejection_reason: "Adds external dependency, cost, and data-leaves-infra concerns for alpha stage"
+    when_it_works: "Need dashboards, funnels, retention curves (PostHog, Mixpanel); add when 3+ users"
+
+  - name: "database_backed_analytics"
+    typical_rejection_reason: "Overkill for alpha; adds managed DB cost and schema maintenance"
+    when_it_works: "Need long-term queryable analytics, custom admin dashboards, compliance audit"
+
+  - name: "structlog_library"
+    typical_rejection_reason: "Adds dependency for what is 20 lines of json.dumps() code"
+    when_it_works: "Large codebase with many logging callsites; need processors, filters, context binding"
+
+  - name: "opentelemetry_tracing"
+    typical_rejection_reason: "Heavy infrastructure (collector, backend); overkill for single-service alpha"
+    when_it_works: "Multi-service distributed system; need trace propagation across services"
+
+risks_template:
+  - condition: "Log volume exceeds platform retention or storage"
+    impact: "medium"
+    action: "Reduce verbosity (remove debug-level events) or add log sink"
+    monitor: "Platform log storage usage"
+    severity: "low"
+
+  - condition: "Secrets accidentally logged in plaintext"
+    impact: "high"
+    action: "Audit log output; add test that greps logs for key patterns (Bearer, sk-, etc.)"
+    monitor: "Security review of log samples"
+    severity: "high"
+
+  - condition: "JSON serialization fails on exotic types"
+    impact: "low"
+    action: "Use default=str in json.dumps(); fire-and-forget wrapping"
+    monitor: "stderr for serialization tracebacks"
+    severity: "low"
+
+  - condition: "Logging overhead affects latency-sensitive paths"
+    impact: "medium"
+    action: "Profile; move to async logging or batch emission if needed"
+    monitor: "p99 latency before/after logging added"
+    severity: "low"
+
+# ------------------------------------------------------------------------------
+# IMPLEMENTATION PATTERN
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  directory_structure: |
+    [service]/
+    ├── logger.py                     # Structured logger module
+    ├── logger_intent.yaml            # Intent artifact (uses this recipe)
+    ├── [dispatch_layer].py           # Where log calls are added
+    └── tests/
+        └── test_logging.py           # Logging constraint tests
+
+  code_structure: |
+    # logger.py — Pseudo-code / structure pattern
+
+    # 1. Environment detection
+    #    Read ENVIRONMENT env var → "development" or "production"
+
+    # 2. Identity hashing
+    #    _hash_key(key) → SHA-256 prefix (8 chars) for privacy
+
+    # 3. Core function: log_event(event, *, duration_ms, status, error, **extra)
+    #    - Build entry dict with required fields (event, ts, duration_ms, status)
+    #    - Merge optional fields (error, **extra)
+    #    - If dev mode → pretty-print one human-readable line
+    #    - If prod mode → json.dumps() one JSON line to stdout (flush=True)
+    #    - Wrap in try/except → fire-and-forget (never crash from logging)
+
+    # 4. Integration: call log_event() at dispatch layer completion
+    #    - On success: log_event("[op]", tool=name, status="ok", duration_ms=elapsed)
+    #    - On error:   log_event("[op]", tool=name, status="error", error=str(e))
+
+    # Dependencies: zero (stdlib only — json, hashlib, datetime)
+
+  key_files:
+    - file: "logger.py"
+      purpose: "Structured log event emitter — JSON for prod, pretty for dev"
+      key_functions:
+        - name: "log_event"
+          purpose: "Emit one canonical structured log line per operation"
+        - name: "_hash_key"
+          purpose: "Hash identifiers for privacy (API keys, user IDs)"
+
+  dependencies: []  # Zero external dependencies — stdlib only (json, hashlib, datetime)
+
+# ------------------------------------------------------------------------------
+# INTEGRATION POINTS
+# ------------------------------------------------------------------------------
+
+integration_points:
+  - name: "dispatch_layer"
+    description: |
+      The single place where all operations are routed. Add log_event() here
+      for complete coverage with one callsite. Examples:
+      - Tool registry call_tool() function
+      - API request handler / middleware
+      - Job executor run() method
+    pattern: |
+      Wrap the dispatch function:
+      1. Record start time before execution
+      2. Execute the operation
+      3. On success → log_event with tool name, duration, status="ok"
+      4. On error → log_event with tool name, duration, status="error", error message
+      5. Always include key_hash for identity tracking
+
+  - name: "auth_layer"
+    description: |
+      Log authentication attempts — one line per check.
+      Three outcomes: success (key_hash), failure (error reason), disabled (note).
+
+# ------------------------------------------------------------------------------
+# LOG LINE SCHEMA
+# ------------------------------------------------------------------------------
+
+log_line_schema:
+  required_fields:
+    - field: "event"
+      type: "string"
+      description: "Operation type (tool_call, auth, health_check)"
+      examples: ["tool_call", "auth", "error"]
+
+    - field: "ts"
+      type: "string (ISO 8601 UTC)"
+      description: "Timestamp of the event"
+      examples: ["2026-02-08T14:30:00.123456+00:00"]
+
+    - field: "duration_ms"
+      type: "integer"
+      description: "Wall-clock time of the operation in milliseconds"
+      examples: [12, 670, 3200]
+
+    - field: "status"
+      type: "string"
+      description: "Outcome of the operation"
+      enum: ["ok", "error"]
+
+  optional_fields:
+    - field: "tool"
+      type: "string"
+      description: "Tool or endpoint name"
+      examples: ["ivd_search", "ivd_validate"]
+
+    - field: "key_hash"
+      type: "string"
+      description: "SHA-256 prefix (8 chars) of the API key used"
+      examples: ["a3f2c1d4", "none"]
+
+    - field: "error"
+      type: "string"
+      description: "Error message (truncated to 500 chars)"
+      examples: ["Division by zero", "File not found: recipes/bad.yaml"]
+
+    - field: "result_size"
+      type: "integer"
+      description: "Response size in bytes (optional, for bandwidth tracking)"
+      examples: [1024, 45000]
+
+  example_lines:
+    - '{"event":"tool_call","ts":"2026-02-08T14:30:00.123Z","duration_ms":670,"status":"ok","tool":"ivd_search","key_hash":"a3f2c1d4"}'
+    - '{"event":"tool_call","ts":"2026-02-08T14:30:01.000Z","duration_ms":12,"status":"ok","tool":"ivd_get_context","key_hash":"a3f2c1d4"}'
+    - '{"event":"tool_call","ts":"2026-02-08T14:30:02.500Z","duration_ms":50,"status":"error","tool":"ivd_load_recipe","error":"Recipe not found: bad-name","key_hash":"b7e9f0a2"}'
+    - '{"event":"auth","ts":"2026-02-08T14:30:03.000Z","duration_ms":1,"status":"error","error":"invalid_key"}'
+
+# ------------------------------------------------------------------------------
+# QUERYING LOGS
+# ------------------------------------------------------------------------------
+
+querying_patterns:
+  - name: "Count tool calls per tool"
+    platform: "doctl / jq"
+    command: |
+      doctl apps logs <app-id> --type run | \
+        jq -r 'select(.event=="tool_call") | .tool' | \
+        sort | uniq -c | sort -rn
+
+  - name: "Find errors"
+    platform: "doctl / grep"
+    command: |
+      doctl apps logs <app-id> --type run | \
+        grep '"status":"error"'
+
+  - name: "Unique users (by key hash)"
+    platform: "doctl / jq"
+    command: |
+      doctl apps logs <app-id> --type run | \
+        jq -r 'select(.event=="tool_call") | .key_hash' | \
+        sort -u
+
+  - name: "Slowest operations"
+    platform: "doctl / jq"
+    command: |
+      doctl apps logs <app-id> --type run | \
+        jq -r 'select(.event=="tool_call") | "\(.duration_ms)ms \(.tool)"' | \
+        sort -rn | head -20
+
+# ------------------------------------------------------------------------------
+# VERIFICATION PATTERN
+# ------------------------------------------------------------------------------
+
+verification_pattern:
+  continuous_checks:
+    - check: "Every operation emits exactly one log line"
+      frequency: "per_deploy"
+      command: "Run test suite, count log lines per tool call"
+      threshold: "1 line per call_tool() invocation"
+
+    - check: "Log lines are valid JSON in prod mode"
+      frequency: "per_deploy"
+      command: "Run with ENVIRONMENT=production, parse each line with json.loads()"
+      threshold: "0 parse failures"
+
+    - check: "No secrets in log output"
+      frequency: "per_deploy"
+      command: "grep -i 'bearer\\|sk-\\|password\\|secret' in captured logs"
+      threshold: "0 matches"
+
+  monitoring_setup:
+    - metric: "tool_call count per tool"
+      dashboard: "DO App Platform logs / jq"
+      alert_threshold: "N/A (informational during alpha)"
+
+    - metric: "error rate"
+      dashboard: "DO App Platform logs / grep"
+      alert_threshold: "> 10% error rate over 1 hour"
+
+# ------------------------------------------------------------------------------
+# EXAMPLES
+# ------------------------------------------------------------------------------
+
+examples:
+  - name: "IVD MCP Server Tool Tracking"
+    location: "mcp_server/logger.py"
+    domain: "Developer tools / MCP"
+    customization: |
+      - Added to registry.py call_tool() dispatch layer
+      - Tracks tool name, API key hash, duration, and errors
+      - JSON output captured by DigitalOcean App Platform logs
+      - Pretty output for local development (ENVIRONMENT=development)
+    outcome: "Every tool call trackable via doctl apps logs + jq"
+    link_to_intent: "mcp_server/logger_intent.yaml"
+
+# ------------------------------------------------------------------------------
+# BEST PRACTICES
+# ------------------------------------------------------------------------------
+
+best_practices:
+  - practice: "One canonical log line per operation"
+    why: "Multiple log lines per request create noise and make counting hard (Stripe pattern)"
+    example: "Log once at the end of call_tool(), not at start and end"
+
+  - practice: "Log to stdout, let the platform route"
+    why: "Twelve-Factor App compliance; works on any platform without config"
+    example: "print(json.dumps(entry), flush=True) — no file handlers, no syslog"
+
+  - practice: "Hash identifiers, never log secrets"
+    why: "API keys and tokens in logs are a security breach waiting to happen"
+    example: "key_hash=sha256(api_key)[:8] instead of api_key=sk-abc..."
+
+  - practice: "Use default=str in json.dumps()"
+    why: "Prevents serialization crashes on datetime, Decimal, UUID, etc."
+    example: 'json.dumps(entry, default=str)'
+
+  - practice: "Truncate large values"
+    why: "Prevents log lines from becoming multi-KB; keeps log storage manageable"
+    example: "error=str(e)[:500] — cap error messages at 500 chars"
+
+  - practice: "Environment-aware formatting"
+    why: "JSON is unreadable in terminal; pretty output for dev, JSON for prod"
+    example: "Check ENVIRONMENT env var; pretty-print in development, JSON otherwise"
+
+common_pitfalls:
+  - pitfall: "Logging at every step instead of once per operation"
+    symptom: "10+ log lines per request; hard to count operations; log volume explodes"
+    fix: "Log once at dispatch layer completion — include all dimensions in that one line"
+
+  - pitfall: "Logging secrets in plaintext"
+    symptom: "API keys visible in DO dashboard logs; security vulnerability"
+    fix: "Hash all identifiers; add a test that greps log output for key patterns"
+
+  - pitfall: "Logging crashes the operation"
+    symptom: "json.dumps() raises on an exotic type; service returns 500"
+    fix: "Wrap log emission in try/except; use default=str; fire-and-forget"
+
+  - pitfall: "No timestamp in log lines"
+    symptom: "Can't correlate events; can't determine order; can't calculate rates"
+    fix: "Always include ts field with ISO 8601 UTC"
+
+  - pitfall: "Inconsistent event names"
+    symptom: "Some lines say 'tool_call', others say 'call', others say 'invoke'"
+    fix: "Define event name enum in the intent; use constants in code"
+
+# ------------------------------------------------------------------------------
+# COST & PERFORMANCE
+# ------------------------------------------------------------------------------
+
+typical_costs:
+  development_complexity: "Simple (20-50 lines of code, zero dependencies)"
+  infrastructure_cost: "$0 (stdout captured by platform; no external service)"
+  maintenance_effort: "Minimal (add new dimensions as needed)"
+
+typical_performance:
+  latency: "< 1ms per log line (json.dumps + print)"
+  throughput: "Thousands of lines per second (stdout is fast)"
+  storage: "Platform-dependent (DO: ~7 days retention; ELK: configurable)"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  documentation:
+    - "Twelve-Factor App, Factor XI: Logs — https://12factor.net/logs"
+    - "structlog best practices — https://www.structlog.org/en/latest/logging-best-practices.html"
+
+  research:
+    - "Stripe canonical log lines (internal pattern, widely cited)"
+    - "OpenTelemetry MCP semantic conventions — https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/"
+    - "MCP best practices for observability — https://mcp-best-practice.github.io/mcp-best-practice/best-practice/"
+
+  tools:
+    - name: "json (stdlib)"
+      purpose: "JSON serialization for structured log lines"
+      link: "https://docs.python.org/3/library/json.html"
+
+    - name: "jq"
+      purpose: "Command-line JSON processor for querying logs"
+      link: "https://jqlang.github.io/jq/"
+
+    - name: "doctl apps logs"
+      purpose: "Stream or fetch logs from DigitalOcean App Platform"
+      link: "https://docs.digitalocean.com/reference/doctl/reference/apps/logs/"
+
+# ------------------------------------------------------------------------------
+# CHANGELOG
+# ------------------------------------------------------------------------------
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-08"
+    change: "Initial recipe creation for structured logging pattern"
+    reason: |
+      IVD MCP Server needs tool call tracking for private alpha. Pattern is
+      reusable across any service with a dispatch layer. Based on research:
+      Twelve-Factor App (stdout), Stripe (canonical log lines), structlog
+      (best practices), OpenTelemetry MCP conventions (semantic fields).
+    author: "Leo Celis"
+    evidence: "Research: structlog docs, OpenTelemetry MCP semconv, Twelve-Factor App"

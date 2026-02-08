@@ -11,6 +11,7 @@ Reusable patterns for common development scenarios.
 - **data-field-mapping.yaml** - Field mapping and data sources for integrations and ETL
 - **doc-meeting-insights.yaml** - Extract insights from meeting transcripts
 - **infra-background-job.yaml** - Background job processing infrastructure
+- **infra-structured-logging.yaml** - Structured JSON logging for services and tool dispatch layers
 - **workflow-orchestration.yaml** - Multi-step workflow pattern
 
 ## How to Use

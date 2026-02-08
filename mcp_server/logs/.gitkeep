@@ -1,0 +1,2 @@
+# This directory contains rotating log files (*.log, *.log.*)
+# Files are gitignored but directory structure is tracked

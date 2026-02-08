@@ -164,6 +164,7 @@ Reusable patterns that encode proven solutions:
 | [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |
 | [infra-background-job](recipes/infra-background-job.yaml) | Background job processing |
 | [data-field-mapping](recipes/data-field-mapping.yaml) | Data source/target field mapping |
+| [infra-structured-logging](recipes/infra-structured-logging.yaml) | Structured JSON logging for services |
 | [coordinator-intent-propagation](recipes/coordinator-intent-propagation.yaml) | Multi-agent intent delegation |
 | [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teaching concepts before intent |
 | [discovery-before-intent](recipes/discovery-before-intent.yaml) | Goal discovery before intent |

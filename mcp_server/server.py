@@ -26,17 +26,13 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
-from termcolor import colored
 
 from mcp_server.auth import validate_api_key
+from mcp_server.logger import log_health_check
 from mcp_server.registry import call_tool, get_all_tools
-
-NAME = "IVD MCP"
 
 # MCP Server instance
 server = Server("ivd-tool")
-
-print(colored(f"[{NAME}] Initializing IVD MCP Server...", "magenta"))
 
 
 class SSEHandledResponse(Response):
@@ -71,7 +67,6 @@ class SSEProxyMiddleware:
 async def list_tools() -> List[Tool]:
     """Return list of available tools."""
     tools = get_all_tools()
-    print(colored(f"[{NAME}] Client requested tool list: {len(tools)} tools", "cyan"))
     return tools
 
 
@@ -80,19 +75,17 @@ async def handle_call_tool(name: str, arguments: dict) -> List[TextContent]:
     """Handle tool invocation."""
     try:
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, call_tool, name, arguments)
+        # For stdio mode, no request context available
+        result = await loop.run_in_executor(None, call_tool, name, arguments, None, None)
         return [TextContent(type="text", text=result)]
     except Exception as e:
         error_msg = f"Error executing {name}: {e}"
-        print(colored(f"[{NAME}] {error_msg}", "red"))
         return [TextContent(type="text", text=error_msg)]
 
 
 async def run_stdio() -> None:
     """Run with stdio transport (local/Cursor)."""
-    print(colored(f"[{NAME}] Starting stdio transport...", "magenta"))
     async with stdio_server() as (read_stream, write_stream):
-        print(colored(f"[{NAME}] stdio transport ready", "green"))
         await server.run(
             read_stream,
             write_stream,
@@ -105,34 +98,32 @@ def create_sse_app() -> Starlette:
     mcp_path_prefix = os.environ.get("MCP_PATH_PREFIX", "")
     messages_path = f"{mcp_path_prefix}/messages" if mcp_path_prefix else "/messages"
 
-    print(colored(f"[{NAME}] Messages endpoint: {messages_path}", "cyan"))
     sse = SseServerTransport(messages_path)
 
     async def health_check(request):
         tools = get_all_tools()
+        tools_count = len(tools)
+        
+        # Log health check
+        log_health_check(tools_count)
+        
         return JSONResponse({
             "status": "healthy",
             "server": "ivd-tool",
             "version": "1.0.0",
-            "tools_count": len(tools),
+            "tools_count": tools_count,
         })
 
     async def handle_sse(request):
-        print(colored(f"[{NAME}] SSE connection from {request.client.host}", "cyan"))
-
         auth_result = await validate_api_key(request)
         if auth_result is not None:
             return auth_result
 
-        print(colored(f"[{NAME}] Client connected: {request.client.host}", "green"))
-
         try:
             async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
                 await server.run(streams[0], streams[1], server.create_initialization_options())
-        except Exception as e:
-            print(colored(f"[{NAME}] Connection error: {e}", "yellow"))
-        finally:
-            print(colored(f"[{NAME}] Client disconnected: {request.client.host}", "yellow"))
+        except Exception:
+            pass  # Logging happens in auth layer
 
         return SSEHandledResponse()
 
@@ -143,8 +134,8 @@ def create_sse_app() -> Starlette:
 
         try:
             await sse.handle_post_message(request.scope, request.receive, request._send)
-        except Exception as e:
-            print(colored(f"[{NAME}] Message error: {e}", "yellow"))
+        except Exception:
+            pass  # Logging happens in auth layer
 
         return SSEHandledResponse()
 
@@ -167,10 +158,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.transport == "stdio":
-        print(colored(f"[{NAME}] Mode: STDIO (local)", "magenta"))
         asyncio.run(run_stdio())
     else:
-        print(colored(f"[{NAME}] Mode: SSE (HTTP) on port {args.port}", "magenta"))
         if args.reload:
             uvicorn.run("mcp_server.server:create_sse_app", host="0.0.0.0", port=args.port, reload=True, factory=True)
         else:
