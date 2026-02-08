@@ -1,8 +1,8 @@
 # IVD MCP Server Dependencies
 # Root-level file for DigitalOcean App Platform auto-detection
 
-# MCP protocol
-mcp>=1.13.1
+# MCP protocol (pinned — >=1.14 changes SSE transport behavior)
+mcp==1.13.1
 
 # HTTP server
 starlette>=0.36.0

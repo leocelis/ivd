@@ -1,7 +1,7 @@
 # IVD MCP Server Dependencies
 
-# MCP protocol
-mcp>=1.13.1
+# MCP protocol (pinned — >=1.14 changes SSE transport behavior)
+mcp==1.13.1
 
 # HTTP server
 starlette>=0.36.0

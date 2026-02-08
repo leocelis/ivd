@@ -103,7 +103,7 @@ Add to your MCP configuration file (Cursor → Settings → Features → MCP):
 {
   "servers": {
     "ivd": {
-      "type": "http",
+      "type": "sse",
       "url": "https://mcp.ivdframework.dev/sse",
       "headers": {
         "Authorization": "Bearer <your-api-key>"
@@ -112,6 +112,8 @@ Add to your MCP configuration file (Cursor → Settings → Features → MCP):
   }
 }
 ```
+
+> **Important**: Use `"type": "sse"`, not `"type": "http"`. The IVD MCP server uses the SSE transport protocol. Using `"http"` will cause Cursor to attempt the Streamable HTTP protocol, which will fail.
 
 **Local (for development)**
 
