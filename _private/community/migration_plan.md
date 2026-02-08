@@ -451,11 +451,10 @@ After the IVD repo is working independently:
 2. Create DO App from `.do/app.yaml` (or via DO console)
 3. Set environment variables:
    - `IVD_API_KEYS`: generate initial keys with `secrets.token_urlsafe(32)`
-   - `OPENAI_API_KEY`: same key used by ADA (shared account)
-   - `MCP_PATH_PREFIX`: `/ivd-mcp`
-4. Deploy and verify:
-   - Health check: `GET /ivd-mcp/health`
-   - SSE endpoint: `GET /ivd-mcp/sse` (with Bearer token)
+4. Configure custom domain: `mcp.ivdframework.dev`
+5. Deploy and verify:
+   - Health check: `GET https://mcp.ivdframework.dev/health`
+   - SSE endpoint: `GET https://mcp.ivdframework.dev/sse` (with Bearer token)
    - Test tool call: `ivd_get_context`
 
 ### Step 7: Configure Cursor for IVD MCP
@@ -466,7 +465,7 @@ Update Cursor MCP settings to connect to the new IVD MCP server:
 {
   "mcpServers": {
     "ivd": {
-      "url": "https://your-do-app.ondigitalocean.app/ivd-mcp/sse",
+      "url": "https://mcp.ivdframework.dev/sse",
       "headers": {
         "Authorization": "Bearer <your-api-key>"
       }

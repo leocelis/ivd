@@ -19,6 +19,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 APP_NAME="ivd-mcp"
 APP_SPEC="$REPO_ROOT/.do/app.yaml"
 DO_PROJECT_ID="16526a12-bc99-4e3e-9adb-7321c84805f3"  # ADA project
+CUSTOM_DOMAIN="https://mcp.ivdframework.dev"  # Custom domain for IVD MCP
 
 # Colors
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -92,20 +93,14 @@ cmd_status() {
 cmd_health() {
     header "IVD MCP Health Check"
     require_doctl
-    local app_id ingress
+    local app_id
     app_id=$(require_app)
-    ingress=$(doctl apps get "$app_id" --format DefaultIngress --no-header)
 
-    if [ -z "$ingress" ]; then
-        error "No ingress URL found. App may not be deployed yet."
-        exit 1
-    fi
-
-    info "Checking: ${ingress}/health"
+    info "Checking: ${CUSTOM_DOMAIN}/health"
     local http_code body
-    body=$(curl -s -o /dev/null -w "%{http_code}" "${ingress}/health" 2>/dev/null)
+    body=$(curl -s -o /dev/null -w "%{http_code}" "${CUSTOM_DOMAIN}/health" 2>/dev/null)
     http_code="$body"
-    body=$(curl -s "${ingress}/health" 2>/dev/null)
+    body=$(curl -s "${CUSTOM_DOMAIN}/health" 2>/dev/null)
 
     if [ "$http_code" = "200" ]; then
         success "Health check passed (HTTP $http_code)"
@@ -120,14 +115,8 @@ cmd_health() {
 cmd_smoke() {
     header "IVD MCP Smoke Tests"
     require_doctl
-    local app_id ingress
+    local app_id
     app_id=$(require_app)
-    ingress=$(doctl apps get "$app_id" --format DefaultIngress --no-header)
-
-    if [ -z "$ingress" ]; then
-        error "No ingress URL found. App may not be deployed yet."
-        exit 1
-    fi
 
     local smoke_script="$REPO_ROOT/mcp_server/tests/smoke/smoke.py"
     if [ ! -f "$smoke_script" ]; then
@@ -141,8 +130,8 @@ cmd_smoke() {
         key_args="--key $api_key"
     fi
 
-    info "Running smoke tests against: $ingress"
-    python3 "$smoke_script" --url "$ingress" $key_args
+    info "Running smoke tests against: $CUSTOM_DOMAIN"
+    python3 "$smoke_script" --url "$CUSTOM_DOMAIN" $key_args
 }
 
 cmd_logs() {
