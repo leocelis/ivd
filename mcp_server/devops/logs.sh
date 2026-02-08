@@ -2,20 +2,20 @@
 # logs.sh — Stream and query IVD MCP Server logs
 #
 # Usage:
-#   ./mcp_server/devops/logs.sh                    # Stream local log file (colored, live)
-#   ./mcp_server/devops/logs.sh --tail              # Tail last 20 lines
-#   ./mcp_server/devops/logs.sh --tail 50           # Tail last N lines
-#   ./mcp_server/devops/logs.sh --tools             # Show tool call summary (counts)
-#   ./mcp_server/devops/logs.sh --errors            # Show only errors
-#   ./mcp_server/devops/logs.sh --auth              # Show auth events
-#   ./mcp_server/devops/logs.sh --key O9T4HnV6      # Filter by partial key
-#   ./mcp_server/devops/logs.sh --tool ivd_search   # Filter by tool name
-#   ./mcp_server/devops/logs.sh --ip 45.123.45.67   # Filter by origin IP
-#   ./mcp_server/devops/logs.sh --since 2026-02-08  # Filter by date
-#   ./mcp_server/devops/logs.sh --json              # Raw JSON output (pipe to jq)
-#   ./mcp_server/devops/logs.sh --do                # Stream from DigitalOcean (doctl)
-#   ./mcp_server/devops/logs.sh --stats             # Full usage statistics
-#   ./mcp_server/devops/logs.sh --files             # List log files with sizes
+#   ./mcp_server/devops/logs.sh                    # Stream from DigitalOcean (live, auto-reconnect)
+#   ./mcp_server/devops/logs.sh --local            # Stream local log file (colored, live)
+#   ./mcp_server/devops/logs.sh --tail              # Tail last 20 lines (local)
+#   ./mcp_server/devops/logs.sh --tail 50           # Tail last N lines (local)
+#   ./mcp_server/devops/logs.sh --tools             # Show tool call summary (local)
+#   ./mcp_server/devops/logs.sh --errors            # Show only errors (local)
+#   ./mcp_server/devops/logs.sh --auth              # Show auth events (local)
+#   ./mcp_server/devops/logs.sh --key O9T4HnV6      # Filter by partial key (local)
+#   ./mcp_server/devops/logs.sh --tool ivd_search   # Filter by tool name (local)
+#   ./mcp_server/devops/logs.sh --ip 45.123.45.67   # Filter by origin IP (local)
+#   ./mcp_server/devops/logs.sh --since 2026-02-08  # Filter by date (local)
+#   ./mcp_server/devops/logs.sh --json              # Raw JSON output (local, pipe to jq)
+#   ./mcp_server/devops/logs.sh --stats             # Full usage statistics (local)
+#   ./mcp_server/devops/logs.sh --files             # List log files with sizes (local)
 
 set -euo pipefail
 
@@ -251,7 +251,7 @@ cmd_json() {
 }
 
 cmd_do_logs() {
-    header "Streaming from DigitalOcean"
+    header "Streaming from DigitalOcean (Live Production Logs)"
     
     if ! command -v doctl &> /dev/null; then
         error "doctl not found. Install: brew install doctl"
@@ -267,9 +267,28 @@ cmd_do_logs() {
     fi
     
     info "App ID: $app_id"
+    info "Auto-reconnect enabled (will resume on connection loss)"
     info "Press Ctrl+C to stop\n"
     
-    doctl apps logs "$app_id" --type=run --follow
+    local reconnect_count=0
+    
+    while true; do
+        if [ $reconnect_count -gt 0 ]; then
+            warn "Connection lost. Reconnecting... (attempt #$reconnect_count)"
+            sleep 2
+        fi
+        
+        # Stream logs (will exit on disconnect/error)
+        doctl apps logs "$app_id" --type=run --follow 2>&1 || {
+            reconnect_count=$((reconnect_count + 1))
+            continue
+        }
+        
+        # If we get here, doctl exited normally (Ctrl+C)
+        break
+    done
+    
+    [ $reconnect_count -gt 0 ] && info "Total reconnections: $reconnect_count"
 }
 
 cmd_stats() {
@@ -386,6 +405,7 @@ cmd_files() {
 
 main() {
     case "${1:-}" in
+        --local)      cmd_stream ;;
         --tail)       cmd_tail "${2:-20}" ;;
         --tools)      cmd_tools ;;
         --errors)     cmd_errors ;;
@@ -395,41 +415,41 @@ main() {
         --ip)         [ -z "${2:-}" ] && { error "Usage: $0 --ip <ip_address>"; exit 1; }; cmd_filter_ip "$2" ;;
         --since)      [ -z "${2:-}" ] && { error "Usage: $0 --since <YYYY-MM-DD>"; exit 1; }; cmd_filter_since "$2" ;;
         --json)       cmd_json ;;
-        --do)         cmd_do_logs ;;
         --stats)      cmd_stats ;;
         --files)      cmd_files ;;
         --help|-h)
             echo "Usage: $0 [command]"
             echo ""
             echo "Streaming:"
-            echo "  (default)              Stream local log file (colored, live)"
-            echo "  --tail [N]             Show last N lines (default: 20)"
-            echo "  --do                   Stream from DigitalOcean (doctl apps logs)"
+            echo "  (default)              Stream from DigitalOcean (live, auto-reconnect)"
+            echo "  --local                Stream local log file (colored, live)"
+            echo "  --tail [N]             Show last N lines from local (default: 20)"
             echo ""
-            echo "Reports:"
+            echo "Reports (local logs only):"
             echo "  --tools                Tool call summary (counts, avg duration)"
             echo "  --errors               Show only errors"
             echo "  --auth                 Show auth events"
             echo "  --stats                Full usage statistics"
             echo "  --files                List log files with sizes"
             echo ""
-            echo "Filters:"
+            echo "Filters (local logs only):"
             echo "  --key <partial_key>    Filter by partial API key (e.g. O9T4HnV6)"
             echo "  --tool <tool_name>     Filter by tool (e.g. ivd_search)"
             echo "  --ip <ip_address>      Filter by origin IP"
             echo "  --since <YYYY-MM-DD>   Filter entries since date"
             echo ""
-            echo "Raw:"
+            echo "Raw (local logs only):"
             echo "  --json                 Raw JSON output (pipe to jq)"
             echo ""
             echo "Examples:"
-            echo "  $0                                     # Live stream"
-            echo "  $0 --stats                             # Full report"
-            echo "  $0 --tool ivd_search                   # Search tool logs"
+            echo "  $0                                     # Live stream from DO (default)"
+            echo "  $0 --local                             # Stream local file"
+            echo "  $0 --stats                             # Local usage report"
+            echo "  $0 --tool ivd_search                   # Local search tool logs"
             echo "  $0 --json | jq '.tool'                 # Pipe to jq"
-            echo "  $0 --since 2026-02-08 | head -20       # Today's logs"
+            echo "  $0 --since 2026-02-08 | head -20       # Today's local logs"
             ;;
-        "")           cmd_stream ;;
+        "")           cmd_do_logs ;;
         *)            error "Unknown command: $1. Use --help"; exit 1 ;;
     esac
 }

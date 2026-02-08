@@ -269,12 +269,16 @@ implementation:
     - dir: "brain/ivd/"
       purpose: "Committed embeddings (.npy vectors + .json metadata/chunks)"
     - dir: "devops/"
-      purpose: "Embedding generation and local query tooling"
+      purpose: "Operational tooling for deployment, logging, key management, and embedding generation"
       files:
-        - "embed.sh  — Bash wrapper: venv + .env + embed.py"
-        - "embed.py  — Scans repo, generates embeddings into brain/ivd/"
-        - "search.sh — Bash wrapper: venv + .env + search.py"
-        - "search.py — CLI to query embeddings locally"
+        - "deploy.sh  — DigitalOcean App Platform deployment and management (create, update, status)"
+        - "logs.sh    — Production log streaming with auto-reconnect, filtering, and analytics"
+        - "keys.sh    — API key generation and management with user prefixes"
+        - "embed.sh   — Embedding generation wrapper (activates venv, loads .env, runs embed.py)"
+        - "embed.py   — Scans repo, chunks content, generates embeddings into brain/ivd/"
+        - "search.sh  — Local embedding query wrapper (activates venv, runs search.py)"
+        - "search.py  — CLI to query committed embeddings locally without API key"
+        - "test.sh    — Test runner wrapper (activates venv, runs pytest with coverage)"
 
 # ==============================================================================
 # VERIFICATION

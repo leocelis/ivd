@@ -15,7 +15,8 @@ Usage (remote/SSE):
 import argparse
 import asyncio
 import os
-from typing import List
+from contextvars import ContextVar
+from typing import List, Optional
 
 import uvicorn
 from mcp.server import Server
@@ -31,6 +32,9 @@ from termcolor import colored
 from mcp_server.auth import validate_api_key
 from mcp_server.logger import log_health_check
 from mcp_server.registry import call_tool, get_all_tools
+
+# Context variables to store request info for tool call logging
+_request_context: ContextVar[Optional[dict]] = ContextVar("request_context", default=None)
 
 NAME = "IVD MCP"
 
@@ -80,8 +84,14 @@ async def handle_call_tool(name: str, arguments: dict) -> List[TextContent]:
     """Handle tool invocation."""
     try:
         loop = asyncio.get_event_loop()
-        # For stdio mode, no request context available
-        result = await loop.run_in_executor(None, call_tool, name, arguments, None, None)
+        
+        # Get request context (API key, IP) from context vars (SSE mode)
+        # Falls back to None for stdio mode
+        ctx = _request_context.get()
+        api_key = ctx.get("api_key") if ctx else None
+        request = ctx.get("request") if ctx else None
+        
+        result = await loop.run_in_executor(None, call_tool, name, arguments, api_key, request)
         return [TextContent(type="text", text=result)]
     except Exception as e:
         error_msg = f"Error executing {name}: {e}"
@@ -122,11 +132,17 @@ def create_sse_app() -> Starlette:
     async def handle_sse(request):
         print(colored(f"[{NAME}] SSE connection from {request.client.host}", "cyan"))
 
-        auth_result = await validate_api_key(request)
+        auth_result, api_key = await validate_api_key(request)
         if auth_result is not None:
             return auth_result
 
         print(colored(f"[{NAME}] Client connected: {request.client.host}", "green"))
+
+        # Store request context for tool calls
+        _request_context.set({
+            "api_key": api_key,
+            "request": request,
+        })
 
         try:
             async with sse.connect_sse(
@@ -141,13 +157,20 @@ def create_sse_app() -> Starlette:
             print(colored(f"[{NAME}] Connection error: {e}", "yellow"))
         finally:
             print(colored(f"[{NAME}] Client disconnected: {request.client.host}", "yellow"))
+            _request_context.set(None)  # Clear context
 
         return SSEHandledResponse()
 
     async def handle_messages(request):
-        auth_result = await validate_api_key(request)
+        auth_result, api_key = await validate_api_key(request)
         if auth_result is not None:
             return auth_result
+
+        # Update request context for this message (in case it's a different request object)
+        _request_context.set({
+            "api_key": api_key,
+            "request": request,
+        })
 
         try:
             await sse.handle_post_message(request.scope, request.receive, request._send)
