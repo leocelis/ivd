@@ -7,6 +7,10 @@
 name: ivd-mcp
 region: sfo
 
+# CRITICAL: Disable DO edge cache — SSE streams require unbuffered responses.
+# Without this, the Cloudflare edge cache buffers SSE events and clients receive 0 bytes.
+disable_edge_cache: true
+
 services:
 - name: ivd-mcp
   source_dir: /

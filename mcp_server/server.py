@@ -26,13 +26,18 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
+from termcolor import colored
 
 from mcp_server.auth import validate_api_key
 from mcp_server.logger import log_health_check
 from mcp_server.registry import call_tool, get_all_tools
 
+NAME = "IVD MCP"
+
 # MCP Server instance
 server = Server("ivd-tool")
+
+print(colored(f"[{NAME}] Initializing IVD MCP Server...", "magenta"))
 
 
 class SSEHandledResponse(Response):
@@ -115,15 +120,27 @@ def create_sse_app() -> Starlette:
         })
 
     async def handle_sse(request):
+        print(colored(f"[{NAME}] SSE connection from {request.client.host}", "cyan"))
+
         auth_result = await validate_api_key(request)
         if auth_result is not None:
             return auth_result
 
+        print(colored(f"[{NAME}] Client connected: {request.client.host}", "green"))
+
         try:
-            async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
-                await server.run(streams[0], streams[1], server.create_initialization_options())
-        except Exception:
-            pass  # Logging happens in auth layer
+            async with sse.connect_sse(
+                request.scope, request.receive, request._send
+            ) as streams:
+                await server.run(
+                    streams[0],
+                    streams[1],
+                    server.create_initialization_options()
+                )
+        except Exception as e:
+            print(colored(f"[{NAME}] Connection error: {e}", "yellow"))
+        finally:
+            print(colored(f"[{NAME}] Client disconnected: {request.client.host}", "yellow"))
 
         return SSEHandledResponse()
 
@@ -134,8 +151,8 @@ def create_sse_app() -> Starlette:
 
         try:
             await sse.handle_post_message(request.scope, request.receive, request._send)
-        except Exception:
-            pass  # Logging happens in auth layer
+        except Exception as e:
+            print(colored(f"[{NAME}] Message error: {e}", "yellow"))
 
         return SSEHandledResponse()
 
