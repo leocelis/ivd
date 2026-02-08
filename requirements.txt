@@ -1,12 +1,13 @@
 # IVD MCP Server Dependencies
 # Root-level file for DigitalOcean App Platform auto-detection
 
-# MCP protocol (pinned — >=1.14 changes SSE transport behavior)
+# MCP protocol (pinned to match ADA — newer versions break SSE transport)
 mcp==1.13.1
 
-# HTTP server
-starlette>=0.36.0
-uvicorn>=0.27.0
+# HTTP server (pinned to match ADA — must be compatible with mcp==1.13.1)
+starlette==0.47.3
+sse-starlette==3.0.2
+uvicorn==0.35.0
 
 # Embeddings (query-time: numpy loads .npy files)
 numpy>=1.26.0
