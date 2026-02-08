@@ -34,6 +34,10 @@ services:
     value: "CHANGE_ME_IN_DO_DASHBOARD"
     type: SECRET
 
+domains:
+- domain: mcp.ivdframework.dev
+  type: PRIMARY
+
 alerts:
 - rule: DEPLOYMENT_FAILED
 - rule: DOMAIN_FAILED

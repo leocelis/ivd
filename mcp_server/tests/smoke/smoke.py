@@ -24,7 +24,7 @@ import time
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
-DEFAULT_URL = "https://ivd-mcp-hn77u.ondigitalocean.app"
+DEFAULT_URL = "https://mcp.ivdframework.dev"
 
 # Colors (disabled if not a TTY)
 IS_TTY = sys.stdout.isatty()
