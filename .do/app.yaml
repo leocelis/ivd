@@ -28,14 +28,11 @@ services:
 
   envs:
   # API keys for authenticated access (comma-separated)
+  # Set the actual value in DO dashboard (Settings > Environment Variables)
+  # DO NOT put real keys in this file — it's committed to git
   - key: IVD_API_KEYS
-    value: "${IVD_API_KEYS}"
+    value: "CHANGE_ME_IN_DO_DASHBOARD"
     type: SECRET
-
-  # OpenAI key (only needed if regenerating embeddings on server — not required for serving)
-  # - key: OPENAI_API_KEY
-  #   value: "${OPENAI_API_KEY}"
-  #   type: SECRET
 
 alerts:
 - rule: DEPLOYMENT_FAILED

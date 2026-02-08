@@ -24,6 +24,17 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             "suggestions": ["Check YAML syntax — proper indentation, colons, quotes"],
         }, indent=2)
 
+    if artifact is None:
+        return json.dumps({
+            "valid": False,
+            "errors": ["Empty artifact — YAML parsed to nothing"],
+            "warnings": [],
+            "suggestions": ["Provide a valid YAML artifact with at least an 'intent' section"],
+            "artifact_type": artifact_type,
+            "validation_level": "structure_only",
+            "note": "Schema validation and principle alignment checks coming in Phase 2",
+        }, indent=2)
+
     errors = []
     warnings = []
     suggestions = []

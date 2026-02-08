@@ -236,7 +236,7 @@ risks:
 implementation:
   current: "mcp_server/"
   version: 1
-  tests: "N/A (manual smoke testing via devops/search.sh)"
+  tests: "mcp_server/tests/ (114 tests — unit, e2e, smoke)"
   documentation: "mcp_server/.env.example"
 
   # Component map (file paths verifiable via ls)

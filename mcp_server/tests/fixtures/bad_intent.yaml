@@ -1,0 +1,6 @@
+# Invalid IVD intent — missing required sections
+# Used by unit tests to verify error detection
+
+intent:
+  summary: "Incomplete intent for testing"
+# Missing: constraints, rationale, alternatives, risks, implementation, verification

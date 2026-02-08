@@ -6,6 +6,7 @@
 #   ./mcp_server/devops/deploy.sh --skip-embed  # Skip embedding regeneration
 #   ./mcp_server/devops/deploy.sh --status      # Check deployment status
 #   ./mcp_server/devops/deploy.sh --health      # Health check
+#   ./mcp_server/devops/deploy.sh --smoke       # Post-deploy smoke tests
 #   ./mcp_server/devops/deploy.sh --create      # First-time: create the DO app
 #   ./mcp_server/devops/deploy.sh --logs        # View deployment logs
 
@@ -116,6 +117,34 @@ cmd_health() {
     fi
 }
 
+cmd_smoke() {
+    header "IVD MCP Smoke Tests"
+    require_doctl
+    local app_id ingress
+    app_id=$(require_app)
+    ingress=$(doctl apps get "$app_id" --format DefaultIngress --no-header)
+
+    if [ -z "$ingress" ]; then
+        error "No ingress URL found. App may not be deployed yet."
+        exit 1
+    fi
+
+    local smoke_script="$REPO_ROOT/mcp_server/tests/smoke/smoke.py"
+    if [ ! -f "$smoke_script" ]; then
+        error "Smoke test script not found: $smoke_script"
+        exit 1
+    fi
+
+    local api_key="${IVD_API_KEY:-}"
+    local key_args=""
+    if [ -n "$api_key" ]; then
+        key_args="--key $api_key"
+    fi
+
+    info "Running smoke tests against: $ingress"
+    python3 "$smoke_script" --url "$ingress" $key_args
+}
+
 cmd_logs() {
     header "IVD MCP Deployment Logs"
     require_doctl
@@ -156,7 +185,7 @@ cmd_deploy() {
 
     # Step 1: Regenerate embeddings (unless --skip-embed)
     if [ "$skip_embed" = false ]; then
-        info "Step 1/4: Regenerating embeddings..."
+        info "Step 1/5: Regenerating embeddings..."
         if [ -f "$SCRIPT_DIR/embed.sh" ]; then
             bash "$SCRIPT_DIR/embed.sh"
             success "Embeddings regenerated"
@@ -164,11 +193,25 @@ cmd_deploy() {
             warn "embed.sh not found, skipping"
         fi
     else
-        info "Step 1/4: Skipping embeddings (--skip-embed)"
+        info "Step 1/5: Skipping embeddings (--skip-embed)"
     fi
 
-    # Step 2: Commit changes
-    info "Step 2/4: Committing changes..."
+    # Step 2: Run tests (gate — must pass before pushing)
+    info "Step 2/5: Running tests..."
+    if [ -f "$SCRIPT_DIR/test.sh" ]; then
+        if bash "$SCRIPT_DIR/test.sh"; then
+            success "All tests passed"
+        else
+            error "Tests failed — aborting deploy"
+            info "Fix failing tests, then re-run: $0"
+            exit 1
+        fi
+    else
+        warn "test.sh not found, skipping tests"
+    fi
+
+    # Step 3: Commit changes
+    info "Step 3/5: Committing changes..."
     if git diff --quiet && git diff --cached --quiet; then
         info "No changes to commit"
     else
@@ -176,12 +219,12 @@ cmd_deploy() {
         git commit -m "deploy: update embeddings and server"
     fi
 
-    # Step 3: Push to main (triggers auto-deploy)
-    info "Step 3/4: Pushing to main..."
+    # Step 4: Push to main (triggers auto-deploy)
+    info "Step 4/5: Pushing to main..."
     git push origin main
 
-    # Step 4: Wait for deployment
-    info "Step 4/4: Waiting for deployment..."
+    # Step 5: Wait for deployment
+    info "Step 5/5: Waiting for deployment..."
     local max_wait=180
     local elapsed=0
     local interval=15
@@ -199,7 +242,7 @@ cmd_deploy() {
         case "$phase" in
             ACTIVE)
                 success "Deployment complete!"
-                cmd_health
+                cmd_smoke
                 return 0
                 ;;
             ERROR|CANCELED)
@@ -220,6 +263,7 @@ main() {
         --create)      cmd_create ;;
         --status)      cmd_status ;;
         --health)      cmd_health ;;
+        --smoke)       cmd_smoke ;;
         --logs)        cmd_logs ;;
         --update-spec) cmd_update_spec ;;
         --skip-embed)  cmd_deploy "$@" ;;
@@ -232,6 +276,7 @@ main() {
             echo "  --create        First-time: create the DO app"
             echo "  --status        Check deployment status"
             echo "  --health        Run health check"
+            echo "  --smoke         Post-deploy smoke tests (health + auth + SSE)"
             echo "  --logs          View deployment logs"
             echo "  --update-spec   Update app spec on DO"
             ;;

@@ -1,0 +1,56 @@
+# Valid IVD intent artifact for testing
+scope:
+  level: "module"
+  type: "feature"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "test_feature"
+  category: "testing"
+  tags: ["test"]
+  status: "implemented"
+
+intent:
+  summary: "A test intent artifact for validation testing"
+  goal: "Verify that ivd_validate accepts well-formed intents"
+  success_metric: "Validation passes with zero errors"
+
+constraints:
+  - name: "test_constraint"
+    requirement: "Must pass validation"
+    test: "tests/test_validate.py::test_valid"
+    consequence_if_violated: "Validation is broken"
+
+rationale:
+  decision: "Use simple structure for testing"
+  reasoning: "Minimal valid artifact for unit tests"
+  evidence: "Test fixture"
+  date: "2026-02-07"
+  stakeholder: "Test suite"
+
+alternatives:
+  - name: "No fixture"
+    rejected_because: "Need a valid YAML to test against"
+    when_it_works: "Never for testing"
+
+risks:
+  - condition: "Fixture becomes stale"
+    action: "Update when validation rules change"
+    monitor: "Test failures"
+    severity: "low"
+
+implementation:
+  current: "mcp_server/tests/fixtures/"
+  version: 1
+
+verification:
+  test_cases:
+    - name: "fixture_valid"
+      description: "This fixture passes validation"
+      validates_constraint: "test_constraint"
+
+changelog:
+  - version: 1
+    date: "2026-02-07"
+    change: "Initial test fixture"
+    reason: "Unit testing"
