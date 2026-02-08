@@ -1,473 +1,283 @@
-# Intent-Verified Development (IVD)
+<p align="center">
+  <strong>Intent-Verified Development</strong>
+</p>
 
-**The Framework for the AI Agents Era**
+<p align="center">
+  <em>The Framework for the AI Agents Era</em>
+</p>
 
-**Version:** 1.2  
-**Created:** January 23, 2026  
-**Updated:** January 26, 2026 (AI Agents era positioning)  
-**Status:** Production Ready
-
----
-
-## The Problem IVD Solves
-
-Working with AI agents today has two core pain points:
-
-- **Many turns:** The exhausting back-and-forth (prompt → wrong → correct → still wrong → repeat)
-- **Hallucinations:** AI "fills gaps" in your prompts with plausible but wrong assumptions
-
-**Why traditional artifacts fail with AI:**
-
-| Artifact | Who Writes | Can AI Verify? | Result |
-|----------|-----------|----------------|--------|
-| PRD | Human | No | AI reads prose, guesses |
-| User Story | Human | No | AI reads prose, guesses |
-| Prompt | Human | No | AI reads prompt, guesses |
+<p align="center">
+  <a href="https://mcp.ivdframework.dev/health"><img src="https://img.shields.io/badge/MCP_Server-live-brightgreen?style=flat-square" alt="MCP Server"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-1.3-blue?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/tests-114_passed-brightgreen?style=flat-square" alt="Tests"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/license-private_alpha-orange?style=flat-square" alt="License"></a>
+</p>
 
 ---
 
-## The IVD Solution
-
-**The AI writes the intent, not you.**
-
-0. **(Optional) Discovery:** If you don't know what to ask, use discovery (e.g. `ivd_discover_goal`, list recipes)—AI proposes options; you pick; then 1–5.
-1. **You describe** what you want (natural language)
-2. **AI writes** structured intent artifact (YAML with constraints, tests)
-3. **You review** the intent: "Is this what I meant?" (clarification before implementation)
-4. **AI implements** against the intent (code, docs, architecture, research, etc.)
-5. **AI verifies**: Does my output pass the constraints? (catches hallucinations)
-
-**Scope:** Any AI-produced artifact—code, architecture, documentation, research, books, processes.
-
-**Feature inventory (large projects):** Optional metadata on intents plus a feature-list tool lets you derive "what exists" and avoid duplication—no separate inventory file.
-
-**Result:** Turns drop from many to one. Hallucinations are caught at the source.
+**Documentation**: [framework.md](framework.md) | **Cookbook**: [cookbook.md](cookbook.md) | **Cheatsheet**: [cheatsheet.md](cheatsheet.md) | **MCP Server**: [mcp.ivdframework.dev](https://mcp.ivdframework.dev/health)
 
 ---
+
+IVD is a methodology where **the AI writes the intent, implements against it, and verifies** — eliminating many-turn correction cycles and hallucinations at the source.
+
+```
+Without IVD                              With IVD
+
+You: "Add CSV export"                    You: "Add CSV export for compliance"
+AI:  [builds with wrong columns]         AI:  [writes intent.yaml with constraints]
+You: "No, these columns, ISO dates"      You:  "Yes, that's what I meant"
+AI:  [rewrites, still wrong]             AI:  [implements, runs tests, verifies]
+You: "Still not right..."                You:  "Done. First try."
+[Many turns. Many hallucinations.]       [One turn. Zero hallucinations.]
+```
+
+## Why IVD?
+
+Traditional artifacts (PRDs, user stories, prompts) are **prose written by humans** — AI reads them, guesses, and hallucinates. IVD inverts this:
+
+| | Traditional | IVD |
+|---|---|---|
+| **Who writes** | Human writes requirements | AI writes structured intent |
+| **Format** | Prose (ambiguous) | YAML with constraints and tests |
+| **Verification** | Manual review | AI verifies against executable constraints |
+| **Result** | AI guesses, many turns | AI verifies, one turn |
+
+## How It Works
+
+```
+1. You describe    →  what you want (natural language)
+2. AI writes       →  structured intent artifact (YAML with constraints, tests)
+3. You review      →  "Is this what I meant?" (clarification before code)
+4. AI implements   →  against the intent
+5. AI verifies     →  does my code pass the constraints?
+```
 
 ## Quick Start
 
-### For New Projects (Greenfield)
+### Copy to Your Project
 
 ```bash
-# Copy this entire folder to your project
+# Copy the full framework
 cp -r ivd/ /your-project/docs/
 
-# Start here:
-1. Read purpose.md (why IVD exists - AI Agents era vision)
-2. Read README.md (this file - what IVD is)
-3. Read cookbook.md (practical guide - how to use IVD)
-4. Read framework.md (complete specification)
-5. Use templates/ to create your first intent artifact
-```
-
-If you don't understand the concepts/domain, see framework.md → Step 0a (Teaching) and `recipes/teaching-before-intent.yaml`.
-
-If you're not sure what to build, see framework.md → Step 0b (Discovery) and `recipes/discovery-before-intent.yaml`.
-
-### For Existing Projects (Brownfield)
-
-```bash
-# Initialize IVD - creates system intent with project context
-ivd init --project-root /path/to/your/project
-
-# This scans and creates system_intent.yaml with:
-# - Code rules (.cursorrules, lint configs)
-# - Architecture (ARCHITECTURE.md, ADRs, principles)
-# - Tools/scripts (key scripts, CLIs)
-# - Libraries to reuse (internal shared libs)
-# - Key paths ("map to the stars": entrypoints, modules, workflows, docs, tests)
-# - Existing docs (README, API.md, CONTRIBUTING)
-
-# Then:
-1. Review and enrich system_intent.yaml
-2. Create intents for 3-5 critical modules (ivd scaffold)
-3. Child intents auto-reference parent_intent
-4. Expand gradually as you modify modules
-```
-
----
-
-## What is IVD?
-
-**Intent-Verified Development** is the framework for the **AI Agents era**—where AI writes intent, implements against it, and verifies. It eliminates many-turns and hallucinations.
-
-**The Core Innovation:**
-- **Traditional:** Human writes requirements (PRD, user story) → Human developer implements
-- **Literate Programming:** Documentation is primary, code extracted (designed for humans, not AI)
-- **IVD:** **AI writes intent** (following framework) → **AI implements** → **AI verifies** (catches hallucinations)
-
-**Without IVD:** Intent artifacts are just another prose document. AI reads, guesses, hallucinates.  
-**With IVD:** AI writes structured intent, verifies against constraints, self-corrects.
-
----
-
-## The Eight Principles
-
-1. **Intent is Primary** - Not code, not docs, intent. AI writes and verifies against intent.
-2. **Understanding Must Be Executable** - Prose can be wrong silently; executable constraints fail loudly.
-3. **Bidirectional Synchronization** - Changes flow in any direction with verification.
-4. **Continuous Verification** - AI verifies alignment every commit, every change.
-5. **Layered Understanding** - Intent → Constraints → Rationale → Alternatives → Risks (all verifiable).
-6. **AI as Understanding Partner** - **AI writes the intent**, implements against it, verifies. Not just syncs.
-7. **Understanding Survives Implementation** - Intent persists through rewrites, model upgrades, session limits.
-8. **Innovation through Inversion** - State the default, invert it, evaluate, implement. Capture inversion opportunities in intent.
-
----
-
-## Structure
-
-```
-ivd/
-├── purpose.md                      # Why IVD exists (vision and philosophy)
-├── README.md                       # What IVD is (overview and quick start)
-├── ivd_system_intent.yaml          # System intent (rules for extending IVD)
-├── ivd_package_validation_intent.yaml  # Package validation checklist
-├── optimal_structure.md            # Artifact placement and naming standards
-├── framework.md                    # Complete IVD specification
-├── cookbook.md                      # Practical implementation guide
-├── cheatsheet.md                   # Quick reference
-├── recipe-spec.md                  # Recipe specification
-│
-├── recipes/                   # Reusable pattern templates
-│   ├── README.md
-│   ├── agent-classifier.yaml
-│   ├── coordinator-intent-propagation.yaml
-│   ├── data-field-mapping.yaml
-│   ├── discovery-before-intent.yaml
-│   ├── doc-meeting-insights.yaml
-│   ├── infra-background-job.yaml
-│   ├── teaching-before-intent.yaml
-│   └── workflow-orchestration.yaml
-│
-├── templates/                 # Blank templates to get started
-│   ├── intent.yaml            # Copy and rename to {module}_intent.yaml
-│   ├── recipe.yaml            # Copy to create new recipe
-│   ├── intent_levels_guide.md # When to use which intent level
-│   ├── task_level_quick_ref.md
-│   └── examples/              # Complete examples
-│
-├── _private/                  # Historical + private planning
-│   ├── README.md              # Overview of private contents
-│   ├── ai_driven_dev/         # IVD origin story and training sessions
-│   │   ├── README.md
-│   │   ├── from_lp_to_ivd.md
-│   │   ├── ai_driven_development_guide.md
-│   │   ├── meetings_index.md
-│   │   └── meetings.md
-│   └── community/             # Private adoption planning
-│       └── community_adoption_intent.yaml
-│
-└── research/                  # Research and implementation guidance
-    ├── README.md
-    ├── agent_knowledge_standards.md
-    ├── ivd_implementation_roadmap.md
-    ├── validation_methodology.md
-    └── ... (10+ research documents)
-```
-
----
-
-## Documentation Guide
-
-### For Understanding Why
-1. **purpose.md** - Vision, philosophy, and the breakthrough insight
-
-### For Learning
-1. **cookbook.md** - Start here! Practical guide with real examples
-2. **framework.md** - Complete specification and theory
-3. **cheatsheet.md** - Quick reference when you need it
-
-### For Implementation
-1. **templates/intent.yaml** - Copy to your module as `{module}_intent.yaml`, fill in specifics
-2. **recipes/** - Browse patterns, apply one that fits
-3. **cookbook.md** - Follow the CRM example step-by-step
-
-### For Creating Recipes
-1. **recipe-spec.md** - Recipe schema and structure
-
-### For Historical Context
-1. **_private/README.md** - How IVD was created from real training sessions
-2. **_private/meetings.md** - Original 18 training session transcripts
-3. **_private/ai_driven_development_guide.md** - The guide that evolved into IVD
-4. **templates/recipe.yaml** - Start from this template
-5. **recipes/** - See examples of existing recipes
-
----
-
-## Quick Workflow
-
-### Creating Your First Intent Artifact
-
-```bash
-# 1. Copy template
-cp templates/intent.yaml agent/my-module/intent.yaml
-
-# 2. Set the level (NEW in v1.2: added "workflow")
-# scope:
-#   level: "module"     # "system" | "workflow" | "module" | "task"
-#   type: "agent"       # "product" | "process" | "feature" | "function", etc.
-
-# 3. Fill in specifics
-# - For SYSTEM level: phases, strategic metrics
-# - For WORKFLOW level: steps, data_flow, error_handling (NEW)
-# - For MODULE level: architecture, integration, business logic
-# - For TASK level: inputs/outputs, behavior, test cases
-
-# 4. Reference a recipe (optional)
-# If following a pattern, add:
-# recipe: "agent-classifier"
-# recipe_version: "1.0"
-
-# 5. Implement code
-# Write code that matches your intent
-
-# 6. Verify alignment
-# Run verification checks (manual or automated)
-```
-
-### Task-Level Intents (NEW)
-
-For critical functions that need detailed I/O specification:
-
-```bash
-# 1. Copy template
-cp templates/intent.yaml agent/my-module/intents/my_function_intent.yaml
-
-# 2. Set task-level scope
-# scope:
-#   level: "task"
-#   type: "function"
-#   granularity: "fine"
-
-# 3. Fill in interface section
-# interface:
-#   signature: "function_name(param: Type) -> ReturnType"
-#   inputs: [...]
-#   outputs: [...]
-#   exceptions: [...]
-
-# 4. Define behavior
-# behavior:
-#   preconditions: [...]
-#   postconditions: [...]
-#   invariants: [...]
-
-# 5. Add test cases
-# verification:
-#   test_cases: [...]
-
-# See: templates/examples/task-level-intent-example.yaml
-# See: templates/intent_levels_guide.md
-```
-
-### Workflow-Level Intents (NEW in v1.2)
-
-**For multi-step processes that span multiple modules:**
-
-```bash
-# 1. Copy template
-cp templates/intent.yaml workflows/my_workflow_intent.yaml
-
-# 2. Set workflow-level scope
-# scope:
-#   level: "workflow"
-#   type: "process"
-#   granularity: "coarse"
-
-# 3. Document workflow steps
-# workflow:
-#   summary: "End-to-end process description"
-#   trigger: "What initiates this workflow"
-#   steps:
-#     - step: 1
-#       name: "First step"
-#       file: "path/to/module.py"
-#       function: "function_name()"
-#       business_logic: "What this step does and why"
-#     - step: 2
-#       name: "Second step"
-#       # ... and so on
-#
-#   data_flow: ["Input → Step 1 → Step 2 → Output"]
-#   error_handling: [...]
-#   orchestration:
-#     type: "sequential | parallel | mixed"
-
-# See: templates/examples/workflow-lead-qualification-example.yaml (500+ lines)
-# See: recipes/workflow-orchestration.yaml
-```
-
-**Why workflow-level matters:**
-
-Without workflow-level:
-- ❌ AI agent must read 5-10 files to understand complete process
-- ❌ Module intents document components, not how they connect
-- ❌ Onboarding takes hours to trace execution flow
-
-With workflow-level:
-- ✅ Complete process in ONE file
-- ✅ 80-90% reduction in AI agent context needed
-- ✅ Explicit execution order and business logic
-- ✅ File/function mapping at each step
-
-**Use workflow-level when:**
-- Process has 3+ steps across multiple files
-- AI agents ask "how does this work end-to-end?"
-- Onboarding requires hours to understand flow
-- Business stakeholders need technical process visibility
-
-### Using a Recipe
-
-```bash
-# 1. Find a recipe
-ls recipes/
-# or
-cat recipes/agent-classifier.yaml
-
-# 2. Apply recipe to your module
-# Copy template, reference recipe in intent.yaml
-
-# 3. Fill in specifics
-# Replace placeholders with your domain details
-
-# 4. Implement following pattern
-# Follow directory structure and code patterns from recipe
-```
-
----
-
-## Artifact Placement
-
-| Level | Recommended Location | Example |
-|-------|---------------------|---------|
-| System | Root: `system_intent.yaml` | `system_intent.yaml` or `{project}_system_intent.yaml` |
-| Workflow | `workflows/{name}_intent.yaml` (or `{coordinator_dir}/{name}_intent.yaml` when single-orchestrator) | `workflows/lead_qualification_intent.yaml` |
-| Module | `{module}/{module}_intent.yaml` | `agent/marketing/marketing_intent.yaml` |
-| Task | `{module}/intents/{task}_intent.yaml` | `agent/marketing/intents/gen_article_intent.yaml` |
-| Variant | `{variant}_{module}_intent.yaml` | `erik_reviewer_intent.yaml` |
-
-*See `framework.md` for detailed placement rules with Recommended/Alternative options.*
-
----
-
-## What's Included
-
-### Core Framework
-- **framework.md** - Complete IVD specification (1,148 lines)
-- **cookbook.md** - Practical guide with examples (458 lines)
-- **cheatsheet.md** - Quick reference (238 lines)
-- **recipe-spec.md** - Recipe specification (498 lines)
-
-### Recipes (Reusable Patterns)
-- **workflow-orchestration.yaml** (NEW in v1.2) - Multi-step process orchestration
-- **agent-classifier.yaml** - AI classification agents
-- **infra-background-job.yaml** - Background job processing
-- **doc-meeting-insights.yaml** - Documentation extraction
-
-### Templates
-- **intent.yaml** - Blank intent artifact template (supports system/workflow/module/task levels)
-- **recipe.yaml** - Blank recipe template
-- **intent_levels_guide.md** - When to use system/workflow/module/task levels
-- **task_level_quick_ref.md** - Task-level quick reference
-- **examples/task-level-intent-example.yaml** - Complete task-level example (560 lines)
-- **examples/workflow-lead-qualification-example.yaml** (NEW in v1.2) - Complete workflow example (500+ lines)
-
----
-
-## Benefits
-
-### Knowledge Preservation
-- **85-95% knowledge capture** (vs 10-15% traditional)
-- Understanding survives team turnover
-- Intent persists through rewrites
-- Task-level intents capture function contracts
-- **NEW in v1.2:** Workflow-level intents document complete processes
-
-### Development Speed
-- **40% faster onboarding** (reduced by half)
-- Recipes reduce reinvention by 30-50%
-- Start from proven patterns
-- Clear I/O specs reduce integration bugs
-- **NEW in v1.2:** Workflow intents reduce process comprehension time by 80-90%
-
-### AI Agent Efficiency
-- **80-90% reduction in context needed** with workflow-level intents
-- AI reads ONE file to understand complete process (vs 5-10 files)
-- Explicit file/function mapping at each workflow step
-- Business logic context without code diving
-
-### Quality
-- Continuous verification prevents drift
-- Executable understanding fails loudly
-- Best practices built into recipes
-- Behavior contracts catch edge cases early
-
----
-
-## The Methodology in One Sentence
-
-> **AI writes the intent, implements against it, verifies—so hallucinations are caught and turns drop to one.**
-
----
-
-## Portability
-
-This IVD framework is designed to be **easily portable** to any project:
-
-```bash
-# Copy entire framework
-cp -r ivd/ /new-project/docs/
-
-# Or copy just core files
+# Or just the essentials
 cp -r ivd/{README.md,framework.md,cookbook.md,recipes,templates} /target/
 ```
 
-**No dependencies** - Just markdown and YAML files. Works in any project structure.
+### Initialize an Existing Project
+
+```bash
+# Scans your project and generates a system intent
+ivd init --project-root /path/to/your/project
+```
+
+### Create Your First Intent
+
+```bash
+# 1. Copy the template
+cp templates/intent.yaml my-module/my_module_intent.yaml
+
+# 2. Set the scope
+# scope:
+#   level: "module"        # system | workflow | module | task
+#   type: "feature"        # product | process | feature | function
+
+# 3. Fill in the intent — or let the AI write it for you
+```
+
+## MCP Server
+
+IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent direct access to the framework — 14 tools for searching, validating, scaffolding, and discovering IVD artifacts.
+
+**Remote (SSE)**
+
+```json
+{
+  "mcpServers": {
+    "ivd": {
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"
+      }
+    }
+  }
+}
+```
+
+**Local (stdio)**
+
+```json
+{
+  "mcpServers": {
+    "ivd": {
+      "command": "python",
+      "args": ["-m", "mcp_server"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | What it does |
+|------|-------------|
+| `ivd_get_context` | Load framework principles, cookbook, or cheatsheet |
+| `ivd_search` | Semantic search across all IVD knowledge (embeddings) |
+| `ivd_validate` | Validate an intent artifact against IVD rules |
+| `ivd_scaffold` | Generate a new intent artifact from a template |
+| `ivd_init` | Initialize IVD in an existing project (system intent) |
+| `ivd_load_recipe` | Load a specific recipe pattern |
+| `ivd_list_recipes` | Browse all available recipes |
+| `ivd_load_template` | Load an intent template |
+| `ivd_find_artifacts` | Discover intent artifacts in a project |
+| `ivd_check_placement` | Verify artifact naming and placement |
+| `ivd_list_features` | Derive feature inventory from intent metadata |
+| `ivd_propose_inversions` | Generate inversion opportunities (Principle 8) |
+| `ivd_discover_goal` | Help users who don't know what to ask |
+| `ivd_teach_concept` | Explain concepts before writing intent |
+
+## The Eight Principles
+
+IVD is built on eight immutable principles:
+
+| # | Principle | Core Idea |
+|---|-----------|-----------|
+| 1 | **Intent is Primary** | Not code, not docs — intent. Everything derives from it. |
+| 2 | **Understanding Must Be Executable** | Prose fails silently. Executable constraints fail loudly. |
+| 3 | **Bidirectional Synchronization** | Changes flow in any direction with verification. |
+| 4 | **Continuous Verification** | Verify alignment at every commit, every change. |
+| 5 | **Layered Understanding** | Intent, Constraints, Rationale, Alternatives, Risks. |
+| 6 | **AI as Understanding Partner** | AI writes the intent, implements, verifies. Not just executes. |
+| 7 | **Understanding Survives Implementation** | Rewrites, team changes, tech shifts — intent persists. |
+| 8 | **Innovation through Inversion** | State the default, invert it, evaluate, implement. |
+
+## Recipes
+
+Reusable patterns that encode proven solutions:
+
+| Recipe | Pattern |
+|--------|---------|
+| [workflow-orchestration](recipes/workflow-orchestration.yaml) | Multi-step process orchestration |
+| [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |
+| [infra-background-job](recipes/infra-background-job.yaml) | Background job processing |
+| [data-field-mapping](recipes/data-field-mapping.yaml) | Data source/target field mapping |
+| [coordinator-intent-propagation](recipes/coordinator-intent-propagation.yaml) | Multi-agent intent delegation |
+| [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teaching concepts before intent |
+| [discovery-before-intent](recipes/discovery-before-intent.yaml) | Goal discovery before intent |
+| [doc-meeting-insights](recipes/doc-meeting-insights.yaml) | Documentation extraction |
+
+## Intent Levels
+
+IVD supports four levels of granularity:
+
+```
+SYSTEM       →  Entire system or product
+  ↓
+WORKFLOW     →  Multi-step process across modules
+  ↓
+MODULE       →  Feature, agent, or component
+  ↓
+TASK         →  Function, method, or API endpoint
+```
+
+| Level | Location | Example |
+|-------|----------|---------|
+| System | Root: `system_intent.yaml` | `system_intent.yaml` |
+| Workflow | `workflows/{name}_intent.yaml` | `workflows/lead_qualification_intent.yaml` |
+| Module | `{module}/{module}_intent.yaml` | `agent/marketing/marketing_intent.yaml` |
+| Task | `{module}/intents/{task}_intent.yaml` | `agent/marketing/intents/gen_article_intent.yaml` |
+
+## Project Structure
+
+```
+ivd/
+├── README.md                           # This file
+├── purpose.md                          # Why IVD exists (vision)
+├── framework.md                        # Complete specification
+├── cookbook.md                          # Practical guide with examples
+├── cheatsheet.md                       # Quick reference
+├── recipe-spec.md                      # Recipe specification
+├── ivd_system_intent.yaml              # System intent (rules for extending IVD)
+│
+├── recipes/                            # Reusable pattern templates
+│   ├── workflow-orchestration.yaml
+│   ├── agent-classifier.yaml
+│   ├── infra-background-job.yaml
+│   └── ...
+│
+├── templates/                          # Blank templates
+│   ├── intent.yaml                     # Intent artifact template
+│   ├── recipe.yaml                     # Recipe template
+│   └── examples/                       # Complete worked examples
+│
+├── research/                           # Research and validation
+│
+├── mcp_server/                         # MCP server (14 tools)
+│   ├── server.py                       # Stdio + SSE transports
+│   ├── tools/                          # Tool implementations
+│   ├── knowledge/                      # Embedding engine
+│   ├── brain/ivd/                      # Pre-built embeddings
+│   ├── tests/                          # Unit, E2E, smoke tests
+│   └── devops/                         # Deploy, embed, test scripts
+│
+└── book/                               # IVD book (private alpha)
+```
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [purpose.md](purpose.md) | Why IVD exists — vision, philosophy, breakthrough insight |
+| [framework.md](framework.md) | Complete IVD specification — principles, rules, validation |
+| [cookbook.md](cookbook.md) | Practical guide — step-by-step with real examples |
+| [cheatsheet.md](cheatsheet.md) | Quick reference — one-page summary |
+| [recipe-spec.md](recipe-spec.md) | How to create and maintain recipes |
+| [templates/intent_levels_guide.md](templates/intent_levels_guide.md) | When to use system vs workflow vs module vs task |
+
+## Development
+
+### Run Tests
+
+```bash
+./mcp_server/devops/test.sh              # All tests (unit + e2e)
+./mcp_server/devops/test.sh --unit       # Unit tests only
+./mcp_server/devops/test.sh --e2e        # E2E tests only
+./mcp_server/devops/test.sh --smoke      # Smoke tests (live server)
+```
+
+### Generate Embeddings
+
+```bash
+./mcp_server/devops/embed.sh             # Regenerate all embeddings
+./mcp_server/devops/search.sh "query"    # Query embeddings locally
+```
+
+### Deploy
+
+```bash
+./mcp_server/devops/deploy.sh            # Full deploy (embed + test + push + verify)
+./mcp_server/devops/deploy.sh --status   # Check deployment status
+./mcp_server/devops/deploy.sh --health   # Health check
+./mcp_server/devops/deploy.sh --smoke    # Post-deploy smoke tests
+```
+
+## Portability
+
+IVD is **zero-dependency** — just Markdown and YAML files. Copy it to any project:
+
+```bash
+cp -r ivd/{README.md,framework.md,cookbook.md,recipes,templates} /your-project/docs/
+```
+
+No build step. No package manager. No runtime. Works everywhere.
+
+## The Methodology in One Sentence
+
+> **AI writes the intent, implements against it, verifies — so hallucinations are caught and turns drop to one.**
 
 ---
 
-## Recipe Categories
-
-Recipes use category prefixes for easy scanning:
-
-- **agent-*** - AI agent patterns
-- **infra-*** - Infrastructure patterns  
-- **data-*** - Data processing patterns
-- **integration-*** - Integration patterns
-- **doc-*** - Documentation patterns
-
----
-
-## Further Reading
-
-- **purpose.md** - Why IVD exists (vision and philosophy)
-- **framework.md** - Complete theory and principles
-- **cookbook.md** - Step-by-step implementation guide
-- **recipe-spec.md** - How to create and maintain recipes
-- **recipes/README.md** - Recipe catalog and usage
-- **research/agent_knowledge_standards.md** - Industry standards and validation
-- **research/ivd_implementation_roadmap.md** - Implementation building blocks
-
----
-
-## Credits
-
-**Research:** Literate Programming (Donald Knuth, 1984)  
-**Innovation:** Making understanding executable and verifiable for the AI era  
-**Development:** Leo Celis  
-**Date:** January 22-23, 2026
-
----
-
-## License & Usage
-
-This framework can be:
-- **Shared freely** for educational purposes
-- **Used internally** within organizations
-- **Referenced** in technical discussions and papers
-- **Taught** to development teams
-
----
-
-*"In the AI Agents era, the AI builds. IVD ensures the AI writes intent, verifies its work, and catches hallucinations before you even review."*
+**Created by** Leo Celis | **Version** 1.3 | **Status** Private Alpha
