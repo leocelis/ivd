@@ -457,9 +457,25 @@ After the IVD repo is working independently:
    - SSE endpoint: `GET https://mcp.ivdframework.dev/sse` (with Bearer token)
    - Test tool call: `ivd_get_context`
 
-### Step 7: Configure Cursor for IVD MCP
+### Step 7: Configure Cursor/Copilot for IVD MCP
 
-Update Cursor MCP settings to connect to the new IVD MCP server:
+**For Cursor**: Add to MCP configuration (Cursor → Settings → Features → MCP):
+
+```json
+{
+  "servers": {
+    "ivd": {
+      "type": "http",
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"
+      }
+    }
+  }
+}
+```
+
+**For GitHub Copilot (VS Code)**: Add to MCP settings:
 
 ```json
 {
@@ -476,6 +492,21 @@ Update Cursor MCP settings to connect to the new IVD MCP server:
 
 For local development (stdio transport):
 
+**Cursor**:
+```json
+{
+  "servers": {
+    "ivd-local": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "mcp_server.server", "--transport", "stdio"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+**GitHub Copilot**:
 ```json
 {
   "mcpServers": {

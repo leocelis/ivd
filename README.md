@@ -91,7 +91,48 @@ cp templates/intent.yaml my-module/my_module_intent.yaml
 
 IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent direct access to the framework — 14 tools for searching, validating, scaffolding, and discovering IVD artifacts.
 
-**Remote (SSE)**
+**Supported Clients**: Cursor, GitHub Copilot (VS Code), Claude Desktop, and any MCP-compatible tool.
+
+### Cursor
+
+Add to your MCP configuration file (Cursor → Settings → Features → MCP):
+
+**Remote (recommended)**
+
+```json
+{
+  "servers": {
+    "ivd": {
+      "type": "http",
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"
+      }
+    }
+  }
+}
+```
+
+**Local (for development)**
+
+```json
+{
+  "servers": {
+    "ivd-local": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "mcp_server.server", "--transport", "stdio"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+### GitHub Copilot (VS Code)
+
+Add to your VS Code MCP settings or `mcp.json`:
+
+**Remote**
 
 ```json
 {
@@ -106,19 +147,38 @@ IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent
 }
 ```
 
-**Local (stdio)**
+**Local**
 
 ```json
 {
   "mcpServers": {
-    "ivd": {
+    "ivd-local": {
       "command": "python",
-      "args": ["-m", "mcp_server"],
+      "args": ["-m", "mcp_server.server", "--transport", "stdio"],
       "cwd": "/path/to/ivd"
     }
   }
 }
 ```
+
+### Claude Desktop
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or equivalent on your OS:
+
+```json
+{
+  "mcpServers": {
+    "ivd": {
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"
+      }
+    }
+  }
+}
+```
+
+**Note**: Replace `<your-api-key>` with your IVD API key. Contact the maintainer for access during private alpha.
 
 ### Available Tools
 
