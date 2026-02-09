@@ -447,14 +447,17 @@ book_structure:
           - "Two paths: greenfield (new projects) vs brownfield (existing projects)"
           - "Brownfield: Initialize IVD with project context (ivd init)"
           - "Project context: code rules, architecture, tools, 'map to the stars' (key_paths)"
+          - "Assess coverage: ivd_assess_coverage shows which modules have intent and which don't (prioritized)"
           - "Child intents reference parent_intent (system intent)"
-          - "Start small: 3-5 critical modules, expand gradually"
+          - "Start small: high-priority uncovered modules first, expand gradually"
+          - "Coverage ≠ 100% — intent belongs where it adds value"
+        note: "'The First Week' is a conceptual scope (early adoption), not a time estimate."
         placeholder: |
           17.1 Two Starting Points: Greenfield vs Brownfield
               - Greenfield: Start with first module, conventions emerge
               - Brownfield: Initialize with ivd init, capture existing context
           
-          17.2 Brownfield: Day 1 - Bootstrap IVD with Project Context
+          17.2 Bootstrap IVD with Project Context
               - Run ivd init to scan project
               - Creates system_intent.yaml with:
                 * code_rules (.cursorrules, lint configs)
@@ -465,25 +468,31 @@ book_structure:
                 * existing_docs (README, API.md, CONTRIBUTING)
               - Review and enrich auto-generated context
           
-          17.3 Day 2-3: First Intent Artifacts for Critical Modules
-              - Identify 3-5 critical modules (not entire codebase)
+          17.3 Assess Intent Coverage: Know Where You Stand
+              - Run ivd_assess_coverage to see which modules have intents
+              - Interpret the coverage report: focus on high-priority gaps
+              - Coverage ≠ 100% — intent where it adds value (critical paths, complex logic, team boundaries)
+          
+          17.4 First Intent Artifacts for High-Priority Modules
+              - Start with high-priority uncovered modules from coverage report
               - Use ivd scaffold --level module --name <module>
               - Auto-links parent_intent: "../../system_intent.yaml"
               - AI loads project context when creating/modifying intents
           
-          17.4 Day 4-5: Implement and Verify with Project Context
+          17.5 Implement and Verify with Project Context
               - New intents follow project code rules
               - New intents reference architecture principles
               - New intents reuse tools/scripts/libraries (no duplication)
               - New intents navigate via key_paths (map to the stars)
           
-          17.5 Week 1 Retrospective: What Worked, What Didn't
+          17.6 Retrospective: What Worked, What Didn't
+              - Re-run ivd_assess_coverage: did coverage improve?
               - Did project_context capture conventions correctly?
               - Are child intents referencing parent correctly?
               - Are new implementations reusing existing tools/libs?
               - What's missing from key_paths or architecture?
           
-          17.6 Setting Team Standards and Conventions
+          17.7 Setting Team Standards and Conventions
               - Update system_intent.yaml as conventions emerge
               - Document in project_context sections
               - The "Intent First" Habit: How to Build It

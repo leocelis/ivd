@@ -69,8 +69,14 @@ cp -r ivd/{README.md,framework.md,cookbook.md,recipes,templates} /target/
 ### Initialize an Existing Project
 
 ```bash
-# Scans your project and generates a system intent
+# 1. Scans your project and generates a system intent
 ivd init --project-root /path/to/your/project
+
+# 2. Assess coverage: see which modules need intents (prioritized)
+ivd_assess_coverage(project_root="/path/to/your/project")
+
+# 3. Create intents for high-priority uncovered modules
+# 4. Expand gradually; re-assess periodically
 ```
 
 ### Create Your First Intent
@@ -89,7 +95,7 @@ cp templates/intent.yaml my-module/my_module_intent.yaml
 
 ## MCP Server
 
-IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent direct access to the framework — 14 tools for searching, validating, scaffolding, and discovering IVD artifacts.
+IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent direct access to the framework — 15 tools for searching, validating, scaffolding, assessing coverage, and discovering IVD artifacts.
 
 **Supported Clients**: Cursor, GitHub Copilot (VS Code), Claude Desktop, and any MCP-compatible tool.
 
@@ -278,7 +284,7 @@ ivd/
 │
 ├── research/                           # Research and validation
 │
-├── mcp_server/                         # MCP server (14 tools)
+├── mcp_server/                         # MCP server (15 tools)
 │   ├── server.py                       # Stdio + SSE transports
 │   ├── tools/                          # Tool implementations
 │   ├── knowledge/                      # Embedding engine

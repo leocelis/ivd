@@ -1,7 +1,7 @@
 # mcp_server/tests/e2e/test_all_tools.py
 
 """
-End-to-end validation of all 14 MCP tools.
+End-to-end validation of all 15 MCP tools.
 
 Calls every tool through the registry's call_tool() with realistic arguments
 and validates that each one returns a well-formed, non-error response.
@@ -270,7 +270,31 @@ class TestListFeatures:
 
 
 # ---------------------------------------------------------------------------
-# 11. ivd_propose_inversions — Principle 8
+# 11. ivd_assess_coverage — assess intent coverage
+# ---------------------------------------------------------------------------
+
+class TestAssessCoverage:
+    def test_assess_coverage_with_project_root(self, framework_root):
+        result = call_tool("ivd_assess_coverage", {
+            "project_root": str(framework_root),
+        })
+        assert_no_error(result, "ivd_assess_coverage")
+        data = parse_json(result)
+        assert "summary" in data
+        assert "coverage_percent" in data["summary"] or "total_coverable_modules" in data["summary"]
+
+    def test_assess_coverage_with_tmp_project(self, tmp_project):
+        result = call_tool("ivd_assess_coverage", {
+            "project_root": str(tmp_project),
+        })
+        assert_no_error(result, "ivd_assess_coverage")
+        data = parse_json(result)
+        assert "covered" in data
+        assert "uncovered" in data
+
+
+# ---------------------------------------------------------------------------
+# 12. ivd_propose_inversions — Principle 8
 # ---------------------------------------------------------------------------
 
 class TestProposeInversions:
@@ -292,7 +316,7 @@ class TestProposeInversions:
 
 
 # ---------------------------------------------------------------------------
-# 12. ivd_discover_goal — goal discovery
+# 13. ivd_discover_goal — goal discovery
 # ---------------------------------------------------------------------------
 
 class TestDiscoverGoal:
@@ -311,7 +335,7 @@ class TestDiscoverGoal:
 
 
 # ---------------------------------------------------------------------------
-# 13. ivd_teach_concept — teaching before intent
+# 14. ivd_teach_concept — teaching before intent
 # ---------------------------------------------------------------------------
 
 class TestTeachConcept:
@@ -333,7 +357,7 @@ class TestTeachConcept:
 
 
 # ---------------------------------------------------------------------------
-# 14. ivd_search — semantic search
+# 15. ivd_search — semantic search
 # ---------------------------------------------------------------------------
 
 class TestSearch:
@@ -364,7 +388,7 @@ class TestSearch:
 
 
 # ---------------------------------------------------------------------------
-# Meta: all 14 tools respond without crashing
+# Meta: all 15 tools respond without crashing
 # ---------------------------------------------------------------------------
 
 class TestAllToolsRespond:
@@ -392,14 +416,15 @@ class TestAllToolsRespond:
         assert isinstance(result, str), f"{tool_name} returned {type(result)}"
         assert len(result) > 0, f"{tool_name} returned empty string"
 
-    def test_all_14_tools_covered(self):
-        """Verify this test file covers all 14 registered tools."""
+    def test_all_15_tools_covered(self):
+        """Verify this test file covers all 15 registered tools."""
         registered = {t.name for t in get_all_tools()}
         # Tools tested in parametrized + individual classes above
         tested = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
+            "ivd_assess_coverage",
             "ivd_propose_inversions", "ivd_discover_goal", "ivd_teach_concept",
             "ivd_search",
         }

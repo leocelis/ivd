@@ -85,8 +85,8 @@ def check_health(base_url):
         return False
 
     tools_count = data.get("tools_count", 0)
-    if tools_count != 14:
-        fail(f"Expected 14 tools, got {tools_count}")
+    if tools_count != 15:
+        fail(f"Expected 15 tools, got {tools_count}")
         return False
 
     ok(f"Healthy — {tools_count} tools registered")

@@ -170,7 +170,7 @@ phases:
       - Templates: intent.yaml, recipe.yaml, examples
       - Recipes: 8 recipes (agent-classifier, workflow-orchestration, etc.)
       - Embeddings: brain/ivd/ (all IVD content including book — private phase)
-      - MCP server code: 14 IVD tools (ivd_search, ivd_validate, ivd_scaffold, etc.)
+      - MCP server code: 15 IVD tools (ivd_search, ivd_validate, ivd_scaffold, etc.)
       - Getting started: one numbered path (read what → do what → copy what)
       - Zero external project dependencies
     deliverables:

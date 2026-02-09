@@ -58,9 +58,10 @@ def tmp_project(tmp_path: Path) -> Path:
     # recipes dir
     (tmp_path / "recipes").mkdir()
 
-    # module with intent
+    # module with intent and code (so assess_coverage finds it as coverable)
     mod_dir = tmp_path / "agent" / "my_module"
     mod_dir.mkdir(parents=True)
+    (mod_dir / "my_module.py").write_text("# test module\n")
     (mod_dir / "my_module_intent.yaml").write_text(
         "scope:\n  level: module\n"
         "metadata:\n  feature_id: my_module\n  category: test\n  status: implemented\n"

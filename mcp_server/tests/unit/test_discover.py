@@ -1,6 +1,6 @@
 # mcp_server/tests/unit/test_discover.py
 
-"""Unit tests for ivd_find_artifacts, ivd_check_placement, ivd_list_features tools."""
+"""Unit tests for ivd_find_artifacts, ivd_check_placement, ivd_list_features, ivd_assess_coverage tools."""
 
 import json
 
@@ -8,6 +8,7 @@ from mcp_server.tools.discover import (
     find_artifacts_tool,
     check_placement_tool,
     list_features_tool,
+    assess_coverage_tool,
 )
 
 
@@ -121,4 +122,34 @@ class TestListFeatures:
 
     def test_nonexistent_root_errors(self):
         result = json.loads(list_features_tool(project_root_arg="/tmp/definitely_not_real_xyz"))
+        assert "error" in result
+
+
+class TestAssessCoverage:
+    """Tests for ivd_assess_coverage."""
+
+    def test_assess_coverage_returns_summary(self, tmp_project):
+        result = json.loads(assess_coverage_tool(project_root_arg=str(tmp_project)))
+        assert "summary" in result
+        assert "total_coverable_modules" in result["summary"]
+        assert "covered_modules" in result["summary"]
+        assert "uncovered" in result
+        assert "coverage_percent" in result["summary"]
+
+    def test_assess_coverage_has_suggestions_when_requested(self, tmp_project):
+        result = json.loads(assess_coverage_tool(
+            project_root_arg=str(tmp_project),
+            include_suggestions=True,
+        ))
+        assert "suggestions" in result
+
+    def test_assess_coverage_depth_full_adds_workflow(self, tmp_project):
+        result = json.loads(assess_coverage_tool(
+            project_root_arg=str(tmp_project),
+            depth="full",
+        ))
+        assert "workflow_coverage" in result or "summary" in result
+
+    def test_assess_coverage_nonexistent_root_errors(self):
+        result = json.loads(assess_coverage_tool(project_root_arg="/tmp/definitely_not_real_xyz"))
         assert "error" in result

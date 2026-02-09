@@ -243,7 +243,7 @@ async def validate_api_key(request):
 
 #### 3d. IVD Tools (`mcp_server/tools/`)
 
-**Current** (`ada/mcp_api/ivd/tools.py`): All 14 tools in one 1900-line file.
+**Current** (`ada/mcp_api/ivd/tools.py`): All 15 tools in one 1900-line file.
 
 **New**: Split into logical modules for maintainability:
 
@@ -575,7 +575,7 @@ For local development (stdio transport):
 2. ✅ **Copy framework content** → all docs, recipes, templates, research, _private/ai_driven_dev
 3. **Port MCP server** → standalone server, auth, tools, knowledge modules
 4. **Generate embeddings** → using ADA tools, output to `mcp_server/brain/`
-5. **Test locally** → stdio transport, verify all 14 tools work
+5. **Test locally** → stdio transport, verify all 15 tools work
 6. **Deploy to DO** → app spec, env vars, health check
 7. **Test remote** → SSE transport with API key from Cursor
 8. **Clean up ADA** → remove IVD tools, framework dir, update cursorrules

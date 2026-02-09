@@ -1,7 +1,7 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 14 tools.
+IVD MCP Tool Registry — registration and dispatch for all 15 tools.
 """
 
 import json
@@ -22,6 +22,7 @@ from mcp_server.tools import (
     find_artifacts_tool,
     check_placement_tool,
     list_features_tool,
+    assess_coverage_tool,
     propose_inversions_tool,
     discover_goal_tool,
     teach_concept_tool,
@@ -34,7 +35,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 14 IVD MCP tools."""
+    """Return all 15 IVD MCP tools."""
     return [
         Tool(
             name="ivd_get_context",
@@ -146,6 +147,15 @@ def get_all_tools() -> List[Tool]:
                 "top_k": {"type": "integer", "description": "Number of results to return (default: 5)", "default": 5},
             }, "required": ["query"]},
         ),
+        Tool(
+            name="ivd_assess_coverage",
+            description="Assess intent coverage across a project. Scans project structure (directories with code) and compares against existing *_intent.yaml artifacts. Returns coverage report with covered/uncovered modules, coverage %, and prioritized suggestions. The AI agent uses this data to recommend where to add intents.",
+            inputSchema={"type": "object", "properties": {
+                "project_root": {"type": "string", "description": "Path to repo root (absolute or relative)."},
+                "depth": {"type": "string", "description": "Scan depth: 'module' (system + modules) or 'full' (also workflows + task-level).", "enum": ["module", "full"], "default": "module"},
+                "include_suggestions": {"type": "boolean", "description": "Include prioritized recommendations for uncovered modules.", "default": True},
+            }, "required": ["project_root"]},
+        ),
     ]
 
 
@@ -168,6 +178,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_discover_goal": lambda domain_or_context=None, user_hint=None, project_root=None, **_: discover_goal_tool(domain_or_context, user_hint, project_root),
     "ivd_teach_concept": lambda concept, user_context=None, **_: teach_concept_tool(concept, user_context),
     "ivd_search": lambda query, top_k=5, **_: ivd_search_tool(query, top_k),
+    "ivd_assess_coverage": lambda project_root, depth="module", include_suggestions=True, **_: assess_coverage_tool(project_root, depth, include_suggestions),
 }
 
 

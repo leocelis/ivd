@@ -1,6 +1,6 @@
 # Intent-Verified Development: Cheat Sheet
 
-**The Framework for the AI Agents Era (v1.3)**
+**The Framework for the AI Agents Era (v1.4)**
 
 **Core Insight:** The AI writes the intent, implements against it, verifies—so hallucinations are caught and turns drop to one.
 
@@ -8,7 +8,15 @@
 
 **Feature inventory (large projects):** Optional `metadata` on intents (`feature_id`, `category`, `tags`, `status`) lets you derive a feature list and avoid duplication. Use the feature-list tool to see what exists before building. No separate inventory file—inventory is derived from intents.
 
-**Existing projects (brownfield):** Use `ivd init` to create system intent with project context (code rules, architecture, tools, "map to the stars"). Child intents reference `parent_intent` to inherit conventions.
+**Existing projects (brownfield):** Use `ivd init` to create system intent with project context (code rules, architecture, tools, "map to the stars"). Then `ivd_assess_coverage` to see which modules have intents and which don't (prioritized). Child intents reference `parent_intent` to inherit conventions.
+
+**Assess Coverage:**
+
+```
+ivd_assess_coverage(project_root="/path/to/your/project")
+```
+
+Returns: covered modules, uncovered modules (prioritized: high/medium/low), coverage %, and suggestions. Use the report to decide where to add intents first. **Coverage ≠ 100%** — intent belongs where it adds value (critical paths, complex logic, team boundaries), not on every file.
 
 > **📋 Extending IVD?** See `ivd_system_intent.yaml` for rules on adding new patterns
 

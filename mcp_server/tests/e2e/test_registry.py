@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 14 tools are registered
+- All 15 tools are registered
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -17,14 +17,14 @@ from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 class TestToolRegistry:
     """Tests for the tool registry."""
 
-    def test_14_tools_registered(self):
+    def test_15_tools_registered(self):
         tools = get_all_tools()
-        assert len(tools) == 14
+        assert len(tools) == 15
 
     def test_all_tools_have_names(self):
         tools = get_all_tools()
         names = [t.name for t in tools]
-        assert len(set(names)) == 14  # All unique
+        assert len(set(names)) == 15  # All unique
 
     def test_expected_tools_present(self):
         tools = get_all_tools()
@@ -33,6 +33,7 @@ class TestToolRegistry:
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
+            "ivd_assess_coverage",
             "ivd_propose_inversions", "ivd_discover_goal", "ivd_teach_concept",
             "ivd_search",
         }

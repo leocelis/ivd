@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.3
+# Version: 1.4
 # Created: 2026-01-24
-# Updated: 2026-01-26 (AI Agents era: AI writes intent)
+# Updated: 2026-02-09 (Intent coverage assessment: ivd_assess_coverage)
 # Status: Canonical
 # ==============================================================================
 
@@ -268,6 +268,29 @@ principles:
       - "No review cadence defined"
       - "No mechanism to detect drift"
       - "Verification only at initial implementation"
+
+    extensions:
+      - name: "Intent coverage assessment"
+        status: "canonical"
+        description: |
+          For existing (brownfield) projects, intent coverage assessment
+          (ivd_assess_coverage) scans project structure, compares against existing
+          intent artifacts, and produces a structured coverage report. The AI agent
+          interprets the report and recommends where to add intent artifacts,
+          making verification gaps visible.
+        tool: "ivd_assess_coverage"
+        framework_section: "framework.md → Intent Coverage Assessment"
+        supports_principles:
+          - "Principle 1: Intent is Primary (identifies modules missing primary artifact)"
+          - "Principle 4: Continuous Verification (makes verification gaps visible)"
+          - "Principle 6: AI as Understanding Partner (tool provides data, agent interprets)"
+        use_cases:
+          - "Brownfield adoption: after ivd init, assess where intent exists"
+          - "Periodic check-in: re-run to track coverage progress"
+          - "Onboarding: new team members see which modules have intent docs"
+        evidence:
+          - "research/ivd_existing_projects_and_project_map_gaps.md §2.1: No dedicated brownfield workflow. Coverage assessment fills that gap."
+          - "research/ivd_existing_projects_and_project_map_gaps.md §3.1: No existing-project section for discovering and prioritizing modules."
 
   # --------------------------------------------------------------------------
   # PRINCIPLE 5: Layered Understanding
@@ -1348,6 +1371,18 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 1.4
+    date: "2026-02-09"
+    change: "Added intent coverage assessment (ivd_assess_coverage tool + framework docs)"
+    reason: |
+      Brownfield projects lacked a structured way to see which modules have
+      intent artifacts and which don't. Coverage assessment fills the gap
+      identified in research/ivd_existing_projects_and_project_map_gaps.md
+      (§2.1 no brownfield workflow, §3.1 no existing-project discovery).
+      Principle 4 extension: makes verification gaps visible. Framework section:
+      framework.md § Intent Coverage Assessment documents the capability.
+    evidence: "research/ivd_existing_projects_and_project_map_gaps.md §2.1, §3.1; framework.md § Intent Coverage Assessment"
+
   - version: 1.3
     date: "2026-01-26"
     change: "AI Agents era positioning: AI writes intent, implements, verifies"

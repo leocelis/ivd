@@ -2,9 +2,9 @@
 
 **The Framework for the AI Agents Era**
 
-**Version:** 1.3  
+**Version:** 1.4  
 **Date:** January 23, 2026  
-**Updated:** January 31, 2026 (Scope: any AI-produced artifact)
+**Updated:** February 9, 2026 (Added assess coverage step to brownfield workflow)
 
 ---
 
@@ -120,22 +120,34 @@ The auto-generated system intent captures what it can detect. You should:
 - Clarify key_paths if auto-detection missed important directories
 - Add libraries_reuse with when_to_use guidance
 
-**Step 3: Create intents for critical modules (start small)**
+**Step 3: Assess coverage**
 
 ```bash
-# Create intent for existing module
+# See which modules have intents and which don't (prioritized)
+ivd_assess_coverage(project_root="/path/to/your/project")
+
+# Returns: covered modules, uncovered modules (high/medium/low priority),
+# coverage %, and suggestions for where to start.
+# Use this report to decide which modules get intents first.
+```
+
+**Step 4: Create intents for high-priority modules (start small)**
+
+```bash
+# Create intent for existing module (focus on high-priority from coverage report)
 ivd scaffold --level module --name lead_scorer --module-path agent/lead_scorer
 
 # The created intent auto-references:
 # parent_intent: "../../system_intent.yaml"
 ```
 
-**Step 4: Expand gradually**
+**Step 5: Expand gradually**
 
 - Don't create intents for entire codebase at once (overwhelming)
 - Create intents when you touch a module (refactor, feature, bug fix)
 - After 3-5 modules have intents, patterns become clear
 - Team learns IVD through practice, not big-bang adoption
+- Re-run `ivd_assess_coverage` periodically to track progress
 
 ---
 

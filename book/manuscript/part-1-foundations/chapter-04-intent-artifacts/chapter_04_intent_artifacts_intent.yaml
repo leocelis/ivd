@@ -88,6 +88,7 @@ deliverables:
         - "When NOT to over-document: task-level for 10–20% of critical functions; don't create intent for every function"
         - "Frequency guide: system 1 per product; workflow 1 per multi-step process; module 1 per feature; task only for critical functions"
         - "Large projects: optional metadata (feature_id, category, tags, status) on module intents for derived feature inventory (framework.md, ivd_system_intent)"
+        - "Existing projects: use ivd_assess_coverage to see which modules have intents and which don't before deciding where to start (framework.md § Intent Coverage Assessment; ivd_system_intent Principle 4 extension)"
     
     - id: "4.3"
       title: "Writing Your First Module-Level Intent"

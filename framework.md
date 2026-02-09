@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.3  
+**Version:** 1.4  
 **Created:** January 23, 2026  
-**Updated:** January 31, 2026 (Explicit scope: any AI-produced artifact, not just code)
+**Updated:** February 9, 2026 (Intent coverage assessment: ivd_assess_coverage)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -16,12 +16,13 @@
 2. [Core Principles](#core-principles)
 3. [Intent Artifacts](#intent-artifacts)
 4. [Feature Inventory (Large Projects)](#feature-inventory-large-projects)
-5. [Recipes (NEW in v1.1)](#recipes-reusable-patterns)
-6. [Verification System](#verification-system)
-7. [Implementation Guide](#implementation-guide)
-8. [Real-World Example](#real-world-example)
-9. [Comparison Matrix](#comparison-matrix)
-10. [Extending IVD Framework](#extending-ivd-framework)
+5. [Intent Coverage Assessment](#intent-coverage-assessment)
+6. [Recipes (NEW in v1.1)](#recipes-reusable-patterns)
+7. [Verification System](#verification-system)
+8. [Implementation Guide](#implementation-guide)
+9. [Real-World Example](#real-world-example)
+10. [Comparison Matrix](#comparison-matrix)
+11. [Extending IVD Framework](#extending-ivd-framework)
 
 ---
 
@@ -1153,6 +1154,91 @@ SYSTEM: AI Development Book (book_system_intent.yaml)
 
 ---
 
+### Intent Coverage Assessment
+
+For **existing projects (brownfield)**, understanding which modules already have intent artifacts—and which don't—is essential before deciding where to invest effort. IVD provides a dedicated tool for this.
+
+#### How It Works
+
+`ivd_assess_coverage` scans a project's directory structure, discovers all `*_intent.yaml` and `*_system_intent.yaml` artifacts, maps them to code directories, and produces a structured report:
+
+- **System-level:** Does the project have a system intent?
+- **Module-level:** Which code directories have a co-located intent? Which don't?
+- **Coverage %:** Ratio of covered modules to coverable modules.
+- **Priority suggestions:** Uncovered modules ranked by heuristic priority (high: API, auth, agents, services, or 5+ code files; medium: 3–4 files; low: fewer).
+
+#### Coverage Levels
+
+| Depth | What it checks |
+|-------|----------------|
+| `module` (default) | System intent + module-level coverage |
+| `full` | System + workflow + module + task-level coverage |
+
+#### When to Use
+
+- **Brownfield adoption:** After `ivd init` and enriching the system intent, run `ivd_assess_coverage` to see where intent exists and where it doesn't. Use the report to prioritize which modules get intents first.
+- **Periodic check-in:** Re-run periodically to track coverage progress as the team adds intents incrementally.
+- **Onboarding:** New team members can see at a glance which parts of the codebase have explicit intent documentation.
+
+#### Tool Usage
+
+```
+# Default: module-level coverage with suggestions
+ivd_assess_coverage(project_root="/path/to/project")
+
+# Full depth: includes workflow and task-level analysis
+ivd_assess_coverage(project_root="/path/to/project", depth="full")
+
+# Without suggestions (just the data)
+ivd_assess_coverage(project_root="/path/to/project", include_suggestions=False)
+```
+
+#### Example Output (summary)
+
+```json
+{
+  "summary": {
+    "has_system_intent": true,
+    "total_coverable_modules": 8,
+    "covered_modules": 3,
+    "uncovered_modules": 5,
+    "coverage_percent": 37.5,
+    "total_intent_artifacts": 5
+  },
+  "covered": [...],
+  "uncovered": [
+    {"path": "agent/auth", "code_files": 6, "priority": "high"},
+    {"path": "agent/reporting", "code_files": 3, "priority": "medium"}
+  ],
+  "suggestions": [
+    {"action": "Create module-level intents for 2 high-priority module(s)", "priority": "high"}
+  ]
+}
+```
+
+#### AI Agent Workflow
+
+When an AI agent is asked to help adopt IVD in an existing project:
+
+1. Run `ivd_init` → creates system intent with project context
+2. Run `ivd_assess_coverage` → structured coverage report
+3. Interpret the report: focus on high-priority uncovered modules first
+4. Use `ivd_scaffold` for those modules, referencing `parent_intent`
+5. Re-run `ivd_assess_coverage` periodically to track progress
+
+#### Coverage ≠ 100%
+
+Not every directory needs an intent artifact. Intent belongs where it adds value:
+
+- **Critical business logic** (auth, payments, scoring)
+- **Complex modules** with many code files or non-obvious behavior
+- **Team boundaries** where different people or agents work on different parts
+- **Frequently changed code** where intent prevents drift
+
+Simple utility directories, configuration, or stable code that rarely changes may not need explicit intent.
+
+---
+
 ## Recipes: Reusable Patterns
 
 ### What is an IVD Recipe?
@@ -1613,17 +1699,18 @@ Project context captured:
 
 Next steps:
 1. Review and enrich system_intent.yaml
-2. Create intents for critical modules (ivd scaffold)
-3. Reference parent_intent: "../../system_intent.yaml" in child intents
+2. Assess coverage: ivd_assess_coverage → see which modules need intents
+3. Create intents for high-priority modules (ivd scaffold)
+4. Reference parent_intent: "../../system_intent.yaml" in child intents
 ```
 
 **The workflow for existing projects:**
 
 1. **Discover:** Run `ivd init` to scan project and create system_intent.yaml
 2. **Enrich:** Review and add architecture principles, conventions not auto-detected
-3. **Prioritize:** Identify 3-5 critical modules to create intents for first
-4. **Create:** Use `ivd scaffold` for those modules, referencing parent_intent
-5. **Expand:** Gradually add intents for more modules as you modify them
+3. **Assess coverage:** Run `ivd_assess_coverage` to see which modules have intents and which don't (prioritized)
+4. **Create:** Use `ivd scaffold` for high-priority uncovered modules, referencing parent_intent
+5. **Expand:** Gradually add intents for more modules as you modify them; re-run `ivd_assess_coverage` periodically to track progress
 
 **Key differences from greenfield:**
 - **System intent first:** Capture existing conventions and "map to the stars" (key paths)

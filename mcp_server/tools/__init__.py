@@ -1,7 +1,7 @@
 # mcp_server/tools/__init__.py
 
 """
-IVD MCP Tools — 14 executable functions for AI agents.
+IVD MCP Tools — 15 executable functions for AI agents.
 
 Split into logical modules for maintainability.
 """
@@ -15,6 +15,7 @@ from mcp_server.tools.discover import (
     find_artifacts_tool,
     check_placement_tool,
     list_features_tool,
+    assess_coverage_tool,
 )
 from mcp_server.tools.inversions import propose_inversions_tool
 from mcp_server.tools.learning import discover_goal_tool, teach_concept_tool
@@ -31,6 +32,7 @@ __all__ = [
     "find_artifacts_tool",
     "check_placement_tool",
     "list_features_tool",
+    "assess_coverage_tool",
     "propose_inversions_tool",
     "discover_goal_tool",
     "teach_concept_tool",

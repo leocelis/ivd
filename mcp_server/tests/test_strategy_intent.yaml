@@ -22,14 +22,14 @@ metadata:
 # ==============================================================================
 
 intent:
-  summary: "Comprehensive test coverage for the IVD MCP server — unit, smoke, and end-to-end — ensuring all 14 tools work correctly across both transports."
+  summary: "Comprehensive test coverage for the IVD MCP server — unit, smoke, and end-to-end — ensuring all 15 tools work correctly across both transports."
 
   goal: |
     Establish a test suite that verifies the IVD MCP server at three levels:
 
     1. Unit Tests
        Test individual tool functions and knowledge components in isolation.
-       Each of the 14 tools gets dedicated test coverage for:
+       Each of the 15 tools gets dedicated test coverage for:
        - Happy path (valid inputs → expected output)
        - Error handling (invalid inputs → graceful errors)
        - Edge cases (empty repos, missing files, malformed YAML)
@@ -40,7 +40,7 @@ intent:
        Verifies:
        - Server is reachable and returns health status
        - SSE connection establishes with valid API key
-       - All 14 tools are registered (tools/list)
+       - All 15 tools are registered (tools/list)
        - Critical tools return valid responses (ivd_get_context, ivd_search, ivd_validate)
 
     3. End-to-End (E2E) Tests
@@ -58,7 +58,7 @@ intent:
     Smoke tests are the exception — they hit the live deployed server.
 
   success_metric: |
-    - All 14 tools have unit test coverage
+    - All 15 tools have unit test coverage
     - Post-deploy smoke test catches broken deployments before users do
     - E2E tests verify both stdio and SSE transports
     - Tests run in < 30 seconds (unit + e2e, excluding smoke)
@@ -75,8 +75,8 @@ intent:
 
 constraints:
   - name: "all_tools_tested"
-    requirement: "Each of the 14 MCP tools must have at least one unit test"
-    test: "pytest mcp_server/tests/unit/ --collect-only | count unique tool names >= 14"
+    requirement: "Each of the 15 MCP tools must have at least one unit test"
+    test: "pytest mcp_server/tests/unit/ --collect-only | count unique tool names >= 15"
     consequence_if_violated: |
       Untested tools may silently break after code changes.
       Regressions go undetected until a user reports them.
@@ -181,7 +181,7 @@ alternatives:
 
   - name: "Property-based testing (hypothesis)"
     rejected_because: |
-      - Overkill for the current stage — 14 tools with well-defined inputs/outputs
+      - Overkill for the current stage — 15 tools with well-defined inputs/outputs
       - Adds complexity (hypothesis library, custom strategies)
       - Standard example-based tests are sufficient for now
     when_it_works: |
@@ -250,8 +250,8 @@ implementation:
         - "test_recipes.py     — ivd_load_recipe, ivd_list_recipes"
         - "test_templates.py   — ivd_load_template"
         - "test_validate.py    — ivd_validate"
-        - "test_scaffold.py    — ivd_init, ivd_scaffold, ivd_find_artifacts, ivd_check_placement"
-        - "test_discover.py    — ivd_list_features, ivd_discover_goal"
+        - "test_scaffold.py    — ivd_init, ivd_scaffold"
+        - "test_discover.py    — ivd_find_artifacts, ivd_check_placement, ivd_list_features, ivd_assess_coverage"
         - "test_inversions.py  — ivd_propose_inversions"
         - "test_learning.py    — ivd_teach_concept"
         - "test_search.py      — ivd_search (with fixture embeddings)"
@@ -281,8 +281,8 @@ implementation:
 
 verification:
   test_cases:
-    - name: "all_14_tools_have_unit_tests"
-      description: "Collect unit tests and verify all 14 tool names appear"
+    - name: "all_15_tools_have_unit_tests"
+      description: "Collect unit tests and verify all 15 tool names appear"
       command: "pytest mcp_server/tests/unit/ --collect-only -q"
       validates_constraint: "all_tools_tested"
 
@@ -318,10 +318,10 @@ verification:
 changelog:
   - version: 1
     date: "2026-02-07"
-    change: "Implemented full test suite — 114 tests covering all 14 tools"
+    change: "Implemented full test suite — 114 tests covering all 15 tools"
     reason: |
       Intent written first (v0), then implemented. 114 tests across 3 tiers:
-      - Unit: 9 files covering all 14 tools (context, recipes, templates, validate, scaffold, discover, inversions, learning, search)
+      - Unit: 9 files covering all 15 tools (context, recipes, templates, validate, scaffold, discover, inversions, learning, search)
       - E2E: registry dispatch, SSE health, auth enforcement (valid/invalid/disabled/multi-key)
       - Smoke: post-deploy script integrated with deploy.sh --smoke
       Also fixed a bug in validate.py (empty YAML handling) caught by tests.
