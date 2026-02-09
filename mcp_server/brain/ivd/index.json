@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-02-07T18:00:18.645183",
+  "last_updated": "2026-02-09T15:38:21.016752",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -339,11 +339,109 @@
       "num_chunks": 7,
       "cost_usd": 9.338e-05,
       "processed_at": "2026-02-07T18:00:18.644824"
+    },
+    "50e4bfbef10ebe439c07fd63a7f1422f67c593c36ac202c324a475cca70d99e3": {
+      "file_name": "requirements.txt",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/requirements.txt",
+      "num_chunks": 1,
+      "cost_usd": 3.52e-06,
+      "processed_at": "2026-02-09T15:38:11.833188"
+    },
+    "381a8423870b59071a48bf68d48b7679e6bf5a968ffbe691dfe13016c5c8d9d5": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 25,
+      "cost_usd": 0.00030804,
+      "processed_at": "2026-02-09T15:38:13.017432"
+    },
+    "0ecb97b647d70ee7b67201a0ec93f16d5de79067ee9ed08f3248083d275db1a3": {
+      "file_name": "runtime.txt",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/runtime.txt",
+      "num_chunks": 1,
+      "cost_usd": 1.0000000000000001e-07,
+      "processed_at": "2026-02-09T15:38:13.366066"
+    },
+    "24c13c634944b86481bc8fcd9d2537c09af5ac11435e368b4e4257000b2dc9dd": {
+      "file_name": "cheatsheet.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/cheatsheet.md",
+      "num_chunks": 6,
+      "cost_usd": 7.958000000000001e-05,
+      "processed_at": "2026-02-09T15:38:14.038652"
+    },
+    "eab4fd62d6815cb704f1b7e55721e5d73d7e8d65ad6e6bc64f9ba9682eed7dcb": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/README.md",
+      "num_chunks": 5,
+      "cost_usd": 7.59e-05,
+      "processed_at": "2026-02-09T15:38:14.777200"
+    },
+    "354d086120015ce41812500813c44e961327dfacd775ab95906a69bde0e6d4c8": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 30,
+      "cost_usd": 0.00044854000000000004,
+      "processed_at": "2026-02-09T15:38:16.295180"
+    },
+    "49028f20f2a5c8cf482a2933b2979a82f34de2c357ceb29365d6a6e4bf288d24": {
+      "file_name": "cookbook.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/cookbook.md",
+      "num_chunks": 11,
+      "cost_usd": 0.00016604,
+      "processed_at": "2026-02-09T15:38:17.095672"
+    },
+    "5423b8e8cf7e39c5e0b2c6c5166c4fbab1aa8763835a5513bad8f92001e8908a": {
+      "file_name": "wsgi.py",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/wsgi.py",
+      "num_chunks": 1,
+      "cost_usd": 4.78e-06,
+      "processed_at": "2026-02-09T15:38:17.485166"
+    },
+    "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/.pytest_cache/README.md",
+      "num_chunks": 1,
+      "cost_usd": 1.44e-06,
+      "processed_at": "2026-02-09T15:38:17.871347"
+    },
+    "e877e8a4637d947c674912a54074d7fe44e9ffcdfe6b7ac0f700014bd7e8ab1b": {
+      "file_name": "app.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/.do/app.yaml",
+      "num_chunks": 1,
+      "cost_usd": 6.8400000000000014e-06,
+      "processed_at": "2026-02-09T15:38:18.347197"
+    },
+    "8d45e68bfde036f1fa140b3e63607a281237cd6e89a6bbba33b18d366598408a": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/README.md",
+      "num_chunks": 1,
+      "cost_usd": 5.92e-06,
+      "processed_at": "2026-02-09T15:38:18.708412"
+    },
+    "e1cae220d0c4bc24963fca84c74566f4416e9404351661bc4d64323983efe91f": {
+      "file_name": "infra-structured-logging.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/infra-structured-logging.yaml",
+      "num_chunks": 8,
+      "cost_usd": 0.00011094,
+      "processed_at": "2026-02-09T15:38:19.549632"
+    },
+    "36ae5b36023d4d53039e98937fb0661b63966c655af5378d82b26bf48415709e": {
+      "file_name": "book_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/book_system_intent.yaml",
+      "num_chunks": 21,
+      "cost_usd": 0.0002922,
+      "processed_at": "2026-02-09T15:38:20.281020"
+    },
+    "748af2a8e7db7cd4cb3d68afc84a89587d572871fdbaefb7df0cb55e7e1cac74": {
+      "file_name": "chapter_04_intent_artifacts_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-04-intent-artifacts/chapter_04_intent_artifacts_intent.yaml",
+      "num_chunks": 9,
+      "cost_usd": 0.00011316000000000002,
+      "processed_at": "2026-02-09T15:38:21.015330"
     }
   },
   "stats": {
-    "total_docs": 48,
-    "total_chunks": 434,
-    "total_cost": 0.005780940000000001
+    "total_docs": 62,
+    "total_chunks": 555,
+    "total_cost": 0.00739794
   }
 }

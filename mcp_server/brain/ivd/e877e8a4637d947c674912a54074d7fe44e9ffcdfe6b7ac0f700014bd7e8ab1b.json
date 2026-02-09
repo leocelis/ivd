@@ -1,0 +1,11 @@
+{
+  "doc_hash": "e877e8a4637d947c674912a54074d7fe44e9ffcdfe6b7ac0f700014bd7e8ab1b",
+  "file_path": "/Users/leocelis/workspace/leocelis/ivd/.do/app.yaml",
+  "file_name": "app.yaml",
+  "num_chunks": 1,
+  "chunks": [
+    "# DigitalOcean App Platform Configuration\n# IVD MCP Server \u2014 standalone MCP server for Intent-Verified Development\n#\n# Deploy: doctl apps create --spec .do/app.yaml --project-id <project_id>\n# Update: doctl apps update <app_id> --spec .do/app.yaml\n\nname: ivd-mcp\nregion: sfo\n\n# CRITICAL: Disable DO edge cache \u2014 SSE streams require unbuffered responses.\n# Without this, the Cloudflare edge cache buffers SSE events and clients receive 0 bytes.\ndisable_edge_cache: true\n\nservices:\n- name: ivd-mcp\n  source_dir: /\n  github:\n    repo: leocelis/ivd\n    branch: main\n    deploy_on_push: true\n\n  environment_slug: python\n  instance_count: 1\n  instance_size_slug: apps-s-1vcpu-0.5gb  # $5/month, 512MB RAM\n\n  # IVD MCP Server (SSE transport)\n  run_command: \"python wsgi.py --port 8080\"\n  http_port: 8080\n\n  routes:\n  - path: /\n\n  envs:\n  # API keys for authenticated access (comma-separated)\n  # Set the actual value in DO dashboard (Settings > Environment Variables)\n  # DO NOT put real keys in this file \u2014 it's committed to git\n  - key: IVD_API_KEYS\n    value: \"CHANGE_ME_IN_DO_DASHBOARD\"\n    type: SECRET\n\ndomains:\n- domain: mcp.ivdframework.dev\n  type: PRIMARY\n\nalerts:\n- rule: DEPLOYMENT_FAILED\n- rule: DOMAIN_FAILED"
+  ],
+  "cost_usd": 6.8400000000000014e-06,
+  "processed_at": "2026-02-09T15:38:18.347197"
+}

@@ -1,0 +1,11 @@
+{
+  "doc_hash": "5423b8e8cf7e39c5e0b2c6c5166c4fbab1aa8763835a5513bad8f92001e8908a",
+  "file_path": "/Users/leocelis/workspace/leocelis/ivd/wsgi.py",
+  "file_name": "wsgi.py",
+  "num_chunks": 1,
+  "chunks": [
+    "\"\"\"\nWSGI entry point for IVD MCP Server on DigitalOcean App Platform.\n\nHandles path setup for the DO environment, then creates the SSE app.\n\nUsage:\n    python wsgi.py [--port PORT]\n\"\"\"\n\nimport os\nimport sys\n\n# App Platform compatibility: ensure mcp_server.* imports work\nworkspace_path = \"/workspace\"\nif os.path.exists(workspace_path):\n    sys.path.insert(0, workspace_path)\nelse:\n    # Local development \u2014 ensure repo root is on path\n    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\n\nfrom mcp_server.server import create_sse_app\n\nimport argparse\nimport uvicorn\n\n# Create app at module level for uvicorn import string usage\napp = create_sse_app()\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=\"IVD MCP Server\")\n    parser.add_argument(\"--port\", type=int, default=8080, help=\"Port to run on\")\n    args = parser.parse_args()\n\n    print(f\"[IVD MCP] Starting SSE server on port {args.port}\")\n    uvicorn.run(app, host=\"0.0.0.0\", port=args.port)"
+  ],
+  "cost_usd": 4.78e-06,
+  "processed_at": "2026-02-09T15:38:17.485166"
+}
