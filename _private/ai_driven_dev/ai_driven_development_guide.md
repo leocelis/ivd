@@ -2,9 +2,9 @@
 
 **A Practitioner's Paper**
 
-**Version:** 3.1 (Draft)  
+**Version:** 3.2 (Draft)  
 **Created:** December 31, 2025  
-**Updated:** February 1, 2026  
+**Updated:** February 2, 2026  
 **Status:** Evolving document based on real-world practice
 
 ---
@@ -546,6 +546,262 @@ Integration:
 **The discipline:** Specific, clear intent documentation enables AI models to generate better code. General documentation produces general code. Specific documentation produces specific, correct code.
 
 **The test:** If someone could implement the feature correctly using only the intent document (without seeing the code), the intent is well-written.
+
+### Intent-First Development Workflow
+
+**The pattern:** Make intent creation a **mandatory first step** in the development workflow—no implementation begins until the intent document is created and reviewed.
+
+**Why intent-first workflow matters:**
+- Prevents "code first, understand later" anti-pattern
+- Forces clarity before complexity
+- Enables AI models to provide better assistance from the start
+- Creates natural pause for stakeholder alignment
+- Reduces rework from misunderstood requirements
+
+**The workflow:**
+```
+1. Task assigned or identified
+    ↓
+2. Create intent document FIRST
+   ├── What problem are we solving?
+   ├── Who benefits and how?
+   ├── What are the constraints?
+   ├── What's our approach and why?
+   └── How does this integrate?
+    ↓
+3. Review intent with stakeholders
+   ├── Technical lead reviews approach
+   ├── AI agent validates feasibility
+   ├── Team discusses trade-offs
+   └── Intent approved/revised
+    ↓
+4. ONLY THEN: Begin implementation
+   └── Use intent document to guide development
+```
+
+**Traditional workflow (anti-pattern):**
+```
+❌ Task assigned → Start coding → Discover unclear requirements
+   → Ask questions mid-implementation → Refactor → More questions
+   → Finally understand intent → Rewrite significant portions
+```
+
+**Intent-first workflow (correct pattern):**
+```
+✅ Task assigned → Write intent → Review intent → Clarify before coding
+   → Implementation guided by clear intent → Less rework
+   → Code matches intent on first pass
+```
+
+**Key principle:**
+The intent document is not documentation of what was built—it's a **contract** written **before** building begins.
+
+**Workflow enforcement:**
+- Code review checklist: "Does intent document exist?"
+- Pull request template: Link to intent document (required field)
+- AI assistant prompts: "Show me the intent document before I help implement"
+- Team norm: "No intent? No implementation."
+
+**Benefits:**
+- **Reduced rework**: Clarity upfront prevents misguided implementation
+- **Better AI assistance**: Models understand context from start
+- **Stakeholder alignment**: Issues surface during intent review, not after deployment
+- **Faster onboarding**: New developers understand "why" before diving into "how"
+- **Quality gate**: Forces thinking before doing
+
+**When intent creation reveals problems:**
+- Requirements are unclear → Go back to requirements gathering
+- Multiple approaches with unclear trade-offs → Research phase needed
+- Integration points uncertain → Architecture review required
+- Success criteria vague → Refinement with stakeholders needed
+
+**The discipline:**
+- Intent document is a deliverable, not an afterthought
+- Implementation estimate includes intent creation time
+- Intent is reviewed before code review (separate step)
+- Intent can be rejected/revised without any code written
+
+**Common objections addressed:**
+
+"This slows us down!"
+- ✅ Actually: 30 minutes of intent writing saves 3 hours of confused implementation
+
+"For simple tasks, intent is overkill!"
+- ✅ Actually: If intent takes 2 minutes, task is simple. If it takes 30 minutes, task wasn't simple.
+
+"We can write intent after!"
+- ❌ Post-implementation intent is documentation, not intent. Intent guides; documentation records.
+
+**Implementation example:**
+```
+Developer: "I'll start working on the new data source integration."
+Lead: "Great! Create the intent document first. What problem does this solve?"
+Developer: [Writes intent, realizes 3 approaches possible, unclear which is best]
+Lead: [Reviews intent] "Approach B is better because of X. Let's update intent."
+Developer: [Now implements with clarity, no false starts]
+```
+
+**The rule:** Intent documents are written **before** implementation, not after. They are contracts, not summaries. If you're writing code without an approved intent document, stop and write the intent first.
+
+### Generic Framework Design Over Instance-Specific Implementations
+
+**The pattern:** When facing similar problems across different contexts, **build one general framework** that handles all cases, rather than creating separate implementations for each instance.
+
+**Why generic frameworks matter:**
+- Eliminates code duplication across similar problems
+- Reduces maintenance burden (fix once, fix everywhere)
+- Enforces consistency in approach
+- Easier to extend for new cases
+- Creates reusable organizational assets
+
+**The decision point:**
+```
+Scenario: Need to handle similar task for multiple sources/contexts
+
+Option A: Instance-specific implementations
+├── Implementation for Source 1
+├── Implementation for Source 2
+├── Implementation for Source 3
+└── Problem: N sources = N implementations = N maintenance points
+
+Option B: Generic framework
+└── One framework that handles all sources via configuration
+    └── Benefit: N sources = 1 implementation + N config files
+```
+
+**When to build generic framework:**
+- Solving the same problem for 3+ different instances
+- Pattern is clear and repeatable
+- Differences are in data/configuration, not logic
+- More instances expected in the future
+- Team needs consistency across instances
+
+**Example scenario:**
+```
+Problem: Extract data from multiple similar data sources
+
+Instance-specific approach (wrong):
+❌ data_source_alpha_extractor.py
+❌ data_source_beta_extractor.py
+❌ data_source_gamma_extractor.py
+❌ data_source_delta_extractor.py
+   → Each with similar logic, slightly different selectors/patterns
+   → Bug fix requires updating all files
+   → No consistency in error handling, retry logic, etc.
+
+Generic framework approach (correct):
+✅ generic_data_extractor.py (framework)
+✅ config/source_alpha.yaml (config)
+✅ config/source_beta.yaml (config)
+✅ config/source_gamma.yaml (config)
+✅ config/source_delta.yaml (config)
+   → Logic in one place
+   → Bug fix updates framework, all sources benefit
+   → Consistent behavior guaranteed
+   → Adding source epsilon = create config file, zero new code
+```
+
+**Framework design principles:**
+
+**1. Separate logic from configuration:**
+```
+Framework (logic):
+- How to fetch data
+- How to parse structures
+- How to handle errors
+- How to validate results
+
+Configuration (data):
+- Where to fetch from
+- What patterns to look for
+- What fields to extract
+- What validation rules apply
+```
+
+**2. Make differences explicit:**
+```
+What varies between instances → Configuration parameters
+What stays the same → Framework code
+
+Example:
+Varies: URL, field selectors, rate limits → Config
+Same: HTTP client, retry logic, validation → Framework
+```
+
+**3. Design for extensibility:**
+```
+Framework supports:
+- Plugin patterns for custom logic
+- Override hooks for special cases
+- Composition over inheritance
+- Clear extension points
+```
+
+**Benefits:**
+- **Maintainability**: One codebase to maintain vs many
+- **Consistency**: All instances behave the same way
+- **Scalability**: Adding new instances is configuration, not coding
+- **Quality**: Testing the framework tests all instances
+- **Knowledge transfer**: Learn framework once, understand all instances
+
+**When NOT to build generic framework:**
+- Only 1-2 instances (premature generalization)
+- Instances are fundamentally different (forced abstraction)
+- Pattern is unclear (too early to abstract)
+- Time-sensitive one-off (optimize for delivery)
+
+**The refactoring path:**
+```
+Step 1: Build specific implementation for first instance
+Step 2: Build specific implementation for second instance
+Step 3: Notice duplication, extract commonalities
+Step 4: Build generic framework from common patterns
+Step 5: Migrate instances 1 and 2 to framework
+Step 6: Future instances = configuration only
+```
+
+**Anti-pattern: Premature generalization:**
+```
+❌ Build generic framework before understanding the problem
+❌ Over-engineer for cases that don't exist yet
+❌ Create "flexible" systems that are actually complicated
+
+✅ Start specific, generalize when pattern emerges (3+ instances)
+✅ Extract framework from working code, not theory
+✅ Simple framework that solves actual cases
+```
+
+**Example implementation:**
+```
+Before (instance-specific):
+def extract_source_A_data():
+    response = fetch("url_A")
+    return parse_pattern_A(response)
+
+def extract_source_B_data():
+    response = fetch("url_B")
+    return parse_pattern_B(response)
+# ... N more functions
+
+After (generic framework):
+class DataSourceExtractor:
+    def extract(self, config):
+        response = fetch(config.url)
+        return self.parse(response, config.patterns)
+
+# Usage:
+extractor = DataSourceExtractor()
+data_A = extractor.extract(config_A)
+data_B = extractor.extract(config_B)
+# ... N more configs (no more code needed)
+```
+
+**The test:**
+- Can you add a new instance without writing new code? → Good framework
+- Must you modify framework code for each new instance? → Framework not generic enough
+- Does framework handle all edge cases with configuration? → Well-designed
+
+**The rule:** Three instances of similar code is the signal to build a framework. Two instances might be coincidence. Three instances is a pattern that deserves a generic solution.
 
 ### Data Quality Gate Before Human Action
 

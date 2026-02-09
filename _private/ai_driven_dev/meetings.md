@@ -1656,3 +1656,54 @@ San Jose, CA 95113
 +1.888.799.9666
 
 © 2026 Zoom Communications, Inc.
+
+--
+
+
+ 
+Meeting assets for Leo Celis's Personal Meeting Room are ready!
+
+Meeting summary
+
+Resumen rápido
+
+Leo y Juan mantuvieron una conversación sobre el progreso del proyecto de Juan, incluyendo su reciente experiencia médica con una muela del juicio que le causó dolor durante varios días. Juan compartió documentos que él y Claudio desarrollaron sobre patrones de proyecto agnóstico y documentación, los cuales fueron generados usando modelos de lenguaje como Sonnet y Opus. Leo explicó el nuevo framework de intents que están implementando para mejorar la documentación y el workflow del proyecto, mostrando cómo los intents funcionan como contratos claros entre los desarrolladores y los modelos de IA como Claudio. Discutieron la importancia de usar intents para cada herramienta o módulo, lo que permite una mejor comprensión del propósito y facilita la implementación y mantenimiento del código. Leo también mostró cómo conectar el framework de intents con el servidor de Claudio a través de LLM, permitiendo acceso remoto a herramientas y agentes. La conversación concluyó con planes para que Juan use los intents para el desarrollo de un crawler genérico para extraer datos de diferentes estados, lo que ayudará a crear un framework más robusto y reutilizable.
+
+Siguientes pasos
+
+Juan: Seleccionar un estado con acceso S B (o similar) para probar el framework de crawler general y documentar el proceso en el doc de ecocentric, incluyendo el método de obtención de datos.
+Leo: Mostrar a Juan cómo usar el framework de intents y, junto a Juan, crear un intent para el nuevo data source elegido por Juan.
+Juan: Revisar y actualizar el documento de Uvexo con los intents de V S T y el Brunch actual, según lo discutido.
+Juan: Revisar si hay otros estados no considerados que ofrezcan datos crawleables y, en caso positivo, incorporarlos al listado para futuras pruebas.
+Leo: Dar acceso a Juan al documento de ecocentric para que pueda validar y crear las columnas necesarias para los states y métodos de obtención de datos.
+Juan: Limpiar y actualizar los comentarios y tickets en Gira para reflejar correctamente los cambios y el estado actual de los tickets de los diferentes estados.
+Leo: Revisar y limpiar el framework de intents para que Juan pueda utilizarlo adecuadamente, incluyendo la creación de un servidor y la incorporación de la key correspondiente.
+Juan: Probar el acceso al servidor y tools compartidos por Leo, y avisar en caso de problemas de conexión o autenticación.
+Juan: Ver la serie "Matrimonio" (si no lo ha hecho) para entender la referencia cultural mencionada por Leo (esta acción es opcional, pero fue mencionada en la conversación).
+Resumen
+
+Progreso del Proyecto Documentación Agentes
+
+Leo y Juan discutieron sobre el progreso de un proyecto de documentación y desarrollo de agentes. Juan compartió los documentos generados con Claudio sobre patrones de proyecto agnóstico y la implementación de UVexo, los cuales fueron creados usando modelos de lenguaje como Sonic y Opus. Leo explicó el uso del framework de intents y propuso crear un crawler generalizado para extraer datos de diferentes sitios web de estados, en lugar de crear un crawler por cada nuevo dato. También mostró cómo configurar un servidor en Claudio para acceder a herramientas y demostró el protocolo SCP como una alternativa para acceder a herramientas remotas.
+
+Implementación Sistema Documentación Intent
+
+Leo explicó a Juan el proceso de implementación de un sistema donde se usa documentación y modelos como ChatGPT para entender las intenciones de los usuarios antes de ejecutar tareas. Leo describió cómo el sistema funcionará mejor cuando se escriban documentos de "intent" que clarifiquen las solicitudes y proporcionen contexto adicional sobre los proyectos. El nuevo proceso incluirá un paso adicional donde se creará un documento de intent antes de que se implemente cualquier tarea, lo que permitirá a los modelos entender mejor las solicitudes y enseñar al usuario sobre funcionalidades que no conocían.
+
+Framework de Intents Documentation
+
+Leo explicó a Juan el uso del framework de intents para documentar y organizar el código, destacando sus ventajas sobre la documentación tradicional y su utilidad para revisar implementaciones y mantener la coherencia del proyecto. Leo sugirió que Juan use los intents como punto de referencia al implementar nuevas funcionalidades y que consulte con Claudio sobre la alineación entre los intents y el código existente. Como siguiente paso, Juan debe revisar su branch actual y consultar con Claudio sobre la integración de los intents y la documentación de code rules.
+
+AI can make mistakes. Review for accuracy.
+
+Please rate the accuracy of this summary.	feedback good  feedback bad
+Thank you,
+Zoom Support Team
+https://support.zoom.us
+LinkedIn	X	Instagram	Facebook	YouTube	Blog
+Zoom.com
+55 Almaden Blvd
+San Jose, CA 95113
++1.888.799.9666
+
+© 2026 Zoom Communications, Inc.

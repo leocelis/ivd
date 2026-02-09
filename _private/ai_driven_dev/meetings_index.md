@@ -540,15 +540,30 @@
 
 ---
 
+## Meeting 26
+**Title:** Intent-First Workflow & Generic Framework Design  
+**Date:** February 2026 (estimated)  
+**Lines:** 1658-1709  
+**Status:** ✅ **PROCESSED**  
+**Key Concepts Extracted (2 total):**
+
+**Development Workflow:**
+- Intent-first development workflow (mandatory intent creation before any implementation)
+- Generic framework design over instance-specific implementations (build general solutions)
+
+**Context:** Meeting focused on intent framework implementation and creating generalized crawler framework instead of state-specific implementations.
+
+---
+
 ## Summary
 
-**Total Meetings:** 25  
-**Total Processed:** 25 ✅  
+**Total Meetings:** 26  
+**Total Processed:** 26 ✅  
 **Total Not Processed:** 0 ✅  
 
 **Processing Status:** 100% Complete ✅
 
-All generalizable concepts from meetings 0-25 have been extracted and incorporated into the AI-Driven Development Guide (Version 3.1).
+All generalizable concepts from meetings 0-26 have been extracted and incorporated into the AI-Driven Development Guide (Version 3.2).
 
 **Most Recent Updates:**
 - **Meeting 1** re-processed with ultra-deep extraction (16 concepts total)
