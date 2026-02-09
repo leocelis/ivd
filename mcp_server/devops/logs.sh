@@ -2,7 +2,7 @@
 # logs.sh — Stream and query IVD MCP Server logs
 #
 # Usage:
-#   ./mcp_server/devops/logs.sh                    # Stream from DigitalOcean (live, auto-reconnect)
+#   ./mcp_server/devops/logs.sh                    # Stream from DigitalOcean console (live, auto-reconnect)
 #   ./mcp_server/devops/logs.sh --local            # Stream local log file (colored, live)
 #   ./mcp_server/devops/logs.sh --tail              # Tail last 20 lines (local)
 #   ./mcp_server/devops/logs.sh --tail 50           # Tail last N lines (local)
@@ -278,7 +278,7 @@ cmd_do_logs() {
             sleep 2
         fi
         
-        # Stream logs (will exit on disconnect/error)
+        # Stream console logs (will exit on disconnect/error)
         doctl apps logs "$app_id" --type=run --follow 2>&1 || {
             reconnect_count=$((reconnect_count + 1))
             continue
@@ -421,7 +421,7 @@ main() {
             echo "Usage: $0 [command]"
             echo ""
             echo "Streaming:"
-            echo "  (default)              Stream from DigitalOcean (live, auto-reconnect)"
+            echo "  (default)              Stream from DigitalOcean console (live, auto-reconnect)"
             echo "  --local                Stream local log file (colored, live)"
             echo "  --tail [N]             Show last N lines from local (default: 20)"
             echo ""
@@ -442,7 +442,7 @@ main() {
             echo "  --json                 Raw JSON output (pipe to jq)"
             echo ""
             echo "Examples:"
-            echo "  $0                                     # Live stream from DO (default)"
+            echo "  $0                                     # Stream from DO (default)"
             echo "  $0 --local                             # Stream local file"
             echo "  $0 --stats                             # Local usage report"
             echo "  $0 --tool ivd_search                   # Local search tool logs"
