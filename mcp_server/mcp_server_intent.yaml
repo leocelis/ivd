@@ -271,6 +271,7 @@ implementation:
     - dir: "devops/"
       purpose: "Operational tooling for deployment, logging, key management, and embedding generation"
       files:
+        - "setup.sh   — Environment setup: creates Python 3.11+ venv and installs all dependencies"
         - "deploy.sh  — DigitalOcean App Platform deployment and management (create, update, status)"
         - "logs.sh    — Production log streaming with auto-reconnect, filtering, and analytics"
         - "keys.sh    — API key generation and management with user prefixes"

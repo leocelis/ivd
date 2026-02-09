@@ -21,4 +21,5 @@ termcolor>=2.4.0
 
 # Testing (dev only)
 pytest>=8.0.0
+pytest-anyio>=0.0.0
 httpx>=0.27.0
