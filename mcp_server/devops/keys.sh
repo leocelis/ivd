@@ -190,31 +190,56 @@ cmd_add() {
     fi
     
     info "App ID: $app_id"
-    info "Fetching current keys..."
+    info "Fetching current keys from local .env (source of truth)..."
     
-    # Get current keys from DO app spec
-    local current_keys
-    current_keys=$(doctl apps spec get "$app_id" 2>/dev/null | grep -A1 'key: IVD_API_KEYS' | grep 'value:' | sed 's/.*value: "\(.*\)"/\1/' || echo "")
-    
-    # Add new key
-    local new_keys
-    if [ -z "$current_keys" ]; then
-        new_keys="$key"
-    else
-        new_keys="${current_keys},${key}"
+    # IMPORTANT: Read current keys from LOCAL .env, NOT from DO spec.
+    # DO returns encrypted values (EV[1:...]) that can't be parsed,
+    # so we use .env as the source of truth for existing keys.
+    local current_keys=""
+    if [ -f "$ENV_FILE" ] && grep -q "^IVD_API_KEYS=" "$ENV_FILE"; then
+        current_keys=$(grep "^IVD_API_KEYS=" "$ENV_FILE" | cut -d'=' -f2-)
     fi
     
+    if [ -z "$current_keys" ]; then
+        error "No keys found in local .env — cannot safely add key."
+        error ".env must contain all current keys to prevent overwriting."
+        error "Restore .env first, then retry."
+        exit 1
+    fi
+    
+    # Check if key already exists
+    if echo "$current_keys" | grep -q "$key"; then
+        warn "Key ${DIM}$key_id${NC} already exists in .env"
+        info "Syncing .env keys to production..."
+        local new_keys="$current_keys"
+    else
+        # Append new key
+        local new_keys="${current_keys},${key}"
+    fi
+    
+    info "Keys to set in production: $(echo "$new_keys" | tr ',' '\n' | wc -l | xargs) key(s)"
+    
+    # Step 1: Update .env FIRST (source of truth)
+    info "Updating local .env with new key set..."
+    if grep -q "^IVD_API_KEYS=" "$ENV_FILE"; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|^IVD_API_KEYS=.*|IVD_API_KEYS=$new_keys|" "$ENV_FILE"
+        else
+            sed -i "s|^IVD_API_KEYS=.*|IVD_API_KEYS=$new_keys|" "$ENV_FILE"
+        fi
+    else
+        echo "IVD_API_KEYS=$new_keys" >> "$ENV_FILE"
+    fi
+    success ".env updated"
+    
+    # Step 2: Push to DigitalOcean
     info "Adding key ${DIM}$key_id${NC} to production..."
     
-    # Get current app spec, update IVD_API_KEYS, and apply
     local temp_spec
     temp_spec=$(mktemp)
     
     doctl apps spec get "$app_id" > "$temp_spec" 2>/dev/null
     
-    # Update the IVD_API_KEYS value in the YAML
-    # The value line looks like: "    value: EV[...]" or "    value: \"key1,key2\""
-    # We need to preserve the indentation and format
     if grep -q "key: IVD_API_KEYS" "$temp_spec"; then
         # Use awk to update the value line that comes after IVD_API_KEYS
         awk -v new_val="$new_keys" '
@@ -227,42 +252,14 @@ cmd_add() {
         ' "$temp_spec" > "${temp_spec}.new"
         mv "${temp_spec}.new" "$temp_spec"
         
-        # Apply the updated spec
         if doctl apps update "$app_id" --spec "$temp_spec" >/dev/null 2>&1; then
             success "Key added to production! Deployment in progress..."
-            
-            # Also add to local .env as backup
-            if [ -f "$ENV_FILE" ]; then
-                info "Backing up key to local .env..."
-                
-                if grep -q "^IVD_API_KEYS=" "$ENV_FILE"; then
-                    local env_keys
-                    env_keys=$(grep "^IVD_API_KEYS=" "$ENV_FILE" | cut -d'=' -f2-)
-                    
-                    # Check if key already exists
-                    if echo "$env_keys" | grep -q "$key"; then
-                        info "Key already exists in .env"
-                    else
-                        # Append to existing keys
-                        local env_new_keys="${env_keys},${key}"
-                        if [[ "$OSTYPE" == "darwin"* ]]; then
-                            sed -i '' "s|^IVD_API_KEYS=.*|IVD_API_KEYS=$env_new_keys|" "$ENV_FILE"
-                        else
-                            sed -i "s|^IVD_API_KEYS=.*|IVD_API_KEYS=$env_new_keys|" "$ENV_FILE"
-                        fi
-                        success "Backed up to .env"
-                    fi
-                else
-                    echo "IVD_API_KEYS=$key" >> "$ENV_FILE"
-                    success "Added IVD_API_KEYS to .env"
-                fi
-            fi
-            
             echo ""
             info "Monitor deployment: ${CYAN}doctl apps list${NC}"
             info "Verify key works: ${CYAN}$0 --verify $key${NC}"
         else
             error "Failed to update app spec"
+            warn ".env was already updated — production may be out of sync"
             rm -f "$temp_spec"
             exit 1
         fi
@@ -297,15 +294,19 @@ cmd_revoke() {
     fi
     
     info "App ID: $app_id"
-    info "Fetching current keys..."
+    info "Fetching current keys from local .env (source of truth)..."
     
-    # Get current keys
-    local current_keys
-    current_keys=$(doctl apps spec get "$app_id" 2>/dev/null | grep -A1 'key: IVD_API_KEYS' | grep 'value:' | sed 's/.*value: "\(.*\)"/\1/' || echo "")
+    # IMPORTANT: Read current keys from LOCAL .env, NOT from DO spec.
+    # DO returns encrypted values (EV[1:...]) that can't be parsed.
+    local current_keys=""
+    if [ -f "$ENV_FILE" ] && grep -q "^IVD_API_KEYS=" "$ENV_FILE"; then
+        current_keys=$(grep "^IVD_API_KEYS=" "$ENV_FILE" | cut -d'=' -f2-)
+    fi
     
     if [ -z "$current_keys" ]; then
-        warn "No keys configured in production"
-        exit 0
+        error "No keys found in local .env — cannot safely revoke."
+        error ".env must contain all current keys to prevent data loss."
+        exit 1
     fi
     
     # Filter out keys starting with username_
