@@ -22,3 +22,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+.obsidian/
+
+# Temp (one-pagers, drafts, local outputs)
+temp/

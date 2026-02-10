@@ -8,10 +8,12 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[2]
 # Source:    ivd_system_intent.yaml (8 principles)
-# Version: 1.0
+# Version: 1.2
 # Created: 2026-01-26
-# Status: Pending
+# Status: Complete
 # ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
 
 scope:
   level: "module"
@@ -157,6 +159,7 @@ key_points:
   - "Each principle is a one-line rule + explanation; why each is essential (what breaks without it)"
   - "The eight principles work together as a system, not independent rules"
   - "Principle 6 (AI writes intent, implements, verifies) is the key for the AI Agents era"
+  - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring"
   - "Common violations and how to avoid them; Principle 8: when to use inversion, when to skip"
 
 # ==============================================================================
@@ -208,7 +211,7 @@ rationale:
   
   reasoning: |
     - Part I purpose: establish the paradigm; Ch1 problem, Ch2 paradigm, Ch3 principles in depth, Ch4 artifacts.
-    - Eight principles per ivd_system_intent.yaml (canon); book_system_intent writing_style mentions "7" in one place—Ch3 follows framework canon (8).
+    - Eight principles per ivd_system_intent.yaml (canon); book_system_intent aligned to 8 everywhere (fixed in v1.5).
     - Pattern from bestsellers (Clean Code, Pragmatic Programmer): principles as short rules, repeatable, memorable.
     - Principle 6 (AI as Understanding Partner) gets full weight—it is the AI Agents era differentiator.
     - Principle 8 (Inversion): include when to use and when to skip so readers don't over-apply.
@@ -220,27 +223,48 @@ rationale:
   stakeholder: "IVD book author"
 
 # ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter becomes a dry reference list rather than a compelling narrative"
+    action: "Each principle section: rule first, then concrete 'what breaks' scenario; 3.9 (System View) ties them into a story, not a checklist"
+    monitor: "Beta reader feedback: 'could you feel why each principle matters?'"
+    severity: "medium"
+  
+  - condition: "Principle statements drift from ivd_system_intent.yaml canon"
+    action: "One-line rules must match ivd_system_intent.yaml statements exactly; constraint canonical_principles enforces this"
+    monitor: "Cross-check during step_5"
+    severity: "high"
+  
+  - condition: "Linguistic mirroring insufficiently covered in section 3.6"
+    action: "Manuscript must include at least one concrete example of linguistic mirroring (AI echoes terms = alignment; AI substitutes = risk)"
+    monitor: "Cross-check: grep for 'linguistic mirroring' or 'echoes' in chapter.md section 3.6"
+    severity: "low"
+
+# ==============================================================================
 # IMPLEMENTATION
 # ==============================================================================
 
 implementation:
   intent_artifact: "manuscript/part-1-foundations/chapter-03-eight-principles/chapter_03_eight_principles_intent.yaml"
   output: "manuscript/part-1-foundations/chapter-03-eight-principles/chapter.md"
-  status: "pending"
-  version: 1
+  status: "complete"
+  version: 2
   
   process:
     reference: "book/chapter_writing_process_intent.yaml"
-    current_step: "step_3_create_chapter_intent"
+    current_step: "step_5_cross_check"
     completed_steps:
       - "step_1_verify_prerequisites"
       - "step_2_create_chapter_folder"
       - "step_3_create_chapter_intent"
-    pending_steps:
       - "step_4_write_manuscript"
+    pending_steps:
       - "step_5_cross_check"
       - "step_6_update_chapter_status"
       - "step_7_update_book_intent"
+    notes: "Manuscript exists (172 lines, all 9 sections + Key Points). Content gap: section 3.6 missing explicit linguistic mirroring example. Cross-check pending."
 
 # ==============================================================================
 # VERIFICATION (cross-check with book intent and IVD framework)
@@ -268,6 +292,19 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.2"
+    date: "2026-02-09"
+    change: |
+      Cross-check against book_system_intent v1.7, ivd_system_intent v1.4, research, outline, and template:
+      (1) Header Version "1.0" → "1.2", Status "Pending" → "Complete" (manuscript exists, 172 lines, all 9 sections).
+      (2) Added parent_intent: "../../../book_system_intent.yaml" (template requirement for non-system intents).
+      (3) Added key_point: "Principle 6 extensions: teaching before intent, discovery before intent, linguistic mirroring"
+          (added to master Ch3 key_points in v1.5; was missing from chapter intent).
+      (4) Added risks section: dry-reference risk (medium), principle-drift risk (high), linguistic-mirroring-gap risk (low).
+      (5) Fixed stale rationale note about "7 principles" → "8 everywhere (fixed in v1.5)".
+      (6) Updated implementation: status "pending" → "complete", version 1 → 2, current_step → step_5_cross_check.
+          Manuscript complete but cross-check pending: section 3.6 missing explicit linguistic mirroring example.
+    reason: "Alignment audit: chapter intent must match master intent, research, outline, and template conventions."
   - version: "1.1"
     date: "2026-01-26"
     change: "Validation pass: aligned with book_system_intent and IVD framework. Added master_intent_alignment constraint; required_elements (Key Points repeat 8 rules, optional Checklist); goal item 5 (Chapter 4 then Part II); verification cross_checks for principles_as_rules and master_intent_alignment; rationale note on 8 principles (canon)."

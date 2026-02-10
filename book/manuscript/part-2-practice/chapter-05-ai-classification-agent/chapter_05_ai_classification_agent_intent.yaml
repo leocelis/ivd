@@ -1,0 +1,327 @@
+# ==============================================================================
+# Chapter 5: Project 1 — AI Classification Agent (Agent Pattern)
+# ==============================================================================
+# Module-level intent for the fifth chapter of the IVD book. First hands-on
+# project in Part II: build a lead scoring classifier from scratch using IVD,
+# apply the agent-classifier recipe, and measure baseline vs IVD.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_2_practice.chapters[0]
+# Source:    recipes/agent-classifier.yaml, framework.md, templates/intent.yaml
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through building a lead scoring classifier from scratch using IVD—writing the intent artifact, applying the agent-classifier recipe, implementing with an AI assistant, verifying alignment, and measuring baseline vs IVD."
+  
+  goal: |
+    By the end of this chapter, the reader:
+    1. Has built a complete, working AI classification agent (lead scorer) using IVD
+    2. Can apply the agent-classifier recipe to a real problem
+    3. Has written a module-level intent artifact for the agent (scope, intent, constraints, verification)
+    4. Understands the full IVD flow in practice: describe → AI writes intent → review → AI implements → AI verifies
+    5. Has measurable evidence: baseline (no IVD) vs IVD approach (iterations, clarity, maintainability)
+    6. Recognizes the pattern so they can apply it to other classification domains (tickets, content, facts)
+    
+    This is the first practice project. The reader transitions from "I understand IVD" (Part I) to "I can build with IVD." Code and intent artifacts are the centerpiece; prose explains steps and rationale.
+  
+  success_metric: |
+    - Reader has a working lead scoring agent at the end of the chapter
+    - Reader wrote (or followed along with) a module-level intent artifact referencing the agent-classifier recipe
+    - Reader can articulate what the agent-classifier recipe provides and how to customize it
+    - Baseline vs IVD measurement is clear: fewer iterations, less drift, verifiable constraints
+    - Reader sees the pattern: recipe → intent → implement → verify; ready to apply in Ch6–10
+    - Chapter ends with pattern recognition bridge to Project 2 (Chapter 6)
+  
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_2 purpose: build real projects with IVD)"
+    - "recipes/agent-classifier.yaml (canonical recipe)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch5)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "5.1"
+      title: "Project Overview: Lead Scoring for Sales Pipeline"
+      required_content:
+        - "What we're building: an AI agent that classifies sales leads as qualified/not-qualified using LLM-based understanding"
+        - "Why this project: relatable business problem; requires context understanding (not keyword matching); clear success metric (accuracy)"
+        - "What the reader will learn: the full IVD cycle on a real agent, recipe usage, measurement"
+        - "Prerequisites: Part I concepts (intent artifacts, principles, four levels); basic Python; access to an LLM API (OpenAI/Anthropic)"
+        - "End state: working agent with intent artifact, tests, and baseline-vs-IVD measurement"
+    
+    - id: "5.2"
+      title: "Step 1: Write the Intent Artifact (Module-Level)"
+      required_content:
+        - "Start with natural language: reader describes what they want ('I need an agent that scores leads...')"
+        - "AI writes the intent artifact: scope (level=module, type=agent), intent (summary, goal, success_metric), constraints (accuracy >= 80%, latency < 2s, cost tracking)"
+        - "Reference the agent-classifier recipe: recipe: 'agent-classifier', recipe_version: '1.0' — show how the recipe provides structure"
+        - "parent_intent: link to system intent (or explain that in a real project this would point to the product's system intent)"
+        - "Human reviews: 'Is this what I meant?' — emphasize Principle 6 (AI proposes, human confirms alignment)"
+        - "Show the complete module-level YAML artifact inline (the chapter's primary teaching artifact)"
+        - "Highlight: the intent is the contract; everything that follows must satisfy these constraints"
+    
+    - id: "5.3"
+      title: "Step 2: Define Constraints and Success Criteria"
+      required_content:
+        - "Deep dive into constraints: each constraint has a requirement, test path, and consequence_if_violated (Principle 2)"
+        - "classification_accuracy: accuracy >= 0.80; test: tests/test_accuracy.py::test_classification_accuracy"
+        - "response_time: p95 latency < 2s; test: tests/test_performance.py::test_latency"
+        - "cost_per_classification: average cost < $0.05; test: tests/test_cost.py::test_cost_tracking"
+        - "Show how constraints from the recipe template are customized to this specific agent"
+        - "Verification plan: how will we know it works? Test cases (happy path, edge case, error handling) from the recipe's verification_pattern"
+        - "Emphasize: constraints are not aspirational — they are executable checks (Principle 2: Understanding Must Be Executable)"
+    
+    - id: "5.4"
+      title: "Step 3: Implement with AI Assistant (Claude/GPT)"
+      required_content:
+        - "The IVD implementation flow: hand the intent artifact to the AI assistant → AI reads the intent → AI implements against constraints"
+        - "Show the implementation pattern from the recipe: directory structure (agent/, classifier.py, validator.py, prompts.py, tests/)"
+        - "Walk through key implementation decisions: LLM provider, prompt design (few-shot examples), output validation (Pydantic)"
+        - "AI implements: show code snippets for the main agent class, classifier, and validator (recipe's code_structure)"
+        - "Emphasize: the AI has the intent as context — it knows what to build, what constraints to satisfy, and what tests to write"
+        - "What if the AI drifts? Compare AI output against intent constraints; if a constraint is violated, the AI self-corrects (Principle 4: Continuous Verification)"
+    
+    - id: "5.5"
+      title: "Step 4: Verify Alignment (Intent ↔ Code)"
+      required_content:
+        - "Run the constraint tests: accuracy test, latency test, cost test"
+        - "Bidirectional verification (Principle 3): does the code satisfy the intent? Does the intent still reflect the actual behavior?"
+        - "Show test output: passing tests with actual metrics (accuracy: 0.85, latency p95: 1.2s, cost: $0.03)"
+        - "What if a test fails? Walk through a failure scenario and how to iterate (adjust prompt, update constraint, re-verify)"
+        - "Continuous verification setup: how to keep these checks running (CI, monitoring dashboard per recipe verification_pattern)"
+        - "The verification loop closes: intent → implement → verify → intent is source of truth"
+    
+    - id: "5.6"
+      title: "Results: Baseline (No IVD) vs IVD Approach"
+      required_content:
+        - "Baseline scenario: build the same agent without IVD — describe what happens (multiple iterations, ambiguous requirements, drift, 'does this work?' uncertainty)"
+        - "IVD scenario: what actually happened following the IVD process (clear intent, fewer iterations, verifiable constraints, measurable results)"
+        - "Measurement comparison (table or clear list): iterations to working agent, time to first working version, number of constraint violations caught, maintainability (can a new AI session understand the intent?)"
+        - "This is the first concrete evidence for the reader — IVD produces measurable improvement"
+        - "Tie back to Chapter 1 (alignment crisis) and Chapter 2 (IVD paradigm): 'This is what we meant by verifiable alignment'"
+        - "Note: measurements are illustrative from author experience, not controlled experiments (constraint: no_unsourced_statistics)"
+    
+    - id: "5.7"
+      title: "Key Takeaways and Pattern Recognition"
+      required_content:
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Pattern recognition: what you just did is a repeatable pattern — recipe → intent → implement → verify → measure"
+        - "The agent-classifier recipe gave you structure; the intent artifact gave you verifiable constraints; the verification loop gave you confidence"
+        - "This pattern applies to any AI agent: ticket router, content classifier, fact checker (recipe examples)"
+        - "Bridge to Chapter 6: 'In the next project, you'll tackle a multi-step workflow — a fundamentally different challenge that introduces workflow-level intents'"
+        - "Checklist: 'Before you move on' — did you write your intent? Did your constraints pass? Did you measure baseline vs IVD?"
+  
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch5 key_points: lead scoring classifier, agent-classifier recipe, baseline vs IVD measurement"
+      - "At least one complete module-level YAML intent artifact inline (section 5.2)"
+      - "Code snippets for agent implementation (section 5.4) — recipe's code_structure adapted"
+      - "Baseline vs IVD comparison table or clear structured comparison (section 5.6)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Checklist in 5.7 (constraint: chapter_takeaways)"
+      - "Clear bridge to Chapter 6 (workflow pattern)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch5; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Build a lead scoring classifier from scratch using IVD — the first complete practice project"
+  - "Apply the agent-classifier recipe: recipe provides structure (directory, constraints, verification), intent customizes it to the problem"
+  - "Full IVD cycle in practice: describe → AI writes intent → human reviews → AI implements → AI verifies against constraints"
+  - "Constraints are executable, not aspirational: accuracy >= 80%, latency < 2s, cost < $0.05 — each with a test path (Principle 2)"
+  - "Measure: baseline (no IVD) vs IVD approach — fewer iterations, less drift, verifiable alignment"
+  - "Pattern recognition: recipe → intent → implement → verify → measure is repeatable for any classification agent"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+  
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+  
+  - name: "writing_style_part_2"
+    requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
+    source: "book_system_intent.writing_style.code_and_prose.part_2"
+    validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+  
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+  
+  - name: "recipe_alignment"
+    requirement: "Agent implementation must align with recipes/agent-classifier.yaml structure (directory, constraints_template, implementation_pattern, verification_pattern)"
+    source: "recipes/agent-classifier.yaml"
+    validation: "Chapter's YAML artifact and code snippets match recipe patterns; no contradictions with recipe"
+  
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch5 aligns with framework principles and recipe; no contradictions"
+  
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+  
+  - name: "no_unsourced_statistics"
+    requirement: "Baseline vs IVD measurements must be marked as illustrative (author experience) unless backed by controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Measurement section includes caveat about illustrative data"
+  
+  - name: "author_sourced_examples"
+    requirement: "The lead scoring scenario and code examples should reflect the author's real experience with the agent-classifier recipe (fact_checker, lead_scorer examples in recipe)"
+    source: "recipes/agent-classifier.yaml.examples"
+    validation: "Manual: examples feel real, not generic; reference actual recipe examples"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 5 is the first practice project — lead scoring classifier using the agent-classifier recipe. Part II sequence: Ch5 agent (beginner), Ch6 workflow (intermediate), Ch7 infrastructure, Ch8 integration, Ch9 full-stack, Ch10 existing codebase."
+  
+  reasoning: |
+    - Part II purpose: build real projects with IVD; learn by doing. Ch5 is the entry point — beginner complexity, relatable problem.
+    - Lead scoring chosen because: (1) relatable business domain, (2) requires LLM-based understanding (not trivial keyword matching), (3) clear success metric (accuracy), (4) recipe already exists and is validated (agent-classifier.yaml).
+    - Recipe-first approach: the recipe gives the reader structure; the intent artifact customizes it to the specific problem. This teaches the recipe → intent → implement → verify pattern that repeats in Ch6–10.
+    - Baseline vs IVD measurement is critical: this is the first concrete evidence that IVD works. Part III (Evidence) will build on these per-project measurements.
+    - Pattern recognition (5.7): the reader should leave seeing the pattern, not just the project. Each subsequent project introduces a new pattern/level while the IVD cycle remains the same.
+  
+  evidence: "book/book_system_intent.yaml (part_2, Ch5 key_points, placeholder); recipes/agent-classifier.yaml (validated recipe with 3+ examples); framework.md (IVD flow)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Start with a simpler non-AI project (e.g., CLI tool)"
+    rejected_because: "Doesn't showcase IVD's AI-era value proposition; the book is about human-AI collaboration. An AI agent is the most compelling first project."
+    when_it_works: "If the audience had zero AI experience; our audience is developers already using AI."
+  
+  - name: "Start with workflow-level (multi-step) project"
+    rejected_because: "Too complex for the first project; the reader hasn't practiced the basic IVD cycle yet. Workflow introduces additional concepts (steps, data_flow, error_handling)."
+    when_it_works: "If the reader already practiced module-level intents and wants to tackle orchestration."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Reader doesn't have LLM API access (OpenAI/Anthropic) and can't follow along"
+    action: "Include a note in 5.1 about prerequisites and alternatives (mock responses, local models); provide example outputs so the chapter works even without API access"
+    monitor: "Beta reader feedback: 'I couldn't follow along because...'"
+    severity: "medium"
+  
+  - condition: "Code examples become stale as LLM APIs evolve"
+    action: "Keep code at pattern level (agent, classifier, validator structure); reference the recipe for latest implementation details; avoid pinning to specific API versions in prose"
+    monitor: "Recipe version updates; API changelog monitoring"
+    severity: "medium"
+  
+  - condition: "Baseline vs IVD comparison feels contrived or cherry-picked"
+    action: "Be honest about measurement limitations; mark as illustrative from author experience; show both what went well and what was tricky"
+    monitor: "Reviewer feedback on credibility of the comparison"
+    severity: "high"
+  
+  - condition: "Chapter is too long — reader loses momentum on first project"
+    action: "Target 25–35 pages; keep code focused on key snippets (not full listing); reference recipe and repo for complete code"
+    monitor: "Page count; beta reader completion rate for this chapter"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-2-practice/chapter-05-ai-classification-agent/chapter_05_ai_classification_agent_intent.yaml"
+  output: "manuscript/part-2-practice/chapter-05-ai-classification-agent/chapter.md"
+  status: "pending"
+  version: 1
+  
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, recipe, and IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch5 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (5.1–5.7) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and pre-move-on checklist"
+      validates: "constraints.chapter_takeaways"
+    - check: "At least one complete module-level YAML intent artifact inline (section 5.2)"
+      validates: "deliverables.sections[5.2]"
+    - check: "Code snippets match recipe implementation_pattern (agent.py, classifier.py, validator.py)"
+      validates: "constraints.recipe_alignment"
+    - check: "Constraints in the chapter's YAML artifact match recipe constraints_template (accuracy, latency, cost)"
+      validates: "constraints.recipe_alignment"
+    - check: "Baseline vs IVD comparison present with measurements and caveat about illustrative data"
+      validates: "deliverables.sections[5.6], constraints.no_unsourced_statistics"
+    - check: "Writing style: code/YAML centerpiece; prose explains steps and rationale (Part II style)"
+      validates: "constraints.writing_style_part_2"
+    - check: "Bridge to Chapter 6 (workflow pattern) present in 5.7"
+      validates: "deliverables.sections[5.7]"
+    - check: "No contradictions with ivd_system_intent.yaml, book_system_intent.yaml, or recipes/agent-classifier.yaml"
+      validates: "constraints.master_intent_alignment, constraints.recipe_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 5 'Project 1: AI Classification Agent (Agent Pattern)'.
+      Derived from book_system_intent.yaml Ch5 (key_points, placeholder), recipes/agent-classifier.yaml
+      (structure, constraints, implementation pattern, verification pattern), framework.md (IVD flow),
+      and templates/intent.yaml (canonical structure).
+      Sections 5.1–5.7 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part II writing style applied (code centerpiece, prose supports).
+      Recipe-specific constraints: recipe_alignment, author_sourced_examples.
+      Risks identified: API access, stale code, contrived comparison, chapter length.
+    reason: "IVD: one intent per chapter; Ch5 is the first practice project. Intent-only; manuscript pending."

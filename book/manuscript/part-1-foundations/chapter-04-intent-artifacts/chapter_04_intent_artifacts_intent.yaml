@@ -8,10 +8,12 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[3]
 # Source:    templates/intent.yaml, intent_levels_guide.md, framework.md
-# Version: 1.0
+# Version: 1.2
 # Created: 2026-01-26
 # Status: Pending
 # ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
 
 scope:
   level: "module"
@@ -60,18 +62,9 @@ deliverables:
       required_content:
         - "What an intent artifact is: structured YAML contract between human and AI (and AI with itself)"
         - "Core idea: AI writes it, AI implements against it, AI verifies against constraints (Principle 6)"
-        - "Essential sections at all levels: scope, intent, constraints, verification (minimum for any intent)"
-        - "Scope: level (system|workflow|module|task), type, granularity"
-        - "Intent: summary, goal, success_metric, stakeholders"
-        - "Constraints: requirement + test path (executable); consequence_if_violated (Principle 2)"
-        - "Verification: how to verify (test_cases, property_tests for task-level; CI for continuous)"
-        - "Full Layered Understanding (Principle 5): also rationale, alternatives, risks—required per ivd_system_intent (required_fields for each layer); minimum viable intent can start with scope, intent, constraints, verification, then add layers"
-        - "Level-specific sections: workflow (steps, data_flow, error_handling) for workflow-level; interface, behavior for task-level"
-        - "Optional: metadata (feature_id, category, tags, status) for module-level in large projects—derived feature inventory, no separate inventory file (ivd_system_intent)"
-        - "Optional for data-heavy intents: field_mapping (sources, targets, mappings, transformations, verification) for workflow/module intents involving data integration, ETL, or API sync—makes field mappings verifiable (recipes/data-field-mapping.yaml)"
-        - "Optional for system-level in existing projects: project_context (code_rules, architecture, tools, libraries, key_paths 'map to the stars')—created by ivd_init tool; covered in detail in Chapter 17"
-        - "Optional when Principle 8 applies: inversion_opportunities (problem, dominant_belief, proposed_inversions with status chosen|rejected|deferred)"
+        - "High-level overview of what goes into an intent artifact (scope, intent, constraints, verification, rationale, alternatives, risks)"
         - "Reference: templates/intent.yaml as canonical structure; no invented sections that contradict IVD"
+        - "Brief preview: essential vs optional sections (detailed in 4.3)"
     
     - id: "4.2"
       title: "Choosing the Right Level and Where Intent Lives"
@@ -91,6 +84,23 @@ deliverables:
         - "Existing projects: use ivd_assess_coverage to see which modules have intents and which don't before deciding where to start (framework.md § Intent Coverage Assessment; ivd_system_intent Principle 4 extension)"
     
     - id: "4.3"
+      title: "Essential and Optional Sections"
+      required_content:
+        - "Essential sections (all levels): scope, intent, constraints, verification"
+        - "Scope: level (system|workflow|module|task), type, granularity"
+        - "Intent: summary, goal, success_metric, stakeholders"
+        - "Constraints: requirement + test path (executable); consequence_if_violated (Principle 2)"
+        - "Verification: how to verify (test_cases, property_tests for task-level; CI for continuous)"
+        - "Full Layered Understanding (Principle 5): rationale (decision, reasoning, evidence), alternatives (rejected_because, when_it_works), risks (condition, action, monitor, severity)—required per ivd_system_intent for full compliance; minimum viable intent can start with scope, intent, constraints, verification, then add layers"
+        - "Level-specific sections: workflow (steps, data_flow, error_handling) for workflow-level; interface, behavior for task-level"
+        - "Optional: metadata (feature_id, category, tags, status) for module-level in large projects—derived feature inventory, no separate inventory file (ivd_system_intent)"
+        - "Optional: field_mapping (sources, targets, mappings, transformations, verification) for workflow/module intents involving data integration, ETL, or API sync—makes field mappings verifiable (recipes/data-field-mapping.yaml)"
+        - "Optional: project_context (code_rules, architecture, tools, libraries, key_paths 'map to the stars')—system-level only in existing projects; created by ivd_init tool; covered in detail in Chapter 17"
+        - "Optional: parent_intent (relative path to parent intent)—link child → parent for context inheritance (task→module, module→workflow/system, workflow→system)"
+        - "Optional: inversion_opportunities (problem, dominant_belief, proposed_inversions with status chosen|rejected|deferred)—when Principle 8 applies"
+        - "Table or summary: essential vs optional at a glance"
+    
+    - id: "4.4"
       title: "Writing Your First Module-Level Intent"
       required_content:
         - "Hands-on walkthrough: pick a small module or feature the reader can relate to (e.g. small API, one agent, one component)"
@@ -102,7 +112,7 @@ deliverables:
         - "What if I don't understand the concepts? Use teaching first (framework Step 0a, ivd_teach_concept); AI explains, you confirm understanding (Principle 6 teaching)"
         - "What if I don't know what to build? Use discovery first (framework Step 0b, ivd_discover_goal, list recipes); choose a direction, then write first module-level intent (Principle 6 discovery)"
     
-    - id: "4.4"
+    - id: "4.5"
       title: "From Intent to Implementation (the flow)"
       required_content:
         - "The IVD flow: Describe (human) → AI writes intent → Review (human) → AI implements → AI verifies (constraint tests)"
@@ -110,7 +120,7 @@ deliverables:
         - "Where implementation lives: implementation section in intent (current path, tests path, version)"
         - "Reader understands that intent is the source of truth; code and docs are derived and must align"
     
-    - id: "4.5"
+    - id: "4.6"
       title: "Common Mistakes and How to Fix Them"
       required_content:
         - "Constraint without test path → add test: path/to/test.py::test_name; constraint must be executable (Principle 2)"
@@ -122,7 +132,7 @@ deliverables:
         - "Skipping inversion when it applies: designing new/major intent with conventional default without considering Principle 8 (invert, evaluate)—when stakes matter (perf, scale, security), document inversion_opportunities or rationale for chosen approach"
         - "At least 3–5 concrete mistakes with fix; reader can self-check"
     
-    - id: "4.6"
+    - id: "4.7"
       title: "Template Library and Quick Reference"
       required_content:
         - "Where to find templates: templates/intent.yaml (canonical), templates/examples (workflow, task-level examples)"
@@ -135,7 +145,7 @@ deliverables:
     file: "chapter.md"
     required_elements:
       - "Key Points or Summary block at end (constraint: chapter_takeaways)"
-      - "Key Points reflect book_system_intent Ch4 key_points: what an intent artifact is, four levels, essential sections, first intent walkthrough"
+      - "Key Points reflect book_system_intent Ch4 key_points: what an intent artifact is, four levels, essential vs optional sections, first intent walkthrough"
       - "At least one complete or near-complete YAML example (module-level) in chapter"
       - "Decision tree or clear table for level selection and placement"
       - "1–2 quotable lines where natural (constraint: quotable_principles)"
@@ -149,6 +159,7 @@ deliverables:
 key_points:
   - "An intent artifact is a structured YAML contract: scope, intent, constraints, verification (essential); rationale, alternatives, risks (layered)"
   - "Four levels: System (product root), Workflow (multi-step process), Module (feature/component), Task (critical function/API)"
+  - "Essential vs optional sections: essential (scope, intent, constraints, verification, rationale, alternatives, risks); optional (metadata for feature inventory, field_mapping for data integrations, inversion_opportunities for Principle 8, parent_intent for hierarchy, project_context for system-level)"
   - "Placement: system at root; workflow in workflows/ or alongside coordinator when single-orchestrator; module {module}_intent.yaml (not bare intent.yaml); task in intents/ subfolder (required for tooling)"
   - "Linking: parent_intent establishes hierarchy (task→module, module→workflow/system, workflow→system); enables context inheritance and navigation"
   - "Your first intent: module-level walkthrough—scope → parent_intent → intent → constraints → verification; AI writes, human reviews, AI implements and verifies"
@@ -204,14 +215,34 @@ rationale:
   
   reasoning: |
     - Part I purpose: establish the paradigm; Ch4 closes the loop by teaching the core mechanism (the artifact) so the reader can apply principles in Part II.
-    - Anatomy first (4.1) so the reader knows what they're building; level choice and placement (4.2) so they put intents in the right place; walkthrough (4.3) for immediate applicability.
-    - Flow (4.4) ties back to Principles 3–4 (bidirectional sync, continuous verification); common mistakes (4.5) prevent the most frequent failures; template library (4.6) supports dip-in and Appendix A.
+    - Anatomy first (4.1) so the reader knows what they're building; level choice and placement (4.2) so they put intents in the right place; essential vs optional sections (4.3) for depth without overwhelm; walkthrough (4.4) for immediate applicability.
+    - Flow (4.5) ties back to Principles 3–4 (bidirectional sync, continuous verification); common mistakes (4.6) prevent the most frequent failures; template library (4.7) supports dip-in and Appendix A.
     - Placement rules come from framework.md and intent_levels_guide.md (canon)—recommended workflows/, alternative alongside coordinator when single-orchestrator; module/task co-located.
     - One hands-on module-level walkthrough is sufficient for "first intent"; Part II projects (Ch5–10) provide deeper practice at each level.
   
   evidence: "book/book_system_intent.yaml (part_1, Ch4 key_points, placeholder); templates/intent.yaml, intent_levels_guide.md, framework.md, ivd_system_intent.yaml (principles 2,5,8; metadata)"
   date: "2026-01-26"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter becomes a dry schema reference rather than a teaching chapter"
+    action: "Lead with 'why' and 'what it solves' before showing YAML schema; use the hands-on walkthrough (4.4) to make it concrete"
+    monitor: "Beta reader feedback: 'could I write my first intent after reading this?'"
+    severity: "medium"
+  
+  - condition: "Optional sections overwhelm the reader and make IVD feel heavy"
+    action: "Section 4.3 must clearly distinguish essential (always needed) from optional (only when relevant); state minimum viable intent upfront"
+    monitor: "Reader perception: 'I need all of these?' should be answered by the minimum-viable framing"
+    severity: "medium"
+  
+  - condition: "Placement rules and naming conventions contradict framework.md or intent_levels_guide.md"
+    action: "All placement rules in 4.2 must be sourced from canon (framework.md, intent_levels_guide.md); constraint canonical_artifact_structure enforces this"
+    monitor: "Cross-check during step_5"
+    severity: "high"
 
 # ==============================================================================
 # IMPLEMENTATION
@@ -244,28 +275,46 @@ verification:
   cross_check:
     - check: "All key_points from book_system_intent Ch4 appear or are clearly implied in chapter"
       validates: "intent.success_metric"
-    - check: "All deliverables.sections (4.1–4.6) are present with required_content"
+    - check: "All deliverables.sections (4.1–4.7) are present with required_content"
       validates: "deliverables"
     - check: "Manuscript has Key Points/Summary; optional Checklist (pre-flight or verification)"
       validates: "constraints.chapter_takeaways, deliverables.manuscript.required_elements"
     - check: "At least one module-level YAML example; decision tree or table for level/placement"
-      validates: "deliverables.sections[4.1], [4.2], [4.3]"
+      validates: "deliverables.sections[4.2], [4.4]"
+    - check: "Section 4.3 clearly distinguishes essential vs optional sections; minimum viable intent framed"
+      validates: "deliverables.sections[4.3]"
     - check: "Placement rules match framework.md and intent_levels_guide.md (system root, workflows/ or coordinator, co-locate module/task)"
       validates: "constraints.canonical_artifact_structure"
     - check: "Intent artifact structure (scope, intent, constraints, verification) matches templates/intent.yaml; no contradictory sections"
       validates: "constraints.canonical_artifact_structure, constraints.master_intent_alignment"
     - check: "Principle 5 (Layered Understanding): rationale, alternatives, risks described as required for full compliance; minimum viable intent clearly distinguished"
       validates: "constraints.canonical_artifact_structure, ivd_system_intent principle_5"
-    - check: "Optional metadata (large projects) and inversion_opportunities (Principle 8) mentioned where relevant (4.1 and/or 4.2, 4.5)"
-      validates: "ivd_system_intent (metadata, principle_8)"
-    - check: "Section 4.6 points to templates (intent.yaml, intent_levels_guide.md) and Appendix A; bridge to Part II / Ch5"
-      validates: "deliverables.sections[4.6]"
+    - check: "Optional metadata (large projects), field_mapping, parent_intent, project_context, and inversion_opportunities (Principle 8) covered in 4.3"
+      validates: "ivd_system_intent (metadata, principle_8, field_mapping, parent_intent, project_context)"
+    - check: "Section 4.7 points to templates (intent.yaml, intent_levels_guide.md) and Appendix A; bridge to Part II / Ch5"
+      validates: "deliverables.sections[4.7]"
 
 # ==============================================================================
 # CHANGELOG
 # ==============================================================================
 
 changelog:
+  - version: "1.2"
+    date: "2026-02-09"
+    change: |
+      Cross-check against book_system_intent v1.7, ivd_system_intent v1.4, research, outline, and template:
+      (1) Header Version "1.0" → "1.2". Added parent_intent: "../../../book_system_intent.yaml".
+      (2) Section restructure to match master outline v1.7 (7 sections, not 6):
+          - 4.1 trimmed to anatomy overview (optional section detail moved to 4.3)
+          - NEW 4.3 "Essential and Optional Sections" (essential vs optional at a glance;
+            metadata, field_mapping, parent_intent, project_context, inversion_opportunities)
+          - Renumbered: old 4.3→4.4, 4.4→4.5, 4.5→4.6, 4.6→4.7
+      (3) Added key_point for optional sections (metadata, field_mapping, inversion, parent_intent,
+          project_context) to match master Ch4 key_points v1.5.
+      (4) Added risks section: dry-reference risk (medium), optional-sections-overwhelm (medium),
+          placement-contradiction (high).
+      (5) Updated verification cross_check references: 4.1–4.6 → 4.1–4.7; added 4.3 check.
+    reason: "Alignment audit: chapter intent must match master outline (restructured in v1.5), template, and framework."
   - version: "1.1"
     date: "2026-01-26"
     change: |

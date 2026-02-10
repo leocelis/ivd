@@ -6,10 +6,12 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[1]
-# Version: 1.0
+# Version: 1.3
 # Created: 2026-01-26
-# Status: Pending
+# Status: Complete
 # ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
 
 scope:
   level: "module"
@@ -150,9 +152,14 @@ constraints:
     validation: "Manual: formatting matches conventions (bold/italic/code usage, NO paragraphs >10 sentences without subheadings)"
   
   - name: "concrete_example"
-    requirement: "Include at least one concrete IVD example (PM/dev CSV revisited) with inline intent artifact YAML"
+    requirement: "Include at least one concrete IVD example (CSV scenario revisited) with inline intent artifact YAML"
     source: "book_system_intent.writing_style.clarity_tactics (examples); research/best_selling_programming_books.md 6.1 (author-sourced examples)"
     validation: "Section 2.4 contains YAML code block showing intent artifact"
+  
+  - name: "author_sourced_examples"
+    requirement: "The CSV example (2.4) must derive from the author's direct experience (anonymized) or be explicitly labeled as composite/illustrative. Prefer author's experience."
+    source: "book_system_intent.constraints.author_sourced_examples; research/best_selling_programming_books.md 6.1"
+    validation: "2.4 is from author's experience (anon.) or has explicit 'composite'/'illustrative' label; no unanchored fiction"
   
   - name: "principles_overview_not_deep_dive"
     requirement: "Section 2.5 lists all 8 principles with one-line summaries only. Deep explanation is in Chapter 3."
@@ -176,11 +183,31 @@ rationale:
     - Pattern from bestsellers: problem (Ch1) → paradigm/solution overview (Ch2) → principles in depth (Ch3)
     - Concrete example (2.4) bridges abstract to concrete—reader sees IVD in action before principle details
     - 8 principles listed but not deep-dived: prevents Ch2 bloat; creates desire for Ch3
-    - Removed unsourced "GitHub, Anthropic, OpenAI" claim—no evidence; replaced with concrete PM/dev example
+    - Removed unsourced "GitHub, Anthropic, OpenAI" claim—no evidence; replaced with concrete CSV example
   
   evidence: "book/book_system_intent.yaml; ivd_system_intent.yaml (8 principles); research/best_selling_programming_books.md (structure, examples)"
   date: "2026-01-26"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter oversells IVD without sufficient concrete evidence"
+    action: "Keep claims grounded in the CSV example (2.4); avoid sweeping industry claims without sources. Part III provides the heavy evidence."
+    monitor: "Beta reader feedback: 'did you believe it?'"
+    severity: "medium"
+  
+  - condition: "Principles overview (2.5) becomes a deep dive, bloating Ch2 and stealing from Ch3"
+    action: "Enforce ≤2 sentences per principle in 2.5; deep explanations belong in Ch3"
+    monitor: "Word count of section 2.5 relative to other sections"
+    severity: "low"
+  
+  - condition: "Reader confuses 'AI writes intent' with 'AI decides what to build'"
+    action: "Section 2.3 must clearly state: human describes what they want, AI structures it as intent, human reviews. The human retains decision authority."
+    monitor: "Beta reader comprehension test"
+    severity: "medium"
 
 # ==============================================================================
 # IMPLEMENTATION
@@ -230,6 +257,32 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.3"
+    date: "2026-02-09"
+    change: |
+      Full manuscript-vs-intent cross-check. Findings and fixes:
+      MANUSCRIPT:
+      (1) `principles_overview_not_deep_dive` constraint violation: P1 (3 sentences + parenthetical),
+          P5 (3 sentences), and P8 (3 sentences with Ch3-level "Use it when..." guidance) exceeded
+          the ≤2 sentences per principle limit. Trimmed: P1 combined into 1 sentence; P5 merged 2nd
+          and 3rd sentences; P8 removed "Use it when..." clause (belongs in Ch3).
+      (2) `author_sourced_examples` constraint gap: CSV example in 2.4 not labeled as author-sourced
+          or illustrative. Added "industry-typical" label (matching Ch1's framing).
+      No other issues found — all key_points, deliverables, constraints, formatting conventions,
+      and risk checks passed.
+    reason: "Manuscript cross-check: fix minor constraint violations in principles overview and example labeling."
+  - version: "1.2"
+    date: "2026-02-09"
+    change: |
+      Cross-check against book_system_intent v1.6, research, outline, and template:
+      (1) Header Version "1.0" → "1.2", Status "Pending" → "Complete" (manuscript exists, implementation.status was already complete).
+      (2) Added parent_intent: "../../../book_system_intent.yaml" (template requirement for non-system intents).
+      (3) Synced master intent Ch2 key_points to AI-era reframe ("AI writes the intent", "many-turns and hallucinations")
+          and section titles (2.3 "The AI Writes and Verifies", 2.4 dropped "PM/Dev"). Master was stale.
+      (4) Added author_sourced_examples constraint for section 2.4 CSV example (missing; Ch1 had it).
+      (5) Fixed stale "PM/dev CSV" in concrete_example constraint → "CSV scenario" (per v1.1 reframe).
+      (6) Added risks section with 3 risks: overselling, principles bloat, AI-decides confusion.
+    reason: "Alignment audit: chapter intent must match master intent, research, outline, and template conventions."
   - version: "1.1"
     date: "2026-01-26"
     change: "Major reframe: IVD is for the AI Agents era. Key insight: the AI writes the intent (not the human). Updated intent, goal, key_points, and all deliverables to focus on: AI writes intent, AI implements, AI verifies. Removed 'PM/dev' framing."
@@ -237,4 +290,4 @@ changelog:
   - version: "1.0"
     date: "2026-01-26"
     change: "Initial chapter intent for Chapter 2 'Intent-Verified Development: A New Paradigm'"
-    reason: "IVD: intent before implementation. Removed unsourced industry validation section; added concrete PM/dev CSV example (2.4). Clarified Ch2 overview vs Ch3 depth."
+    reason: "IVD: intent before implementation. Removed unsourced industry validation section; added concrete CSV example (2.4). Clarified Ch2 overview vs Ch3 depth."

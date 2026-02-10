@@ -6,10 +6,12 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[0]
-# Version: 1.1
+# Version: 2.3
 # Created: 2026-01-25
-# Status: Pending
+# Status: Complete
 # ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
 
 scope:
   level: "module"
@@ -106,7 +108,7 @@ constraints:
     validation: "chapter.md contains a ## Key Points or ## Summary section"
   
   - name: "quotable_principles"
-    requirement: "1–2 memorable, tweetable lines (e.g. in 1.5 or 1.1)"
+    requirement: "1–2 memorable, tweetable lines (e.g. in 1.4 or 1.1)"
     source: "book_system_intent.writing_style.quotable_lines"
     validation: "Manual: at least one line is quotable on its own"
   
@@ -121,19 +123,19 @@ constraints:
     validation: "Manual: formatting matches conventions (bold/italic/code usage, NO paragraphs >10 sentences without subheadings, footnote spacing)"
   
   - name: "evidence_for_case_study"
-    requirement: "Case study (1.4): claims sourced or marked composite/illustrative; no invented, unsourced statistics"
+    requirement: "Statistics and claims in 1.3 must be sourced or marked composite/illustrative; no invented, unsourced statistics"
     source: "book_system_intent.constraints.evidence_based"
-    validation: "1.4 has inline or end attribution; any $/numbers traceable or labeled"
+    validation: "1.3 has inline footnotes with attribution; any $/numbers traceable or labeled"
   
   - name: "author_sourced_examples"
-    requirement: "Case study (1.4) must derive from the author's direct experience (anonymized) or be explicitly labeled as industry composite. Prefer author's experience. Pattern: research 6.1 'Author experience and case studies'; book_system_intent.constraints.author_sourced_examples"
+    requirement: "Concrete examples (1.1 CSV scenario, 1.3 industry data) must derive from the author's direct experience (anonymized) or be explicitly labeled as industry-typical/composite. Prefer author's experience. Pattern: research 6.1 'Author experience and case studies'; book_system_intent.constraints.author_sourced_examples"
     source: "book_system_intent.constraints.author_sourced_examples; research/best_selling_programming_books.md 6.1"
-    validation: "1.4 is from author's experience (anon.) or has explicit 'composite'/'industry' label; no unanchored fiction"
+    validation: "1.1 example labeled 'industry-typical'; 1.3 statistics have footnotes; no unanchored fiction"
   
   - name: "no_solution_yet"
-    requirement: "Do not present IVD or intent artifacts as the solution in this chapter; problem only. The phrase 'what if intent was verifiable' (1.5) is allowed—it is the question, not the answer."
+    requirement: "Do not present IVD or intent artifacts as the solution in this chapter; problem only. The phrase 'what if intent was verifiable' (1.4) is allowed—it is the question, not the answer."
     source: "book_system_intent.book_structure (Ch1 sets up; Ch2 introduces IVD)"
-    validation: "No exposition of IVD, intent artifacts, or the eight principles; 1.5 may use 'intent' and 'verifiable' in the question"
+    validation: "No exposition of IVD, intent artifacts, or the eight principles; 1.4 may use 'intent' and 'verifiable' in the question"
 
 # ==============================================================================
 # RATIONALE
@@ -145,12 +147,27 @@ rationale:
   reasoning: |
     - Part I purpose (book_system_intent): "Establish the problem and the IVD paradigm; reader understands why intent is primary (theory-first)."
     - First-mover, problem-first structure: like Code Complete (foundation = the problem) and many bestsellers. Reader must feel the pain before the cure.
-    - The "What if intent was verifiable?" (1.5) is the hinge: it creates desire for Ch2 without spoiling the paradigm shift.
-    - Case study (1.4) provides credibility; pattern from bestsellers: establish problem with concrete, relatable examples.
+    - The "What if intent was verifiable?" (1.4) is the hinge: it creates desire for Ch2 without spoiling the paradigm shift.
+    - Concrete examples in 1.1–1.3 provide credibility; pattern from bestsellers: establish problem with relatable scenarios.
   
   evidence: "book/book_system_intent.yaml (part_1_foundations.purpose, book_structure); research/best_selling_programming_books.md (structure, case study)"
   date: "2026-01-25"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter stays too abstract without concrete AI-era examples"
+    action: "Ensure 1.1–1.3 each have at least one concrete scenario (prompt → wrong output → correction loop)"
+    monitor: "Beta reader feedback: 'did you feel the pain?'"
+    severity: "medium"
+  
+  - condition: "Statistics (70–90% knowledge loss, $260B+ waste) challenged or outdated"
+    action: "All numbers must have inline attribution or be labeled 'estimated'; update if better data emerges"
+    monitor: "Section 1.3 citations"
+    severity: "low"
 
 # ==============================================================================
 # IMPLEMENTATION
@@ -174,13 +191,6 @@ implementation:
       - "step_6_update_chapter_status"
       - "step_7_update_book_intent"
   
-changelog:
-  - version: 1.0
-    date: 2026-01-25
-    changes: "Initial chapter intent for Chapter 1 'The Alignment Crisis'; structure with 1.1–1.5 including separate case study section."
-  - version: 2.0
-    date: 2026-01-25
-    changes: "Removed section 1.4 (separate case study) as redundant; concrete examples in 1.1–1.3 (PM/dev CSV, AI prompts) sufficient. Renumbered 1.5 → 1.4. Updated goal, success_metric, deliverables, constraints, and verification."
 
 # ==============================================================================
 # VERIFICATION (cross-check with book intent)
@@ -190,15 +200,15 @@ verification:
   cross_check:
     - check: "All key_points from book_system_intent appear or are clearly implied in chapter"
       validates: "intent.success_metric"
-    - check: "All deliverables.sections (1.1–1.5) are present with required_content"
+    - check: "All deliverables.sections (1.1–1.4) are present with required_content"
       validates: "deliverables"
     - check: "Manuscript has Key Points/Summary and 1–2 quotable lines"
       validates: "constraints.chapter_takeaways, quotable_principles"
-    - check: "Case study (1.4) has attribution or composite label"
+    - check: "Statistics in 1.3 have footnotes with attribution; CSV example in 1.1 labeled industry-typical"
       validates: "constraints.evidence_for_case_study"
-    - check: "Case study (1.4) is from author's experience (anonymized) or explicitly labeled composite; no unanchored fiction"
+    - check: "Concrete examples (1.1, 1.3) grounded in author experience or explicitly labeled industry-typical/composite; no unanchored fiction"
       validates: "constraints.author_sourced_examples"
-    - check: "No IVD solution in Ch1 (only the question in 1.5)"
+    - check: "No IVD solution in Ch1 (only the question in 1.4)"
       validates: "constraints.no_solution_yet"
 
 # ==============================================================================
@@ -206,14 +216,46 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.3"
+    date: "2026-02-09"
+    change: |
+      Full manuscript-vs-intent cross-check. Findings and fixes:
+      MANUSCRIPT:
+      (1) Section 1.4 violated `no_solution_yet`: described intent artifacts, stated "the AI writes the
+          intent, not you", described the IVD workflow and outcome. Rewritten to stop at the question
+          ("what if intent was verifiable?") without exposing the mechanism. Creates tension for Ch2.
+      (2) Key Points bullet 4 named "Intent-Verified Development" — removed; constraint forbids IVD
+          exposition in Ch1. Now ends with "The next chapter explores what happens when intent becomes
+          verifiable."
+      INTENT:
+      (3) Constraints `evidence_for_case_study` and `author_sourced_examples` referenced "Case study (1.4)"
+          but the case study was removed in v2.0 and absorbed into 1.1–1.3. Updated references to correct
+          sections (1.1 CSV example, 1.3 statistics).
+      (4) Verification cross_check items referencing "Case study (1.4)" updated to reference 1.1 and 1.3.
+    reason: "Manuscript cross-check: fix constraint violations and stale references from v2.0 section restructure."
+  - version: "2.2"
+    date: "2026-02-09"
+    change: |
+      Cross-check against book_system_intent v1.5, research, and outline:
+      (1) Header Status "Pending" → "Complete" (manuscript exists, implementation.status was already complete).
+      (2) Added parent_intent: "../../../book_system_intent.yaml" (template requirement for non-system intents).
+      (3) Synced master intent Ch1 key_points and section titles to match v2.1 AI-era reframe (master was stale).
+      (4) Removed duplicate changelog key inside implementation block (YAML spec: second key silently overwrites first).
+      (5) Fixed verification references: "1.1–1.5" → "1.1–1.4", "question in 1.5" → "question in 1.4" (sections renumbered in v2.0).
+      (6) Added risks section (template standard; missing from chapter intent).
+    reason: "Alignment audit: chapter intent must match master intent, research, outline, and template conventions."
   - version: "2.1"
     date: "2026-01-26"
     change: "Major reframe: IVD is for the AI Agents era. Updated intent, goal, key_points, and deliverables to focus on: many turns, hallucinations, AI writes intent. Removed 'PM/dev' framing in favor of 'you prompt AI'."
     reason: "IVD is NOT for traditional PM > Developer workflows. IVD is the framework for AI agents to write, implement, and verify intent. Without this, IVD is just another artifact like PRDs."
+  - version: "2.0"
+    date: "2026-01-25"
+    change: "Removed section 1.4 (separate case study) as redundant; concrete examples in 1.1–1.3 sufficient. Renumbered 1.5 → 1.4. Updated goal, success_metric, deliverables, constraints, and verification."
+    reason: "Structural simplification; case study content absorbed into sections 1.1–1.3."
   - version: "1.1"
     date: "2026-01-25"
-    change: "1.4 required_content: prefer author's direct experience; composite only when labeled. New constraint author_sourced_examples. Rationale: research 6.1, book_system_intent.author_sourced_examples."
-    reason: "Case study must not be unanchored fiction; author credibility (research)."
+    change: "1.4 required_content: prefer author's direct experience; composite only when labeled. New constraint author_sourced_examples."
+    reason: "Case study must not be unanchored fiction; author credibility (research 6.1)."
   - version: "1.0"
     date: "2026-01-25"
     change: "Initial chapter intent; derived from book/book_system_intent.yaml"

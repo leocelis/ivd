@@ -4,9 +4,9 @@
 # System-level intent for creating a top-selling book on IVD that teaches
 # principles, validates them through real projects, and proves effectiveness.
 #
-# Version: 1.3
+# Version: 1.7
 # Created: 2026-01-25
-# Status: Planning
+# Status: In Progress
 # Reference: ../ivd_system_intent.yaml (IVD Framework System Intent)
 # ==============================================================================
 
@@ -38,7 +38,7 @@ intent:
     
     Book Structure:
     1. Part I: Paradigm and principles (AI writes intent, AI verifies)
-    2. Part II: Practice (5 real projects with AI agents)
+    2. Part II: Practice (6 real projects with AI agents)
     3. Part III: Validation (measurable results)
     4. Part IV: Adoption (organizational playbook)
     
@@ -128,31 +128,31 @@ book_structure:
       
       - chapter: 1
         title: "The Alignment Crisis"
-        status: "pending"
+        status: "complete"
         key_points:
-          - "Traditional development: code is primary, docs are secondary (and wrong)"
-          - "Human-AI collaboration fragility: multiple iterations, compounding misalignment"
-          - "The $10B problem: 85-90% knowledge loss in software projects"
-          - "Real examples: projects that failed due to misalignment"
+          - "Traditional artifacts (PRDs, user stories, prompts) fail with AI—not verifiable by the AI"
+          - "The AI Agents era pain points: many turns and hallucinations (AI fills gaps with guesses)"
+          - "The scale: 70–90% knowledge loss, hundreds of billions in annual waste"
+          - "The hinge: what if intent was verifiable by the AI?"
         placeholder: |
           1.1 The Expensive Pattern: "Build X" → "Here's X" → "No, I meant..."
-          1.2 Why Traditional Documentation Fails
-          1.3 The AI Amplification Effect: Misalignment at Machine Speed
+          1.2 Why Traditional Artifacts Fail: PRDs, User Stories, and Prompts
+          1.3 The AI Amplification Effect: Many Turns, Many Hallucinations
           1.4 The Core Question: What If Intent Was Verifiable?
       
       - chapter: 2
         title: "Intent-Verified Development: A New Paradigm"
         status: "complete"
         key_points:
-          - "The fundamental shift: Intent → Code → Docs (not Code → Docs)"
-          - "Intent as a verifiable contract between human and AI"
-          - "The eight principles of IVD"
-          - "Why this works: executable understanding fails loudly"
+          - "IVD is the framework for the AI Agents era—solves many-turns and hallucinations"
+          - "The AI writes the intent artifact (not the human), then implements and verifies"
+          - "The eight principles of IVD (overview; deep dive in Ch3)"
+          - "Why this works: executable understanding fails loudly—hallucinations caught at the source"
         placeholder: |
           2.1 The Three Paradigms: Traditional → Literate → Intent-Verified
           2.2 The Core Insight: Intent is Primary
-          2.3 The Contract Model: A Shared Artifact Both Parties Verify
-          2.4 IVD in Action: The PM/Dev CSV Example Revisited
+          2.3 The Contract Model: The AI Writes and Verifies
+          2.4 IVD in Action: The CSV Example Revisited
           2.5 The Eight Principles: An Overview
           2.6 Why This Works: Executable Understanding Fails Loudly
       
@@ -164,15 +164,20 @@ book_structure:
           - "Why each principle is essential (what breaks without it)"
           - "How principles work together as a system"
           - "Common violations and how to avoid them"
+          - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring"
         placeholder: |
           3.1 Principle 1: Intent is Primary (one-line rule first, then 1–2 paragraphs)
           3.2 Principle 2: Understanding Must Be Executable
           3.3 Principle 3: Bidirectional Synchronization
-          3.4 Principle 4: Continuous Verification
+          3.4 Principle 4: Continuous Verification (+ intent coverage assessment for brownfield)
           3.5 Principle 5: Layered Understanding
           3.6 Principle 6: AI as Understanding Partner
+              - Core: AI writes intent, implements, verifies
+              - Teaching before intent (canonical): when the user lacks domain knowledge, AI teaches first (structured educational artifact with verification questions)
+              - Discovery before intent (experimental): when the user doesn't know what to ask, AI proposes candidate goals
+              - Linguistic mirroring: early alignment signal—AI echoes your key terms = understanding; AI substitutes terms = misalignment risk
           3.7 Principle 7: Understanding Survives Implementation
-          3.8 Principle 8: Innovation through Inversion (when to use, 4 steps, inversion_opportunities)
+          3.8 Principle 8: Innovation through Inversion (when to use, when to skip, 4 steps, inversion_opportunities)
           3.9 The System View: How Principles Reinforce Each Other
       
       - chapter: 4
@@ -182,14 +187,22 @@ book_structure:
           - "What an intent artifact is (YAML structure)"
           - "Four levels: System, Workflow, Module, Task"
           - "Essential sections: scope, intent, constraints, verification"
+          - "Optional sections: metadata (feature inventory), field_mapping (data integrations), inversion_opportunities (Principle 8), parent_intent (hierarchy)"
           - "Your first intent artifact (hands-on walkthrough)"
         placeholder: |
           4.1 Anatomy of an Intent Artifact
           4.2 Choosing the Right Level and Where Intent Lives (decision tree; placement: system at root, workflow recommended workflows/ or alternative alongside coordinator when single-orchestrator, module/task co-located)
-          4.3 Writing Your First Module-Level Intent
-          4.4 From Intent to Implementation (the flow)
-          4.5 Common Mistakes and How to Fix Them
-          4.6 Template Library and Quick Reference
+          4.3 Essential and Optional Sections
+              - Essential: scope, intent, constraints, verification, rationale, alternatives, risks
+              - Optional: metadata (feature_id, category, tags, status — for feature inventory in large projects; derived, not a separate file)
+              - Optional: field_mapping (data sources, targets, transformations — for integrations and ETL)
+              - Optional: inversion_opportunities (Principle 8 — document dominant belief and inversions considered)
+              - Optional: parent_intent (link child → parent for context inheritance)
+              - Optional: project_context (system-level only — code rules, architecture, key_paths)
+          4.4 Writing Your First Module-Level Intent
+          4.5 From Intent to Implementation (the flow)
+          4.6 Common Mistakes and How to Fix Them
+          4.7 Template Library and Quick Reference
 
   # ==========================================================================
   # PART II: PRACTICE - Building Real Projects with IVD
@@ -473,26 +486,32 @@ book_structure:
               - Interpret the coverage report: focus on high-priority gaps
               - Coverage ≠ 100% — intent where it adds value (critical paths, complex logic, team boundaries)
           
-          17.4 First Intent Artifacts for High-Priority Modules
+          17.4 Check for Existing Features Before Building
+              - Use ivd_list_features to see what's already built (derived from intent metadata)
+              - Filter by category or tags to avoid duplicating existing features
+              - If match exists: extend or reuse, don't create a duplicate
+              - Add metadata (feature_id, category, tags, status) to new intents
+          
+          17.5 First Intent Artifacts for High-Priority Modules
               - Start with high-priority uncovered modules from coverage report
               - Use ivd scaffold --level module --name <module>
               - Auto-links parent_intent: "../../system_intent.yaml"
               - AI loads project context when creating/modifying intents
           
-          17.5 Implement and Verify with Project Context
+          17.6 Implement and Verify with Project Context
               - New intents follow project code rules
               - New intents reference architecture principles
               - New intents reuse tools/scripts/libraries (no duplication)
               - New intents navigate via key_paths (map to the stars)
           
-          17.6 Retrospective: What Worked, What Didn't
+          17.7 Retrospective: What Worked, What Didn't
               - Re-run ivd_assess_coverage: did coverage improve?
               - Did project_context capture conventions correctly?
               - Are child intents referencing parent correctly?
               - Are new implementations reusing existing tools/libs?
               - What's missing from key_paths or architecture?
           
-          17.7 Setting Team Standards and Conventions
+          17.8 Setting Team Standards and Conventions
               - Update system_intent.yaml as conventions emerge
               - Document in project_context sections
               - The "Intent First" Habit: How to Build It
@@ -573,7 +592,8 @@ book_structure:
         - The 8 Principles (one-page summary)
         - Intent artifact template (blank YAML)
         - Intent levels decision tree
-        - Optional sections: field_mapping for data/integrations (see recipes/data-field-mapping.yaml)
+        - Optional sections quick reference: metadata (feature inventory), field_mapping (data/integrations), inversion_opportunities, parent_intent, project_context
+        - Feature inventory: how metadata in intents creates an emergent feature catalog (ivd_list_features)
         - Verification checklist
         - Common patterns and anti-patterns
     
@@ -703,7 +723,7 @@ writing_style:
     examples: "Intent is primary. Understanding must be executable. Verify, don't hope."
   
   principles_as_rules:
-    requirement: "The 7 IVD principles must be stateable as short, memorable rules (Clean Code: 'Do one thing,' 'Stepdown')."
+    requirement: "The 8 IVD principles must be stateable as short, memorable rules (Clean Code: 'Do one thing,' 'Stepdown')."
     format: "One-line rule + 1–2 paragraphs explanation; repeat the rule in chapter summaries and Appendix A."
   
   formatting_conventions:
@@ -821,7 +841,7 @@ phases:
 # ==============================================================================
 
 rationale:
-  decision: "Four-part, 20-chapter, validation-led structure with Amazon success focus"
+  decision: "Four-part, 21-chapter, validation-led structure with Amazon success focus"
   
   reasoning: |
     1. Problem → Paradigm → Practice → Proof → Adoption
@@ -959,7 +979,7 @@ constraints:
     validation: "Manual or grep: each chapter file contains 'Key Points' or 'Summary' section; checklists in Ch4, 16–20, Appendix A"
   
   quotable_principles:
-    requirement: "The 7 IVD principles and core ideas (e.g. 'Intent as contract') must be stateable as short, memorable, tweetable rules. See writing_style.quotable_lines and principles_as_rules."
+    requirement: "The 8 IVD principles and core ideas (e.g. 'Intent as contract') must be stateable as short, memorable, tweetable rules. See writing_style.quotable_lines and principles_as_rules."
     rationale: "Memorable, citable, shareable; pattern: Clean Code, Pragmatic Programmer"
     validation: "Manual: each principle has a one-line rule in Ch3 and in Appendix A; 1–2 quotable lines per chapter where natural"
   
@@ -1102,6 +1122,50 @@ implementation:
 # ==============================================================================
 
 changelog:
+  - version: "1.7"
+    date: "2026-02-09"
+    changes: |
+      Ch2 alignment audit:
+      (1) Ch2 key_points updated to match v1.1 AI-era reframe ("AI writes the intent",
+          "many-turns and hallucinations", "hallucinations caught at the source").
+          Old key_points ("Intent → Code → Docs", "verifiable contract") were stale.
+      (2) Ch2 section titles updated: 2.3 "The AI Writes and Verifies";
+          2.4 dropped "PM/Dev" (matching chapter intent v1.1+).
+  - version: "1.6"
+    date: "2026-02-09"
+    changes: |
+      Ch1 alignment audit:
+      (1) Ch1 key_points updated to match v2.1 AI-era reframe ("PRDs/prompts not verifiable",
+          "many turns and hallucinations", "70–90% knowledge loss", "what if intent was verifiable").
+          Old key_points ("code is primary", "$10B problem", "85-90%") were stale.
+      (2) Ch1 section titles updated: 1.2 "Why Traditional Artifacts Fail: PRDs, User Stories,
+          and Prompts"; 1.3 "Many Turns, Many Hallucinations" (matching chapter intent v2.1+).
+  - version: "1.5"
+    date: "2026-02-09"
+    changes: |
+      Closed content gaps noted in v1.4:
+      (1) Ch3 key_points + placeholder: added teaching before intent (canonical),
+          discovery before intent (experimental), linguistic mirroring under P6.
+      (2) Ch4 key_points + placeholder: added optional sections (metadata/feature
+          inventory, field_mapping, inversion_opportunities, parent_intent, project_context)
+          and new section 4.3 "Essential and Optional Sections". Renumbered to 4.1–4.7.
+      (3) Ch17 placeholder: inserted new section 17.4 "Check for Existing Features
+          Before Building" (ivd_list_features, metadata, dedup). Renumbered 17.5–17.8.
+      (4) Appendix A: expanded optional-sections reference to include metadata
+          (feature inventory), field_mapping, inversion_opportunities, parent_intent,
+          project_context; added feature inventory entry with ivd_list_features.
+  - version: "1.4"
+    date: "2026-02-09"
+    changes: |
+      Full cross-check against ivd_system_intent.yaml v1.4:
+      (1) "7 IVD principles" → "8" in principles_as_rules and quotable_principles.
+      (2) "5 real projects" → "6" in goal (Part II = Ch 5–10).
+      (3) "20-chapter" → "21-chapter" in rationale.decision (4+6+6+5=21).
+      (4) Ch1 status "pending" → "complete" (manuscript exists).
+      (5) Header status "Planning" → "In Progress" (Ch1+Ch2 complete).
+      Content gaps noted for chapter intents: teaching before intent,
+      discovery before intent, linguistic mirroring, feature inventory
+      not yet in chapter outlines.
   - version: "1.3"
     date: "2026-01-25"
     changes: |

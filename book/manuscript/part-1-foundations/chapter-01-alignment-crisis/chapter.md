@@ -84,13 +84,11 @@ We have been building at the speed of misunderstanding. We have prompted AI agen
 
 So: **what if intent was verifiable?**
 
-What if, before a single line of code, we had an **artifact** that stated what we were building—in a form the AI could check against? Not prose. Not a prompt. A structured, version-controlled statement of intent with executable constraints. What if the AI could point at it and verify: *Does my code match this intent?* before it ships. What if the thing we handed the AI was not a guess to interpret, but a **contract** to verify against?
+What if, instead of handing the AI prose to interpret, we had something the AI could *check against*—before it builds, and after? Not a prompt to guess from. Not a PRD to infer from. Something that turns "what I meant" into a form the AI can verify: pass or fail, no guessing required.
 
-And here is the key insight: **the AI writes the intent, not you**. You describe what you want. The AI, following a framework, produces a structured intent artifact. Then the AI implements against that artifact. Then the AI verifies.
+What would change? Would the loop shrink? Would the hallucinations get caught before they ship? Would "Build X" → "Here's X" → "No, I meant…" finally break?
 
-The loop shrinks. The hallucinations are caught. The turns drop from dozens to one.
-
-We are not there yet. This chapter stops at the question. The next one turns to an approach that makes intent verifiable: a different way of ordering the work, a different kind of artifact, and a framework the AI follows to produce and verify intent. For now, sit with the question. You have felt the pattern. You have seen the cost. What if the AI could verify?
+This chapter named the problem: the artifacts we use today—PRDs, user stories, prompts—are not verifiable by the AI, and the AI fills every gap with a plausible guess. The next chapter explores what happens when intent becomes verifiable—and who should write it.
 
 ---
 
@@ -102,4 +100,4 @@ We are not there yet. This chapter stops at the question. The next one turns to 
 
 - **The scale is enormous: 70–90% knowledge loss, hundreds of billions in annual waste.** Research shows 70–90% of documentation-code mismatches stem from documentation failures; critical knowledge lives in meetings and heads, not durable artifacts. The financial cost: $260+ billion annually in the U.S. alone, $500 billion globally. The AI prompt that fills in wrong blanks, the feature that ignores unstated constraints—these are the default, not edge cases.
 
-- **The hinge: what if intent was verifiable?** What if the AI could verify its code against a structured intent artifact—before it ships? What if the AI writes the intent, following a framework, and then implements against it? The next chapter explores that possibility: **Intent-Verified Development**.
+- **The hinge: what if intent was verifiable?** What if the AI could verify its output against a statement of intent—before it ships? What if the guesswork could be replaced with checking? The next chapter explores what happens when intent becomes verifiable.

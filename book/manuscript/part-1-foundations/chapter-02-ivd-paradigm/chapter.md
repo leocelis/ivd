@@ -109,7 +109,7 @@ Sometimes you don't have enough knowledge to give clear instructions—new to th
 
 ## 2.4 IVD in Action: The CSV Example Revisited
 
-Let's revisit the CSV scenario from Chapter 1—this time with IVD.
+Let's revisit the industry-typical CSV scenario from Chapter 1—this time with IVD.
 
 **Without IVD (the current default):**
 
@@ -188,7 +188,7 @@ Notice what changed:
 
 IVD is built on **eight principles**. These are not arbitrary rules—they are the distilled patterns that make intent-verified development work in the AI Agents era. Chapter 3 explores each principle in depth. Here, we give you the map.
 
-1. **Intent is Primary.** Intent is the primary artifact. Code and documentation are derived. The AI writes, reads, and verifies against intent. (You just learned this in 2.2.)
+1. **Intent is Primary.** Intent—not code, not docs—is the primary artifact; the AI writes, reads, and verifies against it.
 
 2. **Understanding Must Be Executable.** Prose can be wrong silently. Every claim in the intent must be verifiable through executable tests that the AI can run.
 
@@ -196,13 +196,13 @@ IVD is built on **eight principles**. These are not arbitrary rules—they are t
 
 4. **Continuous Verification.** The AI verifies alignment at every commit, every change, every deploy. Verification is not a one-time activity—it runs constantly.
 
-5. **Layered Understanding.** Intent → Constraints → Rationale → Alternatives → Risks. Each layer adds depth. The AI can read any layer to understand context.
+5. **Layered Understanding.** Intent → Constraints → Rationale → Alternatives → Risks—each layer adds depth, and the AI can read any layer to understand context.
 
 6. **AI as Understanding Partner.** AI agents don't just generate code—they write intent, verify constraints, and update artifacts. They are partners in understanding, not just tools.
 
 7. **Understanding Survives Implementation.** Intent survives rewrites, model upgrades, and context limits. The understanding is durable—it lives in the repo, not in the AI's session.
 
-8. **Innovation through Inversion.** Innovation comes from inverting dominant beliefs: state the default, invert it, evaluate, implement. Intent can document inversion opportunities—the conventional approach and proposed inversions—making the innovation process explicit and verifiable. *Use it* when you are designing something that has a conventional approach and you care whether that approach is best; *skip it* for small fixes or when the obvious solution is good enough.
+8. **Innovation through Inversion.** Innovation comes from inverting dominant beliefs: state the default, invert it, evaluate, implement. Intent can document inversion opportunities—the conventional approach and proposed inversions—making the innovation process explicit and verifiable.
 
 These principles work as a **system**. Principle 1 (Intent is Primary) sets the foundation. Principle 2 (Executable) makes it verifiable by the AI. Principle 6 (AI as Partner) means the AI writes and maintains the intent, not just implements it. Principle 7 (Survives) ensures the work lasts across sessions, across models, across time. Principle 8 (Inversion) turns IVD into a framework for deliberate innovation, not just verification. Remove one, and the system weakens.
 
