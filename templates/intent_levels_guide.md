@@ -40,8 +40,18 @@ Ask: What am I documenting?
 ├─ Feature/agent/component? → MODULE LEVEL
 │  Example: "Lead qualifier agent" (lead_qualifier_intent.yaml)
 │
-└─ Single function/task? → TASK LEVEL
-   Example: "qualify_lead() function" (qualify_lead_intent.yaml)
+├─ Single function/task? → TASK LEVEL
+│  Example: "qualify_lead() function" (qualify_lead_intent.yaml)
+│
+└─ Documentation, research, or other non-code artifact?
+   Ask: Is this a standalone deliverable or does it describe code?
+   │
+   ├─ Standalone deliverable (runbook, spec, guide)? → Create _intent.yaml alongside it
+   │  Example: "Incident response runbook" (docs/operations/runbook_intent.yaml)
+   │  Use scope.type: "documentation" and the level that fits (usually MODULE)
+   │
+   └─ Describes code (README, inline docs)? → Reference in the code intent
+      No separate intent needed — add to implementation.documentation in the code's intent
 ```
 
 ---
@@ -455,6 +465,12 @@ scope:
 - ✅ extract_claims() function (agent/fact_checker/intents/extract_claims_intent.yaml)
 - ✅ POST /api/leads endpoint (api/endpoints/intents/create_lead_intent.yaml)
 - ✅ retry_with_backoff() utility (utils/intents/retry_intent.yaml)
+
+### Documentation (Non-Code Primary Artifacts)
+- ✅ Incident response runbook (docs/operations/runbook_incident_response_intent.yaml)
+- ✅ Onboarding guide (docs/onboarding/onboarding_guide_intent.yaml)
+- ✅ API specification (docs/api/api_spec_intent.yaml)
+- ❌ Module README (reference in the module's code intent — not a standalone deliverable)
 
 ---
 

@@ -79,7 +79,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="ivd_scaffold",
-            description="Create a new IVD intent artifact in the correct canonical location (co-locate with code). Before scaffolding: use task-level only for critical functions (10-20%). For non-default repos, pass project_root.",
+            description="Create a new IVD intent artifact in the correct canonical location (co-locate with implementation). Works for code AND non-code artifacts (documentation, research, books). For standalone docs (runbooks, specs, guides), use module_path to set docs/ location. Before scaffolding: use task-level only for critical functions (10-20%). For non-default repos, pass project_root.",
             inputSchema={"type": "object", "properties": {
                 "level": {"type": "string", "description": "Intent level", "enum": ["system", "workflow", "module", "task"]},
                 "name": {"type": "string", "description": "Name for the artifact (e.g., 'lead_qualifier')"},

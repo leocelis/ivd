@@ -34,6 +34,8 @@
 #   Book:     /book/book_system_intent.yaml (book root)
 #   Chapter:  /book/manuscript/chapter-01/intent.yaml (alongside chapter.md)
 #   Research: /research/analysis_intent.yaml (alongside findings.md)
+#   Docs:     /docs/operations/runbook_intent.yaml (alongside runbook.md)
+#   Guide:    /docs/onboarding/onboarding_guide_intent.yaml (alongside guide.md)
 #
 # REFERENCE: framework.md "Multi-Intent Naming Convention" section
 
@@ -54,7 +56,7 @@
 # SCOPE: What level is this intent for?
 scope:
   level: "module"  # "system" | "workflow" | "module" | "task"
-  type: "feature"  # "product" | "process" | "feature" | "agent" | "function" | "class" | "api" | "service"
+  type: "feature"  # "product" | "process" | "feature" | "agent" | "function" | "class" | "api" | "service" | "documentation" | "research" | "book"
   granularity: "coarse"  # "coarse" (system/workflow/module) | "fine" (task/function)
 
 # ----------------------------------------------------------------------------

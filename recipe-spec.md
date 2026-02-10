@@ -30,7 +30,7 @@ An **IVD Recipe** is a reusable pattern that captures how to solve a common deve
 recipe:
   name: "Pattern Name"
   version: "1.0"
-  category: "agent_patterns|integration_patterns|data_patterns|infrastructure_patterns"
+  category: "agent_patterns|integration_patterns|data_patterns|infrastructure_patterns|documentation_patterns"
   created: "2026-01-23"
   author: "Team/Person"
   
@@ -250,6 +250,22 @@ Patterns for infrastructure and operations:
 - `infra-error-handling.yaml` - Error handling strategies
 - `infra-retry.yaml` - Retry and resilience patterns
 - `infra-background-job.yaml` - Background job processing
+
+### **5. Documentation Patterns**
+Patterns for standalone documentation artifacts (guides, runbooks, specifications):
+- `recipe_runbook.yaml` - Operational runbooks with actionable steps and verification
+- `recipe_onboarding_guide.yaml` - Onboarding guides with structured learning paths
+- `recipe_api_specification.yaml` - API specifications with constraint-verified contracts
+- `recipe_architecture_decision_record.yaml` - ADRs with alternatives and evidence
+
+**When to use documentation recipes:**
+- The document is a **primary artifact** (the deliverable itself, not a code companion)
+- AI produced it and constraints are worth verifying (e.g., actionable steps, current URLs, correct commands)
+- The same type of document is created repeatedly across projects
+
+**When NOT to use documentation recipes:**
+- READMEs that describe adjacent code — reference in the code intent instead
+- Auto-generated docs (API docs, changelogs) — the generator's intent covers them
 
 ---
 

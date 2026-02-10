@@ -572,6 +572,15 @@ The framework supports intent artifacts for:
 
 **Core principle:** If AI produced it, it should have verifiable intent.
 
+#### When Documentation Is Derived vs. Primary
+
+Documentation plays two roles in IVD:
+
+- **Derived artifact:** Documentation that explains code (auto-generated API docs, inline design docs, READMEs describing a module). Reference it in the code intent's `implementation.documentation` field. No separate intent needed.
+- **Primary artifact:** Documentation that IS the deliverable (runbook, user guide, architecture decision record, onboarding guide, specification). Create a dedicated `{name}_intent.yaml` alongside it—same pattern as code intents.
+
+**Rule of thumb:** If you removed the code and the document still has value on its own, it's a primary artifact and deserves its own intent.
+
 ---
 
 #### Co-location for Non-Code Artifacts
@@ -602,6 +611,17 @@ architecture/
 ├── decisions/
 │   ├── adr_001_intent.yaml        # Intent for decision
 │   └── adr_001_database_choice.md # Implementation (ADR)
+```
+
+**Documentation (guides, runbooks, specifications):**
+```
+docs/
+├── operations/
+│   ├── runbook_incident_response_intent.yaml  # Intent
+│   └── runbook_incident_response.md           # Implementation (runbook)
+├── onboarding/
+│   ├── onboarding_guide_intent.yaml           # Intent
+│   └── onboarding_guide.md                    # Implementation (guide)
 ```
 
 **Processes:**
@@ -645,6 +665,20 @@ constraints:
   - name: "recency"
     requirement: "Sources from 2024-2026 unless historical context"
     test: "Check all URLs and citations for date"
+```
+
+**Example constraint for documentation (runbook):**
+
+```yaml
+# docs/operations/runbook_incident_response_intent.yaml
+constraints:
+  - name: "actionable_steps"
+    requirement: "Every section has numbered steps a new engineer can follow"
+    test: "Each H2 section contains an ordered list of concrete actions"
+    
+  - name: "up_to_date_references"
+    requirement: "All tool names, URLs, and commands verified against current infra"
+    test: "Run every command in dry-run mode; check all URLs return 200"
 ```
 
 ---

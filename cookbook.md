@@ -570,6 +570,61 @@ INTENT VERIFIED ✓
 ❌ Code where intent is obvious  
 ❌ **Adding unit tests or test suites** — tests verify existing intent; the intent belongs to the module/function under test, not to "the new tests"
 
+### Documentation: DO vs. DON'T
+
+Documentation plays two roles in IVD — sometimes it's a byproduct of code, sometimes it IS the deliverable. Use this to decide:
+
+**DO create an intent artifact for documentation when:**
+
+✅ The document is a standalone deliverable (runbook, specification, onboarding guide)  
+✅ AI produced the document and it has constraints worth verifying  
+✅ The document has a lifecycle independent of any single codebase  
+✅ Multiple people will maintain it and the "why" matters  
+
+**DON'T create an intent artifact for documentation when:**
+
+❌ It's a README that just describes the code next to it — reference it in the code's intent instead  
+❌ It's auto-generated (API docs, changelogs) — the generator's intent covers it  
+❌ It's a one-off note or scratch document  
+❌ The code's own `_intent.yaml` already captures the same constraints  
+
+### Walkthrough: Intent for a Runbook
+
+**Scenario:** AI produces an incident response runbook for your production system.
+
+**Step 1 — Describe to AI:**
+```
+"Write an incident response runbook for our payment service. 
+It must have step-by-step actions any on-call engineer can follow, 
+all commands must be copy-pasteable, and escalation contacts must be current."
+```
+
+**Step 2 — AI writes intent:**
+```yaml
+# docs/operations/runbook_incident_response_intent.yaml
+intent:
+  description: "Step-by-step incident response for payment service outages"
+  rationale: "On-call engineers need a single source of truth during incidents"
+scope:
+  type: documentation
+  boundaries:
+    - "Covers payment service only, not upstream dependencies"
+constraints:
+  - name: "actionable_steps"
+    requirement: "Every section has numbered steps with copy-pasteable commands"
+    test: "Each H2 contains an ordered list; every code block is a valid shell command"
+  - name: "escalation_contacts"
+    requirement: "Contacts verified quarterly"
+    test: "All Slack handles and phone numbers resolve to active employees"
+  - name: "no_stale_urls"
+    requirement: "All URLs return HTTP 200"
+    test: "curl --head each URL; all return 2xx"
+```
+
+**Step 3 — AI writes the runbook** (`runbook_incident_response.md`) against these constraints.
+
+**Step 4 — Verify:** Check each constraint. If a URL is dead or a step is ambiguous, the intent catches it.
+
 ---
 
 ## Quick Start Checklist

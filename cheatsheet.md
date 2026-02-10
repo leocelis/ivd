@@ -172,6 +172,8 @@ parent_intent: "../../system_intent.yaml"
 - Code without intent is meaningless
 - Documentation without intent is disconnected  
 - Intent survives rewrites, team changes, technology shifts
+- **Docs as derived artifacts** (READMEs explaining code): reference in the code intent's `implementation.documentation`
+- **Docs as primary artifacts** (runbooks, specs, guides): create a dedicated `_intent.yaml` alongside them
 
 ---
 
@@ -348,6 +350,7 @@ When you rewrite in Go, or replace with a vendor service, the intent artifact tr
 | General-purpose AI agents | Unpredictable | One agent, one specific job |
 | Code without context | Unmaintainable | Link every file to intent |
 | No verification | Silent drift | Check alignment continuously |
+| Intent for every README | Overhead, no value | Only primary docs (guides, runbooks, specs) get intents; derived docs reference the code intent |
 
 ---
 
@@ -391,6 +394,7 @@ SPECIFIC INTENT + DOCUMENTED RATIONALE + CLEAN CODE + CONTINUOUS VERIFICATION = 
 | Module | `{module}/{module}_intent.yaml` | `agent/marketing/marketing_intent.yaml` |
 | Task | `{module}/intents/{task}_intent.yaml` | `agent/marketing/intents/gen_article_intent.yaml` |
 | Variant | `{variant}_{module}_intent.yaml` | `erik_reviewer_intent.yaml` |
+| Documentation | `docs/{area}/{name}_intent.yaml` alongside the `.md` | `docs/operations/runbook_intent.yaml` |
 
 **AI Agent Discovery:**
 ```bash
