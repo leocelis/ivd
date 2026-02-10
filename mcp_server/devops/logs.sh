@@ -271,23 +271,30 @@ cmd_do_logs() {
     info "Press Ctrl+C to stop\n"
     
     local reconnect_count=0
-    
+    local max_backoff=30  # max seconds between retries
+
     while true; do
         if [ $reconnect_count -gt 0 ]; then
-            warn "Connection lost. Reconnecting... (attempt #$reconnect_count)"
-            sleep 2
+            # Exponential backoff: 2, 4, 8, 16, 30, 30, ...
+            local delay=$(( 2 ** reconnect_count ))
+            [ $delay -gt $max_backoff ] && delay=$max_backoff
+            warn "Connection lost. Reconnecting in ${delay}s... (attempt #$reconnect_count)"
+            sleep "$delay"
         fi
-        
-        # Stream console logs (will exit on disconnect/error)
-        doctl apps logs "$app_id" --type=run --follow 2>&1 || {
-            reconnect_count=$((reconnect_count + 1))
-            continue
-        }
-        
-        # If we get here, doctl exited normally (Ctrl+C)
-        break
+
+        # Stream console logs (will exit on disconnect/error/stream rotation)
+        doctl apps logs "$app_id" --type=run --follow 2>&1
+        local exit_code=$?
+
+        # Only stop on user interrupt (Ctrl+C → 130, SIGTERM → 143)
+        if [ $exit_code -eq 130 ] || [ $exit_code -eq 143 ]; then
+            break
+        fi
+
+        # doctl can exit 0 when DO rotates the log stream — reconnect
+        reconnect_count=$((reconnect_count + 1))
     done
-    
+
     [ $reconnect_count -gt 0 ] && info "Total reconnections: $reconnect_count"
 }
 

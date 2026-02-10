@@ -32,4 +32,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(f"[IVD MCP] Starting SSE server on port {args.port}")
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=args.port,
+        # SSE connections are long-lived; default 5s is far too low and causes
+        # DO load balancer to close idle connections.  600s = 10 minutes.
+        timeout_keep_alive=600,
+        # Give in-flight SSE streams time to drain on deploy/restart
+        timeout_graceful_shutdown=30,
+    )

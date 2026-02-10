@@ -9,6 +9,9 @@ starlette==0.47.3
 sse-starlette==3.0.2
 uvicorn==0.35.0
 
+# Redis for MCP event storage (session resumability)
+redis>=5.0.0
+
 # Embeddings (query-time: numpy loads .npy files)
 numpy>=1.26.0
 

@@ -27,6 +27,16 @@ services:
   run_command: "python wsgi.py --port 8080"
   http_port: 8080
 
+  # Health check — lets DO know the server is alive and prevents premature restarts.
+  # Without this, DO may kill the instance during idle periods or deploy transitions.
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 10
+    period_seconds: 30
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+
   routes:
   - path: /
 
@@ -36,6 +46,12 @@ services:
   # DO NOT put real keys in this file — it's committed to git
   - key: IVD_API_KEYS
     value: "CHANGE_ME_IN_DO_DASHBOARD"
+    type: SECRET
+
+  # Redis for MCP session storage (resumability across restarts)
+  # Shares ada-redis cluster with "ivd:" key prefix for namespace isolation
+  - key: REDIS_URL
+    value: "rediss://default:REDACTED_REDIS_PASSWORD@ada-redis-do-user-367377-0.d.db.ondigitalocean.com:25061"
     type: SECRET
 
 domains:

@@ -61,3 +61,20 @@ class TestSSEHealth:
         response = sse_client.get("/health")
         data = response.json()
         assert "version" in data
+        # Version should be 2.0.0 after StreamableHTTP upgrade
+        assert data["version"] == "2.0.0"
+
+    def test_health_has_transports(self, sse_client):
+        """Health should report both transports after upgrade."""
+        response = sse_client.get("/health")
+        data = response.json()
+        assert "transports" in data
+        assert isinstance(data["transports"], list)
+        assert len(data["transports"]) == 2
+
+    def test_health_has_resumable_flag(self, sse_client):
+        """Health should report resumability status."""
+        response = sse_client.get("/health")
+        data = response.json()
+        assert "resumable" in data
+        assert isinstance(data["resumable"], bool)
