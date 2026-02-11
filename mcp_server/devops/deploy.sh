@@ -70,30 +70,27 @@ check_env_vars() {
         exit 1
     fi
     
-    # Parse REQUIRED_ENV_VARS_REMOTE keys from the Python dict
+    # Import and read required vars directly from env_check.py
     local required_vars
     required_vars=$(python3 -c "
-import ast, sys
-with open('$env_check_file') as f:
-    tree = ast.parse(f.read())
-for node in ast.walk(tree):
-    if isinstance(node, ast.Assign):
-        for target in node.targets:
-            if hasattr(target, 'id') and target.id in ('REQUIRED_ENV_VARS_REMOTE', 'REQUIRED_ENV_VARS_ALL'):
-                if isinstance(node.value, ast.Dict):
-                    for key in node.value.keys:
-                        if isinstance(key, ast.Constant):
-                            print(key.value)
+import sys
+sys.path.insert(0, '$REPO_ROOT')
+from mcp_server.env_check import REQUIRED_ENV_VARS_REMOTE, REQUIRED_ENV_VARS_ALL
+for var in REQUIRED_ENV_VARS_REMOTE:
+    print(var)
+for var in REQUIRED_ENV_VARS_ALL:
+    print(var)
 " 2>/dev/null)
     
     if [ -z "$required_vars" ]; then
-        warn "Could not parse required vars from env_check.py — skipping check"
-        return 0
+        error "Could not read required vars from env_check.py"
+        error "Check that mcp_server/env_check.py exists and is valid Python"
+        exit 1
     fi
     
     # Get current DO app spec env var keys
     local do_env_keys
-    do_env_keys=$(doctl apps spec get "$app_id" 2>/dev/null | grep "key:" | awk '{print $NF}' || echo "")
+    do_env_keys=$(doctl apps spec get "$app_id" 2>/dev/null | grep "  - key:" | sed 's/.*key: //' || echo "")
     
     local missing=0
     while IFS= read -r var; do
