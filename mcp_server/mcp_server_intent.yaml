@@ -267,7 +267,7 @@ risks:
 implementation:
   current: "mcp_server/"
   version: 1
-  tests: "mcp_server/tests/ (114 tests — unit, e2e, smoke)"
+  tests: "mcp_server/tests/ (123 unit, e2e, smoke — includes env validation + keys.sh tests)"
   documentation: "mcp_server/.env.example"
 
   # Component map (file paths verifiable via ls)
