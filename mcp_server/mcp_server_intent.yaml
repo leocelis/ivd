@@ -113,6 +113,37 @@ constraints:
     consequence_if_violated: |
       Remote server is open to the public. Local development is blocked by auth.
 
+  - name: "deploy_via_script_only"
+    requirement: |
+      Production deployments MUST use mcp_server/devops/deploy.sh.
+      NEVER deploy via raw git push, doctl, or DO dashboard.
+      The deploy script runs the env var validation gate (check_env_vars)
+      which verifies all required env vars exist in the DO app spec
+      before allowing the deploy to proceed.
+    test: "deploy.sh --help shows usage; check_env_vars blocks deploy if vars missing"
+    consequence_if_violated: |
+      Deploying without the script bypasses the env var gate. A missing
+      env var (like OPENAI_API_KEY) will cause the server to crash at boot
+      or tools to silently fail at runtime. The deploy script is the ONLY
+      safe path to production because it validates env vars, runs tests,
+      and verifies health after deployment.
+
+  - name: "env_vars_validated"
+    requirement: |
+      All required production env vars are declared in mcp_server/env_check.py.
+      When adding a new env var dependency:
+        1. Add to env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
+        2. Add to .do/app.yaml
+        3. Add to .env and .env.example
+        4. Update mcp_server_intent.yaml deployment section
+      The server refuses to start if any required var is missing.
+      deploy.sh refuses to deploy if any required var is missing from DO spec.
+    test: "tests/unit/test_env_check.py (TestAppYamlSync verifies sync between env_check.py and app.yaml)"
+    consequence_if_violated: |
+      Tools fail silently in production. Server appears healthy but specific
+      tools break at runtime. Exact bug that happened with ivd_search when
+      OPENAI_API_KEY was missing from .do/app.yaml.
+
 # ==============================================================================
 # RATIONALE
 # ==============================================================================
