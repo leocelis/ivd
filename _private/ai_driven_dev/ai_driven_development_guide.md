@@ -2,7 +2,7 @@
 
 **A Practitioner's Paper**
 
-**Version:** 3.2 (Draft)  
+**Version:** 3.3 (Draft)  
 **Created:** December 31, 2025  
 **Updated:** February 2, 2026  
 **Status:** Evolving document based on real-world practice
@@ -642,6 +642,424 @@ Developer: [Now implements with clarity, no false starts]
 ```
 
 **The rule:** Intent documents are written **before** implementation, not after. They are contracts, not summaries. If you're writing code without an approved intent document, stop and write the intent first.
+
+### Intent Documents as Living Blueprints
+
+**The pattern:** Treat intent documents as **living architectural blueprints** that must be kept updated throughout implementation, not as one-time planning artifacts.
+
+**Why living blueprints matter:**
+- Intent drift causes misalignment between plan and reality
+- Updated intents enable accurate code generation by AI
+- Team members can trust intent as current source of truth
+- Future changes reference accurate starting point
+- Documentation stays relevant automatically
+
+**The architectural blueprint analogy:**
+```
+Architectural blueprints:
+- Created before construction begins ✅
+- Updated when design changes occur ✅
+- Contractors reference them continuously ✅
+- Inspectors verify against them ✅
+- Never allowed to diverge from reality ✅
+
+Intent documents (same approach):
+- Created before implementation begins ✅
+- Updated when requirements change ✅
+- Developers reference them continuously ✅
+- Code reviews verify against them ✅
+- Never allowed to diverge from implementation ✅
+```
+
+**When to update intent documents:**
+
+**Before coding:**
+- Initial creation with requirements and approach
+
+**During implementation:**
+- Discovered edge cases → Update constraints section
+- Better approach identified → Update approach section
+- Requirements clarified → Update intent section
+- Integration points change → Update integration section
+
+**After code review:**
+- Feedback reveals intent gaps → Update before merging
+- Trade-offs made → Document in rationale
+- Scope adjusted → Update success criteria
+
+**What NOT to update in intent:**
+- ❌ Implementation details (code structure, variable names)
+- ❌ Bug fixes that don't change intent
+- ❌ Performance optimizations that don't change behavior
+- ❌ Refactoring that preserves original intent
+
+**Update discipline:**
+```
+Rule: If the code no longer matches the intent, update the intent first, THEN update the code.
+
+Wrong workflow:
+Code → Changes → Intent outdated → Intent ignored
+
+Correct workflow:
+Intent → Code → Change needed → Update intent → Update code
+```
+
+**Benefits of living blueprints:**
+- **Accurate AI assistance**: Models generate code matching current intent
+- **Onboarding clarity**: New developers read current, not stale, intent
+- **Change management**: Intent updates force thinking before coding
+- **Audit trail**: Intent version history shows evolution of understanding
+- **Trust**: Team knows intent is reliable, not aspirational
+
+**Example scenario:**
+```
+Week 1: Create intent for "Data Import System"
+  Intent: Import from 5 sources, validate, load to DB
+
+Week 3: Discover Source 3 has different format
+  ❌ Wrong: Code around it, leave intent unchanged
+  ✅ Right: Update intent constraints, document difference, adjust approach
+
+Week 5: Add caching layer for performance
+  ❌ Wrong: Update intent with caching implementation details
+  ✅ Right: Intent stays same (what), code comments explain caching (how)
+
+Week 8: Stakeholder removes Source 4 from scope
+  ✅ Right: Update intent immediately (now 4 sources, not 5)
+```
+
+**Red flags that intent is not living:**
+- ❌ "The intent is outdated" (then update it!)
+- ❌ "Code doesn't match the intent" (which is wrong? Fix it!)
+- ❌ "We don't look at intents during coding" (why have them?)
+- ❌ "Intent was written once, never changed" (requirements never change?)
+
+**Maintenance workflow:**
+1. **Review intent before each coding session** - Is this still accurate?
+2. **Update intent when assumptions break** - Document new understanding
+3. **Verify code against intent during PR** - Do they align?
+4. **Archive old intent versions** - Track evolution via version control
+
+**The test:**
+- Can a new developer read the intent and understand the current system?
+- If intent says X but code does Y, is the intent wrong or the code?
+- When was intent last updated? (If > 1 month old, review it)
+
+**The discipline:**
+- Intent updates are **not optional** when requirements change
+- Intent reviews are **mandatory** before implementation changes
+- Intent accuracy is a **quality gate** in code review
+- Intent maintenance is **part of the definition of done**
+
+**The rule:** Intent documents are living blueprints, not historical artifacts. Keep them current, or they become worthless. Treat intent updates with the same rigor as code updates.
+
+### Intent-Driven Automated Task Creation
+
+**The pattern:** Use structured intent documents to **automatically generate tickets/tasks** in project management systems, ensuring consistency and completeness.
+
+**Why intent-driven task creation matters:**
+- Eliminates manual ticket creation errors
+- Ensures all required fields populated correctly
+- Maintains consistent format across tasks
+- Enables bulk task generation from patterns
+- Creates audit trail from intent to implementation
+
+**Traditional approach (manual):**
+```
+❌ Developer manually creates ticket:
+   - Title: "Implement thing"
+   - Description: Brief, inconsistent format
+   - Missing: acceptance criteria, constraints, dependencies
+   - Varies by who creates it
+   - No link to intent document
+```
+
+**Intent-driven approach (automated):**
+```
+✅ Developer creates intent document:
+   - All details captured in structured format
+   - Intent validation ensures completeness
+   - Tool generates ticket from intent
+   - Consistent format guaranteed
+   - Intent document linked automatically
+```
+
+**Implementation approaches:**
+
+**Approach 1: Intent-to-ticket converter**
+```
+Input: intent.yaml (structured intent document)
+Process: Parse intent → Extract fields → Generate ticket via API
+Output: Ticket with consistent structure, linked to intent
+
+Fields extracted from intent:
+- Title → From intent.summary
+- Description → From intent.goal
+- Acceptance Criteria → From intent.success_metric
+- Constraints → From intent.constraints
+- Dependencies → From intent.integration
+- Priority → Derived from severity/urgency
+```
+
+**Approach 2: Template-based generation**
+```
+Intent defines parameters:
+  source: "Source Alpha"
+  type: "data_import"
+  priority: "high"
+  
+Template generates:
+  Title: "Implement [type] for [source]"
+  Description: Standard format for this pattern
+  Labels: [type], [priority]
+  Components: Auto-assigned based on type
+```
+
+**Approach 3: Batch generation from pattern**
+```
+Pattern: "Create one ticket per data source"
+Sources: [Alpha, Beta, Gamma, Delta]
+
+Result: 4 tickets auto-generated:
+  - "Implement data import for Alpha"
+  - "Implement data import for Beta"
+  - "Implement data import for Gamma"
+  - "Implement data import for Delta"
+
+Each with consistent structure, same template, different parameters
+```
+
+**Benefits:**
+- **Consistency**: Every ticket follows the same structure
+- **Completeness**: Intent validation ensures no missing fields
+- **Efficiency**: Generate 10 tickets in seconds vs 10 minutes manual
+- **Accuracy**: No typos, no missing sections, no format variations
+- **Traceability**: Direct link from intent to ticket to code
+- **Bulk operations**: Create many similar tickets from patterns
+
+**When to use intent-driven task creation:**
+- Creating multiple similar tickets (e.g., one per data source)
+- Complex tickets requiring many structured fields
+- Need for consistent format across team
+- Integration with AI-assisted development (AI reads intent)
+- Audit requirements (traceability from intent to implementation)
+
+**Common patterns:**
+
+**Pattern 1: One ticket per instance**
+```
+Intent: Import data from N sources
+Generate: N tickets, one per source, parameterized
+
+Each ticket inherits common fields from parent intent
+Each ticket specifies source-specific details
+```
+
+**Pattern 2: Phased implementation**
+```
+Intent: Multi-phase project
+Generate: One ticket per phase
+
+Phase 1 ticket: "Research and design"
+Phase 2 ticket: "Implement core functionality"
+Phase 3 ticket: "Integration and testing"
+Phase 4 ticket: "Deploy and monitor"
+```
+
+**Pattern 3: Cross-cutting concerns**
+```
+Intent: Feature requiring changes across layers
+Generate: One ticket per layer
+
+Backend ticket: API changes
+Frontend ticket: UI changes
+Database ticket: Schema migration
+Docs ticket: Update documentation
+```
+
+**Implementation example:**
+```
+# Command
+generate-tickets --intent data-import.yaml --pattern one-per-source
+
+# Result
+Created 5 tickets:
+  PROJ-101: Import data from Source Alpha [GENERATED]
+  PROJ-102: Import data from Source Beta [GENERATED]
+  PROJ-103: Import data from Source Gamma [GENERATED]
+  PROJ-104: Import data from Source Delta [GENERATED]
+  PROJ-105: Import data from Source Epsilon [GENERATED]
+
+All tickets linked to intent: data-import.yaml
+All tickets tagged: [data-import, automated, batch-2026-02]
+```
+
+**Quality gates:**
+- Intent must pass validation before ticket generation
+- Generated tickets must include link to source intent
+- Tickets must be reviewed before assignment (human approval)
+- Templates must be version-controlled
+- Generation logs must be auditable
+
+**Anti-patterns to avoid:**
+- ❌ Generating tickets without intent validation
+- ❌ Manual editing of generated tickets (update intent instead)
+- ❌ Mixing manual and automated ticket creation (pick one)
+- ❌ No human review of generated tickets
+- ❌ Generating tickets for poorly-defined intents
+
+**The discipline:**
+- Intent documents must be complete before generation
+- Generated tickets must not be manually edited (regenerate if needed)
+- Templates must be maintained as code
+- Generation must be logged and auditable
+- Human approval required before bulk assignment
+
+**The rule:** If you're creating more than 3 similar tickets manually, create an intent and automate the generation. Consistency and completeness matter more than speed of ticket creation.
+
+### One Ticket Per Distinct Component
+
+**The pattern:** Create **separate, focused tickets** for each distinct component, source, or concern rather than combining multiple items into a single ticket.
+
+**Why separation matters:**
+- Clear scope per ticket (one thing to implement)
+- Parallel work possible (different people, different tickets)
+- Easier estimation (small scope = accurate estimate)
+- Better tracking (progress per component visible)
+- Simpler code review (focused changes)
+
+**The granularity principle:**
+```
+Too coarse (anti-pattern):
+"Implement data import for all 5 sources"
+  Problem: Can't track per-source progress
+  Problem: Massive PR with 5 different changes
+  Problem: One source blocked = entire ticket blocked
+
+Too fine (anti-pattern):
+"Write validation function for Source A field 1"
+  Problem: 100 micro-tickets for one feature
+  Problem: Overhead exceeds value
+  Problem: Can't see big picture
+
+Just right (correct pattern):
+"Implement data import for Source Alpha"
+  Scope: One complete source, end-to-end
+  Parallelizable: Other tickets for Beta, Gamma, etc.
+  Reviewable: Focused PR, one source's logic
+```
+
+**When to split into separate tickets:**
+
+**Split by data source/system:**
+```
+One ticket per:
+- External API integration (API A, API B, API C)
+- Database table migration (Table X, Table Y, Table Z)
+- Data source import (Source Alpha, Beta, Gamma)
+- Third-party service (Service 1, Service 2, Service 3)
+```
+
+**Split by functional area:**
+```
+One ticket per:
+- Frontend feature (not "Full feature frontend + backend")
+- Backend API endpoint (GET /users, POST /users separate)
+- Database schema change (User table, Order table separate)
+- Documentation section (API docs, User guide separate)
+```
+
+**Split by environment/region:**
+```
+One ticket per:
+- Deployment target (Staging, Production separate)
+- Geographic region (Region A, Region B separate)
+- Customer tier (Free tier, Premium tier separate)
+```
+
+**Benefits:**
+- **Parallel development**: Multiple developers work simultaneously
+- **Incremental delivery**: Ship Source A while working on Source B
+- **Easier rollback**: Revert Source C without affecting A and B
+- **Better estimates**: Small tickets = more accurate time estimates
+- **Clear progress**: 3/5 tickets done = 60% complete
+- **Focused reviews**: Reviewer understands scope immediately
+
+**Example scenario:**
+```
+Task: Import data from 5 different sources
+
+❌ Wrong: One ticket "Import data from all sources"
+   Assignee: One person
+   Duration: 2 weeks
+   Progress: Unknown until done
+   Blocking: One source issue blocks everything
+
+✅ Right: Five tickets, one per source
+   Ticket 1: "Import from Source Alpha"
+   Ticket 2: "Import from Source Beta"  
+   Ticket 3: "Import from Source Gamma"
+   Ticket 4: "Import from Source Delta"
+   Ticket 5: "Import from Source Epsilon"
+   
+   Assignees: Can parallelize across team
+   Duration: 1 week each (parallel = 1 week total)
+   Progress: Clear (3/5 = 60%)
+   Blocking: Source Delta issue doesn't block Alpha, Beta, Gamma
+```
+
+**Ticket structure for separated components:**
+```
+Title: "[Component Type] for [Specific Component]"
+
+Examples:
+- "Data import for Source Alpha"
+- "API integration for Payment Processor X"
+- "Database migration for Orders table"
+- "Deploy configuration for Production environment"
+
+Description:
+- Component: [Name/ID of this specific component]
+- Parent: [Link to parent epic/feature]
+- Dependencies: [Other tickets this depends on]
+- Unique details: [What makes this component different]
+
+Acceptance criteria:
+- Component-specific validation rules
+- Integration tests passing for THIS component
+- Documentation updated for THIS component
+```
+
+**Common mistake: Combining by convenience**
+```
+❌ "Import data from Region A and Region B"
+   Why wrong: Two different regions, different APIs, different rules
+   Impact: Can't assign to two people, can't deploy independently
+
+✅ "Import data from Region A"
+✅ "Import data from Region B"
+   Why right: Clear scope, can parallelize, independent deployment
+```
+
+**The test:**
+- Can this ticket be assigned to a different developer without conflicts?
+- Can this ticket be deployed independently of other tickets?
+- Does this ticket have clear, singular acceptance criteria?
+- If blocked, does it block unrelated work?
+
+**When NOT to split:**
+- Changes are tightly coupled (must be deployed together)
+- Splitting creates more overhead than value
+- Testing requires both components together
+- Natural unit of work is the combination
+
+**The discipline:**
+- Default to separate tickets when components are distinct
+- Combine only when there's a strong reason (tight coupling)
+- Review ticket granularity during planning
+- Refactor large tickets into multiple smaller ones
+
+**The rule:** One ticket, one component. If you're writing "and" in the ticket title, you probably need two tickets. Separation enables parallelization and clarity.
 
 ### Generic Framework Design Over Instance-Specific Implementations
 

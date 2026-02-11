@@ -555,15 +555,33 @@
 
 ---
 
+## Meeting 27
+**Title:** Intent as Living Blueprints & Automated Task Creation  
+**Date:** February 2026 (estimated)  
+**Lines:** 1709-1787  
+**Status:** ✅ **PROCESSED**  
+**Key Concepts Extracted (3 total):**
+
+**Intent Management:**
+- Intent documents as living blueprints (keep updated throughout implementation)
+- Intent-driven automated task creation (generate tickets from structured intents)
+
+**Project Management:**
+- One ticket per distinct component (separate tickets for each data source/system)
+
+**Note:** Meeting contained significant non-development content (dental issues, payment arrangements, specific state/company discussions). Only generalizable development patterns extracted per recipe v1.2.
+
+---
+
 ## Summary
 
-**Total Meetings:** 26  
-**Total Processed:** 26 ✅  
+**Total Meetings:** 27  
+**Total Processed:** 27 ✅  
 **Total Not Processed:** 0 ✅  
 
 **Processing Status:** 100% Complete ✅
 
-All generalizable concepts from meetings 0-26 have been extracted and incorporated into the AI-Driven Development Guide (Version 3.2).
+All generalizable concepts from meetings 0-27 have been extracted and incorporated into the AI-Driven Development Guide (Version 3.3).
 
 **Most Recent Updates:**
 - **Meeting 1** re-processed with ultra-deep extraction (16 concepts total)

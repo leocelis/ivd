@@ -1707,3 +1707,81 @@ San Jose, CA 95113
 +1.888.799.9666
 
 © 2026 Zoom Communications, Inc.
+
+--
+
+
+ 
+Meeting assets for Leo Celis's Personal Meeting Room are ready!
+
+Meeting summary
+
+Resumen rápido
+
+La reunión se centró en dos temas principales: la situación dental de Juan y el progreso del trabajo de investigación sobre licencias de construcción. Juan compartió sus problemas con un diente que requiere tratamiento de conducto, incluyendo una muela de juicio que fue extraída recientemente y problemas de inflamación que lo han causado dolor significativo durante varias semanas. Leo le proporcionó consejos sobre la importancia de elegir un dentista calificado para hacer la corona de porcelana y asegurarse de que quede bien ajustada. Posteriormente, discutieron el estado de la investigación sobre bases de datos de licencias de construcción, específicamente en Nueva York y Florida, donde encontraron limitaciones en la disponibilidad de datos públicos y la necesidad de usar diferentes fuentes como Uninfo y UVEXO. Leo explicó el uso del sistema de intents para automatizar tareas de investigación y sugirió crear tickets separados para enfocarse en contratos comerciales específicamente en Florida.
+
+Siguientes pasos
+
+Juan: Crear un ticket por cada fuente de datos de Florida, enfocándose solo en contratos/companies comerciales, y especificar en el ticket que se descarguen solo los registros que son IDs primarios y de tipo comercial.
+Juan: Pedir a Claudio (o al responsable de la herramienta) que genere el intent correspondiente para importación de datos (especialmente para data surf y CSB), validando el formato y parámetros necesarios para la importación.
+Leo: Avanzar con la integración y análisis de datos de uvexo y sun info, especialmente para Nueva York, y una vez estabilizado, pasar a Juan el procedimiento para que pueda replicarlo en otros estados.
+Juan: Coordinar con el contacto de Santa Bárbara en Rosario (pasado por Leo) el mecanismo de facturación y transferencia, asegurándose de respetar los montos máximos de su categoría en el monotributo.
+Juan: Monitorear el total facturado anual para evitar exceder el límite de su categoría en el monotributo y, si corresponde, ajustar la facturación según los montos permitidos.
+Juan: Pedir a Claudio que lea el ticket 605 con Shira y confirme si es necesario crear un nuevo intent para la importación de datos, y que actualice el intent si se implementa algún cambio.
+Leo: Enviar a Juan el contacto de Santa Bárbara para que gestione la facturación y transferencia de pagos.
+Juan: Verificar que los tools (como Nintendo) estén funcionando correctamente y reportar/ajustar la configuración para evitar desconexiones durante el import.
+Resumen
+
+Problemas Dentales y Tratamiento
+
+Juan explicó sus problemas dentales, comenzando con un dolor que comenzó a fines del año pasado y que empeoró después de recibir un tratamiento de relleno. Después de tomar antibióticos durante dos semanas, la dentista decidió no hacer un tratamiento de conducto, pero el dolor persistió. Juan finalmente se sometió a una radiografía que reveló un problema con el nervio, y la dentista lo diagnosticó con biolitis, recomendando un tratamiento específico.
+
+Problemas Dentales y Tratamientos
+
+Juan compartió sus experiencias recientes con problemas dentales, incluyendo dolor y la pérdida de un diente. Leo le aconsejó sobre la importancia de elegir un buen dentista para hacer la corona de porcelana, enfatizando la necesidad de que la muela artificial se asemeje al diente natural y encaje correctamente. Juan mencionó que se siente mejor después de tomar agua fría y que pronto se realizará una extracción dental con anestesia.
+
+Disponibilidad de Datos en Nueva York
+
+Juan informó que algunas áreas como Long Island, Wester, Buffalo y Rochester no estarán disponibles, y mencionó que hay un CSB de otra oficina en Florida que cubre múltiples agencias y se actualiza a Wikileak. Leo y Juan discutieron que Nueva York no tiene datos útiles disponibles para su uso actual. Leo propuso probar una herramienta llamada Clow para investigación y razonamiento, mencionando que aunque no tiene acceso al ACP, es útil para investigación inicial y generación de código.
+
+Discusión sobre Construcción y Asociaciones
+
+Juan y Leo discutieron información sobre construcción y asociaciones de constructores, incluyendo datos sobre proyectos activos y departamentos de diseño y construcción. Revisaron páginas web y categorías de información relacionada con construcción, aunque experimentaron dificultades técnicas durante la búsqueda. La conversación incluyó referencias a información específica sobre construcción en Nueva York y la necesidad de validar cierta información, aunque no se tomaron decisiones específicas durante la reunión.
+
+Integración Sun Info Constructiva
+
+Leo y Juan discutieron sobre la limitada información disponible en un ticket, con solo nueve registros, lo que no permite extraer mucho contenido útil. Leo propuso trabajar en la integración de Sun Info para obtener información de empresas de construcción en Nueva York sin consumir créditos, ya que algunos puntos son gratuitos mientras que otros requieren pago. También mencionaron la posibilidad de enfocarse en contratos generales en Florida y Nueva York, y Leo sugirió que sería más eficiente usar un intent directo para obtener resúmenes más rápidos en lugar de revisar todo el código.
+
+Búsqueda de Empresas Constructoras Nueva York
+
+Leo discutió sobre la búsqueda de información sobre empresas constructoras en Nueva York, mencionando dificultades para encontrar datos específicos. Claudio ayudó a localizar la información buscada, encontrando un formato que coincidía con lo que Leo había estado haciendo manualmente. La conversación incluyó la revisión de diferentes opciones de búsqueda y la verificación de información en pantalla.
+
+Problemas Técnicos del Sistema
+
+Leo discutió problemas técnicos con la implementación del sistema, mencionando que se sienten obsoletos como programadores y que la velocidad del sistema es difícil de mantener. Leo también mencionó problemas con la integración y credenciales de base de datos, sugiriendo posiblemente dejar el proyecto de Nueva York para Luexo mientras trabajan en Florida.
+
+Tickets Comerciales de Florida
+
+Leo y Juan discutieron la creación de tickets específicos para Florida, enfocándose en proyectos comerciales como edificios, aeropuertos y hospitales en lugar de electricidad o agua. Leo se encargará del tema de Nueva York, mientras que Juan manejará los tickets de Florida, creando uno por cada proyecto comercial. Leo también mencionó problemas con la conexión del servidor durante los deploys y sugirió verificar los tools antes de implementar el importador.
+
+Configuración de Intents para Gira
+
+Leo explicó a Juan cómo usar la herramienta de intents para crear tickets de Gira, enfatizando la importancia de un formato correcto en el description y la estructura para facilitar la interpretación del modelo. Discutieron la limitación de 1 000 usos mensuales y la posibilidad de crear un intent específico para la importación de datos en el SSIP. Leo acordó crear un intent personalizado y enviarlo a Juan para resolver los problemas de sintaxis que Claudio estaba experimentando con la herramienta.
+
+Progreso de Tickets y Pagos
+
+Leo y Juan discutieron el progreso de varios tickets de trabajo, donde Leo explicó la importancia de mantener los intentes actualizados como planos de construcción antes de implementar el código. Leo también proporcionó información sobre un contacto en Rosario llamado Santa Bárbara para procesar pagos financieros, explicando dos métodos disponibles: transferencia directa o emisión de facturas con código monotributo. Leo mencionó que Juan debe monitorear su categoría monotributo anual y los montos facturados para posibles ajustes futuros.
+
+AI can make mistakes. Review for accuracy.
+
+Please rate the accuracy of this summary.	feedback good  feedback bad
+Thank you,
+Zoom Support Team
+https://support.zoom.us
+LinkedIn	X	Instagram	Facebook	YouTube	Blog
+Zoom.com
+55 Almaden Blvd
+San Jose, CA 95113
++1.888.799.9666
+
+© 2026 Zoom Communications, Inc.
