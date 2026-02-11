@@ -55,6 +55,66 @@ require_app() {
     echo "$app_id"
 }
 
+check_env_vars() {
+    # Pre-deploy gate: verify all required env vars are configured in DO.
+    # Reads the required list from mcp_server/env_check.py (single source of truth)
+    # and checks them against the live DO app spec.
+    
+    local app_id="$1"
+    info "Checking required environment variables in DO app spec..."
+    
+    # Extract required var names from env_check.py (the canonical list)
+    local env_check_file="$REPO_ROOT/mcp_server/env_check.py"
+    if [ ! -f "$env_check_file" ]; then
+        error "env_check.py not found at $env_check_file"
+        exit 1
+    fi
+    
+    # Parse REQUIRED_ENV_VARS_REMOTE keys from the Python dict
+    local required_vars
+    required_vars=$(python3 -c "
+import ast, sys
+with open('$env_check_file') as f:
+    tree = ast.parse(f.read())
+for node in ast.walk(tree):
+    if isinstance(node, ast.Assign):
+        for target in node.targets:
+            if hasattr(target, 'id') and target.id in ('REQUIRED_ENV_VARS_REMOTE', 'REQUIRED_ENV_VARS_ALL'):
+                if isinstance(node.value, ast.Dict):
+                    for key in node.value.keys:
+                        if isinstance(key, ast.Constant):
+                            print(key.value)
+" 2>/dev/null)
+    
+    if [ -z "$required_vars" ]; then
+        warn "Could not parse required vars from env_check.py — skipping check"
+        return 0
+    fi
+    
+    # Get current DO app spec env var keys
+    local do_env_keys
+    do_env_keys=$(doctl apps spec get "$app_id" 2>/dev/null | grep "key:" | awk '{print $NF}' || echo "")
+    
+    local missing=0
+    while IFS= read -r var; do
+        if ! echo "$do_env_keys" | grep -q "^${var}$"; then
+            error "MISSING in DO app spec: $var"
+            missing=$((missing + 1))
+        else
+            success "  ✓ $var"
+        fi
+    done <<< "$required_vars"
+    
+    if [ $missing -gt 0 ]; then
+        echo ""
+        error "Deploy blocked: $missing required env var(s) missing from DO app spec."
+        error "Add them to .do/app.yaml and run: $0 --update-spec"
+        exit 1
+    fi
+    
+    success "All required environment variables present in DO"
+}
+
 # ── Commands ───────────────────────────────────────────────────────────────────
 
 cmd_create() {
@@ -149,6 +209,9 @@ cmd_update_spec() {
     local app_id
     app_id=$(require_app)
 
+    # Validate required env vars before applying spec
+    check_env_vars "$app_id"
+
     info "Updating app spec from: $APP_SPEC"
     doctl apps update "$app_id" --spec "$APP_SPEC"
     success "App spec updated"
@@ -171,6 +234,9 @@ cmd_deploy() {
     info "App ID: $app_id"
 
     cd "$REPO_ROOT"
+
+    # Step 0: Validate required env vars in DO (gate — blocks deploy if missing)
+    check_env_vars "$app_id"
 
     # Step 1: Regenerate embeddings (unless --skip-embed)
     if [ "$skip_embed" = false ]; then

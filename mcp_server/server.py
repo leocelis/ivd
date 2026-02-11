@@ -16,6 +16,7 @@ import argparse
 import asyncio
 import contextlib
 import os
+import sys
 from collections.abc import AsyncIterator
 from contextvars import ContextVar
 from typing import List, Optional
@@ -34,6 +35,7 @@ from starlette.routing import Route
 from termcolor import colored
 
 from mcp_server.auth import validate_api_key
+from mcp_server.env_check import validate_env, REQUIRED_ENV_VARS_REMOTE
 from mcp_server.logger import log_health_check
 from mcp_server.registry import call_tool, get_all_tools
 
@@ -314,11 +316,18 @@ create_sse_app = create_app
 
 def main() -> None:
     """Main entry point."""
+    from mcp_server.env_check import check_and_warn
+
     parser = argparse.ArgumentParser(description="IVD MCP Server")
     parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio")
     parser.add_argument("--port", type=int, default=9999)
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args()
+
+    # Validate environment variables BEFORE starting the server.
+    # Remote transport: exits with error if any required vars are missing.
+    # stdio transport: warns but allows startup for local dev.
+    check_and_warn(args.transport)
 
     if args.transport == "stdio":
         asyncio.run(run_stdio())

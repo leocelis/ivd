@@ -18,10 +18,15 @@ else:
     # Local development — ensure repo root is on path
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from mcp_server.env_check import check_and_warn
 from mcp_server.server import create_sse_app
 
 import argparse
 import uvicorn
+
+# Validate all required environment variables BEFORE creating the app.
+# Exits with code 1 if any are missing — prevents silent production failures.
+check_and_warn(transport="sse")
 
 # Create app at module level for uvicorn import string usage
 app = create_sse_app()

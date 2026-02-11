@@ -41,10 +41,19 @@ services:
   - path: /
 
   envs:
+  # ── Required env vars (canonical list: mcp_server/env_check.py) ──
+  # deploy.sh gates on these — deploy is blocked if any are missing.
+  # server.py validates at boot — server refuses to start if missing.
+
   # API keys for authenticated access (comma-separated)
-  # Set the actual value in DO dashboard (Settings > Environment Variables)
-  # DO NOT put real keys in this file — it's committed to git
+  # Managed by: devops/keys.sh
   - key: IVD_API_KEYS
+    value: "CHANGE_ME_IN_DO_DASHBOARD"
+    type: SECRET
+
+  # OpenAI API key for ivd_search embedding generation at runtime
+  # Managed by: DO dashboard or doctl
+  - key: OPENAI_API_KEY
     value: "CHANGE_ME_IN_DO_DASHBOARD"
     type: SECRET
 

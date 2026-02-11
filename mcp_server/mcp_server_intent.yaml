@@ -268,6 +268,8 @@ implementation:
         - "config.py    — Model, dimensions, chunk size config"
     - dir: "brain/ivd/"
       purpose: "Committed embeddings (.npy vectors + .json metadata/chunks)"
+    - file: "env_check.py"
+      purpose: "Single source of truth for required environment variables — validated at boot and pre-deploy"
     - dir: "devops/"
       purpose: "Operational tooling for deployment, logging, key management, and embedding generation"
       files:
@@ -280,6 +282,44 @@ implementation:
         - "search.sh  — Local embedding query wrapper (activates venv, runs search.py)"
         - "search.py  — CLI to query committed embeddings locally without API key"
         - "test.sh    — Test runner wrapper (activates venv, runs pytest with coverage)"
+
+  # ── Production Deployment ─────────────────────────────────────────────
+  # Required environment variables for remote (SSE/StreamableHTTP) transport.
+  # Canonical list lives in mcp_server/env_check.py — keep these in sync.
+  #
+  # When adding a new env var dependency:
+  #   1. Add to mcp_server/env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
+  #   2. Add to .do/app.yaml envs section
+  #   3. Add to .env and .env.example
+  #   4. Update this section
+  #
+  # deploy.sh gates on this list — deploy is blocked if any var is missing
+  # from the DO app spec. server.py validates at boot — server refuses to
+  # start if any var is missing from the environment.
+  deployment:
+    platform: "DigitalOcean App Platform"
+    spec: ".do/app.yaml"
+    required_env_vars:
+      - var: "IVD_API_KEYS"
+        purpose: "API key auth for remote MCP clients (comma-separated)"
+        used_by: ["auth.py"]
+        managed_by: "devops/keys.sh"
+
+      - var: "OPENAI_API_KEY"
+        purpose: "OpenAI API key for ivd_search embedding generation at runtime"
+        used_by: ["tools/search.py", "knowledge/embedder.py"]
+        managed_by: "DO dashboard or doctl"
+
+      - var: "REDIS_URL"
+        purpose: "Redis connection URL for StreamableHTTP session resumability"
+        used_by: ["event_store.py", "redis_utils.py"]
+        managed_by: ".do/app.yaml"
+
+    validation_chain:
+      - "mcp_server/env_check.py declares required vars (source of truth)"
+      - "deploy.sh check_env_vars() gates deploy if any var missing from DO spec"
+      - "wsgi.py calls check_and_warn() at boot — exits if any var missing"
+      - "Unit tests in tests/unit/test_env_check.py prevent regressions"
 
 # ==============================================================================
 # VERIFICATION
