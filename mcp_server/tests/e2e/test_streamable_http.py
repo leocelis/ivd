@@ -129,9 +129,14 @@ class TestLegacySSEEndpoints:
     """Tests for backward compatibility with legacy SSE endpoints."""
 
     def test_sse_endpoint_still_exists(self, http_client):
-        """Legacy /sse endpoint should still be accessible."""
-        # GET without proper headers will fail but endpoint should exist
-        response = http_client.get("/sse")
+        """Legacy /sse endpoint should still be accessible.
+
+        Note: We test via POST (not GET) because GET on /sse opens a
+        long-lived SSE streaming connection that blocks the synchronous
+        test client.  A 405 Method Not Allowed proves the route exists
+        (404 would mean it was removed).
+        """
+        response = http_client.post("/sse", json={})
         assert response.status_code != 404
 
     def test_messages_endpoint_still_exists(self, http_client):
