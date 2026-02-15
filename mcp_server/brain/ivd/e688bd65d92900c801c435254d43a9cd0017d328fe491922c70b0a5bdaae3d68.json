@@ -1,0 +1,11 @@
+{
+  "doc_hash": "e688bd65d92900c801c435254d43a9cd0017d328fe491922c70b0a5bdaae3d68",
+  "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/front-matter/foreword.md",
+  "file_name": "foreword.md",
+  "num_chunks": 1,
+  "chunks": [
+    "# Foreword\n\n*The foreword will be contributed by an industry leader and will appear in the final edition.*\n\n<!--\n  BRIEF FOR CONTRIBUTOR (do not publish):\n  - Topics: (1) The AI revolution's missing piece: why intent matters more than code\n    (2) Personal experience with the problem IVD solves (many turns, hallucinations,\n    misalignment when building with AI agents) (3) Endorsement: why this book matters now\n  - Pattern: Code Complete / Pragmatic Programmer foreword (third-party credibility)\n  - Profile: Recognized in AI-assisted development; direct experience with AI misalignment\n  - Length: ~500\u2013800 words. Voice: contributor's own. Constraint: endorse IVD, do not teach it.\n-->"
+  ],
+  "cost_usd": 3.2600000000000006e-06,
+  "processed_at": "2026-02-15T04:15:32.105202"
+}
