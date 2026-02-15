@@ -12,17 +12,31 @@ This chapter is about that pattern, why it is so expensive, and why the way we w
 
 The pattern is simple. You prompt an **AI agent**: *Build X.* The AI returns: *Here's X.* You look at it and say: *No, I meant…* So it goes: prompt, deliver, correct. Prompt, deliver, correct.
 
-Each round—each **turn**—costs time, attention, and trust. The AI can produce a full module or a full doc in seconds. The loop can spin dozens of times in a single session. The cost of each turn is low in wall-clock time; the *total* cost—wrong assumptions baked into more and more output, context overload, and the growing doubt that anyone understands what "X" really is—compounds fast. This is the **many turns problem**.
+Each round—each **turn**—costs time, attention, and **trust**. The AI can produce a full module or a full doc in seconds. The loop can spin dozens of times in a single session.
 
-Consider a concrete, industry-typical example. You tell your AI agent: "Add export to CSV." The AI ships a CSV export. You try it: "I meant only these columns, and with this date format, and only for admins." The AI hadn't been told any of that.
+The cost of each turn is low in wall-clock time; the *total* cost—wrong assumptions, baked into more and more outputs, context overload, and the growing doubt that the AI Agent really understands what "X" really means—compounds fast!
 
-Your prompt was incomplete; the code was a plausible interpretation. The gap between "add export to CSV" and what you actually needed was never written down in a form the AI could verify against. So the first delivery was, in a real sense, a **hallucination**—the AI filled in the blanks with something plausible but wrong. The loop continues. Turn after turn.
+This is the **many turns problem**.
 
-The old pattern existed between humans too: PM writes a ticket, developer ships the wrong thing, correction ensues. But that was slow enough that we learned to "live with" it. Now, with AI agents that can write entire features in seconds, the same pattern runs at machine speed.
+Consider this example. You tell your AI agent: "Add export to CSV." The AI ships a CSV export. You try it: "I meant only these columns, and with this date format, and only for admins." The AI hadn't been told any of that (?)
 
-The expense is not only in the extra turns. It is in the hidden work: the mental load of keeping "what I really meant" in your head, the fatigue of correcting again and again, and the erosion of trust when "Here's X" keeps missing. **We have been building at the speed of misunderstanding.**
+**Your prompt was incomplete**; the code was a plausible interpretation.
 
-That sentence will come back. For now, hold it: the core problem is that we treat the *prompt* as informal and let the AI guess. The AI fills the gaps. When the guess is wrong, we correct. We almost never write down the request in a way that can be **checked**—and that the AI can verify against before it builds.
+The gap between "add export to CSV" and what you actually needed was never written down in a form the AI could verify against.
+
+So the first delivery was, in a real sense, a **hallucination**—the AI filled in the blanks with something plausible but wrong.
+
+The loop continues. Turn after turn.
+
+The old pattern existed between humans too: PM writes a ticket, developer ships the wrong thing, correction ensues. But that was slow enough that we learned to "live with" it. Now, with AI agents that can write entire features in seconds, the same pattern runs at *machine speed*.
+
+The expense is not only in the extra turns. It is in the hidden work: the mental load of keeping "*what I really meant*" in your head, the fatigue of correcting again and again, and the erosion of trust when "Here's X" keeps missing. 
+
+**We have been building at the speed of misunderstanding.**
+
+That sentence will come back. For now, hold it: the core problem is that we treat the *prompt* as informal and let the AI guess.
+
+The AI fills the gaps. When the guess is wrong, we correct. We almost never write down the request in a way that can be **checked**—and that the AI can verify against before it builds.
 
 ---
 
@@ -30,16 +44,18 @@ That sentence will come back. For now, hold it: the core problem is that we trea
 
 In theory, writing things down fixes the gap. In practice, it doesn't—because none of the traditional artifacts are **verifiable by the AI**.
 
-By **verifiable**, we mean this: the AI can run a deterministic check—execute tests, validate structured constraints—that returns pass or fail, without having to interpret prose. The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And inference is where hallucination lives.
+By **verifiable**, we mean this: the AI can run a deterministic check—execute tests, validate structured constraints—that returns pass or fail, without having to interpret prose.
 
-Consider what we have tried:
+The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And **inference** is where **hallucination lives**.
+
+Consider what we have tried before:
 - **PRDs (Product Requirements Documents):** Prose documents written by humans for humans. The AI cannot verify whether its code matches a PRD. It can only read the PRD and guess.
 - **User stories:** "As a user, I want to export to CSV so that I can analyze data offline." Still prose. Still unverifiable. The AI reads it and fills in the blanks.
 - **Prompts:** The state of the art for AI agents. "Add export to CSV for admins, with these columns, in ISO date format." Better—but still informal. Still no structure the AI can check against. Still leads to many turns when the prompt was incomplete.
 
 The problem is the same in each case: *none of these artifacts can be verified by the AI*. The AI reads them, interprets them, and produces code that is a plausible guess. When the guess is wrong, you correct. The loop continues.
 
-Why do these artifacts fail with AI? Because they were designed for **humans** to read and interpret. They assume a human developer will ask clarifying questions, will remember context from last week's meeting, will know the unwritten rules of the codebase.
+**Why do these artifacts fail with AI?** Because they were designed for **humans** to read and interpret. They assume a human developer will ask clarifying questions, will remember context from last week's meeting, will know the unwritten rules of the codebase.
 
 An AI agent has none of that. It has only what you give it. If what you give it is prose—PRD, user story, or prompt—it will infer. Inference is guesswork. **Guesswork is hallucination.** The AI fills in the gaps with something plausible but wrong.
 
@@ -49,7 +65,7 @@ We learn to work around it: we add more context, we correct, we iterate. It's wa
 
 ---
 
-## 1.3 The AI Amplification Effect: Many Turns, Many Hallucinations
+## 1.3 The AI Amplification Effect: Many Turns, Many Hallucinations (continue here)
 
 **AI agents** can produce fast, plausible, and wrong output. They don't need to be "bad" at coding. They just need to fill in the gaps in your request with something reasonable—reasonable given the training data and the few lines of context in the prompt.
 
@@ -70,7 +86,7 @@ It's the same pattern as 1.1: no shared, **verifiable statement of intent** that
 
 The cost of this pattern is not small. Industry research consistently shows that the majority of **critical project knowledge**—what the system should do, why design decisions were made—never makes it into a durable, machine-checkable form. Studies of software architecture and documentation find that 70–90% of mismatches between documentation and actual systems stem from documentation that failed to keep up with reality.[^1] This knowledge lives in meetings, in tickets that scatter, in the heads of people who leave.
 
-The financial cost is measured in the hundreds of billions: the United States alone writes off over $260 billion annually on software development failures, with roughly $500 billion lost globally to projects that fail, overrun, or deliver the wrong thing.[^2] The AI prompt that fills in the wrong blanks, the feature that ignores unstated constraints, the turn after turn of correction—these aren't edge cases. They are the default. And the cost compounds.
+The financial cost is measured in the tens of billions and beyond: the United States alone writes off over $260 billion annually on software development failures, with roughly $500 billion lost globally to projects that fail, overrun, or deliver the wrong thing.[^2] The AI prompt that fills in the wrong blanks, the feature that ignores unstated constraints, the turn after turn of correction—these aren't edge cases. They are the default. And the cost compounds.
 
 [^1]: IEEE research on architectural knowledge loss in industrial projects (Rigby et al., ICSE; McGill studies on turnover-induced knowledge loss). See Appendix F for full references.
 
@@ -100,4 +116,4 @@ This chapter named the problem: the artifacts we use today—PRDs, user stories,
 
 - **The scale is enormous: 70–90% knowledge loss, hundreds of billions in annual waste.** Research shows 70–90% of documentation-code mismatches stem from documentation failures; critical knowledge lives in meetings and heads, not durable artifacts. The financial cost: $260+ billion annually in the U.S. alone, $500 billion globally. The AI prompt that fills in wrong blanks, the feature that ignores unstated constraints—these are the default, not edge cases.
 
-- **The hinge: what if intent was verifiable?** What if the AI could verify its output against a statement of intent—before it ships? What if the guesswork could be replaced with checking? The next chapter explores what happens when intent becomes verifiable.
+- **The hinge: what if intent was verifiable? What if the AI wrote the intent?** What if the AI could verify its output against a statement of intent—before it ships? What if the guesswork could be replaced with checking? The next chapter explores what happens when intent becomes verifiable—and who should write it.

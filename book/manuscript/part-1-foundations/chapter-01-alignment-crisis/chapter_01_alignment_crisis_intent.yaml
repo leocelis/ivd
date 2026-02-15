@@ -6,7 +6,7 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[0]
-# Version: 2.3
+# Version: 2.4
 # Created: 2026-01-25
 # Status: Complete
 # ==============================================================================
@@ -216,6 +216,16 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.4"
+    date: "2026-02-09"
+    change: |
+      Manuscript alignment fixes (discrepancy review):
+      (1) Goal item 3 ($10B problem): 1.3 financial-cost sentence now includes "tens of billions and beyond"
+          to reflect the $10B scale from intent goal (aligned with sourced $260B/$500B figures).
+      (2) Key point 4 ("What if the AI wrote the intent?"): Added to Key Points bullet 4; added
+          "and who should write it" to closing phrase for consistency with 1.4 body. Both remain
+          questions, no solution exposition (no_solution_yet preserved).
+    reason: "Address discrepancies from cross-check: $10B scale, key_point 4 second formulation."
   - version: "2.3"
     date: "2026-02-09"
     change: |
