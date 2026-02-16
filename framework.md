@@ -966,6 +966,99 @@ field_mapping:
 
 ---
 
+### Optional Section: Interface (Modules with a Callable Tool Surface)
+
+For modules that **expose tools, commands, or endpoints** to external consumers — agents, MCP servers, APIs, CLIs, or services — IVD supports an **optional `interface` section** that documents the callable tool surface as a verifiable contract.
+
+#### When to Use
+
+Use the `interface` section when:
+- **MCP servers** exposing tools to AI agents
+- **AI agents** that expose callable tools or actions
+- **APIs** (REST, GraphQL, gRPC) with endpoints
+- **CLIs** with commands and subcommands
+- **Services** with a defined interface consumed by other modules
+
+Skip this section when:
+- Internal module with no external interface (internal-only logic)
+- The module's interface is a single function (use a task-level intent instead)
+- Pure data processing with no callable surface
+- Libraries consumed only via import (document via task-level intents per function)
+
+#### What It Provides
+
+The `interface` section documents:
+- **Type:** What kind of interface (mcp, agent, api, cli, service)
+- **Tools:** Each callable tool/endpoint with name, description, parameters, return type, and test
+- **Parameters:** Typed, required/optional, with description — machine-verifiable against implementation
+- **Tests:** Each tool links to its test (Principle 2: Understanding Must Be Executable)
+
+#### Why It Matters
+
+Tool surfaces are often undocumented or only discoverable by reading implementation code, leading to:
+- **Integration bugs** from wrong parameter types or missing required fields
+- **Slow onboarding** (developers guess tool capabilities from source)
+- **AI agents can't reason** about what a module can do (they need to read all the code)
+- **Drift** between documentation and implementation goes undetected
+
+This section makes tool surfaces:
+- **Explicit:** Every tool, its parameters, types, and return values
+- **Verifiable:** Each tool links to a test; parameter types checkable against code (Principle 2)
+- **Implementation-independent:** Rewrite Python → TypeScript; the interface section still describes the same tools (Principle 7)
+- **Discoverable:** In the intent artifact, right next to what the module does and why (Principle 5)
+
+#### Example Structure
+
+```yaml
+# In module-level intent for agents, MCP servers, APIs, CLIs, services
+
+interface:
+  type: "mcp"   # "mcp" | "agent" | "api" | "cli" | "service"
+  
+  tools:
+    - name: "ivd_validate"
+      description: "Validate structure of an IVD intent artifact"
+      parameters:
+        - name: "artifact_yaml"
+          type: "string"
+          required: true
+          description: "Raw YAML content of the artifact to validate"
+        - name: "artifact_type"
+          type: "string"
+          required: false
+          description: "Type: intent, recipe, workflow (default: intent)"
+      returns: "JSON with valid (bool), errors, warnings, suggestions"
+      test: "tests/unit/test_validate.py::test_valid_intent"
+    
+    - name: "ivd_search"
+      description: "Semantic search across IVD knowledge base"
+      parameters:
+        - name: "query"
+          type: "string"
+          required: true
+          description: "Natural language query"
+        - name: "top_k"
+          type: "number"
+          required: false
+          description: "Number of results (default: 5)"
+      returns: "JSON array of matching chunks with content, source, similarity"
+      test: "tests/unit/test_search.py::test_search_returns_results"
+```
+
+#### Relationship to Task-Level Intents
+
+The `interface` section provides an **aggregate view** of the module's tool surface. For complex or critical tools, you may **also** create individual task-level intents that go deeper into the tool's internal logic:
+
+```
+MODULE INTENT (interface section)     → "These are the 15 tools, their types, their tests"
+    ↓
+TASK INTENT (per critical tool)       → "This tool's internal logic, edge cases, rationale"
+```
+
+They complement each other — the interface is the summary; task intents are the deep-dive.
+
+---
+
 ### Intent Levels: System, Workflow, Module, Task
 
 **IVD supports four levels of intent granularity** to match different documentation needs:

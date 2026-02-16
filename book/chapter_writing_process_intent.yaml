@@ -118,6 +118,7 @@ steps:
       - "Reference parent: 'Reference: book/book_system_intent.yaml (system)'"
       - "Inherit constraints: chapter_takeaways, quotable_principles, writing_style_part_N, formatting_conventions"
       - "Add chapter-specific constraints if needed"
+      - "For chapters that demonstrate optional sections (e.g. Ch5 interface, Ch9 interface per agent), include those sections in deliverables.required_content"
     
     outputs:
       - "manuscript/part-N-name/chapter-0N-slug/intent.yaml (status: pending)"
@@ -340,13 +341,17 @@ implementation:
     - "manuscript/part-1-foundations/chapter-01-alignment-crisis/intent.yaml"
     - "manuscript/part-1-foundations/chapter-02-ivd-paradigm/intent.yaml"
   status: "canonical"
-  version: 1
+  version: 1.1
 
 # ==============================================================================
 # CHANGELOG
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: "Step 3 (Create Chapter-Level Intent): added action to include optional sections in deliverables when the chapter demonstrates them (e.g. Ch5 interface, Ch9 interface per agent)."
+    reason: "Ensure future Ch9+ intents include interface/deliverables when relevant."
   - version: "1.0"
     date: "2026-01-26"
     change: "Initial process definition based on Chapters 1 and 2 workflow"

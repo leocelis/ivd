@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[3]
 # Source:    templates/intent.yaml, intent_levels_guide.md, framework.md
-# Version: 1.2
+# Version: 1.3
 # Created: 2026-01-26
 # Status: Pending
 # ==============================================================================
@@ -98,6 +98,7 @@ deliverables:
         - "Optional: project_context (code_rules, architecture, tools, libraries, key_paths 'map to the stars')—system-level only in existing projects; created by ivd_init tool; covered in detail in Chapter 17"
         - "Optional: parent_intent (relative path to parent intent)—link child → parent for context inheritance (task→module, module→workflow/system, workflow→system)"
         - "Optional: inversion_opportunities (problem, dominant_belief, proposed_inversions with status chosen|rejected|deferred)—when Principle 8 applies"
+        - "Optional: interface (type, tools with name/description/parameters/returns/test)—for modules that expose a callable tool surface (agents, MCP servers, APIs, CLIs, services); makes tool surface verifiable and implementation-independent (Principles 2, 7)"
         - "Table or summary: essential vs optional at a glance"
     
     - id: "4.4"
@@ -159,7 +160,7 @@ deliverables:
 key_points:
   - "An intent artifact is a structured YAML contract: scope, intent, constraints, verification (essential); rationale, alternatives, risks (layered)"
   - "Four levels: System (product root), Workflow (multi-step process), Module (feature/component), Task (critical function/API)"
-  - "Essential vs optional sections: essential (scope, intent, constraints, verification, rationale, alternatives, risks); optional (metadata for feature inventory, field_mapping for data integrations, inversion_opportunities for Principle 8, parent_intent for hierarchy, project_context for system-level)"
+  - "Essential vs optional sections: essential (scope, intent, constraints, verification, rationale, alternatives, risks); optional (metadata for feature inventory, field_mapping for data integrations, inversion_opportunities for Principle 8, parent_intent for hierarchy, project_context for system-level, interface for tool surface of agents/MCP/APIs/CLIs)"
   - "Placement: system at root; workflow in workflows/ or alongside coordinator when single-orchestrator; module {module}_intent.yaml (not bare intent.yaml); task in intents/ subfolder (required for tooling)"
   - "Linking: parent_intent establishes hierarchy (task→module, module→workflow/system, workflow→system); enables context inheritance and navigation"
   - "Your first intent: module-level walkthrough—scope → parent_intent → intent → constraints → verification; AI writes, human reviews, AI implements and verifies"
@@ -289,8 +290,8 @@ verification:
       validates: "constraints.canonical_artifact_structure, constraints.master_intent_alignment"
     - check: "Principle 5 (Layered Understanding): rationale, alternatives, risks described as required for full compliance; minimum viable intent clearly distinguished"
       validates: "constraints.canonical_artifact_structure, ivd_system_intent principle_5"
-    - check: "Optional metadata (large projects), field_mapping, parent_intent, project_context, and inversion_opportunities (Principle 8) covered in 4.3"
-      validates: "ivd_system_intent (metadata, principle_8, field_mapping, parent_intent, project_context)"
+    - check: "Optional metadata (large projects), field_mapping, parent_intent, project_context, inversion_opportunities (Principle 8), and interface (tool surface) covered in 4.3"
+      validates: "ivd_system_intent (metadata, principle_8, field_mapping, parent_intent, project_context, interface)"
     - check: "Section 4.7 points to templates (intent.yaml, intent_levels_guide.md) and Appendix A; bridge to Part II / Ch5"
       validates: "deliverables.sections[4.7]"
 
@@ -299,6 +300,13 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.3"
+    date: "2026-02-09"
+    change: |
+      Added interface optional section to 4.3 required_content, key_points, and verification cross_check.
+      Interface is a new approved optional section in IVD (ivd_system_intent) for modules that expose
+      callable tools (agents, MCP servers, APIs, CLIs, services). Supports Principles 2 and 7.
+    reason: "Framework update: new interface optional section added to ivd_system_intent and framework.md."
   - version: "1.2"
     date: "2026-02-09"
     change: |

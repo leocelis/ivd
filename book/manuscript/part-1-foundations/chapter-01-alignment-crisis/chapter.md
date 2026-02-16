@@ -65,7 +65,7 @@ We learn to work around it: we add more context, we correct, we iterate. It's wa
 
 ---
 
-## 1.3 The AI Amplification Effect: Many Turns, Many Hallucinations (continue here)
+## 1.3 The AI Amplification Effect: Many Turns, Many Hallucinations
 
 **AI agents** can produce fast, plausible, and wrong output. They don't need to be "bad" at coding. They just need to fill in the gaps in your request with something reasonable—reasonable given the training data and the few lines of context in the prompt.
 

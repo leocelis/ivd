@@ -158,7 +158,7 @@ book_structure:
       
       - chapter: 3
         title: "The Eight Principles in Depth"
-        status: "pending"
+        status: "complete"
         key_points:
           - "Each principle as a one-line rule + explanation (writing_style.principles_as_rules)"
           - "Why each principle is essential (what breaks without it)"
@@ -187,7 +187,7 @@ book_structure:
           - "What an intent artifact is (YAML structure)"
           - "Four levels: System, Workflow, Module, Task"
           - "Essential sections: scope, intent, constraints, verification"
-          - "Optional sections: metadata (feature inventory), field_mapping (data integrations), inversion_opportunities (Principle 8), parent_intent (hierarchy)"
+          - "Optional sections: metadata (feature inventory), field_mapping (data integrations), inversion_opportunities (Principle 8), parent_intent (hierarchy), interface (tool surface for agents/MCP/APIs/CLIs)"
           - "Your first intent artifact (hands-on walkthrough)"
         placeholder: |
           4.1 Anatomy of an Intent Artifact
@@ -199,6 +199,7 @@ book_structure:
               - Optional: inversion_opportunities (Principle 8 — document dominant belief and inversions considered)
               - Optional: parent_intent (link child → parent for context inheritance)
               - Optional: project_context (system-level only — code rules, architecture, key_paths)
+              - Optional: interface (tool surface — for agents, MCP servers, APIs, CLIs, services; documents callable tools with typed parameters, returns, and test paths)
           4.4 Writing Your First Module-Level Intent
           4.5 From Intent to Implementation (the flow)
           4.6 Common Mistakes and How to Fix Them
@@ -223,13 +224,14 @@ book_structure:
         key_points:
           - "Build a lead scoring classifier from scratch using IVD"
           - "Apply the agent-classifier recipe"
+          - "Document the agent's tool surface using the interface section (first demonstration of this optional section)"
           - "Measure: baseline vs IVD (iterations, clarity, maintainability)"
         placeholder: |
           5.1 Project Overview: Lead Scoring for Sales Pipeline
-          5.2 Step 1: Write the Intent Artifact (Module-Level)
+          5.2 Step 1: Write the Intent Artifact (Module-Level, including interface section for agent tools)
           5.3 Step 2: Define Constraints and Success Criteria
           5.4 Step 3: Implement with AI Assistant (Claude/GPT)
-          5.5 Step 4: Verify Alignment (Intent ↔ Code)
+          5.5 Step 4: Verify Alignment (Intent ↔ Code ↔ Interface)
           5.6 Results: Baseline (No IVD) vs IVD Approach
           5.7 Key Takeaways and Pattern Recognition
       
@@ -303,14 +305,15 @@ book_structure:
           - "Build a coordinator that routes to specialist agents"
           - "Intent propagation: Human → Coordinator Intent → Agent Intents"
           - "Apply coordinator-intent-propagation recipe"
+          - "Each agent's interface section describes its tool surface — the coordinator uses these to route correctly"
           - "Prevent coordination errors through structured intent at every delegation"
         placeholder: |
           9.1 Project Overview: Customer Intelligence Coordinator
           9.2 The Coordination Problem: Ambiguous Routing, Wrong Parameters
-          9.3 Step 1: Define the Coordinator Intent (Which Agents, What Tasks)
-          9.4 Step 2: Write Agent-Level Intents for Each Specialist
+          9.3 Step 1: Define the Coordinator Intent (Which Agents, What Tasks, interface per agent)
+          9.4 Step 2: Write Agent-Level Intents for Each Specialist (with interface section)
           9.5 Step 3: Implement Tools Are Truth, History Is Context
-          9.6 Step 4: Verify Before Synthesize
+          9.6 Step 4: Verify Before Synthesize — interface ↔ implementation alignment
           9.7 Measurement: Coordination Errors (Baseline vs IVD)
           9.8 Recipe Reference: coordinator-intent-propagation.yaml
       
@@ -556,12 +559,13 @@ book_structure:
           - "Community recipes and contributions"
           - "Integration with Cursor, Cline, Aider, GitHub Copilot"
           - "IVD tools and automation (CLI, MCP server)"
+          - "The IVD MCP server as a real-world case study: 15 tools documented via the interface section (dogfooding IVD)"
           - "Future roadmap and standards"
         placeholder: |
           20.1 Community Recipe Repository
           20.2 Contributing Your Patterns
           20.3 IDE Integration (Cursor Rules, Cline Config)
-          20.4 IVD MCP Server (universal AI access)
+          20.4 IVD MCP Server (universal AI access — interface section with 15 tools as real-world example)
           20.5 IVD CLI Tool (validate, generate, search)
           20.6 Future Standards: Agent Portability and JSON Schema
           20.7 Join the IVD Community
@@ -592,8 +596,9 @@ book_structure:
         - The 8 Principles (one-page summary)
         - Intent artifact template (blank YAML)
         - Intent levels decision tree
-        - Optional sections quick reference: metadata (feature inventory), field_mapping (data/integrations), inversion_opportunities, parent_intent, project_context
+        - Optional sections quick reference: metadata (feature inventory), field_mapping (data/integrations), inversion_opportunities, parent_intent, project_context, interface (tool surface for agents/MCP/APIs/CLIs)
         - Feature inventory: how metadata in intents creates an emergent feature catalog (ivd_list_features)
+        - Interface section: when to use, schema, example (agent vs MCP vs API vs CLI)
         - Verification checklist
         - Common patterns and anti-patterns
     
@@ -1122,6 +1127,16 @@ implementation:
 # ==============================================================================
 
 changelog:
+  - version: "1.8"
+    date: "2026-02-09"
+    changes: |
+      Added interface optional section across the book:
+      (1) Ch4 key_points: added "interface (tool surface for agents/MCP/APIs/CLIs)" to optional sections list.
+      (2) Ch4 placeholder 4.3: added new optional line for interface section.
+      (3) Ch5 key_points + placeholder: added interface section demonstration for agent tools.
+      (4) Ch9 key_points + placeholder: added interface per agent for coordinator routing.
+      (5) Ch20 key_points + placeholder: added MCP server as real-world interface case study.
+      (6) Appendix A: added interface to optional sections reference and dedicated entry.
   - version: "1.7"
     date: "2026-02-09"
     changes: |

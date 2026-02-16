@@ -181,6 +181,32 @@ def scaffold_artifact_tool(
 
     template_content = tf.read_text() if tf.exists() else f"# {name}_intent.yaml\n# Level: {level}\n# TODO: Fill in"
 
+    # Auto-inject interface scaffold for agent/service/api module types
+    if level == "module" and "interface:" not in template_content:
+        interface_scaffold = (
+            "\n# ----------------------------------------------------------------------------\n"
+            "# INTERFACE (this module exposes callable tools — fill in your tool surface)\n"
+            "# ----------------------------------------------------------------------------\n"
+            "# interface:\n"
+            '#   type: "mcp"   # "mcp" | "agent" | "api" | "cli" | "service"\n'
+            "#\n"
+            "#   tools:\n"
+            '#     - name: "tool_name"\n'
+            '#       description: "One-line: what this tool does"\n'
+            "#       parameters:\n"
+            '#         - name: "param_name"\n'
+            '#           type: "string"    # string | number | boolean | object | array\n'
+            "#           required: true\n"
+            '#           description: "What this parameter is for"\n'
+            '#       returns: "What the tool returns"\n'
+            '#       test: "tests/test_tool.py::test_tool_name"\n'
+        )
+        # Insert before the intent section
+        if "intent:" in template_content:
+            template_content = template_content.replace(
+                "intent:", interface_scaffold + "\nintent:", 1
+            )
+
     # Auto-inject parent_intent
     if level != "system" and "parent_intent:" not in template_content:
         if level == "task":

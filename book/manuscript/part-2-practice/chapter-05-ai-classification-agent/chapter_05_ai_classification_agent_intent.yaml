@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_2_practice.chapters[0]
 # Source:    recipes/agent-classifier.yaml, framework.md, templates/intent.yaml
-# Version: 1.0
+# Version: 1.1
 # Created: 2026-02-09
 # Status: Pending
 # ==============================================================================
@@ -67,15 +67,16 @@ deliverables:
         - "End state: working agent with intent artifact, tests, and baseline-vs-IVD measurement"
     
     - id: "5.2"
-      title: "Step 1: Write the Intent Artifact (Module-Level)"
+      title: "Step 1: Write the Intent Artifact (Module-Level, including interface)"
       required_content:
         - "Start with natural language: reader describes what they want ('I need an agent that scores leads...')"
         - "AI writes the intent artifact: scope (level=module, type=agent), intent (summary, goal, success_metric), constraints (accuracy >= 80%, latency < 2s, cost tracking)"
         - "Reference the agent-classifier recipe: recipe: 'agent-classifier', recipe_version: '1.0' — show how the recipe provides structure"
         - "parent_intent: link to system intent (or explain that in a real project this would point to the product's system intent)"
+        - "Interface section: because this agent exposes callable tools (classify, get_model_info, etc.), add the interface section documenting the agent's tool surface — type: agent, tools with name, description, parameters, returns, test path. First demonstration of this optional section."
         - "Human reviews: 'Is this what I meant?' — emphasize Principle 6 (AI proposes, human confirms alignment)"
-        - "Show the complete module-level YAML artifact inline (the chapter's primary teaching artifact)"
-        - "Highlight: the intent is the contract; everything that follows must satisfy these constraints"
+        - "Show the complete module-level YAML artifact inline (the chapter's primary teaching artifact), including interface section"
+        - "Highlight: the intent is the contract; everything that follows must satisfy these constraints. The interface section makes the tool surface part of that contract."
     
     - id: "5.3"
       title: "Step 2: Define Constraints and Success Criteria"
@@ -99,9 +100,10 @@ deliverables:
         - "What if the AI drifts? Compare AI output against intent constraints; if a constraint is violated, the AI self-corrects (Principle 4: Continuous Verification)"
     
     - id: "5.5"
-      title: "Step 4: Verify Alignment (Intent ↔ Code)"
+      title: "Step 4: Verify Alignment (Intent ↔ Code ↔ Interface)"
       required_content:
         - "Run the constraint tests: accuracy test, latency test, cost test"
+        - "Interface verification: do the implemented tool signatures match the interface section? (parameter types, returns, test paths all checkable)"
         - "Bidirectional verification (Principle 3): does the code satisfy the intent? Does the intent still reflect the actual behavior?"
         - "Show test output: passing tests with actual metrics (accuracy: 0.85, latency p95: 1.2s, cost: $0.03)"
         - "What if a test fails? Walk through a failure scenario and how to iterate (adjust prompt, update constraint, re-verify)"
@@ -147,6 +149,7 @@ deliverables:
 key_points:
   - "Build a lead scoring classifier from scratch using IVD — the first complete practice project"
   - "Apply the agent-classifier recipe: recipe provides structure (directory, constraints, verification), intent customizes it to the problem"
+  - "Document the agent's tool surface using the interface section — type, tools, parameters, returns, test paths (first demonstration of this optional section)"
   - "Full IVD cycle in practice: describe → AI writes intent → human reviews → AI implements → AI verifies against constraints"
   - "Constraints are executable, not aspirational: accuracy >= 80%, latency < 2s, cost < $0.05 — each with a test path (Principle 2)"
   - "Measure: baseline (no IVD) vs IVD approach — fewer iterations, less drift, verifiable alignment"
@@ -313,6 +316,16 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: |
+      Added interface section to Ch5 deliverables, key_points, and verification:
+      (1) Section 5.2: added interface section requirement — agent's tool surface (classify, get_model_info, etc.)
+          documented with type, tools, parameters, returns, test paths. First demonstration of this optional section.
+      (2) Section 5.5 title updated: "Intent ↔ Code ↔ Interface"; added interface verification step.
+      (3) key_points: added interface bullet. manuscript.required_elements: already covered via 5.2.
+      (4) verification cross_check: already covered by 5.2 and recipe_alignment checks.
+    reason: "Framework update: new interface optional section. Ch5 is the natural first demonstration (agent with callable tools)."
   - version: "1.0"
     date: "2026-02-09"
     change: |

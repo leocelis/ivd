@@ -71,6 +71,30 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                 for i, c in enumerate(constraints):
                     if isinstance(c, dict) and "test" not in c:
                         warnings.append(f"Constraint #{i+1} missing 'test' field (Principle 2: Understanding Must Be Executable)")
+
+        # Validate interface section (optional — for agents, MCP servers, APIs, CLIs, services)
+        if artifact_type == "intent" and "interface" in artifact:
+            iface = artifact["interface"]
+            if isinstance(iface, dict):
+                if "type" not in iface:
+                    warnings.append("interface section missing 'type' field (mcp | agent | api | cli | service)")
+                if "tools" not in iface:
+                    warnings.append("interface section missing 'tools' list")
+                elif isinstance(iface["tools"], list):
+                    for i, tool in enumerate(iface["tools"]):
+                        if not isinstance(tool, dict):
+                            warnings.append(f"interface.tools[{i}] is not a dict")
+                            continue
+                        tool_name = tool.get("name", f"#{i+1}")
+                        for req_field in ["name", "description", "returns", "test"]:
+                            if req_field not in tool:
+                                warnings.append(f"interface.tools '{tool_name}' missing '{req_field}' (Principle 2)")
+                        if "parameters" in tool and isinstance(tool["parameters"], list):
+                            for j, param in enumerate(tool["parameters"]):
+                                if isinstance(param, dict):
+                                    for pf in ["name", "type", "required", "description"]:
+                                        if pf not in param:
+                                            warnings.append(f"interface.tools '{tool_name}' param #{j+1} missing '{pf}'")
     else:
         warnings.append(f"Unknown artifact_type '{artifact_type}' — validation limited")
 

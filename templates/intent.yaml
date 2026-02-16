@@ -91,6 +91,35 @@ scope:
 #       status: "rejected"
 
 # ----------------------------------------------------------------------------
+# INTERFACE (Optional - MODULE-LEVEL: agents, MCP servers, APIs, CLIs, services)
+# ----------------------------------------------------------------------------
+# Document the callable tool surface so consumers (AI agents, other modules,
+# developers) know what this module exposes without reading implementation code.
+#
+# When to use:
+# - scope.type is "agent", "service", "api", or module exposes tools/commands
+# - MCP servers, AI agents with callable tools, REST/GraphQL APIs, CLIs
+#
+# Skip this section when:
+# - Internal module with no external interface
+# - Interface is a single function (use task-level intent instead)
+# - Pure data processing or library consumed only via import
+
+# interface:
+#   type: "mcp"                          # "mcp" | "agent" | "api" | "cli" | "service"
+#
+#   tools:
+#     - name: "tool_name"
+#       description: "One-line: what this tool does"
+#       parameters:
+#         - name: "param_name"
+#           type: "string"               # string | number | boolean | object | array
+#           required: true
+#           description: "What this parameter is for"
+#       returns: "What the tool returns (type or description)"
+#       test: "tests/test_tool.py::test_tool_name"
+
+# ----------------------------------------------------------------------------
 # PROJECT CONTEXT (Optional - SYSTEM-LEVEL ONLY)
 # ----------------------------------------------------------------------------
 # Use this section for system-level intents to capture project-wide context.
