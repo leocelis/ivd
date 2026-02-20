@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-02-15T04:15:33.219856",
+  "last_updated": "2026-02-20T15:59:01.632780",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -598,11 +598,221 @@
       "num_chunks": 3,
       "cost_usd": 3.5560000000000005e-05,
       "processed_at": "2026-02-15T04:15:33.219570"
+    },
+    "1d72c6df71744778976a07098e00b858c2d0824d217e9b477c1ef6eb4c08983b": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 30,
+      "cost_usd": 0.00037452000000000004,
+      "processed_at": "2026-02-20T15:58:42.769147"
+    },
+    "042a52fdfe079177dbe7094c02f0d27fda85e756240e03f211668e2557dc20e6": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 39,
+      "cost_usd": 0.0005706800000000001,
+      "processed_at": "2026-02-20T15:58:43.662078"
+    },
+    "76b5f2526e3dd983b69c419b27d2f037ea966958993e77256dc1e0713bf58aec": {
+      "file_name": "agent-role-based.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-role-based.yaml",
+      "num_chunks": 6,
+      "cost_usd": 7.118e-05,
+      "processed_at": "2026-02-20T15:58:44.088326"
+    },
+    "cd1b82299b5e5aa6f0f547e764ade5bf8ace505203fb0f65c2bc81ebdc8e9921": {
+      "file_name": "self-evaluating-workflow.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/self-evaluating-workflow.yaml",
+      "num_chunks": 6,
+      "cost_usd": 6.938e-05,
+      "processed_at": "2026-02-20T15:58:44.845279"
+    },
+    "9724626ac5fa28a4f47d44c3dcd11cba5d5b9461ea98b27b605e87f287ff14de": {
+      "file_name": "book_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/book_system_intent.yaml",
+      "num_chunks": 27,
+      "cost_usd": 0.00037208,
+      "processed_at": "2026-02-20T15:58:45.872142"
+    },
+    "fc3a95a3f81bf45e3b59002c6bed3728ab1180ba068a4f111c254b9e877857a2": {
+      "file_name": "chapter_writing_process_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/chapter_writing_process_intent.yaml",
+      "num_chunks": 7,
+      "cost_usd": 8.426000000000001e-05,
+      "processed_at": "2026-02-20T15:58:46.430305"
+    },
+    "6f289a0aaa340848fa2c035fdcc01a71ae0581e3a052afa6a490a921b1e028bf": {
+      "file_name": "chapter_01_alignment_crisis_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-01-alignment-crisis/chapter_01_alignment_crisis_intent.yaml",
+      "num_chunks": 8,
+      "cost_usd": 0.00010460000000000002,
+      "processed_at": "2026-02-20T15:58:47.165836"
+    },
+    "7664920c298d1562e50ea271c25d33838d980d99dbf508ca2d97d4311a00f2ab": {
+      "file_name": "chapter.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-01-alignment-crisis/chapter.md",
+      "num_chunks": 5,
+      "cost_usd": 6.302e-05,
+      "processed_at": "2026-02-20T15:58:47.744107"
+    },
+    "e1f7f2cb9ecaf4b8829a81201ab2574a470d4943c00b6f793a92ddf0e5231162": {
+      "file_name": "chapter_04_intent_artifacts_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-04-intent-artifacts/chapter_04_intent_artifacts_intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00015168,
+      "processed_at": "2026-02-20T15:58:48.546879"
+    },
+    "11ae89917e839a25547ae32ea0499d01b1244b10b716dffa1b55d6c2516ccd95": {
+      "file_name": "chapter_03_eight_principles_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-03-eight-principles/chapter_03_eight_principles_intent.yaml",
+      "num_chunks": 10,
+      "cost_usd": 0.00013564000000000002,
+      "processed_at": "2026-02-20T15:58:49.156983"
+    },
+    "b252f992400a50a509dadf00f70fa13e2d299ed5a771780869dbba663c7c7921": {
+      "file_name": "chapter.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-03-eight-principles/chapter.md",
+      "num_chunks": 10,
+      "cost_usd": 0.00012812,
+      "processed_at": "2026-02-20T15:58:49.877359"
+    },
+    "01d9d67b0a6e2814bb519e91628da2d66d486320700ec98d7573bcd4d9c7d9ad": {
+      "file_name": "chapter_02_ivd_paradigm_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-02-ivd-paradigm/chapter_02_ivd_paradigm_intent.yaml",
+      "num_chunks": 8,
+      "cost_usd": 0.0001086,
+      "processed_at": "2026-02-20T15:58:50.364860"
+    },
+    "8ff7d597742c99214a5f16e2abe772624da730e851fba44a4a6450a290f2d8f0": {
+      "file_name": "chapter_19_advanced_patterns_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-19-advanced-patterns/chapter_19_advanced_patterns_intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00015114000000000002,
+      "processed_at": "2026-02-20T15:58:51.225298"
+    },
+    "9500705199fec0019176d8a83115e02107aabd579c4bc4e4e875caec2eea6c3e": {
+      "file_name": "chapter_21_future_of_ivd_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-21-future-of-ivd/chapter_21_future_of_ivd_intent.yaml",
+      "num_chunks": 9,
+      "cost_usd": 0.00011320000000000001,
+      "processed_at": "2026-02-20T15:58:51.583324"
+    },
+    "79d49734032f857bfec5b48dc38b9456b35b430d099d09801488159c7992ab1f": {
+      "file_name": "chapter_20_ivd_ecosystem_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-20-ivd-ecosystem/chapter_20_ivd_ecosystem_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.0001341,
+      "processed_at": "2026-02-20T15:58:52.341032"
+    },
+    "55e196e231d0559da97f8121f60e92204560a6e5c7dbc4617a4cb85d307e428f": {
+      "file_name": "chapter_18_scaling_ivd_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-18-scaling-ivd/chapter_18_scaling_ivd_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013220000000000001,
+      "processed_at": "2026-02-20T15:58:52.882421"
+    },
+    "a1442d99ea3d23e5a5a708bac3883142222578cbb613ed868a2469166ecd827f": {
+      "file_name": "chapter_17_getting_started_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-17-getting-started/chapter_17_getting_started_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013516,
+      "processed_at": "2026-02-20T15:58:53.536879"
+    },
+    "1b4423d14201da9c8478c841fa2813c5417f00b0709c226fefde258ac3308034": {
+      "file_name": "chapter_11_validation_framework_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-11-validation-framework/chapter_11_validation_framework_intent.yaml",
+      "num_chunks": 10,
+      "cost_usd": 0.00012606,
+      "processed_at": "2026-02-20T15:58:54.145744"
+    },
+    "0ae059dad714e8a93ac92ce6fbc0e4767c308f83854495f95caec4b2f69c3bf3": {
+      "file_name": "chapter_12_context_efficiency_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-12-context-efficiency/chapter_12_context_efficiency_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00012726000000000003,
+      "processed_at": "2026-02-20T15:58:54.632172"
+    },
+    "a3af521f679447e48667fc34c9bc7d1bcd70a4d7314bbb910d517af2c28f35ba": {
+      "file_name": "chapter_13_alignment_accuracy_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-13-alignment-accuracy/chapter_13_alignment_accuracy_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013438000000000002,
+      "processed_at": "2026-02-20T15:58:55.092390"
+    },
+    "ae59a178c97ddd08c5b2f8030c002ea4299afe8860b701c78336a91ef2912caa": {
+      "file_name": "chapter_14_knowledge_durability_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-14-knowledge-durability/chapter_14_knowledge_durability_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00012988,
+      "processed_at": "2026-02-20T15:58:55.667476"
+    },
+    "c54ca89b61718550f853299730bbcadc3bffe88f8bd6ee2eb49e4b42fd936fda": {
+      "file_name": "chapter_15_recipe_effectiveness_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-15-recipe-effectiveness/chapter_15_recipe_effectiveness_intent.yaml",
+      "num_chunks": 10,
+      "cost_usd": 0.00012558,
+      "processed_at": "2026-02-20T15:58:56.328060"
+    },
+    "7f23dfa7b3aacb1fe2239032d77eb4c64642237d0c149085e23633d5f5946179": {
+      "file_name": "chapter_16_meta_analysis_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-3-validation/chapter-16-meta-analysis/chapter_16_meta_analysis_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013802,
+      "processed_at": "2026-02-20T15:58:57.083626"
+    },
+    "888afd8f4fcbbe7b0e4ea8b01a1920eca5108f523335fe63f84055ad38b4edae": {
+      "file_name": "chapter_05_ai_classification_agent_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-05-ai-classification-agent/chapter_05_ai_classification_agent_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013824,
+      "processed_at": "2026-02-20T15:58:57.818287"
+    },
+    "e35d513753df6e928fa77a73fdf17b219924308707305e2c19bf9ef770093bc7": {
+      "file_name": "chapter_07_background_job_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-07-background-job-system/chapter_07_background_job_system_intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00014926000000000002,
+      "processed_at": "2026-02-20T15:58:58.549308"
+    },
+    "0027e3765001de5d0e7a495c7a1e9f124d8f5c48399b41180ab8d40b21812f10": {
+      "file_name": "chapter_08_api_integration_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-08-api-integration/chapter_08_api_integration_intent.yaml",
+      "num_chunks": 13,
+      "cost_usd": 0.00016254000000000003,
+      "processed_at": "2026-02-20T15:58:59.027746"
+    },
+    "db40dc4dbb4d7ab9600a297aa648248fb520cde1e63b5cfaa296dd0852f279cd": {
+      "file_name": "chapter_10_complete_feature_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-10-complete-feature/chapter_10_complete_feature_intent.yaml",
+      "num_chunks": 13,
+      "cost_usd": 0.00016064,
+      "processed_at": "2026-02-20T15:58:59.579714"
+    },
+    "23bef3f0ecb4cbecb4b56992a1d8697f241ad9943159edeaa91a04a8f0329f40": {
+      "file_name": "chapter_06_multi_step_workflow_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-06-multi-step-workflow/chapter_06_multi_step_workflow_intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00015522000000000002,
+      "processed_at": "2026-02-20T15:59:00.330892"
+    },
+    "651f2aff64e3193272cc8868e59568091d755aa65dafe2ed52133737cc9488e2": {
+      "file_name": "chapter_09_multi_agent_coordinator_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-2-practice/chapter-09-multi-agent-coordinator/chapter_09_multi_agent_coordinator_intent.yaml",
+      "num_chunks": 14,
+      "cost_usd": 0.00016946000000000002,
+      "processed_at": "2026-02-20T15:59:00.967127"
+    },
+    "1c916849f222a38276c0537bdaa318fafebbdd9969b64902894a9ed5cdf5f1d4": {
+      "file_name": "intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/templates/intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00014746000000000003,
+      "processed_at": "2026-02-20T15:59:01.631178"
     }
   },
   "stats": {
-    "total_docs": 85,
-    "total_chunks": 734,
-    "total_cost": 0.00979232
+    "total_docs": 115,
+    "total_chunks": 1106,
+    "total_cost": 0.014555880000000002
   }
 }
