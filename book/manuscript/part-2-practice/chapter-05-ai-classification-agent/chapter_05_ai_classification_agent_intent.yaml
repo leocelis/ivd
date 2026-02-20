@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_2_practice.chapters[0]
 # Source:    recipes/agent-classifier.yaml, framework.md, templates/intent.yaml
-# Version: 1.1
+# Version: 1.3
 # Created: 2026-02-09
 # Status: Pending
 # ==============================================================================
@@ -67,16 +67,17 @@ deliverables:
         - "End state: working agent with intent artifact, tests, and baseline-vs-IVD measurement"
     
     - id: "5.2"
-      title: "Step 1: Write the Intent Artifact (Module-Level, including interface)"
+      title: "Step 1: Write the Intent Artifact (Module-Level, including interface and roles)"
       required_content:
         - "Start with natural language: reader describes what they want ('I need an agent that scores leads...')"
         - "AI writes the intent artifact: scope (level=module, type=agent), intent (summary, goal, success_metric), constraints (accuracy >= 80%, latency < 2s, cost tracking)"
         - "Reference the agent-classifier recipe: recipe: 'agent-classifier', recipe_version: '1.0' — show how the recipe provides structure"
         - "parent_intent: link to system intent (or explain that in a real project this would point to the product's system intent)"
         - "Interface section: because this agent exposes callable tools (classify, get_model_info, etc.), add the interface section documenting the agent's tool surface — type: agent, tools with name, description, parameters, returns, test path. First demonstration of this optional section."
+        - "Roles section (experimental): if the agent has distinct behavioral modes (e.g., classify mode vs explain mode vs batch mode), add the roles section documenting each mode's constraints, tool subset, and verification. Show how roles complement interface: interface = WHAT the agent can do; roles = HOW it behaves in different contexts. First demonstration of this experimental section."
         - "Human reviews: 'Is this what I meant?' — emphasize Principle 6 (AI proposes, human confirms alignment)"
-        - "Show the complete module-level YAML artifact inline (the chapter's primary teaching artifact), including interface section"
-        - "Highlight: the intent is the contract; everything that follows must satisfy these constraints. The interface section makes the tool surface part of that contract."
+        - "Show the complete module-level YAML artifact inline (the chapter's primary teaching artifact), including interface and roles sections"
+        - "Highlight: the intent is the contract; everything that follows must satisfy these constraints. Interface makes the tool surface part of the contract; roles make behavioral modes part of the contract."
     
     - id: "5.3"
       title: "Step 2: Define Constraints and Success Criteria"
@@ -100,10 +101,11 @@ deliverables:
         - "What if the AI drifts? Compare AI output against intent constraints; if a constraint is violated, the AI self-corrects (Principle 4: Continuous Verification)"
     
     - id: "5.5"
-      title: "Step 4: Verify Alignment (Intent ↔ Code ↔ Interface)"
+      title: "Step 4: Verify Alignment (Intent ↔ Code ↔ Interface ↔ Roles)"
       required_content:
         - "Run the constraint tests: accuracy test, latency test, cost test"
         - "Interface verification: do the implemented tool signatures match the interface section? (parameter types, returns, test paths all checkable)"
+        - "Roles verification: does the agent respect role constraints? (e.g., explain mode doesn't modify data, batch mode doesn't send individual responses)"
         - "Bidirectional verification (Principle 3): does the code satisfy the intent? Does the intent still reflect the actual behavior?"
         - "Show test output: passing tests with actual metrics (accuracy: 0.85, latency p95: 1.2s, cost: $0.03)"
         - "What if a test fails? Walk through a failure scenario and how to iterate (adjust prompt, update constraint, re-verify)"
@@ -150,6 +152,7 @@ key_points:
   - "Build a lead scoring classifier from scratch using IVD — the first complete practice project"
   - "Apply the agent-classifier recipe: recipe provides structure (directory, constraints, verification), intent customizes it to the problem"
   - "Document the agent's tool surface using the interface section — type, tools, parameters, returns, test paths (first demonstration of this optional section)"
+  - "Document the agent's behavioral modes using the roles section (experimental) — first demonstration of context-dependent behavior declared in intent"
   - "Full IVD cycle in practice: describe → AI writes intent → human reviews → AI implements → AI verifies against constraints"
   - "Constraints are executable, not aspirational: accuracy >= 80%, latency < 2s, cost < $0.05 — each with a test path (Principle 2)"
   - "Measure: baseline (no IVD) vs IVD approach — fewer iterations, less drift, verifiable alignment"
@@ -164,46 +167,55 @@ constraints:
     requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
     source: "book_system_intent.constraints.chapter_takeaways"
     validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
   
   - name: "quotable_principles"
     requirement: "1–2 quotable, memorable lines in chapter where natural"
     source: "book_system_intent.writing_style.quotable_lines"
     validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
   
   - name: "writing_style_part_2"
     requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
     source: "book_system_intent.writing_style.code_and_prose.part_2"
     validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+    test: "chapter.md contains at least 3 fenced code/YAML blocks; code blocks appear before or alongside explanatory prose, not after long prose-only passages"
   
   - name: "formatting_conventions"
     requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
     source: "book_system_intent.writing_style.formatting_conventions"
     validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
   
   - name: "recipe_alignment"
     requirement: "Agent implementation must align with recipes/agent-classifier.yaml structure (directory, constraints_template, implementation_pattern, verification_pattern)"
     source: "recipes/agent-classifier.yaml"
     validation: "Chapter's YAML artifact and code snippets match recipe patterns; no contradictions with recipe"
+    test: "Directory structure, constraint names, and verification pattern in chapter.md match recipes/agent-classifier.yaml; diff produces zero contradictions"
   
   - name: "master_intent_alignment"
     requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
     source: "book_system_intent.constraints.master_intent_alignment"
     validation: "Manual review: Ch5 aligns with framework principles and recipe; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
   
   - name: "no_timeline_references"
     requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
     source: "book_system_intent.constraints.no_timeline_references"
     validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
   
   - name: "no_unsourced_statistics"
     requirement: "Baseline vs IVD measurements must be marked as illustrative (author experience) unless backed by controlled study"
     source: "book_system_intent.constraints.no_unsourced_statistics"
     validation: "Measurement section includes caveat about illustrative data"
+    test: "Section 5.6 contains explicit caveat text (e.g., 'illustrative', 'author experience', 'not a controlled study')"
   
   - name: "author_sourced_examples"
     requirement: "The lead scoring scenario and code examples should reflect the author's real experience with the agent-classifier recipe (fact_checker, lead_scorer examples in recipe)"
     source: "recipes/agent-classifier.yaml.examples"
     validation: "Manual: examples feel real, not generic; reference actual recipe examples"
+    test: "Lead scoring scenario references recipe examples (fact_checker, lead_scorer); no generic 'widget factory' or 'todo app' examples"
 
 # ==============================================================================
 # RATIONALE
@@ -316,6 +328,19 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.3"
+    date: "2026-02-09"
+    change: "Chapter-by-chapter alignment audit: added test fields to all 9 constraints (Principle 2: Understanding Must Be Executable)."
+    reason: "Structural consistency: all chapter intents must have executable test fields on every constraint."
+  - version: "1.2"
+    date: "2026-02-09"
+    change: |
+      Added roles section (experimental) to Ch5 deliverables and key_points:
+      (1) Section 5.2: added roles section requirement — agent's behavioral modes (classify, explain, batch)
+          with constraints, tool subsets, and verification. First demonstration of this experimental section.
+      (2) Section 5.5 title: "Intent ↔ Code ↔ Interface ↔ Roles"; added roles verification step.
+      (3) key_points: added roles bullet.
+    reason: "Framework update: new roles experimental section. Ch5 is the natural first demonstration alongside interface."
   - version: "1.1"
     date: "2026-02-09"
     change: |

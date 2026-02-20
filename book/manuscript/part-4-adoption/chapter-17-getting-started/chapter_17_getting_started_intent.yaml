@@ -1,0 +1,356 @@
+# ==============================================================================
+# Chapter 17: Getting Started: The First Week
+# ==============================================================================
+# Module-level intent for the seventeenth chapter of the IVD book. The practical
+# adoption starting point in Part IV: two paths (greenfield vs brownfield)
+# converge into the same IVD cycle. Brownfield emphasized — most real teams have
+# existing codebases. References IVD tools (ivd init, ivd_assess_coverage,
+# ivd_list_features, ivd scaffold) that must match actual tool behavior.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_4_adoption.chapters[0]
+# Source:    framework.md (brownfield workflow, intent coverage assessment,
+#            project_context), mcp_server/tools/scaffold.py, ivd_system_intent.yaml
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through adopting IVD in their first engagement — two starting paths (greenfield vs brownfield) that converge into the same IVD cycle of intent → implement → verify, with emphasis on brownfield adoption using ivd init, ivd_assess_coverage, ivd_list_features, and ivd scaffold."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Understands the two adoption paths (greenfield vs brownfield) and why they converge
+    2. Can bootstrap IVD in an existing project using ivd init (project context: code rules, architecture, tools, key_paths)
+    3. Can assess intent coverage with ivd_assess_coverage and interpret the prioritized report
+    4. Can check for existing features with ivd_list_features before building new ones (metadata, dedup)
+    5. Can scaffold their first intent artifacts for high-priority uncovered modules (ivd scaffold with auto-linked parent_intent)
+    6. Understands that coverage ≠ 100% — intent belongs where it adds value
+    7. Has a concrete adoption checklist they can follow starting immediately
+    
+    This is the practical entry point for Part IV. The reader transitions from "I know IVD works" (Parts I–III) to "I'm using IVD on my actual project." Prose leads; examples illustrate.
+    
+    CRITICAL: "The First Week" is a conceptual scope describing the early adoption phase, not a time estimate. The chapter never implies a specific timeline.
+
+  success_metric: |
+    - Reader can initialize IVD in an existing project and explain what ivd init produces
+    - Reader can interpret an ivd_assess_coverage report and prioritize which modules get intents first
+    - Reader can check ivd_list_features to avoid duplicating existing features
+    - Reader can scaffold module-level intents that auto-link to the system intent via parent_intent
+    - Reader understands when NOT to add intent (simple utilities, stable code, config)
+    - Reader has completed the adoption checklist at the end of the chapter
+    - All tool references (ivd init, ivd_assess_coverage, ivd_list_features, ivd scaffold) match actual IVD tool behavior
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_4 purpose: adopt and scale IVD in teams and organizations)"
+    - "framework.md (brownfield workflow, intent coverage assessment, project_context)"
+    - "mcp_server/mcp_server_intent.yaml (canonical tool definitions)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch17)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "17.1"
+      title: "Two Starting Points: Greenfield vs Brownfield"
+      required_content:
+        - "Greenfield: new projects start with a system intent and first module intent; conventions emerge as the project grows"
+        - "Brownfield: existing projects with code, docs, and conventions already in place — the more common and more challenging path"
+        - "Why both paths converge: regardless of starting point, the IVD cycle is the same (intent → implement → verify)"
+        - "Brownfield emphasis: most real teams have existing codebases — the chapter focuses on this path because it's where adoption friction lives"
+        - "What 'The First Week' means: early adoption scope — the activities you do when first bringing IVD into a project (NOT a timeline or deadline)"
+
+    - id: "17.2"
+      title: "Bootstrap IVD with Project Context (ivd init)"
+      required_content:
+        - "Run ivd init to scan the project and generate a system_intent.yaml with project context"
+        - "What ivd init captures: code_rules (.cursorrules, lint configs), architecture (ARCHITECTURE.md, ADRs, principles), tools_scripts (key scripts, CLIs), libraries_reuse (internal shared libs), key_paths ('map to the stars': entrypoints, modules, workflows, docs, tests), existing_docs (README, API.md, CONTRIBUTING)"
+        - "Show example ivd init output: scanned artifacts, generated system_intent.yaml, project context sections"
+        - "Review and enrich: auto-generated context is a starting point — the team reviews and adds what the scanner missed"
+        - "key_paths as 'map to the stars': the navigation index that tells any AI agent (or new team member) where to find what matters"
+        - "system_intent.yaml becomes the parent_intent that all child intents reference"
+
+    - id: "17.3"
+      title: "Assess Intent Coverage: Know Where You Stand (ivd_assess_coverage)"
+      required_content:
+        - "Run ivd_assess_coverage to see which modules have intent artifacts and which don't"
+        - "What the report shows: system-level check, module-level coverage, coverage percentage, priority suggestions (high/medium/low based on heuristics)"
+        - "Priority heuristics: high = API, auth, agents, services, or 5+ code files; medium = 3–4 files; low = fewer"
+        - "How to interpret the report: focus on high-priority uncovered modules — don't try to cover everything at once"
+        - "Coverage ≠ 100%: intent belongs where it adds value — critical business logic, complex modules, team boundaries, frequently changed code"
+        - "What doesn't need intent: simple utilities, configuration, stable code that rarely changes"
+
+    - id: "17.4"
+      title: "Check for Existing Features Before Building (ivd_list_features)"
+      required_content:
+        - "Use ivd_list_features to see what's already built — scans all *_intent.yaml files and returns aggregated feature list from metadata"
+        - "Filter by category or tags to find relevant existing features"
+        - "If a match exists: extend or reuse the existing feature, don't create a duplicate"
+        - "Add metadata to new intents: feature_id (unique, snake_case), category, tags, status (implemented/planned/deprecated)"
+        - "The feature inventory is always derived from intent metadata — no separate inventory file that can drift"
+        - "Why this matters: in large or multi-team projects, knowing 'what already exists' prevents duplicate work"
+
+    - id: "17.5"
+      title: "First Intent Artifacts for High-Priority Modules (ivd scaffold)"
+      required_content:
+        - "Start with high-priority uncovered modules from the ivd_assess_coverage report"
+        - "Run ivd scaffold --level module --name <module> to generate a module-level intent template"
+        - "ivd scaffold auto-links parent_intent to the system_intent.yaml — child intents always reference their parent"
+        - "AI loads project context (code rules, architecture, key_paths) when creating or modifying intents"
+        - "Walk through scaffolding a first intent: from coverage report → scaffold → review → enrich with project-specific constraints"
+        - "Start small: 1–3 high-priority modules, not the entire codebase"
+
+    - id: "17.6"
+      title: "Implement and Verify with Project Context"
+      required_content:
+        - "New intents follow project code rules captured in system_intent.yaml project_context"
+        - "New intents reference architecture principles (ADRs, architecture docs) for consistency"
+        - "New intents reuse existing tools, scripts, and libraries — no duplication of what's already in the project"
+        - "key_paths navigation: AI agents use the 'map to the stars' to find related code, tests, docs"
+        - "Verification: run constraints, check that implementation aligns with intent and project conventions"
+        - "The full cycle in brownfield: ivd init → assess → check features → scaffold → implement → verify"
+
+    - id: "17.7"
+      title: "Retrospective: What Worked, What Didn't"
+      required_content:
+        - "Re-run ivd_assess_coverage: did coverage improve for the modules you targeted?"
+        - "Check project_context accuracy: did the auto-generated context capture conventions correctly? What's missing?"
+        - "Verify parent_intent links: are child intents referencing the system intent correctly?"
+        - "Check reuse: are new implementations actually using existing tools and libraries?"
+        - "Identify gaps in key_paths or architecture documentation that surfaced during adoption"
+        - "What surprised you: common early-adoption discoveries (conventions you didn't know you had, duplicated features, missing docs)"
+
+    - id: "17.8"
+      title: "Setting Team Standards and Conventions"
+      required_content:
+        - "Update system_intent.yaml as conventions emerge from early adoption"
+        - "Document discovered conventions in project_context sections (code_rules, architecture, tools_scripts)"
+        - "The 'Intent First' habit: before writing code or asking AI to implement, write (or have AI write) the intent artifact"
+        - "When to create intents vs when to skip: critical paths, complex logic, team boundaries YES; trivial utilities, config NO"
+        - "Onboarding new team members: the system intent + key_paths + intent artifacts are the onboarding documentation"
+        - "Bridge to Chapter 18: from one team adopting IVD to scaling across the organization"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch17 key_points: two paths, ivd init, project context, ivd_assess_coverage, parent_intent, start small, coverage ≠ 100%"
+      - "Adoption Checklist: step-by-step checklist the reader can follow immediately (constraint: checklist_included)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Clear bridge to Chapter 18 (scaling across the organization)"
+      - "All IVD tool references match actual tool behavior (constraint: tool_accuracy)"
+      - "No timeline references — 'The First Week' is conceptual scope only (constraint: no_timeline_references)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch17; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Two paths: greenfield (new projects) vs brownfield (existing projects) — both converge into the same IVD cycle"
+  - "Brownfield: Initialize IVD with project context using ivd init — captures code rules, architecture, tools, key_paths, existing docs"
+  - "Project context: the 'map to the stars' (key_paths) that tells AI agents and team members where to find what matters"
+  - "Assess coverage: ivd_assess_coverage shows which modules have intent and which don't, with prioritized suggestions"
+  - "Check before building: ivd_list_features shows what's already built from intent metadata — avoid duplicating features"
+  - "Child intents reference parent_intent (system intent) — scaffolded automatically by ivd scaffold"
+  - "Start small: high-priority uncovered modules first, expand gradually as you modify code"
+  - "Coverage ≠ 100% — intent belongs where it adds value (critical logic, complex modules, team boundaries)"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and an adoption checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus adoption checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep -i 'checklist\\|adoption checklist' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_4"
+    requirement: "Prose leads; examples illustrate. Prose explains and generalizes. IVD tool examples support the narrative, not the other way around."
+    source: "book_system_intent.writing_style.code_and_prose.part_1_3_4"
+    validation: "Manual: prose drives each section; tool commands and YAML examples appear as illustrations within the prose narrative"
+    test: "Each section begins with prose explanation (not a code block); tool examples follow prose context; no section is code-only without narrative framing"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths, commands, and tool names; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "tool_accuracy"
+    requirement: "All IVD tool references (ivd init, ivd_assess_coverage, ivd_list_features, ivd scaffold) must match actual tool behavior as defined in framework.md and mcp_server/"
+    source: "framework.md (brownfield workflow, intent coverage assessment); mcp_server/tools/scaffold.py; mcp_server/mcp_server_intent.yaml"
+    validation: "Cross-reference every tool invocation, parameter, and output in the chapter against framework.md and mcp_server/ source"
+    test: "diff chapter tool descriptions against framework.md §Brownfield, §Intent Coverage Assessment, §Feature Inventory; ivd scaffold flags and behavior match mcp_server/tools/scaffold.py; zero contradictions"
+
+  - name: "checklist_included"
+    requirement: "Chapter includes a concrete adoption checklist the reader can follow immediately"
+    source: "book_system_intent.clarity_tactics (checklists)"
+    validation: "chapter.md contains a numbered or bulleted checklist with actionable adoption steps"
+    test: "grep -i 'checklist' chapter.md returns at least 1 match; checklist contains at least 6 actionable items covering ivd init through retrospective"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch17 aligns with framework principles, tool definitions, and book structure; no contradictions"
+    test: "No principle, tool behavior, or framework concept in chapter.md contradicts ivd_system_intent.yaml, book_system_intent.yaml, or framework.md"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months as durations or deadlines). CRITICAL: 'The First Week' in the title is conceptual scope, not a time estimate — the chapter must never imply a specific timeline for adoption."
+    source: "book_system_intent.constraints.no_timeline_references; book_system_intent.part_4.ch17.note"
+    validation: "grep -i 'days|weeks|months|timeline|by day|by week|end of week' chapter.md (excluding title and note about conceptual scope) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline|by day|by week|end of week|on day)\\b' chapter.md outside the title reference and conceptual-scope note returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "No percentage claims, adoption statistics, or industry data without explicit source or caveat"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Any numerical claim includes source citation or is labeled as illustrative/author experience"
+    test: "grep -E '[0-9]+%' chapter.md — every match has adjacent source or 'illustrative'/'author experience' caveat"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 17 is the practical adoption entry point — two paths converge into the IVD cycle, with brownfield emphasized. Part IV sequence: Ch17 getting started (individual/team), Ch18 scaling (organization), Ch19 advanced patterns, Ch20 ecosystem."
+
+  reasoning: |
+    - Part IV purpose: adopt and scale IVD in teams and organizations. Ch17 is the entry point — the first thing a reader does when they decide to use IVD on their actual project.
+    - Two paths (greenfield vs brownfield) because readers come from both situations, but brownfield is emphasized because most real teams have existing codebases with existing conventions, docs, and code.
+    - Tool-centric approach: the chapter walks through actual IVD tools (ivd init, ivd_assess_coverage, ivd_list_features, ivd scaffold) because adoption is concrete, not theoretical. But prose leads — this is Part IV, not Part II.
+    - "The First Week" is conceptual scope, not a timeline. The note in book_system_intent explicitly states this. The chapter must never create time pressure or imply adoption should happen in any specific timeframe.
+    - Coverage ≠ 100% is a key message: teams often over-adopt (try to cover everything) or under-adopt (only cover what's easy). The chapter teaches where intent adds value.
+    - Adoption checklist: the reader should leave with a concrete, actionable list they can follow on their next project.
+
+  evidence: "book/book_system_intent.yaml (part_4, Ch17 key_points, placeholder); framework.md (brownfield workflow, intent coverage assessment, project_context); mcp_server/mcp_server_intent.yaml (tool definitions)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Start Part IV with organizational strategy (top-down adoption) instead of practical getting-started"
+    rejected_because: "Adoption must be bottom-up first — a single developer or small team tries IVD on a real project before organizational strategy matters. Top-down without hands-on experience leads to policy without practice."
+    when_it_works: "If the reader is a VP/Director who will mandate IVD without personally using it — but that's not our primary audience for Ch17."
+
+  - name: "Combine greenfield and brownfield into separate chapters instead of one chapter with two paths"
+    rejected_because: "The two paths converge quickly — after initialization, the IVD cycle is identical. Separate chapters would duplicate 70% of content (assess, scaffold, implement, verify, retrospective). One chapter with a clear fork at the start is cleaner."
+    when_it_works: "If brownfield adoption were complex enough to warrant a full chapter on its own (e.g., migration from another framework)."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "IVD tool behavior changes after chapter is written (ivd init output, ivd_assess_coverage format, ivd scaffold flags)"
+    action: "Pin chapter examples to specific tool behavior documented in framework.md; include note that tool output may vary with version; verify against mcp_server/ source before publication"
+    monitor: "framework.md changelog; mcp_server/ commit history"
+    severity: "high"
+
+  - condition: "Reader interprets 'The First Week' as a literal timeline and feels pressure to complete adoption in a specific timeframe"
+    action: "Explicitly state in section 17.1 that 'The First Week' is conceptual scope, not a time estimate; avoid all time-duration language; test: no_timeline_references constraint"
+    monitor: "Beta reader feedback: 'I felt rushed' or 'I couldn't finish in a week'"
+    severity: "high"
+
+  - condition: "Coverage ≠ 100% message is misunderstood as 'IVD is optional' or 'skip intent for most things'"
+    action: "Frame clearly: intent adds value at critical paths, complex modules, team boundaries, and frequently changed code. Provide concrete examples of what needs intent vs what doesn't."
+    monitor: "Beta reader feedback: 'I wasn't sure when to add intent'"
+    severity: "medium"
+
+  - condition: "Tool examples feel too abstract without a real project to follow along with"
+    action: "Use a realistic brownfield scenario throughout (e.g., an existing API service with multiple modules, some documented, some not); provide example ivd init output, coverage report, and scaffold result"
+    monitor: "Beta reader feedback: 'I couldn't picture this in my project'"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-4-adoption/chapter-17-getting-started/chapter_17_getting_started_intent.yaml"
+  output: "manuscript/part-4-adoption/chapter-17-getting-started/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, framework, and IVD tools)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch17 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (17.1–17.8) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and adoption checklist"
+      validates: "constraints.chapter_takeaways, constraints.checklist_included"
+    - check: "ivd init description matches framework.md §Step 0 and mcp_server/tools/scaffold.py (project_context sections, output format)"
+      validates: "constraints.tool_accuracy"
+    - check: "ivd_assess_coverage description matches framework.md §Intent Coverage Assessment (report format, priority heuristics, coverage ≠ 100%)"
+      validates: "constraints.tool_accuracy"
+    - check: "ivd_list_features description matches framework.md §Feature Inventory and mcp_server/mcp_server_intent.yaml (metadata-derived, no separate file)"
+      validates: "constraints.tool_accuracy"
+    - check: "ivd scaffold description matches mcp_server/tools/scaffold.py (--level, --name flags, parent_intent auto-link)"
+      validates: "constraints.tool_accuracy"
+    - check: "Writing style: prose leads; tool examples illustrate (Part IV style, not Part II)"
+      validates: "constraints.writing_style_part_4"
+    - check: "Zero timeline references in chapter body — 'The First Week' is conceptual scope only"
+      validates: "constraints.no_timeline_references"
+    - check: "Bridge to Chapter 18 (scaling across the organization) present in 17.8"
+      validates: "deliverables.sections[17.8]"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 17 'Getting Started: The First Week'.
+      Derived from book_system_intent.yaml Ch17 (key_points, placeholder, note),
+      framework.md (brownfield workflow, intent coverage assessment, project_context,
+      feature inventory), mcp_server/mcp_server_intent.yaml (tool definitions),
+      and mcp_server/tools/scaffold.py (ivd init, ivd scaffold implementation).
+      Sections 17.1–17.8 with required_content, 9 constraints with test fields,
+      rationale, 2 alternatives, 4 risks, 10 verification checks.
+      Part IV writing style applied (prose leads; examples illustrate).
+      Tool-specific constraints: tool_accuracy, checklist_included.
+      Critical constraint: no_timeline_references ('The First Week' is conceptual, not a deadline).
+    reason: "IVD: one intent per chapter; Ch17 is the Part IV adoption entry point. Intent-only; manuscript pending."

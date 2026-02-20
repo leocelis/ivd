@@ -1,0 +1,346 @@
+# ==============================================================================
+# Chapter 18: Scaling IVD Across Your Organization
+# ==============================================================================
+# Module-level intent for the eighteenth chapter of the IVD book. The
+# organizational scaling chapter in Part IV: moving IVD from one team to many
+# teams. Covers pilot programs, training, recipe libraries, code review
+# integration, CI/CD automation, metrics dashboards, and a real-world case
+# study. Prose leads; examples illustrate.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_4_adoption.chapters[1]
+# Source:    framework.md, recipes/, ivd_system_intent.yaml
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through scaling IVD from a single team to an organization — proving value with a pilot, enabling multiple teams through training, building recipe libraries, integrating IVD into code review and CI/CD, measuring adoption ROI, and grounding everything in a real-world case study."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Knows how to run a pilot team engagement that proves IVD's value before broader rollout
+    2. Can design a training program that enables multiple teams to adopt IVD independently
+    3. Understands how to build and curate an organizational recipe library (team-specific and shared)
+    4. Can integrate IVD into code review workflows (intent alignment checks during PR review)
+    5. Can set up CI/CD automation that verifies intent-to-code alignment on every commit
+    6. Has a metrics framework for tracking IVD adoption and measuring impact (ROI dashboard)
+    7. Has seen a realistic case study of organizational scaling with concrete lessons learned
+    
+    This chapter bridges individual adoption (Ch17) and advanced patterns (Ch19). The reader transitions from "my team uses IVD" to "my organization uses IVD." Prose leads; examples illustrate.
+
+  success_metric: |
+    - Reader can plan and execute a pilot team engagement with clear success criteria
+    - Reader can outline a training program for onboarding new teams to IVD
+    - Reader understands how to curate organizational recipes (shared patterns, team customizations)
+    - Reader can describe how IVD fits into code review (what to check, how to flag misalignment)
+    - Reader can describe CI/CD integration points (constraint verification, coverage gates, drift detection)
+    - Reader has a concrete metrics framework: what to measure, how to measure it, what "good" looks like
+    - Reader has seen scaling challenges and solutions through the case study
+    - Adoption/scaling checklist completed at end of chapter
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_4 purpose: adopt and scale IVD in teams and organizations)"
+    - "recipes/ (organizational recipe library concept)"
+    - "framework.md (IVD principles, verification, brownfield workflow)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch18)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "18.1"
+      title: "Pilot Team: Proving Value Before Scaling"
+      required_content:
+        - "Why pilot first: scaling without evidence creates organizational resistance; a pilot generates proof that IVD works in YOUR context"
+        - "Selecting the pilot team: criteria for choosing the right team (motivated, representative project, enough complexity to show IVD value, not too politically fraught)"
+        - "Defining pilot success criteria: what 'IVD works here' means in measurable terms (fewer rework cycles, faster onboarding of new AI sessions, verifiable constraint coverage)"
+        - "Running the pilot: the team follows Ch17's adoption steps (ivd init, assess coverage, scaffold, implement, verify) on their actual project"
+        - "Capturing results: before/after measurements, team feedback, specific wins and friction points"
+        - "The pilot deliverable: a short internal report or presentation that makes the case for broader adoption — evidence, not evangelism"
+
+    - id: "18.2"
+      title: "Training Program: Enabling Multiple Teams"
+      required_content:
+        - "From pilot to program: the pilot team becomes the seed — their experience informs the training design"
+        - "Training structure: what teams need to learn (IVD concepts from Part I, practical workflow from Ch17, recipes from Part II, organizational conventions)"
+        - "Hands-on over slides: effective IVD training is workshop-based — teams work on their own codebase during training, not a toy example"
+        - "The 'intent first' habit: the single most important behavior change — before writing code or asking AI, write (or have AI write) the intent artifact"
+        - "Champions model: each team designates an IVD champion who drives adoption within their team and connects with other champions"
+        - "Common training pitfalls: over-teaching theory before practice, using generic examples instead of the team's own code, not addressing skepticism directly"
+
+    - id: "18.3"
+      title: "Recipe Library: Your Organization's Best Practices"
+      required_content:
+        - "What an organizational recipe library is: shared, curated collection of intent templates for common patterns your teams build (agents, workflows, APIs, services)"
+        - "Seeding the library: start with IVD's built-in recipes (agent-classifier, workflow, etc.) and add organization-specific recipes as teams discover patterns"
+        - "Recipe anatomy review: structure, constraints_template, implementation_pattern, verification_pattern — briefly recap for scaling context"
+        - "Team-specific vs shared recipes: some recipes apply to one team's domain; others become organizational standards (e.g., 'how we build API services')"
+        - "Curation process: who reviews and promotes recipes from team-specific to shared; quality criteria (tested, documented, used by 2+ teams)"
+        - "Recipe evolution: recipes improve as more teams use them — feedback loops, versioning, deprecation"
+        - "The compounding effect: each new recipe reduces the friction for the next team adopting IVD"
+
+    - id: "18.4"
+      title: "Code Review with IVD: Intent Alignment Checks"
+      required_content:
+        - "IVD changes what code review looks like: reviewers check not just code quality but intent alignment"
+        - "The intent alignment question: 'Does this PR satisfy the constraints in the intent artifact? Does the intent still reflect what the code does?'"
+        - "What to check in review: constraint coverage (are all constraints tested?), bidirectional alignment (intent ↔ code), scope creep (did implementation drift beyond intent?)"
+        - "Adding intent review to PR templates: suggested PR template additions (link to intent artifact, constraint status, alignment notes)"
+        - "Training reviewers: how to review intent artifacts (is the intent clear? are constraints executable? are tests mapped?)"
+        - "When intent and code disagree: the resolution protocol — update intent if requirements changed, fix code if implementation drifted"
+
+    - id: "18.5"
+      title: "CI/CD Integration: Automated Verification"
+      required_content:
+        - "What CI/CD can automate: constraint test execution, intent coverage checks (ivd_assess_coverage in pipeline), drift detection (intent ↔ code freshness)"
+        - "Constraint verification on every PR: run the test paths defined in each constraint; fail the build if constraints are violated"
+        - "Coverage gates: optional quality gate that checks intent coverage for modified modules — 'if you changed this module, does it have an intent?'"
+        - "Drift detection: flag when code changes significantly but the intent artifact hasn't been updated (or vice versa)"
+        - "Incremental adoption: start with constraint tests only, add coverage gates later, add drift detection when the team is ready"
+        - "Example pipeline configuration: illustrative CI/CD step definitions (conceptual, not provider-specific) showing where IVD checks fit"
+        - "What NOT to automate: intent quality is a human judgment — CI checks structure and constraints, humans check meaning and alignment"
+
+    - id: "18.6"
+      title: "Metrics Dashboard: Tracking ROI"
+      required_content:
+        - "Why measure: without metrics, IVD adoption is a belief system — with metrics, it's an engineering practice with demonstrable ROI"
+        - "What to measure: intent coverage (% of modules with intents), constraint pass rate (% of constraint tests passing), adoption velocity (teams onboarded, intents created), rework reduction (before/after comparison)"
+        - "How to measure: derive metrics from intent artifacts (coverage), CI/CD results (constraint pass rate), git history (adoption velocity), project tracking (rework)"
+        - "What 'good' looks like: benchmarks are organization-specific, not universal — compare against your own baseline, not industry averages"
+        - "Dashboard design: what to show leadership vs what to show teams — leadership sees ROI and trends; teams see coverage and constraint health"
+        - "Avoiding vanity metrics: coverage percentage alone means nothing if intents are low quality — pair quantitative metrics with qualitative review"
+
+    - id: "18.7"
+      title: "Case Study: Scaling IVD to 50 Developers"
+      required_content:
+        - "Realistic organizational scaling scenario: a mid-size engineering organization (multiple teams, shared services, mixed tech stacks) adopts IVD"
+        - "The journey: pilot team → training program → recipe library → code review integration → CI/CD → metrics — following the chapter's own structure"
+        - "Specific challenges encountered: resistance from experienced developers, recipe conflicts between teams, CI/CD false positives, metric gaming"
+        - "How challenges were resolved: concrete solutions, not hand-waving — what the organization actually did"
+        - "Results: measurable improvements with explicit caveats (author experience or labeled composite, not unsourced statistics)"
+        - "Lessons learned: what they would do differently, what surprised them, what advice they'd give to organizations starting the scaling journey"
+        - "Source attribution: case study is labeled as author experience or composite scenario — never presented as an unnamed third-party study"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch18 key_points: from one team to many, organizational recipes, code review, CI/CD, measuring adoption"
+      - "Adoption/Scaling Checklist: step-by-step checklist for organizational scaling (constraint: checklist_included)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Clear bridge to Chapter 19 (advanced patterns)"
+      - "Case study in 18.7 with source attribution (constraint: author_sourced_case_study)"
+      - "No timeline references (constraint: no_timeline_references)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch18; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "From one team to many teams — scaling IVD requires proof (pilot), enablement (training), and infrastructure (recipes, CI/CD, metrics)"
+  - "Creating organizational recipes — shared, curated intent templates that capture your organization's best practices and compound adoption"
+  - "IVD in code review and CI/CD — intent alignment becomes part of PR review; constraint verification becomes part of the build pipeline"
+  - "Measuring adoption and impact — coverage, constraint pass rate, adoption velocity, rework reduction; compare against your own baseline"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and an adoption/scaling checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus scaling checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep -i 'checklist\\|scaling checklist' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_4"
+    requirement: "Prose leads; examples illustrate. Prose explains and generalizes. Examples (YAML, CI config, PR templates, metrics) support the narrative, not the other way around."
+    source: "book_system_intent.writing_style.code_and_prose.part_1_3_4"
+    validation: "Manual: prose drives each section; examples appear as illustrations within the prose narrative"
+    test: "Each section begins with prose explanation (not a code block); examples follow prose context; no section is example-only without narrative framing"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths, commands, and tool names; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "checklist_included"
+    requirement: "Chapter includes a concrete adoption/scaling checklist the reader can follow when scaling IVD across their organization"
+    source: "book_system_intent.clarity_tactics (checklists)"
+    validation: "chapter.md contains a numbered or bulleted checklist with actionable scaling steps"
+    test: "grep -i 'checklist' chapter.md returns at least 1 match; checklist contains at least 8 actionable items covering pilot through metrics"
+
+  - name: "author_sourced_case_study"
+    requirement: "Section 18.7 case study must be sourced from author experience or explicitly labeled as a composite scenario. Never presented as an unnamed third-party study or unattributed real company."
+    source: "book_system_intent.constraints (author credibility, no_unsourced_statistics)"
+    validation: "Section 18.7 includes explicit source attribution (author experience, composite, or named with permission)"
+    test: "Section 18.7 contains 'author experience' OR 'composite' OR 'based on' attribution text; no unattributed company names or anonymous references"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch18 aligns with framework principles, book structure, and Part IV purpose; no contradictions"
+    test: "No principle, framework concept, or organizational claim in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months as durations or deadlines) unless in clearly illustrative examples"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding illustrative examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline|by day|by week|end of week|on day)\\b' chapter.md outside clearly illustrative example context returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "No percentage claims, adoption statistics, or industry data without explicit source or caveat. Case study results must be marked as illustrative (author experience or composite)."
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Any numerical claim includes source citation or is labeled as illustrative/author experience/composite"
+    test: "grep -E '[0-9]+%' chapter.md — every match has adjacent source or 'illustrative'/'author experience'/'composite' caveat"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 18 covers organizational scaling — moving IVD from one team to many. Part IV sequence: Ch17 getting started (individual/team), Ch18 scaling (organization), Ch19 advanced patterns, Ch20 ecosystem, Ch21 future."
+
+  reasoning: |
+    - Part IV purpose: adopt and scale IVD in teams and organizations. Ch18 is the scaling chapter — the natural next step after a team has successfully adopted IVD (Ch17).
+    - Pilot-first approach: organizational adoption without evidence creates resistance. A pilot team generates proof in YOUR context, not abstract claims from the book. This is the credibility foundation for scaling.
+    - Training over mandates: IVD adoption works when teams understand and choose it, not when it's imposed. The training program section emphasizes hands-on workshops on real codebases, not slide decks.
+    - Recipe library as compounding asset: each recipe reduces friction for the next team. This is the organizational multiplier that makes scaling sub-linear in effort.
+    - Code review and CI/CD: IVD becomes part of engineering workflow, not a separate practice. Intent alignment checks in review and constraint verification in CI make IVD self-reinforcing.
+    - Metrics for sustainability: without measurement, adoption is faith-based. The metrics dashboard makes IVD's value visible to both teams and leadership, sustaining investment.
+    - Case study for credibility: organizational scaling is hard to believe without a concrete example. The case study (18.7) grounds the chapter's recommendations in reality.
+
+  evidence: "book/book_system_intent.yaml (part_4, Ch18 key_points, placeholder); framework.md (IVD principles, verification, recipes); recipes/ (recipe structure and examples)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Present organizational scaling as a prescriptive playbook with fixed phases and milestones"
+    rejected_because: "Organizations vary enormously in size, structure, culture, and technical maturity. A prescriptive playbook would be wrong for most readers. The chapter provides a framework (pilot → train → recipes → review → CI/CD → metrics) that each organization adapts to their context."
+    when_it_works: "If writing for a specific organizational archetype (e.g., 'enterprise with 500+ developers') — but the book's audience is broader."
+
+  - name: "Skip the case study and rely on the chapter's framework alone"
+    rejected_because: "Organizational scaling is where skepticism is highest — 'does this actually work at scale?' The case study (even as composite/author experience) grounds the framework in concrete reality. Without it, the chapter is theory about practice."
+    when_it_works: "If the book had a separate 'Case Studies' appendix with multiple organizational examples — but Part IV is where the reader needs to see scaling evidence."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter feels too prescriptive — readers in different organizational contexts can't apply the guidance"
+    action: "Frame each section as a pattern with principles, not a fixed procedure. Emphasize adaptation: 'your pilot criteria will reflect your organization's priorities'; 'your recipe library starts with your most common patterns.'"
+    monitor: "Beta reader feedback: 'this doesn't apply to my organization' or 'too rigid'"
+    severity: "high"
+
+  - condition: "Case study (18.7) feels contrived or fictional, undermining credibility"
+    action: "Ground the case study in specific, realistic details — real challenges (developer resistance, CI false positives, metric gaming), real resolutions. Label clearly as author experience or composite. Include what went wrong, not just what went right."
+    monitor: "Beta reader feedback: 'the case study felt made up' or 'too polished'"
+    severity: "high"
+
+  - condition: "CI/CD integration section becomes provider-specific and dates quickly"
+    action: "Keep CI/CD examples conceptual and provider-agnostic. Show the integration pattern (where IVD checks fit in a pipeline), not specific GitHub Actions / GitLab CI / Jenkins syntax. Reference that teams adapt to their tooling."
+    monitor: "Reader feedback post-publication: 'the CI examples don't match my setup'"
+    severity: "medium"
+
+  - condition: "Metrics section promotes vanity metrics that don't reflect actual IVD value"
+    action: "Explicitly warn against vanity metrics (coverage % without quality, intent count without constraint pass rate). Pair quantitative metrics with qualitative review. Emphasize comparing against your own baseline, not industry benchmarks."
+    monitor: "Beta reader feedback: 'we tracked coverage but it didn't help'"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-4-adoption/chapter-18-scaling-ivd/chapter_18_scaling_ivd_intent.yaml"
+  output: "manuscript/part-4-adoption/chapter-18-scaling-ivd/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, framework, and IVD principles)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch18 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (18.1–18.7) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and adoption/scaling checklist"
+      validates: "constraints.chapter_takeaways, constraints.checklist_included"
+    - check: "Writing style: prose leads; examples illustrate (Part IV style)"
+      validates: "constraints.writing_style_part_4"
+    - check: "Case study (18.7) has explicit source attribution (author experience or composite)"
+      validates: "constraints.author_sourced_case_study"
+    - check: "Case study includes challenges, resolutions, and lessons — not just success"
+      validates: "deliverables.sections[18.7]"
+    - check: "Metrics section (18.6) warns against vanity metrics and emphasizes baseline comparison"
+      validates: "deliverables.sections[18.6], constraints.no_unsourced_statistics"
+    - check: "CI/CD section (18.5) is provider-agnostic and shows the integration pattern, not specific tooling syntax"
+      validates: "deliverables.sections[18.5]"
+    - check: "Zero timeline references in chapter body"
+      validates: "constraints.no_timeline_references"
+    - check: "Bridge to Chapter 19 (advanced patterns) present at end of chapter"
+      validates: "deliverables.manuscript.required_elements"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 18 'Scaling IVD Across Your Organization'.
+      Derived from book_system_intent.yaml Ch18 (key_points, placeholder),
+      framework.md (IVD principles, verification, recipes), recipes/ (recipe structure),
+      and chapter 17 intent (Part IV style, structural template).
+      Sections 18.1–18.7 with required_content (4–7 bullets each), 9 constraints with
+      test fields, rationale, 2 alternatives, 4 risks, 10 verification checks.
+      Part IV writing style applied (prose leads; examples illustrate).
+      Chapter-specific constraints: checklist_included (adoption/scaling checklist),
+      author_sourced_case_study (18.7 must be author experience or labeled composite).
+      Risks identified: prescriptive guidance, contrived case study, provider-specific
+      CI/CD, vanity metrics.
+    reason: "IVD: one intent per chapter; Ch18 is the organizational scaling chapter. Intent-only; manuscript pending."

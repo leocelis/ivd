@@ -5,7 +5,7 @@
 # This process has been validated through Chapters 1 and 2.
 #
 # Reference: book/book_system_intent.yaml (system)
-# Version: 1.0
+# Version: 1.3
 # Created: 2026-01-26
 # Status: Canonical
 # ==============================================================================
@@ -118,7 +118,7 @@ steps:
       - "Reference parent: 'Reference: book/book_system_intent.yaml (system)'"
       - "Inherit constraints: chapter_takeaways, quotable_principles, writing_style_part_N, formatting_conventions"
       - "Add chapter-specific constraints if needed"
-      - "For chapters that demonstrate optional sections (e.g. Ch5 interface, Ch9 interface per agent), include those sections in deliverables.required_content"
+      - "For chapters that demonstrate optional sections (e.g. Ch5 interface + roles, Ch6 evaluation, Ch9 interface + roles + authorship per agent), include those sections in deliverables.required_content"
     
     outputs:
       - "manuscript/part-N-name/chapter-0N-slug/intent.yaml (status: pending)"
@@ -341,13 +341,21 @@ implementation:
     - "manuscript/part-1-foundations/chapter-01-alignment-crisis/intent.yaml"
     - "manuscript/part-1-foundations/chapter-02-ivd-paradigm/intent.yaml"
   status: "canonical"
-  version: 1.1
+  version: 1.2
 
 # ==============================================================================
 # CHANGELOG
 # ==============================================================================
 
 changelog:
+  - version: "1.3"
+    date: "2026-02-09"
+    change: "Step 3: updated optional sections reminder to include authorship and evaluation alongside interface and roles (e.g. Ch6 evaluation, Ch9 authorship per agent)."
+    reason: "New experimental authorship and evaluation sections added to framework."
+  - version: "1.2"
+    date: "2026-02-09"
+    change: "Step 3: updated optional sections reminder to include roles alongside interface (e.g. Ch5 interface + roles, Ch9 interface + roles per agent)."
+    reason: "New experimental roles section added to framework; chapters demonstrating agent patterns should include roles in deliverables."
   - version: "1.1"
     date: "2026-02-09"
     change: "Step 3 (Create Chapter-Level Intent): added action to include optional sections in deliverables when the chapter demonstrates them (e.g. Ch5 interface, Ch9 interface per agent)."

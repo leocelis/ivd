@@ -4,7 +4,7 @@
 # System-level intent for creating a top-selling book on IVD that teaches
 # principles, validates them through real projects, and proves effectiveness.
 #
-# Version: 1.7
+# Version: 2.2
 # Created: 2026-01-25
 # Status: In Progress
 # Reference: ../ivd_system_intent.yaml (IVD Framework System Intent)
@@ -225,13 +225,14 @@ book_structure:
           - "Build a lead scoring classifier from scratch using IVD"
           - "Apply the agent-classifier recipe"
           - "Document the agent's tool surface using the interface section (first demonstration of this optional section)"
+          - "Document the agent's behavioral modes using the roles section (experimental — first demonstration of context-dependent behavior in intent)"
           - "Measure: baseline vs IVD (iterations, clarity, maintainability)"
         placeholder: |
           5.1 Project Overview: Lead Scoring for Sales Pipeline
-          5.2 Step 1: Write the Intent Artifact (Module-Level, including interface section for agent tools)
+          5.2 Step 1: Write the Intent Artifact (Module-Level, including interface for tools and roles for behavioral modes)
           5.3 Step 2: Define Constraints and Success Criteria
           5.4 Step 3: Implement with AI Assistant (Claude/GPT)
-          5.5 Step 4: Verify Alignment (Intent ↔ Code ↔ Interface)
+          5.5 Step 4: Verify Alignment (Intent ↔ Code ↔ Interface ↔ Roles)
           5.6 Results: Baseline (No IVD) vs IVD Approach
           5.7 Key Takeaways and Pattern Recognition
       
@@ -245,16 +246,18 @@ book_structure:
           - "Build a data processing pipeline with 5+ steps"
           - "Workflow-level intent (NEW in IVD v1.2)"
           - "Context reduction: baseline (read 10 files) vs IVD (read 1 workflow)"
+          - "Introduce the evaluation section (experimental) — formalize how the workflow measures quality and improves over iterations"
         placeholder: |
           6.1 Project Overview: ETL Pipeline for Analytics
           6.2 The Problem: Understanding Multi-File Workflows
           6.3 Step 1: Create Workflow-Level Intent
           6.4 Step 2: Document Steps, Data Flow, Error Handling
           6.5 Step 3: Optional - Field Mapping for Data Transformations (recipes/data-field-mapping.yaml)
-          6.6 Step 4: Implement Each Step (Module-Level Intents)
-          6.7 Step 5: End-to-End Verification
-          6.8 Measurement: AI Agent Context Needed (Baseline vs IVD)
-          6.9 Results: 80-90% Context Reduction Validated
+          6.6 Step 4: Optional - Evaluation Section (quality metrics, improvement loop, bounded iteration)
+          6.7 Step 5: Implement Each Step (Module-Level Intents)
+          6.8 Step 6: End-to-End Verification + Evaluation Loop
+          6.9 Measurement: AI Agent Context Needed (Baseline vs IVD)
+          6.10 Results: 80-90% Context Reduction Validated
       
       - chapter: 7
         title: "Project 3: Background Job System (Infrastructure Pattern)"
@@ -306,16 +309,18 @@ book_structure:
           - "Intent propagation: Human → Coordinator Intent → Agent Intents"
           - "Apply coordinator-intent-propagation recipe"
           - "Each agent's interface section describes its tool surface — the coordinator uses these to route correctly"
+          - "Each agent's roles section describes its behavioral modes — the coordinator uses these for context-aware routing"
+          - "Introduce the authorship section (experimental) — declare what authority the coordinator and agents have over intent creation and modification"
           - "Prevent coordination errors through structured intent at every delegation"
         placeholder: |
           9.1 Project Overview: Customer Intelligence Coordinator
           9.2 The Coordination Problem: Ambiguous Routing, Wrong Parameters
-          9.3 Step 1: Define the Coordinator Intent (Which Agents, What Tasks, interface per agent)
-          9.4 Step 2: Write Agent-Level Intents for Each Specialist (with interface section)
+          9.3 Step 1: Define the Coordinator Intent (Which Agents, What Tasks, interface + roles per agent, authorship boundaries)
+          9.4 Step 2: Write Agent-Level Intents for Each Specialist (with interface, roles, and authorship sections)
           9.5 Step 3: Implement Tools Are Truth, History Is Context
-          9.6 Step 4: Verify Before Synthesize — interface ↔ implementation alignment
+          9.6 Step 4: Verify Before Synthesize — interface ↔ roles ↔ authorship ↔ implementation alignment
           9.7 Measurement: Coordination Errors (Baseline vs IVD)
-          9.8 Recipe Reference: coordinator-intent-propagation.yaml
+          9.8 Recipe Reference: coordinator-intent-propagation.yaml + agent-role-based.yaml
       
       - chapter: 10
         title: "Project 6: Complete Feature (Full Stack)"
@@ -544,6 +549,9 @@ book_structure:
           - "Multi-team coordination with shared intents"
           - "IVD for microservices architectures"
           - "AI-editable configuration (Cline-style)"
+          - "Dynamic roles: single agents with context-dependent behavior (roles section, agent-role-based recipe)"
+          - "Intent authorship: formalizing trust boundaries for AI-originated intent (authorship section)"
+          - "Continuous evaluation: the improvement loop beyond pass/fail verification (evaluation section)"
         placeholder: |
           19.1 Versioning Intent Artifacts (semantic versioning for understanding)
           19.2 Shared Intents Across Services (microservices coordination)
@@ -551,6 +559,9 @@ book_structure:
           19.4 Advanced Verification: Schema Validation and Linting
           19.5 MCP Integration: Universal Protocol for AI Access
           19.6 AI Agents That Improve Their Own Intent
+          19.7 Dynamic Roles: Context-Dependent Agent Behavior (roles section + agent-role-based recipe — how one agent switches modes, vs coordinator pattern for multiple agents)
+          19.8 Intent Authorship: Trust Boundaries for AI-Originated Intent (authorship section — human_directed → ai_proposed → ai_autonomous spectrum)
+          19.9 Continuous Evaluation: The Improvement Loop (evaluation section — evaluate → adjust → re-verify, bounded iteration, escalation)
       
       - chapter: 20
         title: "IVD Ecosystem and Community"
@@ -578,12 +589,25 @@ book_structure:
           - "Integration with emerging AI tools"
           - "Industry standardization efforts"
           - "Your role in shaping IVD's future"
+          - "Deferred frontiers: inter-agent deliberation, meta-intent (intent about intent), and human oversight boundaries for fully autonomous systems"
         placeholder: |
           21.1 IVD v2.0: MCP, Schema Validation, AI-Editable Config
           21.2 IVD v3.0: Formal Verification and Automated Drift Detection
           21.3 Industry Convergence: Why IVD Aligns with Major Players
           21.4 Research Opportunities and Open Questions
-          21.5 Call to Action: Building the Future Together
+          21.5 Deferred Frontiers (future book edition): Inter-Agent Deliberation (agents negotiating about workflow quality), Meta-Intent (recursive intent — intent that governs other intents), Human Oversight Boundaries (trust boundaries for fully autonomous agent systems). These require production evidence before formalization.
+          21.6 Call to Action: Building the Future Together
+        deferred_to_future_edition: |
+          Three identified gaps are deferred until production evidence validates them:
+          (1) Inter-agent deliberation: agents negotiating with each other about workflow improvements
+              (distinct from coordinator routing — this is collaborative evaluation/consensus).
+          (2) Meta-intent / recursive intent: intent artifacts that govern other intent artifacts
+              (e.g., constraints for a "workflow improvement" workflow).
+          (3) Human oversight boundaries: formalizing where humans fit in fully autonomous loops
+              (what decisions require human approval vs. what agents can change autonomously).
+          All three build on authorship (Gap 1) and evaluation (Gap 2), which are covered in this edition.
+          Deferral rationale: IVD's own system intent requires patterns to be validated in production
+          before formalization (Rule 3: "Must be validated in production"). Build first, then capture.
 
   # ==========================================================================
   # BACK MATTER
@@ -596,9 +620,12 @@ book_structure:
         - The 8 Principles (one-page summary)
         - Intent artifact template (blank YAML)
         - Intent levels decision tree
-        - Optional sections quick reference: metadata (feature inventory), field_mapping (data/integrations), inversion_opportunities, parent_intent, project_context, interface (tool surface for agents/MCP/APIs/CLIs)
+        - Optional sections quick reference: metadata (feature inventory), field_mapping (data/integrations), inversion_opportunities, parent_intent, project_context, interface (tool surface for agents/MCP/APIs/CLIs), roles (agent behavioral modes — experimental), authorship (intent origin and AI authority — experimental), evaluation (continuous improvement loop — experimental)
         - Feature inventory: how metadata in intents creates an emergent feature catalog (ivd_list_features)
         - Interface section: when to use, schema, example (agent vs MCP vs API vs CLI)
+        - Roles section (experimental): when to use, schema, example (coding agent vs support agent); relationship to interface and coordinator pattern
+        - Authorship section (experimental): when to use, schema, origin levels (human_directed → ai_proposed → ai_autonomous); relationship to roles and evaluation
+        - Evaluation section (experimental): when to use, schema, verification vs evaluation distinction; relationship to authorship and constraints
         - Verification checklist
         - Common patterns and anti-patterns
     
@@ -606,14 +633,17 @@ book_structure:
       status: "pending"
       placeholder: |
         Complete recipes included:
-        - agent-classifier.yaml
-        - workflow-orchestration.yaml
-        - coordinator-intent-propagation.yaml
-        - data-field-mapping.yaml
-        - infra-background-job.yaml
-        - doc-meeting-insights.yaml
-        - integration-api.yaml
-        - data-etl.yaml
+        - agent-classifier.yaml (canonical — AI classification agents: lead scoring, ticket routing, content classification)
+        - agent-role-based.yaml (experimental — context-dependent agent behavior: single agent, multiple modes)
+        - coordinator-intent-propagation.yaml (canonical — multi-agent coordination: intent flows from coordinator to specialists)
+        - data-field-mapping.yaml (canonical — data integrations: source → target field mappings with transformations)
+        - discovery-before-intent.yaml (experimental — Principle 6 Step 0b: AI proposes goals when user can't describe what they want)
+        - doc-meeting-insights.yaml (canonical — document processing: meeting notes, transcripts, structured extraction)
+        - infra-background-job.yaml (canonical — async job processing: retries, monitoring, idempotency)
+        - infra-structured-logging.yaml (canonical — structured JSON logging: consistent log format across services)
+        - self-evaluating-workflow.yaml (experimental — workflows with evaluation loops: quality measurement and bounded improvement)
+        - teaching-before-intent.yaml (canonical — Principle 6 Step 0a: AI teaches domain knowledge before writing intent)
+        - workflow-orchestration.yaml (canonical — multi-step workflow coordination: steps, data flow, error handling)
     
     - section: "Appendix C: Validation Methodology"
       status: "pending"
@@ -901,27 +931,28 @@ alternatives:
 # ==============================================================================
 
 source_material:
+  # Paths relative to this file (ivd/book/book_system_intent.yaml)
+  # ../  = ivd root;  no prefix = ivd/book/
   - "../purpose.md"
   - "../ivd_system_intent.yaml"
   - "../framework.md"
-  - "cookbook.md"
-  - "cheatsheet.md"
-  - "recipe-spec.md"
-  - "templates/intent.yaml"
-  - "templates/intent_levels_guide.md"
-  - "templates/task_level_quick_ref.md"
-  - "templates/examples/task-level-intent-example.yaml"
-  - "templates/examples/workflow-lead-qualification-example.yaml"
-  - "recipes/agent-classifier.yaml"
-  - "recipes/workflow-orchestration.yaml"
-  - "recipes/infra-background-job.yaml"
-  - "recipes/doc-meeting-insights.yaml"
-  - "research/validation_methodology.md"
-  - "research/agent_knowledge_standards.md"
-  - "research/ivd_implementation_roadmap.md"
+  - "../cookbook.md"
+  - "../cheatsheet.md"
+  - "../recipe-spec.md"
+  - "../templates/intent.yaml"
+  - "../templates/intent_levels_guide.md"
+  - "../templates/task_level_quick_ref.md"
+  - "../templates/examples/task-level-intent-example.yaml"
+  - "../templates/examples/workflow-lead-qualification-example.yaml"
+  - "../recipes/agent-classifier.yaml"
+  - "../recipes/workflow-orchestration.yaml"
+  - "../recipes/infra-background-job.yaml"
+  - "../recipes/doc-meeting-insights.yaml"
+  - "../research/validation_methodology.md"
+  - "../research/agent_knowledge_standards.md"
+  - "../research/ivd_implementation_roadmap.md"
   - "research/best_selling_programming_books.md"
-  - "_private/from_lp_to_ivd.md"
-  - "research/lp_research.md"
+  - "../_private/ai_driven_dev/from_lp_to_ivd.md"
 
 # ==============================================================================
 # CONSTRAINTS
@@ -1127,6 +1158,44 @@ implementation:
 # ==============================================================================
 
 changelog:
+  - version: "2.2"
+    date: "2026-02-09"
+    changes: |
+      source_material path audit (constraint: source_material_accuracy):
+      Fixed 14 broken relative paths — all paths now use ../ to reference ivd root consistently.
+      Removed research/lp_research.md (file deleted; no longer exists anywhere in repo).
+      Fixed _private/from_lp_to_ivd.md → ../_private/ai_driven_dev/from_lp_to_ivd.md (correct location).
+      Added path convention comment for maintainability.
+  - version: "2.1"
+    date: "2026-02-09"
+    changes: |
+      Appendix B alignment: replaced placeholder recipes (integration-api.yaml, data-etl.yaml) with
+      actual recipe files. Added 3 missing recipes: teaching-before-intent.yaml (canonical),
+      discovery-before-intent.yaml (experimental), infra-structured-logging.yaml (canonical).
+      All 11 recipes in recipes/ directory now listed with one-line descriptions.
+      Framework.md: added dedicated "### Optional Section: Parent Intent" heading (was approved
+      canonical in ivd_system_intent but only mentioned inline; now has full When to Use / What It
+      Provides / Why It Matters / Example structure matching all other optional section headings).
+  - version: "2.0"
+    date: "2026-02-09"
+    changes: |
+      Added authorship and evaluation (experimental) optional sections across the book:
+      (1) Ch6 key_points + placeholder: added evaluation section demonstration for workflow quality improvement.
+      (2) Ch9 key_points + placeholder: added authorship section for coordinator/agent intent authority.
+      (3) Ch19 key_points + placeholder: added sections 19.8 (authorship) and 19.9 (evaluation).
+      (4) Ch21 key_points + placeholder: added deferred frontiers (inter-agent deliberation, meta-intent, human oversight boundaries) with deferral rationale.
+      (5) Appendix A: added authorship and evaluation to optional sections reference.
+      (6) Appendix B: added self-evaluating-workflow.yaml to recipe library.
+      Deferred Gaps 3/4/5 (inter-agent deliberation, meta-intent, human oversight boundaries) to future edition — require production evidence.
+  - version: "1.9"
+    date: "2026-02-09"
+    changes: |
+      Added roles (experimental) optional section across the book:
+      (1) Ch5 key_points + placeholder: added roles section demonstration alongside interface.
+      (2) Ch9 key_points + placeholder: added roles per agent for coordinator routing.
+      (3) Ch19 key_points + placeholder: added section 19.7 on dynamic roles vs coordinator pattern.
+      (4) Appendix A: added roles to optional sections reference with dedicated entry.
+      (5) Appendix B: added agent-role-based.yaml to recipe library.
   - version: "1.8"
     date: "2026-02-09"
     changes: |

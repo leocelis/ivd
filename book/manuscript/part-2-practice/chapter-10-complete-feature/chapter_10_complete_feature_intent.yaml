@@ -1,0 +1,367 @@
+# ==============================================================================
+# Chapter 10: Project 6 — Complete Feature (Full Stack)
+# ==============================================================================
+# Module-level intent for the tenth chapter of the IVD book. Final and most
+# comprehensive project in Part II: build user authentication end-to-end using
+# all four IVD intent levels (System → Workflow → Module → Task), demonstrate
+# the full intent hierarchy in a single project, and validate all IVD metrics.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_2_practice.chapters[5]
+# Source:    framework.md, templates/intent.yaml, chapters 5–9 (prior patterns)
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through building user authentication end-to-end using all four IVD intent levels (System, Workflow, Module, Task) — the capstone project where every pattern from Part II converges, every level is demonstrated in a single feature, and all IVD metrics are comprehensively validated."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Has built a complete, production-grade user authentication system (OAuth, sessions, permissions) using IVD
+    2. Has written intent artifacts at ALL four levels: system (security architecture), workflow (login, registration, password reset flows), module (auth service, session manager, permission controller), task (verify_token, hash_password, check_permission)
+    3. Understands when to use each intent level — and why the combination produces results no single level can
+    4. Has seen the full IVD hierarchy in action: system constrains workflows, workflows orchestrate modules, modules decompose into tasks
+    5. Has comprehensive measurement data across ALL IVD metrics: context reduction, alignment accuracy, knowledge durability, recipe effectiveness
+    6. Can apply the four-level pattern to any complex feature in their own codebase
+    7. Recognizes that this chapter synthesizes every pattern from chapters 5–9: agent (Ch5), workflow (Ch6), infrastructure (Ch7), integration (Ch8), existing codebase (Ch9)
+
+    This is the capstone project of Part II. The reader transitions from "I can build individual projects with IVD" to "I can architect complete features across all levels." Prior projects used one or two levels; this project uses all four, showing how they compose.
+
+  success_metric: |
+    - Reader has a working user authentication system at the end of the chapter
+    - Reader wrote (or followed along with) intent artifacts at all four levels: system, workflow, module, task
+    - Reader can articulate WHEN to use each level and WHY certain decisions belong at certain levels
+    - All IVD metrics measured comprehensively: context reduction, alignment accuracy, knowledge durability, recipe effectiveness
+    - Reader sees how the four levels compose: system → workflow → module → task hierarchy
+    - Chapter synthesizes patterns from Ch5–9; reader recognizes the convergence
+    - Chapter ends with bridge to Part III (Validation) — the reader's per-project measurements become evidence
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_2 purpose: build real projects with IVD)"
+    - "All prior chapter intents (Ch5–9): patterns converge here"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch10)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "10.1"
+      title: "Project Overview: User Auth with OAuth, Sessions, Permissions"
+      required_content:
+        - "What we're building: a complete user authentication system — OAuth provider integration, session management, role-based permissions — end-to-end with IVD"
+        - "Why this project: (1) every production app needs auth, (2) auth spans all four levels naturally (architecture → flows → services → functions), (3) security demands verifiable constraints, (4) the reader already knows individual levels from Ch5–9"
+        - "Why all four levels: auth is too complex for a single intent level — system-level security decisions constrain everything below; workflow-level flows orchestrate user journeys; module-level services encapsulate logic; task-level functions implement cryptographic and validation primitives"
+        - "What the reader will learn: how the four levels compose into a hierarchy, when to place decisions at each level, comprehensive IVD measurement across all metrics"
+        - "Prerequisites: Part I concepts, Ch5–9 completed (each level practiced individually); basic web development knowledge; familiarity with auth concepts (OAuth, JWT, sessions)"
+        - "End state: working auth system with intent artifacts at all four levels, passing constraint tests at every level, comprehensive IVD metrics collected"
+        - "Map of how chapters 5–9 patterns appear in this project: agent pattern (Ch5) in auth service, workflow pattern (Ch6) in login/registration flows, infrastructure pattern (Ch7) in session/token storage, integration pattern (Ch8) in OAuth provider integration, existing codebase pattern (Ch9) in adding auth to an existing app"
+
+    - id: "10.2"
+      title: "System-Level Intent: Security Architecture"
+      required_content:
+        - "First demonstration of a system-level intent artifact in Part II: scope level=system, type=feature, granularity=coarse"
+        - "Security architecture decisions that constrain ALL lower levels: encryption standards (bcrypt, AES-256), token strategy (JWT with refresh tokens), session policy (server-side, TTL, revocation), permission model (RBAC), audit requirements"
+        - "Show the complete system-level YAML artifact inline: intent (summary, goal, success_metric), constraints (security_standards, compliance_requirements, performance_budget), deliverables (auth subsystem components)"
+        - "Why these decisions live at system level: they cross-cut all workflows, modules, and tasks — changing encryption standard affects every function below"
+        - "parent_intent: link to the project's system intent (or explain how this maps to a real product's architecture intent)"
+        - "Principle 5 (Four Levels of Granularity) in action: system level sets the ceiling; everything below must conform"
+        - "Highlight: system-level constraints are non-negotiable — no workflow or module can weaken them"
+
+    - id: "10.3"
+      title: "Workflow-Level Intents: Login Flow, Registration Flow, Password Reset"
+      required_content:
+        - "Three workflow-level intent artifacts: login flow, registration flow, password reset flow"
+        - "Each workflow references the system-level intent as parent_intent — show the hierarchy link"
+        - "Login flow: steps (credentials input → validation → token generation → session creation), data_flow between steps, error_handling (invalid credentials, locked account, rate limiting), success criteria"
+        - "Registration flow: steps (input → validation → duplicate check → password hashing → account creation → welcome email), data_flow, error_handling (duplicate email, weak password, email delivery failure)"
+        - "Password reset flow: steps (request → token generation → email delivery → token validation → password update → session invalidation), data_flow, error_handling (expired token, invalid token, email not found)"
+        - "Show at least one complete workflow-level YAML artifact inline with steps, data_flow, error_handling sections"
+        - "Contrast with Ch6 (single workflow project): here, three workflows coexist under a single system intent, sharing modules and constraints"
+        - "Highlight: workflows orchestrate the user journey; modules implement the capabilities workflows call upon"
+
+    - id: "10.4"
+      title: "Module-Level Intents: Auth Service, Session Manager, Permission Controller"
+      required_content:
+        - "Three module-level intent artifacts: auth service (authentication logic), session manager (session lifecycle), permission controller (authorization logic)"
+        - "Each module references a workflow-level intent (or system-level) as parent_intent — show the hierarchy"
+        - "Auth service: scope (level=module, type=service), constraints (password hashing with bcrypt cost >= 12, token signing with RS256, rate limiting per IP), interface (authenticate, register, reset_password tools)"
+        - "Session manager: scope (level=module, type=service), constraints (session TTL configurable, server-side storage, concurrent session limit, revocation support), interface (create_session, validate_session, revoke_session tools)"
+        - "Permission controller: scope (level=module, type=service), constraints (RBAC with role hierarchy, permission caching, audit trail for access decisions), interface (check_permission, assign_role, get_permissions tools)"
+        - "Show how module-level constraints inherit from and refine system-level constraints: system says 'bcrypt'; module specifies 'bcrypt cost >= 12'"
+        - "Contrast with Ch5 (single module project): here, three modules collaborate within a shared architecture"
+        - "Highlight: modules are the building blocks workflows compose; task-level functions are the primitives modules call"
+
+    - id: "10.5"
+      title: "Task-Level Intents: verify_token(), hash_password(), check_permission()"
+      required_content:
+        - "Three task-level intent artifacts for critical functions: verify_token(), hash_password(), check_permission()"
+        - "Each task references its parent module-level intent — show the hierarchy link from task → module → workflow → system"
+        - "verify_token(): scope (level=task, type=function), intent (validate JWT signature and claims), constraints (reject expired tokens, verify issuer, check audience), test paths"
+        - "hash_password(): scope (level=task, type=function), intent (securely hash passwords for storage), constraints (bcrypt cost >= 12 from module, salt generation, timing-safe comparison), test paths"
+        - "check_permission(): scope (level=task, type=function), intent (evaluate whether user has permission for action on resource), constraints (RBAC evaluation, deny-by-default, audit log entry), test paths"
+        - "Show at least one complete task-level YAML artifact inline — the most granular level"
+        - "When to create task-level intents: critical functions where correctness matters (security, crypto, authorization); not every function needs one"
+        - "The complete hierarchy visible: system → workflow → module → task, each level referencing its parent via parent_intent"
+
+    - id: "10.6"
+      title: "Implementation Journey: From Intent to Production"
+      required_content:
+        - "The IVD implementation flow across all four levels: hand the intent hierarchy to the AI assistant → AI reads system intent first → implements top-down (architecture → flows → services → functions)"
+        - "Show the implementation order: system-level decisions first (they constrain everything), then workflows (user journeys), then modules (services), then tasks (critical functions)"
+        - "Walk through key implementation decisions at each level: OAuth provider choice (system), flow error handling (workflow), service interfaces (module), crypto parameters (task)"
+        - "AI has the full intent hierarchy as context — it knows how each piece fits into the whole; contrast with ad-hoc implementation where each function is implemented in isolation"
+        - "Directory structure for the complete auth feature: auth/ with subdirectories for services, flows, utils, tests"
+        - "What happens when requirements change: change at the right level (e.g., switching from JWT to opaque tokens is a system-level change that cascades down); show how the hierarchy makes impact analysis trivial"
+        - "Emphasize: the intent hierarchy IS the architecture documentation — living, verifiable, not stale"
+
+    - id: "10.7"
+      title: "Comprehensive Metrics: All IVD Claims Validated"
+      required_content:
+        - "This section validates ALL IVD metrics using this single, comprehensive project"
+        - "Context reduction: measure how much context the AI needed at each level vs without IVD; system-level intent reduces context for all lower levels (cascading context reduction)"
+        - "Alignment accuracy: measure alignment between intent and implementation at each level; verify bidirectional (code satisfies intent AND intent reflects actual behavior) at system, workflow, module, and task levels"
+        - "Knowledge durability: can a new AI session (or new team member) understand the auth system from the intent hierarchy alone? Test: hand intents to fresh AI, measure comprehension accuracy"
+        - "Recipe effectiveness: if applicable, measure how recipe patterns (from Ch5–9) accelerated this project"
+        - "Aggregate measurements across all four levels: show how metrics compound (system-level alignment improves workflow alignment, which improves module alignment)"
+        - "Comparison: this project vs hypothetical baseline (no IVD) — illustrative from author experience, not controlled study"
+        - "Tie to Part III (Validation): these per-project measurements become the raw data for Part III's statistical analysis"
+
+    - id: "10.8"
+      title: "Lessons: When to Use Each Intent Level"
+      required_content:
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Decision framework: when to use system-level (cross-cutting architectural decisions), workflow-level (multi-step user journeys), module-level (encapsulated services), task-level (critical individual functions)"
+        - "Not every project needs all four levels — guidance on when to use one, two, three, or four levels based on complexity and risk"
+        - "The hierarchy principle: higher levels constrain lower levels; lower levels implement higher levels; changes cascade downward; violations propagate upward"
+        - "Pattern synthesis: how Ch5 (agent/module), Ch6 (workflow), Ch7 (infrastructure/system), Ch8 (integration/workflow+module), Ch9 (existing codebase/any level) all converge in this chapter"
+        - "Bridge to Part III: 'You now have measurements from six projects across all four levels. Part III will show you how to validate these claims with data — turning your experience into evidence.'"
+        - "Checklist: 'Before you move on' — did you write intents at all four levels? Did constraints pass at every level? Did you measure all IVD metrics? Can a fresh AI session understand your auth system from the intents alone?"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch10 key_points: user auth end-to-end, all four levels, comprehensive measurement"
+      - "At least one complete intent artifact at EACH of the four levels inline (sections 10.2–10.5)"
+      - "Code snippets for auth implementation (section 10.6) — directory structure, key services, critical functions"
+      - "Comprehensive metrics comparison across all IVD metrics (section 10.7)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Checklist in 10.8 (constraint: chapter_takeaways)"
+      - "Clear bridge to Part III (Validation)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch10; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Build user authentication end-to-end — the capstone project demonstrating IVD at full scale"
+  - "All four intent levels in a single project: System (security architecture) → Workflow (login, registration, password reset) → Module (auth service, session manager, permission controller) → Task (verify_token, hash_password, check_permission)"
+  - "System-level intent sets non-negotiable security constraints that cascade to every level below"
+  - "Workflow-level intents orchestrate user journeys with steps, data_flow, and error_handling"
+  - "Module-level intents encapsulate services with interfaces, constraints, and verification — the building blocks workflows compose"
+  - "Task-level intents specify critical functions where correctness is paramount (crypto, authorization)"
+  - "Comprehensive measurement across ALL IVD metrics: context reduction, alignment accuracy, knowledge durability, recipe effectiveness"
+  - "Pattern convergence: every pattern from Ch5–9 appears in this single project, demonstrating IVD's composability"
+  - "Decision framework: when to use each level, when to combine levels, when all four are needed vs one or two"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_2"
+    requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
+    source: "book_system_intent.writing_style.code_and_prose.part_2"
+    validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+    test: "chapter.md contains at least 6 fenced code/YAML blocks (more than prior chapters — four levels means more artifacts); code blocks appear before or alongside explanatory prose"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "all_levels_demonstrated"
+    requirement: "All four IVD intent levels (system, workflow, module, task) must be demonstrated with complete, inline YAML artifacts — this is the chapter-specific constraint that distinguishes Ch10 from all other chapters"
+    source: "book_system_intent.part_2.chapters[ch10].key_points ('All four levels: System → Workflow → Module → Task')"
+    validation: "Chapter includes at least one complete YAML artifact for each of the four levels: system (10.2), workflow (10.3), module (10.4), task (10.5)"
+    test: "chapter.md contains YAML blocks with 'level: \"system\"', 'level: \"workflow\"', 'level: \"module\"', 'level: \"task\"' — at least one of each; hierarchy links (parent_intent) connect them"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch10 aligns with framework principles and four-level model; no contradictions"
+    test: "No principle, level definition, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "Metrics and measurements must be marked as illustrative (author experience) unless backed by controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Measurement section includes caveat about illustrative data"
+    test: "Section 10.7 contains explicit caveat text (e.g., 'illustrative', 'author experience', 'not a controlled study')"
+
+  - name: "author_sourced_examples"
+    requirement: "The user authentication scenario and code examples should reflect the author's real experience building auth systems with IVD (not generic 'todo app' examples)"
+    source: "book_system_intent.constraints.author_sourced_examples"
+    validation: "Manual: examples feel real, not generic; reference actual security patterns and production concerns"
+    test: "Auth scenario addresses real production concerns (rate limiting, token revocation, session hijacking prevention); no generic placeholder examples"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 10 is the capstone project of Part II — user authentication built end-to-end using all four IVD intent levels. It is the final and most comprehensive practice project before Part III (Validation)."
+
+  reasoning: |
+    - Part II purpose: build real projects with IVD; learn by doing. Ch10 is the culmination — the reader has practiced each level individually (Ch5–9) and now combines all four in a single project.
+    - User authentication chosen because: (1) every developer has built or will build auth, (2) auth naturally spans all four levels (architecture → flows → services → functions), (3) security demands verifiable constraints (making IVD's executable verification particularly valuable), (4) the domain is complex enough to justify all four levels but familiar enough that the reader focuses on IVD, not the domain.
+    - All four levels required because: this is the ONLY chapter where the complete hierarchy appears in a single project. Ch5 demonstrated module level, Ch6 workflow level, Ch7 system level, Ch8 workflow+module integration, Ch9 any level on existing code. Ch10 shows how they compose — which is IVD's deepest value proposition.
+    - Comprehensive metrics are critical: this is the last project before Part III (Validation). The reader needs measurements across ALL IVD metrics to feed into Part III's statistical analysis. Ch10 produces the richest measurement data because it operates at all four levels.
+    - Pattern convergence: every pattern from Ch5–9 appears naturally in auth — agent pattern (auth service), workflow pattern (login flow), infrastructure pattern (session storage), integration pattern (OAuth), existing codebase pattern (adding auth to an app). This synthesis is the pedagogical payoff of Part II.
+
+  evidence: "book/book_system_intent.yaml (part_2, Ch10 key_points, placeholder); chapters 5–9 intents (patterns that converge here); framework.md (four-level model, IVD metrics)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Use a different domain (e.g., e-commerce checkout) for the capstone"
+    rejected_because: "Auth is more universally relatable — every developer encounters it. E-commerce has domain-specific complexity (inventory, payments, tax) that would distract from the IVD four-level pattern. Auth's security constraints make IVD's executable verification shine."
+    when_it_works: "If the audience were primarily e-commerce developers; our audience is general-purpose developers."
+
+  - name: "Demonstrate all four levels across multiple small projects instead of one comprehensive project"
+    rejected_because: "Loses the key insight — that the four levels COMPOSE within a single feature. Separate projects would show each level in isolation (already done in Ch5–9). The value of Ch10 is showing how system constrains workflow constrains module constrains task in one hierarchy."
+    when_it_works: "If the reader finds a single large project overwhelming; mitigated by clear section structure (10.1–10.8) and building incrementally level by level."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter is too long and reader loses momentum on the capstone"
+    action: "Target 35–45 pages (longer than prior chapters but justified by four levels); keep YAML artifacts focused (show key sections, not every field); reference repository for complete artifacts and code"
+    monitor: "Page count; beta reader completion rate and feedback on pacing"
+    severity: "high"
+
+  - condition: "Reader conflates 'all four levels' with 'always use all four levels' — over-engineering in practice"
+    action: "Section 10.8 explicitly addresses WHEN to use each level; provide clear guidance that most projects need one or two levels; all four is for complex, cross-cutting features where each level adds distinct value"
+    monitor: "Beta reader feedback: 'Do I always need four levels?'; section 10.8 clarity"
+    severity: "high"
+
+  - condition: "Auth domain knowledge becomes a barrier — reader focuses on OAuth/JWT instead of IVD"
+    action: "Keep auth implementation at pattern level (structure, not library-specific code); provide background boxes for OAuth and JWT concepts; emphasize that the chapter teaches IVD levels, not auth engineering"
+    monitor: "Beta reader feedback: 'I got lost in the auth details' vs 'I focused on the IVD patterns'"
+    severity: "medium"
+
+  - condition: "Comprehensive metrics section (10.7) feels contrived or cherry-picked across all four levels"
+    action: "Be honest about measurement limitations; mark as illustrative from author experience; show metrics at each level separately AND in aggregate; acknowledge that controlled studies would strengthen the evidence (Part III discusses this)"
+    monitor: "Reviewer feedback on credibility of cross-level measurements"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-2-practice/chapter-10-complete-feature/chapter_10_complete_feature_intent.yaml"
+  output: "manuscript/part-2-practice/chapter-10-complete-feature/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent and IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch10 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (10.1–10.8) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and pre-move-on checklist"
+      validates: "constraints.chapter_takeaways"
+    - check: "At least one complete system-level YAML intent artifact inline (section 10.2)"
+      validates: "deliverables.sections[10.2], constraints.all_levels_demonstrated"
+    - check: "At least one complete workflow-level YAML intent artifact inline (section 10.3)"
+      validates: "deliverables.sections[10.3], constraints.all_levels_demonstrated"
+    - check: "At least one complete module-level YAML intent artifact inline (section 10.4)"
+      validates: "deliverables.sections[10.4], constraints.all_levels_demonstrated"
+    - check: "At least one complete task-level YAML intent artifact inline (section 10.5)"
+      validates: "deliverables.sections[10.5], constraints.all_levels_demonstrated"
+    - check: "All four levels connected via parent_intent hierarchy links (task → module → workflow → system)"
+      validates: "constraints.all_levels_demonstrated"
+    - check: "Comprehensive metrics section covers all IVD metrics: context reduction, alignment accuracy, knowledge durability, recipe effectiveness"
+      validates: "deliverables.sections[10.7], constraints.no_unsourced_statistics"
+    - check: "Writing style: code/YAML centerpiece; prose explains steps and rationale (Part II style)"
+      validates: "constraints.writing_style_part_2"
+    - check: "Bridge to Part III (Validation) present in 10.8"
+      validates: "deliverables.sections[10.8]"
+    - check: "No contradictions with ivd_system_intent.yaml or book_system_intent.yaml"
+      validates: "constraints.master_intent_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 10 'Project 6: Complete Feature (Full Stack)'.
+      Derived from book_system_intent.yaml Ch10 (key_points, placeholder), framework.md
+      (four-level model, IVD metrics), and chapters 5–9 intents (converging patterns).
+      Sections 10.1–10.8 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part II writing style applied (code/YAML centerpiece, prose supports).
+      Chapter-specific constraint: all_levels_demonstrated (all 4 intent levels with inline YAML artifacts).
+      Capstone-specific: comprehensive metrics across ALL IVD claims, pattern convergence from Ch5–9.
+      Risks identified: chapter length, over-engineering perception, auth domain barrier, metrics credibility.
+    reason: "IVD: one intent per chapter; Ch10 is the capstone practice project. Intent-only; manuscript pending."

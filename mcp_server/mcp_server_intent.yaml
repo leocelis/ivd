@@ -611,6 +611,27 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 2.2
+    date: "2026-02-09"
+    change: "Evaluated authorship and evaluation sections — neither applies to MCP server"
+    reason: |
+      Authorship: The MCP server does not originate intent — it exposes tools that
+      AI agents call. Intent authorship is a concern for the calling agent, not the
+      service. The MCP server is always human-directed (the default, no section needed).
+      Evaluation: The MCP server does not run iterative workflows. It responds to
+      individual tool calls. Quality is verified via constraints and tests (standard
+      verification), not a continuous improvement loop. No evaluation section added.
+      Both are valid "when NOT to use" examples for these experimental sections.
+  - version: 2.1
+    date: "2026-02-09"
+    change: "Evaluated roles section — does not apply to MCP server"
+    reason: |
+      The new experimental roles section documents behavioral modes for AI agents
+      that switch roles (e.g., implementer, reviewer, architect). The MCP server is
+      a service (scope.type: service), not an agent — it exposes tools but does not
+      switch behavioral modes. This is a valid "when NOT to use" example for the
+      roles section. No roles section added.
+
   - version: 2
     date: "2026-02-09"
     change: "Added interface section — all 15 tools documented with parameters, types, and test paths"

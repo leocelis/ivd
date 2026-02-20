@@ -1,0 +1,368 @@
+# ==============================================================================
+# Chapter 8: Project 4 — API Integration (Integration Pattern)
+# ==============================================================================
+# Module-level intent for the eighth chapter of the IVD book. Fourth hands-on
+# project in Part II: integrate an external API (Stripe payments) using IVD,
+# demonstrate all four intent levels (system, module, task), apply the
+# data-field-mapping recipe for API↔DB mapping, and measure iteration count
+# to a working integration.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_2_practice.chapters[3]
+# Source:    recipes/data-field-mapping.yaml, framework.md, templates/intent.yaml
+# Version: 1.1
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through integrating an external API (Stripe payments) using IVD—writing intents at system, module, and task levels, applying the data-field-mapping recipe for API↔DB field mapping, implementing critical functions (process_payment, handle_webhook), and measuring iteration count to a production-ready integration."
+  
+  goal: |
+    By the end of this chapter, the reader:
+    1. Has built a complete, working Stripe payment integration using IVD
+    2. Understands how system-level, module-level, and task-level intents nest and reinforce each other
+    3. Has written task-level intents for critical functions (process_payment, handle_webhook) — the most granular intent level
+    4. Has applied the data-field-mapping recipe to map Stripe API fields to internal database fields
+    5. Can measure integration quality by iteration count: fewer iterations to a working integration with IVD vs without
+    6. Recognizes the integration pattern so they can apply it to any external API (Twilio, SendGrid, Shopify, etc.)
+    
+    This is the fourth practice project. The reader has already built an agent (Ch5), a workflow (Ch6),
+    and infrastructure (Ch7). Now they face a fundamentally different challenge: integrating with an
+    external system whose API they don't control. Task-level intents and field mapping become essential
+    because a single mismatched field or mishandled webhook can break the entire integration.
+    
+    Code and intent artifacts are the centerpiece; prose explains steps and rationale.
+  
+  success_metric: |
+    - Reader has a working Stripe payment integration at the end of the chapter
+    - Reader wrote (or followed along with) intents at three levels: system, module, and task
+    - Reader can articulate WHY task-level intents exist and WHEN to use them (critical functions, external boundaries)
+    - Reader applied the data-field-mapping recipe and can map any API's fields to internal models
+    - Iteration count measurement is clear: fewer iterations, fewer field mismatches, fewer webhook failures with IVD
+    - Reader sees the integration pattern: intent nesting (system → module → task) + field mapping + verification at every level
+    - Chapter ends with pattern recognition bridge to Project 5 (Chapter 9)
+  
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_2 purpose: build real projects with IVD)"
+    - "recipes/data-field-mapping.yaml (canonical recipe for field mapping)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch8)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "8.1"
+      title: "Project Overview: Stripe Payment Integration"
+      required_content:
+        - "What we're building: a payment module that integrates Stripe's API for processing charges, handling webhooks, and syncing payment state to an internal database"
+        - "Why this project: external API integration is one of the most common and error-prone tasks in software development; a single mismatched field or unhandled webhook event can cause silent failures, lost revenue, or data corruption"
+        - "Why Stripe: well-documented, widely used, has both synchronous (charge) and asynchronous (webhook) patterns — covers both integration styles in one project"
+        - "What the reader will learn: all four intent levels in practice (system → module → task), field mapping recipe, iteration counting as a measurement"
+        - "Prerequisites: Part I concepts (intent artifacts, principles, four levels); Ch5–Ch7 projects (agent, workflow, infrastructure patterns); basic Python; Stripe test-mode API keys (or mock responses)"
+        - "End state: working payment module with intent artifacts at three levels, field mapping artifact, tests, and iteration count measurement"
+    
+    - id: "8.2"
+      title: "Step 1: System-Level Intent (Why We're Integrating)"
+      required_content:
+        - "Start at the highest level: WHY does the system need payment integration? (e.g., 'Enable users to purchase subscriptions; payments must be reliable, auditable, and PCI-compliant via Stripe')"
+        - "Show a system-level intent artifact: scope (level=system), intent (summary, goal, success_metric), constraints (PCI compliance, uptime, auditability)"
+        - "Emphasize: the system-level intent captures business-level WHY and constraints — it doesn't specify HOW to implement Stripe calls"
+        - "Connect to Principle 1 (Intent is Primary): before writing any Stripe integration code, the system intent establishes what success looks like"
+        - "Show how this system intent becomes the parent_intent for the module-level and task-level intents that follow"
+        - "Comparison to earlier chapters: Ch5 started at module level; Ch8 starts at system level to show how intent nesting works from the top"
+    
+    - id: "8.3"
+      title: "Step 2: Module-Level Intent (Payment Module)"
+      required_content:
+        - "Zoom in: the payment module is one component of the system — its intent inherits from the system-level parent"
+        - "Show a module-level intent artifact: scope (level=module, type=integration), intent (summary, goal, success_metric), constraints (idempotency, error handling, retry logic, logging)"
+        - "parent_intent references the system-level intent from 8.2 — show the link explicitly"
+        - "Module-level constraints are more specific than system-level: 'all charges must be idempotent (Stripe idempotency keys),' 'webhook signature must be verified before processing,' 'all payment state changes logged with correlation ID'"
+        - "Show how module-level intent defines the scope of the payment module: what it owns (charge processing, webhook handling, payment state) and what it delegates (user management, subscription logic)"
+        - "Highlight: the reader has already written module-level intents in Ch5 and Ch6 — this level should feel familiar; what's new is the nesting and the external integration constraints"
+    
+    - id: "8.4"
+      title: "Step 3: Optional — Field Mapping (Stripe API ↔ Internal DB)"
+      required_content:
+        - "Introduce the data-field-mapping recipe: when you integrate with an external API, you need to map external fields to internal fields — this is where silent bugs hide"
+        - "Show the field_mapping section of the intent artifact: sources (Stripe API objects: PaymentIntent, Charge, Event), targets (internal DB tables: payments, transactions, webhook_events), mappings (stripe_id → payment_external_id, amount → amount_cents, status → payment_status with transformation)"
+        - "Demonstrate transformations: Stripe uses cents (amount: 2000); internal DB might use dollars (amount: 20.00); status mapping (succeeded → completed, failed → error); timestamp format conversion"
+        - "Verification for field mapping: each mapping has a test that confirms the transformation is correct — show test cases for amount conversion, status mapping, missing fields"
+        - "Reference recipes/data-field-mapping.yaml explicitly: 'This recipe provides the structure; your intent artifact customizes it to Stripe↔Internal DB'"
+        - "Why this matters: in the author's experience, field mapping mismatches are the #1 source of integration bugs — they're silent, pass basic tests, and surface in production"
+        - "Connect to Principle 2 (Understanding Must Be Executable): field mappings are not prose documentation — they are verifiable, testable declarations"
+    
+    - id: "8.5"
+      title: "Step 4: Task-Level Intents (process_payment, handle_webhook)"
+      required_content:
+        - "Introduce task-level intents: the most granular intent level, used for individual critical functions"
+        - "WHEN to use task-level intents: when a function touches an external boundary (API call), handles money/PII, has complex error states, or where a bug would be catastrophic — NOT for every function"
+        - "Show task-level intent for process_payment: scope (level=task), parent_intent (→ module intent from 8.3), intent (process a single payment via Stripe API), constraints (idempotency key required, amount > 0, currency validated, timeout < 5s, retry on transient errors only), verification (test paths for happy path, duplicate charge, network timeout, invalid card)"
+        - "Show task-level intent for handle_webhook: scope (level=task), parent_intent (→ module intent from 8.3), intent (receive and process Stripe webhook events), constraints (signature verification required, idempotent processing, handle out-of-order events, acknowledge within 5s), verification (test paths for valid event, invalid signature, duplicate event, unknown event type)"
+        - "Emphasize the nesting: system (8.2) → module (8.3) → task (8.5) — each level inherits constraints from its parent and adds specificity"
+        - "Show how the AI assistant uses task-level intents: when implementing process_payment, the AI knows exactly what to handle (idempotency, retries, validation) because the intent declares it — no guessing, no drift"
+        - "Contrast with the 'no intent' approach: without task-level intents, the AI might skip idempotency, forget webhook signature verification, or implement naive retry logic — errors that surface in production, not in tests"
+    
+    - id: "8.6"
+      title: "Step 5: Implementation and Continuous Verification"
+      required_content:
+        - "The IVD implementation flow for integration: hand all three levels of intent (system, module, task) + field mapping to the AI assistant → AI reads the full hierarchy → AI implements against constraints at every level"
+        - "Show key implementation: directory structure (payments/, processor.py, webhook_handler.py, field_mapper.py, tests/), Stripe API client setup, idempotency key generation, webhook signature verification"
+        - "Walk through implementation of process_payment: show how the AI implements idempotency, retry logic, and validation because the task-level intent declares these constraints"
+        - "Walk through implementation of handle_webhook: show how the AI implements signature verification and idempotent event processing because the task-level intent requires them"
+        - "Continuous verification: run tests at all levels — task tests (process_payment happy/error paths), module tests (integration flow: charge → webhook → state sync), system tests (end-to-end: user pays → payment recorded → webhook updates status)"
+        - "What if verification fails? Walk through a failure scenario (e.g., field mapping test catches amount conversion bug) and how intent-guided iteration fixes it faster"
+        - "Bidirectional verification (Principle 3): does the code satisfy the intent at every level? Does each intent still reflect the actual behavior? Update intents if implementation reveals new constraints"
+    
+    - id: "8.7"
+      title: "Measurement: Iterations to Production-Ready"
+      required_content:
+        - "Define the measurement: iteration count — how many implement→test→fix cycles to reach a production-ready integration"
+        - "Baseline scenario (no IVD): describe what happens — ambiguous requirements, missed edge cases (no idempotency, no webhook signature check), field mapping bugs discovered in staging, multiple rounds of 'it works on my machine' → fails in production"
+        - "IVD scenario: what actually happened — task-level intents caught edge cases upfront, field mapping recipe prevented silent conversion bugs, iteration count lower because constraints were explicit from the start"
+        - "Measurement comparison (table or clear list): iterations to first working integration, number of field mapping bugs caught before production, number of edge cases covered (idempotency, retries, webhook ordering), time from 'start' to 'production-ready'"
+        - "Connect to the book's evidence theme: this is the fourth data point (Ch5 accuracy, Ch6 workflow steps, Ch7 infra reliability, Ch8 iteration count) — Part III will aggregate these"
+        - "Note: measurements are illustrative from author experience, not controlled experiments (constraint: no_unsourced_statistics)"
+    
+    - id: "8.8"
+      title: "Results: Alignment Accuracy Improvement"
+      required_content:
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Results synthesis: task-level intents + field mapping = fewer iterations, fewer integration bugs, verifiable alignment between external API and internal system"
+        - "Pattern recognition: what you just did is a repeatable integration pattern — system intent (WHY) → module intent (WHAT) → field mapping (HOW data moves) → task intents (HOW critical functions work) → verify at every level"
+        - "When to use task-level intents: external boundaries, money handling, PII, complex error states — the rule is 'if a bug here would be catastrophic, write a task-level intent'"
+        - "Bridge to Chapter 9: 'In the next project, you'll build a multi-agent coordinator — an orchestration pattern where multiple agents, each with their own intents, must work together'"
+        - "Checklist: 'Before you move on' — did you write intents at system, module, and task levels? Did you apply the field mapping recipe? Did your constraint tests pass at every level? Did you measure iteration count?"
+  
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch8 key_points: Stripe integration, task-level intents, iteration count measurement"
+      - "At least three intent artifacts inline: system-level (8.2), module-level (8.3), task-level (8.5)"
+      - "At least one field_mapping artifact inline (8.4) referencing data-field-mapping recipe"
+      - "Code snippets for payment module implementation (8.6) — processor.py, webhook_handler.py, field_mapper.py"
+      - "Iteration count comparison table or clear structured comparison (8.7)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Checklist in 8.8 (constraint: chapter_takeaways)"
+      - "Clear bridge to Chapter 9 (orchestration pattern)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch8; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Build a Stripe payment integration from scratch using IVD — the fourth practice project, introducing the integration pattern"
+  - "Integrate external API (Stripe, Twilio, etc.) — the project teaches integration with systems you don't control"
+  - "Demonstrate all three active intent levels in one project: system (8.2), module (8.3), task (8.5) — showing how they nest and reinforce each other"
+  - "Task-level intents for critical functions (process_payment, handle_webhook) — the most granular intent level, used at external boundaries and for catastrophic-failure-risk functions"
+  - "Apply the data-field-mapping recipe (recipes/data-field-mapping.yaml) to map Stripe API fields to internal database fields — making field mappings verifiable, not just documented"
+  - "Field mapping catches the #1 source of integration bugs: silent data conversion errors that pass basic tests and surface in production"
+  - "Measure: iteration count to working integration — fewer iterations with IVD because constraints and edge cases are explicit from the start"
+  - "Pattern recognition: system intent (WHY) → module intent (WHAT) → field mapping (HOW data moves) → task intents (HOW critical functions work) → verify at every level"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
+  
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+  
+  - name: "writing_style_part_2"
+    requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
+    source: "book_system_intent.writing_style.code_and_prose.part_2"
+    validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+    test: "chapter.md contains at least 5 fenced code/YAML blocks (system, module, task intents + field mapping + implementation); code blocks appear before or alongside explanatory prose, not after long prose-only passages"
+  
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
+  
+  - name: "recipe_alignment"
+    requirement: "Field mapping must align with recipes/data-field-mapping.yaml structure (sources, targets, mappings, transformations, verification)"
+    source: "recipes/data-field-mapping.yaml"
+    validation: "Chapter's field_mapping artifact and code snippets match recipe patterns; no contradictions with recipe"
+    test: "Field mapping sources, targets, mappings, and transformations in chapter.md match recipes/data-field-mapping.yaml structure; diff produces zero contradictions"
+  
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch8 aligns with framework principles and recipes; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+  
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
+  
+  - name: "no_unsourced_statistics"
+    requirement: "Iteration count measurements must be marked as illustrative (author experience) unless backed by controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Measurement section includes caveat about illustrative data"
+    test: "Section 8.7 contains explicit caveat text (e.g., 'illustrative', 'author experience', 'not a controlled study')"
+  
+  - name: "author_sourced_examples"
+    requirement: "The Stripe integration scenario and code examples should reflect the author's real experience with API integration patterns and the data-field-mapping recipe"
+    source: "book_system_intent.constraints.author_sourced_examples"
+    validation: "Manual: examples feel real, not generic; reference actual integration pain points (field mismatches, webhook ordering, idempotency)"
+    test: "Stripe scenario references real integration failure modes (amount conversion, status mapping, webhook replay); no generic 'widget factory' or 'todo app' examples"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 8 is the fourth practice project — Stripe payment integration using the integration pattern. Part II sequence: Ch5 agent (beginner), Ch6 workflow (intermediate), Ch7 infrastructure, Ch8 integration, Ch9 multi-agent coordinator (intermediate-advanced), Ch10 complete feature full-stack (advanced)."
+  
+  reasoning: |
+    - Part II purpose: build real projects with IVD; learn by doing. Ch8 is the integration project — intermediate complexity, universally relevant problem.
+    - Stripe chosen because: (1) most developers integrate with external APIs at some point, (2) Stripe has both synchronous (charges) and asynchronous (webhooks) patterns, (3) money handling demands precision — a single bug can cause revenue loss, (4) well-documented API with test mode, so readers can follow along without real charges.
+    - Task-level intents introduced here because: external API boundaries are where bugs hide. process_payment and handle_webhook are critical functions where a missing constraint (no idempotency, no signature verification) causes production failures. Task-level intents make these constraints explicit and verifiable.
+    - Field mapping introduced here because: API↔DB mapping is the #1 source of silent integration bugs. The data-field-mapping recipe provides structure; the chapter shows how to apply it. Ch6 introduced field mapping briefly; Ch8 goes deep.
+    - All three levels in one project: Ch5 used module level, Ch6 used workflow+module. Ch8 is the first project to show system → module → task nesting in a single project. This reinforces the four-level model from Part I.
+    - Iteration count as measurement: integration projects are measured by how quickly you reach a production-ready state. With IVD, edge cases are caught by intent constraints before they become production bugs; without IVD, each missed case is a new iteration.
+  
+  evidence: "book/book_system_intent.yaml (part_2, Ch8 key_points, placeholder); recipes/data-field-mapping.yaml (canonical recipe for field mapping); framework.md (IVD flow, four levels)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Use a simpler API without webhooks (e.g., weather API, REST-only)"
+    rejected_because: "Too simple — doesn't demonstrate asynchronous integration patterns (webhooks), field mapping complexity, or the need for task-level intents. Weather API has no critical failure modes (no money, no PII). Wouldn't justify task-level intents."
+    when_it_works: "If the audience is purely beginner and has never integrated any API; our audience has already completed Ch5–Ch7 and needs a real integration challenge."
+  
+  - name: "Cover multiple APIs in one chapter (Stripe + Twilio + SendGrid)"
+    rejected_because: "Too broad — the chapter would be shallow on each API instead of deep on one. The goal is to teach the integration pattern thoroughly on one API so the reader can apply it to any API. Mentioning other APIs (Twilio, etc.) as pattern examples in 8.8 is enough."
+    when_it_works: "In a reference guide or cookbook format where readers look up specific APIs; our book teaches patterns, not API-specific implementations."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Reader doesn't have Stripe API keys and can't follow along"
+    action: "Include a note in 8.1 about prerequisites: Stripe test-mode keys are free and take minutes to set up; alternatively, provide mock responses and example outputs so the chapter works even without API access"
+    monitor: "Beta reader feedback: 'I couldn't follow along because...'"
+    severity: "medium"
+  
+  - condition: "Stripe API changes break code examples"
+    action: "Keep code at pattern level (processor, webhook handler, field mapper structure); reference Stripe docs for latest API details; avoid pinning to specific API versions in prose; use stable Stripe concepts (PaymentIntent, webhooks) that rarely change"
+    monitor: "Stripe API changelog; beta reader reports of broken examples"
+    severity: "medium"
+  
+  - condition: "Chapter is too long — three intent levels + field mapping + implementation + measurement could bloat"
+    action: "Target 25–35 pages; keep code focused on key snippets (not full listing); reference repo for complete code; field mapping section (8.4) should be concise — show the pattern, not exhaustive mappings"
+    monitor: "Page count; beta reader completion rate for this chapter"
+    severity: "high"
+  
+  - condition: "Task-level intents feel like over-engineering to the reader"
+    action: "Explicitly address this in 8.5: task-level intents are NOT for every function — only for critical functions at external boundaries. Show the decision criteria. A reader who writes task-level intents for print('hello') missed the point."
+    monitor: "Beta reader feedback: 'Why would I write an intent for a single function?'"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-2-practice/chapter-08-api-integration/chapter_08_api_integration_intent.yaml"
+  output: "manuscript/part-2-practice/chapter-08-api-integration/chapter.md"
+  status: "pending"
+  version: 1
+  
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, recipe, and IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch8 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (8.1–8.8) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and pre-move-on checklist"
+      validates: "constraints.chapter_takeaways"
+    - check: "At least one system-level intent artifact inline (section 8.2)"
+      validates: "deliverables.sections[8.2]"
+    - check: "At least one module-level intent artifact inline (section 8.3)"
+      validates: "deliverables.sections[8.3]"
+    - check: "At least one task-level intent artifact inline for process_payment and handle_webhook (section 8.5)"
+      validates: "deliverables.sections[8.5]"
+    - check: "At least one field_mapping artifact inline referencing data-field-mapping recipe (section 8.4)"
+      validates: "deliverables.sections[8.4], constraints.recipe_alignment"
+    - check: "Iteration count comparison present with measurements and caveat about illustrative data"
+      validates: "deliverables.sections[8.7], constraints.no_unsourced_statistics"
+    - check: "Writing style: code/YAML centerpiece; prose explains steps and rationale (Part II style)"
+      validates: "constraints.writing_style_part_2"
+    - check: "Bridge to Chapter 9 (orchestration pattern) present in 8.8"
+      validates: "deliverables.sections[8.8]"
+    - check: "No contradictions with ivd_system_intent.yaml, book_system_intent.yaml, or recipes/data-field-mapping.yaml"
+      validates: "constraints.master_intent_alignment, constraints.recipe_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: "Fixed Principle 1 name ('Intent Before Code' → 'Intent is Primary') in section 8.2. Fixed Part II sequence in rationale (Ch9 = multi-agent coordinator, Ch10 = complete feature full-stack)."
+    reason: "Canon accuracy: principle names and chapter sequence must match ivd_system_intent.yaml and book_system_intent.yaml."
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 8 'Project 4: API Integration (Integration Pattern)'.
+      Derived from book_system_intent.yaml Ch8 (key_points, placeholder), recipes/data-field-mapping.yaml
+      (structure, sources, targets, mappings, transformations, verification), framework.md (IVD flow,
+      four levels), and templates/intent.yaml (canonical structure).
+      Sections 8.1–8.8 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part II writing style applied (code centerpiece, prose supports).
+      Chapter-specific focus: task-level intents (most granular level), field mapping (data-field-mapping
+      recipe), intent nesting (system → module → task), iteration count measurement.
+      All 9 constraints include executable test fields (Principle 2: Understanding Must Be Executable).
+      Risks identified: API access, stale code, chapter length, over-engineering perception.
+    reason: "IVD: one intent per chapter; Ch8 is the fourth practice project. Intent-only; manuscript pending."

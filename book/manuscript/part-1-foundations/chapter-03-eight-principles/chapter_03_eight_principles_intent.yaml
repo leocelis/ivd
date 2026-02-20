@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[2]
 # Source:    ivd_system_intent.yaml (8 principles)
-# Version: 1.3
+# Version: 1.6
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -89,6 +89,7 @@ deliverables:
         - "1–2 paragraphs: Verification is not one-time; CI runs constraint tests; review cadence; drift detection"
         - "Why essential: one-time verification allows drift to compound; continuous catch catches misalignment early"
         - "Sub-principles or examples: automated verification (CI), manual review cadence, drift detection"
+        - "Extension to evaluation: for systems that run repeatedly, continuous verification extends to continuous improvement — the experimental evaluation section (Ch6) formalizes evaluate → adjust → re-verify loops"
         - "Common violations: no automated constraint tests in CI, no review cadence, verification only at initial implementation"
     
     - id: "3.5"
@@ -119,7 +120,7 @@ deliverables:
         - "1–2 paragraphs: Intent documents WHAT/WHY not HOW; technology-agnostic; survives rewrites and team changes"
         - "Why essential: intent coupled to implementation is lost when tech changes; agnostic intent transfers"
         - "Sub-principles or examples: intent documents behavior not implementation, constraints technology-agnostic, rationale explains context"
-        - "Example: the interface section (Ch4)—documenting tool surface in intent so it survives implementation rewrite (e.g. Python→TypeScript); same tools, same intent"
+        - "Example: the interface section (Ch4)—documenting tool surface in intent so it survives implementation rewrite (e.g. Python→TypeScript); same tools, same intent. The experimental roles section extends this to behavioral modes—documenting how an agent behaves in different contexts, independent of implementation."
         - "Common violations: intent tightly coupled to library, constraint tests implementation detail not behavior"
     
     - id: "3.8"
@@ -172,36 +173,43 @@ constraints:
     requirement: "Chapter ends with 'Key Points' or 'Summary' block"
     source: "book_system_intent.constraints.chapter_takeaways"
     validation: "chapter.md contains a ## Key Points or ## Summary section"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match"
   
   - name: "quotable_principles"
     requirement: "Each principle stateable as short, memorable rule; 1–2 quotable lines in chapter"
     source: "book_system_intent.writing_style.principles_as_rules, quotable_principles"
     validation: "Manual: each of 8 principles has one-line rule in bold; at least one line quotable on its own"
+    test: "Each section 3.1–3.8 starts with a bold one-line rule; at least one standalone bold sentence works as a tweet/pull-quote"
   
   - name: "principles_as_rules"
     requirement: "One-line rule first, then 1–2 paragraphs explanation (pattern: Clean Code, Stepdown)"
     source: "book_system_intent.writing_style.principles_as_rules"
     validation: "Sections 3.1–3.8: first sentence or bold line is the rule; explanation follows"
+    test: "For each section 3.1–3.8: the first non-heading line is a bold rule statement; followed by 1–2 explanation paragraphs"
   
   - name: "writing_style_part_1"
     requirement: "Prose leads; examples illustrate. Mentor-like, direct, second person. High depth, high accessibility."
     source: "book_system_intent.writing_style (voice, tone, code_and_prose.part_1_3_4)"
     validation: "Manual: voice and tone match"
+    test: "chapter.md uses second person ('you', 'your') as primary address; prose explains before examples illustrate"
   
   - name: "formatting_conventions"
     requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms and one-line rules, italic for emphasis, code for technical terms, paragraph structure (3–6 typical; >10 MUST be broken with subheadings)."
     source: "book_system_intent.writing_style.formatting_conventions"
     validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; italic for emphasis; code font for technical identifiers; no paragraph exceeds 10 sentences without subheading"
   
   - name: "canonical_principles"
     requirement: "Principle statements and when_to_use/skip (P8) must align with ivd_system_intent.yaml"
     source: "ivd_system_intent.yaml principles 1–8"
     validation: "One-line rules and when_to_apply for P8 match ivd_system_intent; no invented principles"
+    test: "Each one-line rule in 3.1–3.8 matches the corresponding principle statement in ivd_system_intent.yaml; P8 when_to_apply matches"
   
   - name: "master_intent_alignment"
     requirement: "Chapter content must not contradict ivd_system_intent.yaml (canon consistency)"
     source: "book_system_intent.constraints.master_intent_alignment"
     validation: "Manual review: Ch3 aligns with ivd_system_intent.yaml; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml"
 
 # ==============================================================================
 # RATIONALE
@@ -222,6 +230,19 @@ rationale:
   evidence: "book/book_system_intent.yaml (part_1, Ch3 key_points, placeholder); ivd_system_intent.yaml (8 principles); research/best_selling_programming_books.md (principles_as_rules)"
   date: "2026-01-26"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Fewer principles (e.g., 3–5 core principles)"
+    rejected_because: "All eight are load-bearing. Removing any weakens the system: without P3 (Bidirectional Sync), intent drifts from code. Without P8 (Inversion), IVD is verification-only, not innovation. The system view (3.9) shows why each matters."
+    when_it_works: "Quick reference cards or executive summaries where brevity outweighs depth."
+
+  - name: "Merge Ch3 principles into Ch2 paradigm overview"
+    rejected_because: "Ch2 overview at ≤2 sentences per principle is already at capacity. Deep dive needs dedicated space: what breaks, common violations, sub-principles. Merging would bloat Ch2 past 40 pages."
+    when_it_works: "If the book had only 5 principles or the reader already knew the paradigm."
 
 # ==============================================================================
 # RISKS
@@ -293,6 +314,25 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.5"
+    date: "2026-02-09"
+    change: "Section 3.4 (Principle 4): added evaluation forward reference — continuous improvement extends continuous verification. Updated manuscript with new paragraph in P4 section. Authorship forward reference was drafted for P6 but removed during audit — too speculative for a foundational principles chapter."
+    reason: "Framework update: evaluation extends P4 naturally (binary → continuous). Authorship was removed from P6 because it lacks production evidence and the principles chapter should teach principles, not preview unproven optional sections."
+  - version: "1.6"
+    date: "2026-02-09"
+    change: |
+      Chapter-by-chapter alignment audit:
+      (1) Added test fields to all 7 constraints (Principle 2: Understanding Must Be Executable).
+      (2) Added alternatives section with 2 rejected alternatives and rationale.
+    reason: "Structural consistency: Ch1 and Ch2 already have test fields and alternatives. Ch3 was missing both."
+  - version: "1.5"
+    date: "2026-02-09"
+    change: "Section 3.4 (Principle 4): added required_content forward reference to evaluation section. Updated manuscript (chapter.md) with new paragraph in P4 section about continuous quality improvement loops."
+    reason: "Framework update: new experimental evaluation section. Ch3 P4 is the natural place to cite it as an extension of continuous verification."
+  - version: "1.4"
+    date: "2026-02-09"
+    change: "Section 3.7 (Principle 7): extended required_content example to include roles alongside interface—behavioral modes survive implementation rewrite. Updated manuscript (chapter.md) with new paragraph in P7 section."
+    reason: "Framework update: new experimental roles section. Ch3 P7 manuscript now covers both interface and roles as concrete examples of understanding surviving implementation."
   - version: "1.3"
     date: "2026-02-09"
     change: "Section 3.7 (Principle 7): added required_content example linking to interface section (Ch4)—tool surface in intent survives implementation rewrite; ties Principle 7 to the new optional section."

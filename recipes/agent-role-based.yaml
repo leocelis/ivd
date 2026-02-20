@@ -1,0 +1,328 @@
+# ==============================================================================
+# IVD Recipe: Role-Based Agent Pattern (Experimental)
+# ==============================================================================
+# Pattern for AI agents that switch between behavioral modes depending on
+# context — each mode has different constraints, tool subsets, and verification.
+#
+# Status: Experimental
+# Version: 1.0
+# Created: 2026-02-09
+# ==============================================================================
+
+recipe:
+  name: "Role-Based Agent Pattern"
+  version: "1.0"
+  category: "agent_patterns"
+  status: "experimental"
+  created: "2026-02-09"
+
+  description: |
+    Pattern for AI agents that operate in multiple behavioral modes (roles)
+    depending on context. Each role defines:
+    - What the agent does in this mode (description)
+    - When this role activates (trigger/context)
+    - What constraints apply (guardrails specific to this role)
+    - Which tools are available (subset of the agent's interface)
+    - How to verify the agent behaved correctly in this role (tests)
+
+    This is distinct from the coordinator-intent-propagation pattern:
+    - Coordinator pattern = MULTIPLE agents, each with its own intent
+    - Role-based pattern  = ONE agent, MULTIPLE behavioral modes
+
+    Roles complement the interface section:
+    - interface = WHAT the agent can do (tools, parameters, returns)
+    - roles     = HOW the agent behaves in different contexts
+
+  problem_solved: |
+    AI agents often switch behavioral modes (implementer, reviewer, architect,
+    debugger, teacher) but these modes live only in system prompts or code.
+    Without roles in intent:
+    - Behavioral expectations are implicit, not verifiable
+    - Coordinators can't understand an agent's available modes
+    - Rewriting the agent loses the behavioral profiles
+    - Users don't know what constraints apply in each mode
+
+  applies_to:
+    - "AI coding agents with multiple modes (agent, plan, debug, ask)"
+    - "Customer support agents switching between helper, escalator, closer roles"
+    - "Development agents that review, implement, and architect"
+    - "Educational agents that teach, quiz, and mentor"
+    - "Any single agent with 2+ distinct behavioral modes"
+
+  when_to_use:
+    - "Agent has 2+ behavioral modes with different constraints"
+    - "Each mode restricts or changes which tools are available"
+    - "Coordinator needs to understand agent's behavioral modes for routing"
+    - "Users need clarity on what the agent will and won't do in each mode"
+    - "Role constraints need to be verifiable (not just prompt-based)"
+
+  when_NOT_to_use:
+    - "Agent has a single mode (just use interface section)"
+    - "Behavioral differences are trivial (tone or prompt only, no constraint changes)"
+    - "Each role is a separate agent (use coordinator-intent-propagation recipe)"
+    - "Module is not an agent (APIs, CLIs, services don't have roles)"
+
+# ==============================================================================
+# TEMPLATE SECTIONS
+# ==============================================================================
+
+intent_template:
+  summary: "[Agent name] with [N] behavioral modes for [use case]"
+  goal: "Provide [capability] with context-appropriate behavior — switching between [roles] based on [trigger]"
+  success_metric: "Role constraints verified in [N]% of interactions; no constraint violations in production"
+  stakeholders:
+    - "[Primary consumer of the agent]"
+    - "[Coordinator or system that routes to this agent]"
+
+interface_template:
+  type: "agent"
+  tools:
+    - name: "[tool_1]"
+      description: "Available in all roles"
+      parameters: []
+      returns: "[return type]"
+      test: "tests/test_tool_1.py"
+
+    - name: "[tool_2]"
+      description: "Available only in specific roles"
+      parameters: []
+      returns: "[return type]"
+      test: "tests/test_tool_2.py"
+
+roles_template:
+  default: "[default_role]"
+
+  switching:
+    mechanism: "[user_directed | context_inferred | explicit_command]"
+    description: "[How the agent transitions between roles — e.g., user selects, agent infers from request]"
+
+  definitions:
+    - name: "[role_1]"
+      description: "[One-line: primary behavioral mode]"
+      when: "[What triggers this role — user request type, explicit command, context]"
+      constraints:
+        - "[Constraint 1: what this role MUST do]"
+        - "[Constraint 2: what this role MUST NOT do]"
+      tools: ["all"]
+      verification: "tests/test_role_[role_1].py"
+
+    - name: "[role_2]"
+      description: "[One-line: secondary behavioral mode]"
+      when: "[Trigger for this role]"
+      constraints:
+        - "[Constraint 1: e.g., read-only]"
+        - "[Constraint 2: e.g., must cite sources]"
+      tools: ["[subset of interface tools]"]
+      verification: "tests/test_role_[role_2].py"
+
+constraints_template:
+  - name: "role_constraint_enforcement"
+    requirement: "Agent must operate within the active role's constraints at all times"
+    test: "tests/test_role_constraints.py::test_role_boundaries"
+    consequence_if_violated: "[What breaks — e.g., reviewer modifies files, implementer skips verification]"
+
+  - name: "role_transition_valid"
+    requirement: "Role transitions follow the declared switching mechanism"
+    test: "tests/test_role_constraints.py::test_valid_transitions"
+    consequence_if_violated: "Agent switches roles unexpectedly, breaking user expectations"
+
+  - name: "default_role_applied"
+    requirement: "Agent starts in the declared default role when no explicit role is requested"
+    test: "tests/test_role_constraints.py::test_default_role"
+    consequence_if_violated: "Agent behavior unpredictable on first interaction"
+
+rationale_template:
+  decision: "[Why these roles, why these constraints, why this switching mechanism]"
+  reasoning: |
+    Roles were defined based on:
+    - [Observed usage patterns — when do users need different behaviors?]
+    - [Constraint requirements — which modes need guardrails?]
+    - [Tool safety — which tools should be restricted in which contexts?]
+  evidence: "[Link to usage data, user feedback, or design docs]"
+  date: "[YYYY-MM-DD]"
+  stakeholder: "[Who approved the role definitions]"
+
+risks_template:
+  - condition: "Agent violates role constraints"
+    action: "Log violation, alert, and consider reverting to default role"
+    monitor: "Role constraint test suite + production logging"
+    severity: "high"
+
+  - condition: "Role switching mechanism doesn't match user expectations"
+    action: "Review switching mechanism; consider adding explicit command support"
+    monitor: "User feedback, support tickets about unexpected behavior"
+    severity: "medium"
+
+  - condition: "Roles become too many (>5), adding complexity without value"
+    action: "Consolidate roles with similar constraints; remove unused roles"
+    monitor: "Role usage analytics"
+    severity: "low"
+
+# ==============================================================================
+# REAL-WORLD EXAMPLES
+# ==============================================================================
+
+examples:
+  - name: "AI Coding Agent (Cursor-style)"
+    description: "Coding assistant with agent, plan, review, and debug modes"
+    roles:
+      default: "agent"
+      switching:
+        mechanism: "user_directed"
+        description: "User selects mode explicitly via command or the system infers from request type"
+      definitions:
+        - name: "agent"
+          description: "Full implementation mode — writes code, creates files, runs commands"
+          when: "User requests building, fixing, creating, or implementing"
+          constraints:
+            - "Must read relevant files before editing"
+            - "Must verify constraints after implementation"
+            - "Must check for linter errors after edits"
+          tools: ["all"]
+          verification: "tests/test_role_agent.py"
+
+        - name: "plan"
+          description: "Read-only planning mode — designs approach, evaluates tradeoffs"
+          when: "Task is large, ambiguous, or has meaningful tradeoffs"
+          constraints:
+            - "Read-only: no file modifications, no commands"
+            - "Must present alternatives with tradeoffs"
+            - "Must produce actionable plan before switching to agent mode"
+          tools: ["read", "search", "semantic_search"]
+          verification: "tests/test_role_plan.py"
+
+        - name: "reviewer"
+          description: "Code review mode — finds issues, suggests improvements"
+          when: "User requests review, audit, or code check"
+          constraints:
+            - "Read-only: no file modifications"
+            - "Must cite specific file paths and line numbers"
+            - "Must check alignment against intent artifact if one exists"
+          tools: ["read", "search", "validate"]
+          verification: "tests/test_role_reviewer.py"
+
+        - name: "debug"
+          description: "Systematic debugging mode — investigates bugs with evidence"
+          when: "User reports a bug, error, or unexpected behavior"
+          constraints:
+            - "Must gather runtime evidence before proposing fixes"
+            - "Must form and test hypotheses"
+            - "Must verify fix resolves the issue"
+          tools: ["all"]
+          verification: "tests/test_role_debug.py"
+
+  - name: "Customer Support Agent"
+    description: "Support agent that handles, escalates, or closes tickets"
+    roles:
+      default: "helper"
+      switching:
+        mechanism: "context_inferred"
+        description: "Agent infers role from ticket content, customer sentiment, and issue complexity"
+      definitions:
+        - name: "helper"
+          description: "First-line support — answers questions, provides solutions"
+          when: "Standard support request within agent's knowledge base"
+          constraints:
+            - "Must search knowledge base before responding"
+            - "Must not make promises about timelines or refunds"
+          tools: ["search_kb", "create_ticket", "send_response"]
+          verification: "tests/test_role_helper.py"
+
+        - name: "escalator"
+          description: "Escalation mode — routes to human agent with context"
+          when: "Issue exceeds agent capability, customer is frustrated, or policy requires human"
+          constraints:
+            - "Must summarize issue and attempted solutions before escalating"
+            - "Must not attempt to resolve issues beyond capability"
+          tools: ["search_kb", "escalate_ticket", "send_response"]
+          verification: "tests/test_role_escalator.py"
+
+# ==============================================================================
+# IMPLEMENTATION GUIDANCE
+# ==============================================================================
+
+implementation_pattern:
+  directory_structure: |
+    agent/{agent_name}/
+    ├── {agent_name}_intent.yaml     # Module intent (with interface + roles)
+    ├── agent.py                     # Agent implementation
+    ├── roles/                       # Role-specific logic (optional)
+    │   ├── implementer.py
+    │   ├── reviewer.py
+    │   └── ...
+    ├── intents/                     # Task-level intents (if needed)
+    │   └── {function}_intent.yaml
+    └── tests/
+        ├── test_role_implementer.py
+        ├── test_role_reviewer.py
+        └── test_role_constraints.py
+
+  key_implementation_decisions:
+    - decision: "How to enforce role constraints at runtime"
+      options:
+        - "Middleware/decorator that checks active role before tool execution"
+        - "Role-aware tool registry that filters available tools"
+        - "Pre/post hooks that validate constraints"
+      recommendation: "Role-aware tool registry — cleanest separation, easiest to test"
+
+    - decision: "How to store active role state"
+      options:
+        - "Session/conversation level (persists across turns)"
+        - "Per-request (resets each turn)"
+        - "Explicit command (user switches, persists until changed)"
+      recommendation: "Depends on switching.mechanism — match the declared mechanism"
+
+# ==============================================================================
+# BEST PRACTICES
+# ==============================================================================
+
+best_practices:
+  - "Start with 2-3 roles; add more only when distinct constraints emerge"
+  - "Each role must have at least one constraint that differs from other roles"
+  - "The default role should be the safest or most common mode"
+  - "Role constraints should be testable, not aspirational"
+  - "Link tools to interface section — roles restrict, they don't define new tools"
+  - "Document switching mechanism clearly — users must know how to change roles"
+
+common_pitfalls:
+  - pitfall: "Too many roles with overlapping constraints"
+    solution: "Consolidate roles that differ in only tone or prompt, not constraints"
+  - pitfall: "Roles defined but not enforced at runtime"
+    solution: "Add role constraint tests that verify behavior per mode"
+  - pitfall: "Using roles when separate agents would be cleaner"
+    solution: "If roles never share tools or context, use coordinator pattern instead"
+  - pitfall: "Forgetting to update roles when interface changes"
+    solution: "Roles reference interface tools — run ivd_validate to catch drift"
+
+# ==============================================================================
+# VERIFICATION GUIDANCE
+# ==============================================================================
+
+verification_pattern:
+  role_constraint_tests: |
+    For each role, write tests that verify:
+    1. Only allowed tools are accessible in this role
+    2. Role-specific constraints are enforced
+    3. Default role is applied when no role is specified
+    4. Role transitions follow the declared mechanism
+
+  example_test: |
+    def test_reviewer_is_read_only():
+        agent = create_agent(role="reviewer")
+        # Reviewer should NOT be able to write files
+        result = agent.call("write_file", path="test.py", content="...")
+        assert result.denied, "Reviewer must be read-only"
+
+    def test_default_role_is_implementer():
+        agent = create_agent()  # No role specified
+        assert agent.active_role == "implementer"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: "Initial recipe for role-based agent pattern"
+    reason: "AI agents with context-dependent behavior had no reusable IVD pattern"

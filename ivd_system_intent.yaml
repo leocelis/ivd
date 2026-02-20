@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.4
+# Version: 1.6
 # Created: 2026-01-24
-# Updated: 2026-02-09 (Intent coverage assessment: ivd_assess_coverage)
+# Updated: 2026-02-09 (Experimental: authorship + evaluation optional sections)
 # Status: Canonical
 # ==============================================================================
 
@@ -799,6 +799,126 @@ rules:
         ]
         added: "2026-02-09"
 
+      - name: "roles"
+        status: "experimental"
+        purpose: "Document the behavioral modes of an AI agent that switches roles depending on context (e.g., implementer, reviewer, architect, teacher)"
+        when_to_use: "Module-level intents where scope.type is agent and the agent has 2+ distinct behavioral modes with different constraints, tool subsets, or verification criteria"
+        when_not_to_use: "Agents with a single mode; trivial differences (just tone/prompt, no constraint changes); multi-agent systems where each role is a separate agent (use coordinator recipe instead)"
+        supports_principles: [
+          "Principle 1: Intent is Primary (behavioral profiles are part of what the agent should do, not just in code or prompts)",
+          "Principle 2: Understanding Must Be Executable (each role has constraints and a verification test path)",
+          "Principle 5: Layered Understanding (roles are a distinct layer — in what contexts does this agent behave differently?)",
+          "Principle 7: Understanding Survives Implementation (rewrite the agent; roles still describe the same behavioral modes)"
+        ]
+        relationship_to_interface: "Complements interface: interface = WHAT the agent can do (tools); roles = HOW the agent behaves in different contexts (constraints, tool subsets). A role may restrict which interface tools are available."
+        structure: |
+          roles:
+            default: "implementer"
+            switching:
+              mechanism: "user_directed"     # user_directed | context_inferred | explicit_command
+              description: "How the agent transitions between roles"
+            definitions:
+              - name: "role_name"
+                description: "One-line: what this role does"
+                when: "Context or trigger that activates this role"
+                constraints:
+                  - "Behavioral guardrail specific to this role"
+                tools: ["tool_name"]         # subset of interface.tools, or "all"
+                verification: "tests/test_role_name.py"
+        benefits: [
+          "Role behaviors are verifiable (Principle 2): per-role constraints and tests catch behavioral drift",
+          "AI agents can read roles to understand context-dependent behavior without reading implementation code or prompts",
+          "Roles survive rewrites: change framework or language; roles still describe the same behavioral modes",
+          "Complements interface: interface defines capabilities; roles define how capabilities are used in context",
+          "Coordinators can read roles to understand an agent's behavioral modes for routing decisions"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production agents",
+          "500+ line comprehensive example added",
+          "Role constraint verification validated in real project"
+        ]
+        added: "2026-02-09"
+
+      - name: "authorship"
+        status: "experimental"
+        purpose: "Declare who originates intent (human, AI-proposed, AI-autonomous) and what oversight is required — formalizing the trust boundary for intent creation"
+        when_to_use: "Any intent artifact where AI may originate, modify, or extend intent without a direct human request — autonomous agents, self-improving workflows, agent-designed processes"
+        when_not_to_use: "Standard IVD workflow where human describes and AI writes (the default model); intents that are always human-originated"
+        supports_principles: [
+          "Principle 1: Intent is Primary (authorship metadata is part of the intent — who can create/change it is as important as what it says)",
+          "Principle 2: Understanding Must Be Executable (oversight rules are verifiable — test that AI cannot modify fields it lacks authority over)",
+          "Principle 4: Continuous Verification (authorship boundaries are continuously enforced, not just at creation time)",
+          "Principle 6: AI as Understanding Partner (formalizes the spectrum from partner to co-creator to autonomous operator)"
+        ]
+        relationship_to_roles: "Complements roles: roles define HOW an agent behaves; authorship defines WHAT authority that agent has over intent itself. An agent in 'architect' role may have authority to create new intents; in 'implementer' role it may only modify implementation sections."
+        structure: |
+          authorship:
+            origin: "human_directed"       # human_directed | ai_proposed | ai_autonomous
+            human_oversight: "review_required"  # review_required | audit_trail | escalation_only
+            ai_authority:
+              can_create: false            # can the AI create new intents without human request?
+              can_modify: ["implementation", "verification"]  # which sections AI can modify
+              requires_approval: ["intent.goal", "intent.success_metric", "constraints"]  # fields needing human sign-off
+            escalation: "When AI confidence < threshold or change impacts other intents"
+        benefits: [
+          "Trust boundaries are explicit: developers and teams know what the AI can and cannot change",
+          "Oversight model is verifiable (Principle 2): test that AI respects declared authority",
+          "Enables safe autonomy: AI can operate independently within declared boundaries",
+          "Scales from human-directed (current IVD) to AI-autonomous (future IVD) without breaking the framework",
+          "Coordinators can read authorship to understand an agent's authority level for delegation decisions"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production workflows with AI-proposed or AI-autonomous origin",
+          "Oversight enforcement validated (AI correctly blocked from modifying unauthorized fields)",
+          "Escalation mechanism validated in real project"
+        ]
+        added: "2026-02-09"
+
+      - name: "evaluation"
+        status: "experimental"
+        purpose: "Formalize the continuous improvement loop: evaluate output quality → identify weakness → propose adjustment → verify adjustment doesn't violate constraints → apply. Extends verification from pass/fail to continuous quality improvement."
+        when_to_use: "Workflow-level or module-level intents where output quality should improve over iterations — autonomous workflows, self-improving agents, production systems with quality feedback loops"
+        when_not_to_use: "One-shot implementations with no iteration cycle; task-level intents (too granular); when standard verification (constraints + tests) is sufficient"
+        supports_principles: [
+          "Principle 2: Understanding Must Be Executable (evaluation criteria are testable — not aspirational quality goals)",
+          "Principle 3: Bidirectional Sync (evaluation results flow back to update implementation, and may update intent if authorized by authorship section)",
+          "Principle 4: Continuous Verification (evaluation IS continuous verification extended — not just 'does it pass' but 'how good is it and how can it improve')",
+          "Principle 7: Understanding Survives Implementation (evaluation criteria describe quality goals, not implementation details — survive rewrites)"
+        ]
+        relationship_to_authorship: "Depends on authorship: the evaluation loop's adjustment.authority must respect the authorship section's ai_authority. If authorship says AI can only modify implementation, the evaluation loop cannot modify constraints."
+        relationship_to_constraints: "Extends constraints: constraints are binary (pass/fail); evaluation criteria are continuous (quality score). Evaluation NEVER relaxes constraints — it improves quality within constraint boundaries."
+        structure: |
+          evaluation:
+            criteria:
+              - metric: "output_quality_score"
+                target: ">= 0.85"
+                source: "automated | human_review | hybrid"
+              - metric: "constraint_pass_rate"
+                target: "100%"
+                source: "ivd_validate"
+            adjustment:
+              authority: "ai_proposed"      # human_only | ai_proposed | ai_autonomous
+              scope: ["implementation", "workflow_steps"]  # what CAN be adjusted
+              protected: ["intent.goal", "constraints"]    # what CANNOT be adjusted
+            cycle:
+              trigger: "on_completion"      # on_completion | on_failure | scheduled | continuous
+              max_iterations: 3
+              stop_when: "All criteria met or max_iterations reached"
+              escalate_when: "Cannot meet criteria after max_iterations"
+        benefits: [
+          "Quality improvement is formalized: not ad-hoc 'make it better' but structured evaluate → adjust → re-verify",
+          "Guardrails are built in: protected fields cannot be modified by the evaluation loop",
+          "Iteration is bounded: max_iterations prevents infinite loops",
+          "Escalation is explicit: when the loop can't improve enough, humans are notified",
+          "Compatible with authorship: adjustment authority respects intent authorship boundaries"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production workflows with measurable quality improvement",
+          "Protected field enforcement validated (evaluation loop correctly blocked from modifying constraints)",
+          "Escalation mechanism triggered and handled in real project"
+        ]
+        added: "2026-02-09"
+
   # --------------------------------------------------------------------------
   # RULE 3: New Recipe Patterns
   # --------------------------------------------------------------------------
@@ -1402,6 +1522,30 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 1.6
+    date: "2026-02-09"
+    change: "Added experimental authorship and evaluation optional sections"
+    reason: |
+      Two gaps identified in IVD's coverage of autonomous agent workflows:
+      (1) Authorship: IVD assumed human-originated intent but AI agents increasingly
+          originate intent (designing workflows, proposing structures). Authorship
+          formalizes who can create/modify intent and what oversight is required.
+      (2) Evaluation: IVD had binary verification (pass/fail constraints) but no
+          formalized improvement loop. Evaluation extends verification to continuous
+          quality improvement: evaluate → adjust → re-verify, with bounded iterations
+          and escalation. Together they enable safe autonomy for AI agents.
+  - version: 1.5
+    date: "2026-02-09"
+    change: "Added experimental roles optional section for AI agents with context-dependent behavior"
+    reason: |
+      AI agents that switch behavioral modes (implementer, reviewer, architect, teacher)
+      had no IVD-canonical way to declare those profiles in intent. Without roles in intent,
+      behavioral differences live only in code or prompts — violating P1 (Intent is Primary).
+      Roles complement interface (WHAT vs HOW): interface defines tool capabilities; roles
+      define how the agent uses those capabilities in different contexts. Status: Experimental
+      — pending production validation in 2+ agents before promotion to Canonical.
+    evidence: "Principle-by-principle gap analysis; real-world pattern: Cursor IDE modes (agent, plan, debug, ask)"
+
   - version: 1.4
     date: "2026-02-09"
     change: "Added intent coverage assessment (ivd_assess_coverage tool + framework docs)"

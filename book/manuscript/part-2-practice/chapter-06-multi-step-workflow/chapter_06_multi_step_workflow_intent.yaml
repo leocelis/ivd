@@ -1,0 +1,391 @@
+# ==============================================================================
+# Chapter 6: Project 2 — Multi-Step Workflow (Workflow Pattern)
+# ==============================================================================
+# Module-level intent for the sixth chapter of the IVD book. Second hands-on
+# project in Part II: build a data processing pipeline (ETL) using IVD,
+# introduce workflow-level intents, field mapping, evaluation sections,
+# and measure baseline vs IVD context reduction.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_2_practice.chapters[1]
+# Source:    recipes/workflow-orchestration.yaml, recipes/data-field-mapping.yaml,
+#            framework.md, templates/intent.yaml
+# Version: 1.1
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through building a data processing pipeline (ETL for analytics) using IVD — introducing workflow-level intents, field mapping, evaluation sections, implementing each step with module-level intents, and measuring baseline (read 10 files) vs IVD (read 1 workflow intent) context reduction."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Has built a complete, working multi-step data processing pipeline (5+ steps) using IVD
+    2. Understands workflow-level intents: what they are, how they differ from module-level intents (Ch5), and when to use them
+    3. Has written a workflow-level intent artifact documenting steps, data flow, and error handling
+    4. Can apply the workflow-orchestration recipe to orchestrate multi-step processes
+    5. Understands optional field mapping (data-field-mapping.yaml) for data transformations between steps
+    6. Understands the evaluation section (experimental): quality metrics, improvement loop, bounded iteration
+    7. Has implemented each pipeline step with its own module-level intent, linked to the workflow intent
+    8. Has measurable evidence: baseline (no IVD, read 10 files) vs IVD (read 1 workflow intent) — 80-90% context reduction
+    9. Recognizes the progression: Ch5 module-level → Ch6 workflow-level → next levels in Ch7–10
+
+    This is the second practice project. The reader transitions from single-module intents (Ch5) to orchestrating multiple modules under a workflow-level intent. Code and intent artifacts are the centerpiece; prose explains steps and rationale.
+
+  success_metric: |
+    - Reader has a working ETL pipeline at the end of the chapter
+    - Reader wrote (or followed along with) a workflow-level intent artifact referencing the workflow-orchestration recipe
+    - Reader can articulate the difference between module-level (Ch5) and workflow-level intents
+    - Reader understands field mapping as an optional section for data transformations
+    - Reader understands the evaluation section as an experimental mechanism for quality measurement and bounded improvement
+    - Baseline vs IVD measurement is clear: 80-90% context reduction (read 1 workflow intent vs read 10 files)
+    - Reader sees the progression: single agent (Ch5) → orchestrated workflow (Ch6) → infrastructure (Ch7)
+    - Chapter ends with pattern recognition bridge to Project 3 (Chapter 7)
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_2 purpose: build real projects with IVD)"
+    - "recipes/workflow-orchestration.yaml (canonical recipe)"
+    - "recipes/data-field-mapping.yaml (field mapping recipe)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch6)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "6.1"
+      title: "Project Overview: ETL Pipeline for Analytics"
+      required_content:
+        - "What we're building: a data processing pipeline that extracts, transforms, and loads analytics data through 5+ orchestrated steps"
+        - "Why this project: multi-step workflows are fundamentally different from single agents — coordination, data flow between steps, error handling, and partial failure require a different intent level"
+        - "What the reader will learn: workflow-level intents (NEW), field mapping (optional), evaluation section (experimental), module-level intents per step, baseline vs IVD measurement"
+        - "Prerequisites: Part I concepts, Chapter 5 completed (module-level intent practice), basic Python, familiarity with data processing concepts"
+        - "End state: working ETL pipeline with workflow-level intent, module-level intents per step, and 80-90% context reduction measured"
+        - "Progression context: Ch5 gave you module-level (one agent); this chapter gives you workflow-level (orchestrating multiple modules)"
+
+    - id: "6.2"
+      title: "The Problem: Understanding Multi-File Workflows"
+      required_content:
+        - "The challenge: a multi-step workflow spreads logic across 5-10+ files — an AI agent (or new team member) must read ALL files to understand the system"
+        - "Baseline scenario: without IVD, understanding this ETL pipeline requires reading every module, tracing data flow manually, inferring error handling from code, and guessing at the overall orchestration logic"
+        - "The cost: reading 10 files = high context window usage, slow onboarding, fragile understanding that breaks when any file changes"
+        - "The IVD solution: one workflow-level intent artifact captures the entire pipeline — steps, data flow, error handling, success criteria — readable in minutes"
+        - "Key insight: workflow-level intents don't replace module-level intents; they sit ABOVE them, providing the orchestration map that connects individual modules"
+        - "Bridge from Ch5: in Ch5 you had one agent with one intent; here you have N modules coordinated by one workflow intent"
+
+    - id: "6.3"
+      title: "Step 1: Create Workflow-Level Intent"
+      required_content:
+        - "Introduce workflow-level intents: scope.level = 'workflow' — a distinct level above module-level (Ch5); workflow intents capture the orchestration of multiple modules into a coordinated process"
+        - "The workflow-orchestration recipe: reference recipe, show how it provides the structure for multi-step processes (steps array, data_flow, error_handling, orchestration_pattern)"
+        - "Write the workflow-level intent artifact: scope, intent (summary, goal, success_metric), steps array with name/description/input/output/depends_on for each pipeline step"
+        - "Document data flow: how data moves between steps (output of step N = input of step N+1), data contracts between modules"
+        - "Document error handling: what happens when a step fails (retry, skip, abort pipeline), partial failure strategies"
+        - "Show the complete workflow-level YAML artifact inline (the chapter's primary teaching artifact)"
+        - "Emphasize: workflow intent is the single document an AI agent reads to understand the entire pipeline — this is the context reduction mechanism"
+
+    - id: "6.4"
+      title: "Step 2: Document Steps, Data Flow, Error Handling"
+      required_content:
+        - "Deep dive into each pipeline step: extract, validate, transform, enrich, load (5+ steps minimum)"
+        - "For each step: name, description, input schema, output schema, dependencies, constraints, test path"
+        - "Data flow documentation: explicit contracts between steps — what format, what fields, what guarantees"
+        - "Error handling patterns: retry with backoff, dead letter queue, circuit breaker, graceful degradation — each with when_to_use and consequence_if_missing"
+        - "Orchestration pattern: sequential, parallel where independent, dependency graph"
+        - "Emphasize: documenting this in the workflow intent means any AI agent can implement or modify any step without reading the entire codebase"
+
+    - id: "6.5"
+      title: "Step 3: Optional - Field Mapping for Data Transformations (recipes/data-field-mapping.yaml)"
+      required_content:
+        - "Introduce field mapping as an optional IVD section: when data transformations between steps are complex, document them explicitly"
+        - "Reference the data-field-mapping recipe: show the structure (source_field → target_field, transformation_rule, validation)"
+        - "When to use field mapping: complex ETL transformations, schema mismatches between systems, data normalization across sources"
+        - "When NOT to use field mapping: simple pass-through, trivial renames, transforms obvious from code"
+        - "Show a field mapping YAML artifact for one of the pipeline's transformation steps"
+        - "Emphasize: field mapping is optional — use it when the transformation logic is the hard part, not when the code is self-explanatory"
+
+    - id: "6.6"
+      title: "Step 4: Optional - Evaluation Section (quality metrics, improvement loop, bounded iteration)"
+      required_content:
+        - "Introduce the evaluation section as an experimental IVD mechanism: how the workflow measures its own quality and improves over iterations"
+        - "Structure: metrics (what to measure), thresholds (acceptable ranges), improvement_loop (how to iterate), bounded_iteration (when to stop improving)"
+        - "Metrics for the ETL pipeline: data completeness, transformation accuracy, processing latency, error rate"
+        - "Bounded iteration: define a maximum number of improvement cycles to prevent infinite optimization loops — the workflow knows when 'good enough' is reached"
+        - "Why experimental: evaluation is powerful but adds complexity; not every workflow needs it; use when quality measurement is critical to the workflow's purpose"
+        - "Show the evaluation section YAML inline, integrated into the workflow intent"
+
+    - id: "6.7"
+      title: "Step 5: Implement Each Step (Module-Level Intents)"
+      required_content:
+        - "Each pipeline step gets its own module-level intent: parent_intent points to the workflow intent, scope.type = 'module'"
+        - "Implementation flow: workflow intent → AI reads it → AI implements each step against its module-level intent → each step satisfies both its own constraints and the workflow's data contracts"
+        - "Show implementation for 2-3 key steps: extract (API/file ingestion), transform (business logic), load (destination write)"
+        - "Code snippets: module structure per step (handler, validator, models), following the workflow-orchestration recipe's implementation_pattern"
+        - "Emphasize: each module-level intent references its parent workflow intent — bidirectional traceability (Principle 3)"
+        - "What if a step's implementation reveals a workflow design issue? Update the workflow intent first, then re-implement — intent is always source of truth"
+
+    - id: "6.8"
+      title: "Step 6: End-to-End Verification + Evaluation Loop"
+      required_content:
+        - "Run the full pipeline end-to-end: all steps execute in sequence, data flows correctly, error handling triggers as expected"
+        - "Verification against workflow intent: does the pipeline satisfy all constraints? Do data contracts hold between steps?"
+        - "Verification against module intents: does each step satisfy its own constraints?"
+        - "Evaluation loop (if evaluation section present): run metrics, compare against thresholds, iterate if below threshold, stop when bounded iteration limit reached or thresholds met"
+        - "Show test output: end-to-end pipeline run with metrics (completeness: 98%, latency: 3.2s, error rate: 0.5%)"
+        - "Continuous verification: how to keep the pipeline's intent-to-code alignment as the system evolves"
+
+    - id: "6.9"
+      title: "Measurement: AI Agent Context Needed (Baseline vs IVD)"
+      required_content:
+        - "Baseline scenario: build/understand the same pipeline without IVD — AI agent must read all 10+ files, trace data flow through code, infer error handling, piece together orchestration logic"
+        - "IVD scenario: AI agent reads 1 workflow-level intent — understands the entire pipeline (steps, data flow, error handling, success criteria) in minutes"
+        - "Context reduction measurement: baseline requires ~10 file reads; IVD requires ~1 workflow intent read — 80-90% reduction in context needed"
+        - "Why this matters: less context = faster onboarding, fewer hallucinations, less drift, cheaper token usage"
+        - "Note: measurements are illustrative from author experience, not controlled experiments (constraint: no_unsourced_statistics)"
+        - "Tie back to Chapter 2 (IVD paradigm) and Chapter 5 (first measurement): this is the second data point — the pattern holds across different project types"
+
+    - id: "6.10"
+      title: "Results: 80-90% Context Reduction Validated"
+      required_content:
+        - "Summary of results: workflow-level intents deliver 80-90% context reduction for multi-step systems"
+        - "Comparison table: baseline metrics vs IVD metrics (files read, time to understand, iterations to modify, error rate when changing steps)"
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Pattern recognition: workflow-level intent sits above module-level intents; together they create a hierarchy that scales"
+        - "Bridge to Chapter 7: 'In the next project, you'll tackle infrastructure — background job systems where the challenge is reliability, observability, and long-running processes'"
+        - "Checklist: 'Before you move on' — did you write your workflow intent? Did your module intents reference it? Did you measure context reduction? Did your evaluation loop converge?"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch6 key_points: multi-step pipeline, workflow-level intent, context reduction 80-90%, evaluation section"
+      - "At least one complete workflow-level YAML intent artifact inline (section 6.3)"
+      - "At least one field mapping YAML artifact inline (section 6.5)"
+      - "At least one evaluation section YAML inline (section 6.6)"
+      - "Code snippets for pipeline step implementation (section 6.7) — recipe's implementation_pattern adapted"
+      - "Baseline vs IVD comparison table or clear structured comparison (section 6.9–6.10)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Checklist in 6.10 (constraint: chapter_takeaways)"
+      - "Clear bridge to Chapter 7 (infrastructure pattern)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch6; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Build a data processing pipeline with 5+ steps — the second complete practice project, introducing workflow-level orchestration"
+  - "Workflow-level intent (NEW in IVD v1.2): a single artifact that captures the entire pipeline — steps, data flow, error handling, orchestration — so an AI agent reads 1 file instead of 10"
+  - "Context reduction: baseline (read 10 files) vs IVD (read 1 workflow intent) — 80-90% reduction validated"
+  - "Introduce the evaluation section (experimental): formalize how the workflow measures quality and improves over iterations with bounded iteration to prevent infinite loops"
+  - "Field mapping (optional): document complex data transformations between steps using recipes/data-field-mapping.yaml"
+  - "Each pipeline step gets its own module-level intent with parent_intent pointing to the workflow intent — bidirectional traceability across levels"
+  - "Progression from Ch5: module-level (one agent) → workflow-level (orchestrating multiple modules) → the IVD hierarchy scales"
+  - "Pattern recognition: recipe → workflow intent → module intents → implement → verify → measure is repeatable for any multi-step system"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_2"
+    requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
+    source: "book_system_intent.writing_style.code_and_prose.part_2"
+    validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+    test: "chapter.md contains at least 4 fenced code/YAML blocks; code blocks appear before or alongside explanatory prose, not after long prose-only passages"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "recipe_alignment"
+    requirement: "Workflow implementation must align with recipes/workflow-orchestration.yaml structure (steps, data_flow, error_handling, orchestration_pattern) AND recipes/data-field-mapping.yaml for field mapping sections"
+    source: "recipes/workflow-orchestration.yaml, recipes/data-field-mapping.yaml"
+    validation: "Chapter's YAML artifacts and code snippets match recipe patterns; no contradictions with either recipe"
+    test: "Steps structure, data flow, error handling, and field mapping in chapter.md match recipes/workflow-orchestration.yaml and recipes/data-field-mapping.yaml; diff produces zero contradictions"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch6 aligns with framework principles and recipes; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "Baseline vs IVD measurements must be marked as illustrative (author experience) unless backed by controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Measurement section includes caveat about illustrative data"
+    test: "Section 6.9 contains explicit caveat text (e.g., 'illustrative', 'author experience', 'not a controlled study')"
+
+  - name: "author_sourced_examples"
+    requirement: "The ETL pipeline scenario and code examples should reflect the author's real experience with the workflow-orchestration recipe and data processing patterns"
+    source: "recipes/workflow-orchestration.yaml.examples"
+    validation: "Manual: examples feel real, not generic; reference actual recipe patterns"
+    test: "ETL scenario references recipe patterns (steps, data_flow, error_handling); no generic 'widget factory' or 'todo app' examples"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 6 is the second practice project — ETL pipeline using the workflow-orchestration recipe, introducing workflow-level intents. Part II sequence: Ch5 agent (beginner), Ch6 workflow (intermediate), Ch7 infrastructure, Ch8 integration, Ch9 full-stack, Ch10 existing codebase."
+
+  reasoning: |
+    - Part II purpose: build real projects with IVD; learn by doing. Ch6 is the second project — intermediate complexity, introduces a new intent level.
+    - ETL pipeline chosen because: (1) multi-step workflows are ubiquitous in software engineering, (2) data flow between steps makes the orchestration challenge tangible, (3) context reduction is dramatic (10 files → 1 workflow intent), (4) field mapping and evaluation sections have natural use cases in data processing.
+    - Workflow-level intents are NEW in IVD v1.2: this chapter is the first place the reader encounters them. Ch5 covered module-level; Ch6 shows the next level in the hierarchy. The reader sees that IVD scales — individual modules compose into workflows.
+    - Field mapping (optional) is introduced here because data transformations are the natural use case — mapping fields between systems, normalizing schemas, documenting transformation logic that's hard to infer from code alone.
+    - Evaluation section (experimental) is introduced here because ETL pipelines have natural quality metrics (completeness, accuracy, latency) — the reader sees how a workflow can measure and improve itself.
+    - Context reduction (80-90%) is the chapter's measurable outcome, building on Ch5's measurement. Part III (Evidence) will aggregate these per-project measurements.
+
+  evidence: "book/book_system_intent.yaml (part_2, Ch6 key_points, placeholder); recipes/workflow-orchestration.yaml (validated recipe); recipes/data-field-mapping.yaml (field mapping recipe); framework.md (IVD flow, intent levels)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Use a microservices deployment workflow instead of ETL pipeline"
+    rejected_because: "Microservices deployment conflates workflow orchestration with infrastructure concerns (Ch7 territory). ETL keeps the focus on data flow and step coordination, making workflow-level intents the clear protagonist."
+    when_it_works: "If the audience is exclusively DevOps engineers who relate more to deployment pipelines than data processing."
+
+  - name: "Introduce workflow-level intents in Part I (theory) rather than Part II (practice)"
+    rejected_because: "Part I already introduces the four levels conceptually. Showing workflow-level intents in practice — with a real project — is more powerful than explaining them in theory. The reader needs to have written a module-level intent (Ch5) before the workflow level makes sense."
+    when_it_works: "If the book had a longer Part I with room for extended examples at each level."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Reader skipped Chapter 5 and doesn't understand module-level intents"
+    action: "Include a brief recap of module-level intents in 6.1 (prerequisites); reference Ch5 explicitly; make the progression clear without requiring re-reading Ch5"
+    monitor: "Beta reader feedback: 'I was lost because I didn't do Ch5'"
+    severity: "medium"
+
+  - condition: "Workflow-level intent feels like unnecessary overhead for a 5-step pipeline"
+    action: "Show the baseline cost first (6.2): reading 10 files, tracing data flow through code, inferring orchestration. Make the overhead/payoff tradeoff visceral. Small pipeline, but the pattern scales."
+    monitor: "Reviewer feedback: 'Why do I need a workflow intent for something this simple?'"
+    severity: "high"
+
+  - condition: "Field mapping and evaluation sections overwhelm the chapter — too many new concepts"
+    action: "Both are explicitly optional in the chapter flow (sections 6.5 and 6.6). Reader can skip them on first pass and return later. Mark them clearly as 'Optional' in section titles."
+    monitor: "Page count; beta reader feedback on cognitive load"
+    severity: "medium"
+
+  - condition: "Chapter is too long — more sections (10) than Ch5 (7)"
+    action: "Target 30–40 pages; keep code focused on key snippets (not full listing); sections 6.5 and 6.6 are shorter (optional concepts, not full implementations); reference recipe and repo for complete code"
+    monitor: "Page count; beta reader completion rate for this chapter"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-2-practice/chapter-06-multi-step-workflow/chapter_06_multi_step_workflow_intent.yaml"
+  output: "manuscript/part-2-practice/chapter-06-multi-step-workflow/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, recipes, and IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch6 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (6.1–6.10) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and pre-move-on checklist"
+      validates: "constraints.chapter_takeaways"
+    - check: "At least one complete workflow-level YAML intent artifact inline (section 6.3)"
+      validates: "deliverables.sections[6.3]"
+    - check: "At least one field mapping YAML artifact inline (section 6.5)"
+      validates: "deliverables.sections[6.5]"
+    - check: "At least one evaluation section YAML inline (section 6.6)"
+      validates: "deliverables.sections[6.6]"
+    - check: "Code snippets match recipe implementation_pattern (handler, validator, models per step)"
+      validates: "constraints.recipe_alignment"
+    - check: "Workflow intent steps match recipe workflow-orchestration.yaml structure (steps, data_flow, error_handling)"
+      validates: "constraints.recipe_alignment"
+    - check: "Baseline vs IVD comparison present with 80-90% context reduction measurement and caveat about illustrative data"
+      validates: "deliverables.sections[6.9], constraints.no_unsourced_statistics"
+    - check: "Writing style: code/YAML centerpiece; prose explains steps and rationale (Part II style)"
+      validates: "constraints.writing_style_part_2"
+    - check: "Bridge to Chapter 7 (infrastructure pattern) present in 6.10"
+      validates: "deliverables.sections[6.10]"
+    - check: "No contradictions with ivd_system_intent.yaml, book_system_intent.yaml, recipes/workflow-orchestration.yaml, or recipes/data-field-mapping.yaml"
+      validates: "constraints.master_intent_alignment, constraints.recipe_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: "Fixed section 6.3 required_content: workflow-level intents use scope.level = 'workflow', not 'module'. The four IVD levels are system, workflow, module, task — workflow is a distinct level above module."
+    reason: "Canon accuracy: scope.level must match IVD's four-level hierarchy as defined in templates/intent_levels_guide.md and framework.md."
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 6 'Project 2: Multi-Step Workflow (Workflow Pattern)'.
+      Derived from book_system_intent.yaml Ch6 (key_points, placeholder), recipes/workflow-orchestration.yaml
+      (steps, data_flow, error_handling, orchestration_pattern), recipes/data-field-mapping.yaml
+      (field mapping structure), framework.md (IVD flow, intent levels), and templates/intent.yaml
+      (canonical structure).
+      Sections 6.1–6.10 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part II writing style applied (code centerpiece, prose supports).
+      Introduces workflow-level intents (NEW in IVD v1.2), field mapping (optional), and evaluation
+      section (experimental).
+      Recipe-specific constraints: recipe_alignment (workflow-orchestration.yaml AND data-field-mapping.yaml),
+      author_sourced_examples.
+      Risks identified: skipped Ch5, overhead perception, cognitive load, chapter length.
+    reason: "IVD: one intent per chapter; Ch6 is the second practice project introducing workflow-level intents. Intent-only; manuscript pending."

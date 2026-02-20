@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[3]
 # Source:    templates/intent.yaml, intent_levels_guide.md, framework.md
-# Version: 1.3
+# Version: 1.4
 # Created: 2026-01-26
 # Status: Pending
 # ==============================================================================
@@ -176,36 +176,43 @@ constraints:
     requirement: "Chapter ends with 'Key Points' or 'Summary' block"
     source: "book_system_intent.constraints.chapter_takeaways"
     validation: "chapter.md contains a ## Key Points or ## Summary section"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match"
   
   - name: "quotable_principles"
     requirement: "1–2 quotable, memorable lines in chapter where natural"
     source: "book_system_intent.writing_style.quotable_lines"
     validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
   
   - name: "writing_style_part_1"
     requirement: "Prose leads; examples illustrate. Mentor-like, direct, second person. High depth, high accessibility."
     source: "book_system_intent.writing_style (voice, tone, code_and_prose.part_1_3_4)"
     validation: "Manual: voice and tone match"
+    test: "chapter.md uses second person ('you', 'your') as primary address; prose explains before YAML examples illustrate"
   
   - name: "formatting_conventions"
     requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
     source: "book_system_intent.writing_style.formatting_conventions"
     validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
   
   - name: "canonical_artifact_structure"
     requirement: "Intent artifact structure, levels, and placement must align with templates/intent.yaml, templates/intent_levels_guide.md, framework.md (placement). Layered Understanding (Principle 5): rationale, alternatives, risks are required for full compliance per ivd_system_intent; minimum viable = scope, intent, constraints, verification."
     source: "IVD framework templates, intent_levels_guide.md, ivd_system_intent.yaml"
     validation: "No invented sections or placement rules that contradict IVD; level names and placement match canon; Principle 5 layers described per framework"
+    test: "Every level name, section name, and placement rule in chapter.md matches templates/intent.yaml, intent_levels_guide.md, and framework.md; diff against canon produces zero contradictions"
   
   - name: "master_intent_alignment"
     requirement: "Chapter content must not contradict ivd_system_intent.yaml (canon consistency)"
     source: "book_system_intent.constraints.master_intent_alignment"
     validation: "Manual review: Ch4 aligns with ivd_system_intent.yaml and templates; no contradictions"
+    test: "No section name, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml"
   
   - name: "no_timeline_references"
     requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
     source: "book_system_intent.constraints.no_timeline_references"
     validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
 
 # ==============================================================================
 # RATIONALE
@@ -224,6 +231,19 @@ rationale:
   evidence: "book/book_system_intent.yaml (part_1, Ch4 key_points, placeholder); templates/intent.yaml, intent_levels_guide.md, framework.md, ivd_system_intent.yaml (principles 2,5,8; metadata)"
   date: "2026-01-26"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Teach intent artifacts through a full project (skip isolated anatomy)"
+    rejected_because: "Reader needs to understand the mechanism (YAML structure, levels, placement) before applying it. Part II projects assume this knowledge. Without the anatomy chapter, Part II would need to re-explain structure in every chapter."
+    when_it_works: "Workshop-style books where readers learn by doing and tolerate looking up structure as needed."
+
+  - name: "Merge Ch4 into Ch2 (paradigm + mechanism in one chapter)"
+    rejected_because: "Ch2 is the paradigm shift (what IVD is, why it works). Ch4 is the how (structure, levels, first intent). Merging bloats Ch2 past 40 pages and mixes conceptual and hands-on content. The Clean Code / Code Complete pattern: concept chapter → mechanism chapter → practice chapters."
+    when_it_works: "If the book had only 3–4 levels of intent or no optional sections to cover."
 
 # ==============================================================================
 # RISKS
@@ -300,6 +320,13 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.4"
+    date: "2026-02-09"
+    change: |
+      Chapter-by-chapter alignment audit:
+      (1) Added test fields to all 7 constraints (Principle 2: Understanding Must Be Executable).
+      (2) Added alternatives section with 2 rejected alternatives and rationale.
+    reason: "Structural consistency: Ch1–Ch3 already have test fields and alternatives. Ch4 was missing both."
   - version: "1.3"
     date: "2026-02-09"
     change: |

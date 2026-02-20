@@ -95,6 +95,78 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                                     for pf in ["name", "type", "required", "description"]:
                                         if pf not in param:
                                             warnings.append(f"interface.tools '{tool_name}' param #{j+1} missing '{pf}'")
+
+        # Validate roles section (optional — for agents with context-dependent behavior)
+        if artifact_type == "intent" and "roles" in artifact:
+            roles = artifact["roles"]
+            if isinstance(roles, dict):
+                if "default" not in roles:
+                    warnings.append("roles section missing 'default' field (which role the agent starts in)")
+                if "switching" not in roles:
+                    warnings.append("roles section missing 'switching' field (how the agent transitions between roles)")
+                elif isinstance(roles.get("switching"), dict):
+                    if "mechanism" not in roles["switching"]:
+                        warnings.append("roles.switching missing 'mechanism' (user_directed | context_inferred | explicit_command)")
+                if "definitions" not in roles:
+                    warnings.append("roles section missing 'definitions' list")
+                elif isinstance(roles["definitions"], list):
+                    for i, role in enumerate(roles["definitions"]):
+                        if not isinstance(role, dict):
+                            warnings.append(f"roles.definitions[{i}] is not a dict")
+                            continue
+                        role_name = role.get("name", f"#{i+1}")
+                        for req_field in ["name", "description", "when", "constraints", "verification"]:
+                            if req_field not in role:
+                                warnings.append(f"roles.definitions '{role_name}' missing '{req_field}' (Principle 2)")
+
+        # Validate authorship section (optional — for autonomous intent creation)
+        if artifact_type == "intent" and "authorship" in artifact:
+            auth = artifact["authorship"]
+            if isinstance(auth, dict):
+                if "origin" not in auth:
+                    warnings.append("authorship section missing 'origin' field (human_directed | ai_proposed | ai_autonomous)")
+                elif auth["origin"] not in ("human_directed", "ai_proposed", "ai_autonomous"):
+                    warnings.append(f"authorship.origin '{auth['origin']}' not recognized — use human_directed | ai_proposed | ai_autonomous")
+                if "human_oversight" not in auth:
+                    warnings.append("authorship section missing 'human_oversight' field (review_required | audit_trail | escalation_only)")
+                if "ai_authority" not in auth:
+                    warnings.append("authorship section missing 'ai_authority' (what AI can create/modify)")
+                elif isinstance(auth.get("ai_authority"), dict):
+                    ai_auth = auth["ai_authority"]
+                    for af in ["can_create", "can_modify", "requires_approval"]:
+                        if af not in ai_auth:
+                            warnings.append(f"authorship.ai_authority missing '{af}' (Principle 2)")
+                if "escalation" not in auth:
+                    warnings.append("authorship section missing 'escalation' (when AI must stop and ask human)")
+
+        # Validate evaluation section (optional — continuous improvement loop)
+        if artifact_type == "intent" and "evaluation" in artifact:
+            evl = artifact["evaluation"]
+            if isinstance(evl, dict):
+                if "criteria" not in evl:
+                    warnings.append("evaluation section missing 'criteria' list (what quality metrics to measure)")
+                elif isinstance(evl["criteria"], list):
+                    for i, crit in enumerate(evl["criteria"]):
+                        if isinstance(crit, dict):
+                            crit_name = crit.get("metric", f"#{i+1}")
+                            for cf in ["metric", "target", "source"]:
+                                if cf not in crit:
+                                    warnings.append(f"evaluation.criteria '{crit_name}' missing '{cf}' (Principle 2)")
+                if "adjustment" not in evl:
+                    warnings.append("evaluation section missing 'adjustment' (who can improve and what's protected)")
+                elif isinstance(evl.get("adjustment"), dict):
+                    adj = evl["adjustment"]
+                    for af in ["authority", "scope", "protected"]:
+                        if af not in adj:
+                            warnings.append(f"evaluation.adjustment missing '{af}'")
+                if "cycle" not in evl:
+                    warnings.append("evaluation section missing 'cycle' (trigger, max_iterations, stop/escalate conditions)")
+                elif isinstance(evl.get("cycle"), dict):
+                    cyc = evl["cycle"]
+                    for cf in ["trigger", "max_iterations", "stop_when", "escalate_when"]:
+                        if cf not in cyc:
+                            warnings.append(f"evaluation.cycle missing '{cf}'")
+
     else:
         warnings.append(f"Unknown artifact_type '{artifact_type}' — validation limited")
 

@@ -6,7 +6,7 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[1]
-# Version: 1.3
+# Version: 1.4
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -131,11 +131,13 @@ constraints:
     requirement: "Chapter ends with 'Key Points' or 'Summary' block"
     source: "book_system_intent.constraints.chapter_takeaways"
     validation: "chapter.md contains a ## Key Points or ## Summary section"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match"
   
   - name: "quotable_principles"
     requirement: "1–2 memorable, tweetable lines"
     source: "book_system_intent.writing_style.quotable_lines"
     validation: "Manual: at least one line is quotable on its own"
+    test: "At least one bold standalone sentence that works as a tweet/pull-quote"
     expected_quotables:
       - "Intent is Primary. Code and documentation are derived."
       - "From 'Hope It Works' to 'Prove It Works'"
@@ -145,31 +147,37 @@ constraints:
     requirement: "Prose leads; examples illustrate. Mentor-like, direct, second person. High depth, high accessibility."
     source: "book_system_intent.writing_style (voice, tone, code_and_prose.part_1_3_4)"
     validation: "Manual: voice and tone match"
+    test: "chapter.md uses second person ('you', 'your') as primary address; prose explains before examples illustrate"
   
   - name: "formatting_conventions"
     requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms and Key Points, italic for emphasis and dialogue, code formatting for technical terms, proper paragraph structure (3-6 sentences typical, 1-2 for emphasis, 7-10 for dense exposition, >10 MUST be broken with subheadings or split)."
     source: "book_system_intent.writing_style.formatting_conventions"
     validation: "Manual: formatting matches conventions (bold/italic/code usage, NO paragraphs >10 sentences without subheadings)"
+    test: "Key terms bolded on first use; italic for emphasis/dialogue; code font for technical identifiers; no paragraph exceeds 10 sentences without subheading"
   
   - name: "concrete_example"
     requirement: "Include at least one concrete IVD example (CSV scenario revisited) with inline intent artifact YAML"
     source: "book_system_intent.writing_style.clarity_tactics (examples); research/best_selling_programming_books.md 6.1 (author-sourced examples)"
     validation: "Section 2.4 contains YAML code block showing intent artifact"
+    test: "Section 2.4 contains a ```yaml code block with scope, intent, and constraints fields"
   
   - name: "author_sourced_examples"
     requirement: "The CSV example (2.4) must derive from the author's direct experience (anonymized) or be explicitly labeled as composite/illustrative. Prefer author's experience."
     source: "book_system_intent.constraints.author_sourced_examples; research/best_selling_programming_books.md 6.1"
     validation: "2.4 is from author's experience (anon.) or has explicit 'composite'/'illustrative' label; no unanchored fiction"
+    test: "Section 2.4 contains 'industry-typical' or 'illustrative' label, or is clearly framed as a recurring scenario (not claimed as specific real incident without attribution)"
   
   - name: "principles_overview_not_deep_dive"
     requirement: "Section 2.5 lists all 8 principles with one-line summaries only. Deep explanation is in Chapter 3."
     source: "book_system_intent.book_structure (Ch2 overview, Ch3 depth)"
     validation: "2.5 has 8 principles; each has ≤2 sentences. No multi-paragraph explanations."
+    test: "Section 2.5 lists exactly 8 numbered principles; each principle entry has ≤2 sentences (not counting the bold name)"
   
   - name: "no_unsourced_industry_claims"
     requirement: "Do not claim specific companies (GitHub, Anthropic, OpenAI) use IVD without sources. Use general 'industry patterns' or 'similar approaches' language if needed."
     source: "book_system_intent.constraints.evidence_based"
     validation: "No unsourced claims about specific companies adopting IVD"
+    test: "rg -i '(github|anthropic|openai|google|microsoft).*(use|adopt|implement).*IVD' chapter.md returns 0 matches"
 
 # ==============================================================================
 # RATIONALE
@@ -188,6 +196,19 @@ rationale:
   evidence: "book/book_system_intent.yaml; ivd_system_intent.yaml (8 principles); research/best_selling_programming_books.md (structure, examples)"
   date: "2026-01-26"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Present IVD principles first, then the paradigm overview"
+    rejected_because: "The reader needs to see the paradigm (Ch2) before the detailed principles (Ch3). Overview → depth is the bestseller pattern (Code Complete). Principles first would feel like a list of rules without the 'why.'"
+    when_it_works: "Reference cards or cheat sheets where the reader already knows the paradigm."
+
+  - name: "Skip the CSV revisit (2.4) and go straight from paradigm to principles"
+    rejected_because: "The CSV revisit is the concrete proof that IVD works. Without it, the paradigm is abstract and the reader doesn't feel the improvement. Research 6.1: concrete examples build credibility."
+    when_it_works: "If the reader already saw IVD in action elsewhere (e.g., a workshop or live demo)."
 
 # ==============================================================================
 # RISKS
@@ -220,7 +241,7 @@ implementation:
   version: 1
   
   process:
-    reference: "book/chapter_writing_process.yaml"
+    reference: "book/chapter_writing_process_intent.yaml"
     current_step: "step_7_complete"
     completed_steps:
       - "step_1_verify_prerequisites"
@@ -257,6 +278,15 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.4"
+    date: "2026-02-09"
+    change: |
+      Quality alignment with newer intents (front matter, Ch1 v2.5, Ch3, Ch5):
+      (1) Added test field to all 8 constraints (Principle 2: Understanding Must Be Executable).
+      (2) Fixed stale process reference: "book/chapter_writing_process.yaml" →
+          "book/chapter_writing_process_intent.yaml" (actual filename).
+      (3) Added alternatives section (present in all other chapter intents but missing from Ch2).
+    reason: "Bring Ch2 intent to the same quality bar as newer intents; Principle 2 compliance."
   - version: "1.3"
     date: "2026-02-09"
     change: |

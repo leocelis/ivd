@@ -1,0 +1,361 @@
+# ==============================================================================
+# Chapter 13: Results — Alignment Accuracy
+# ==============================================================================
+# Module-level intent for the thirteenth chapter of the IVD book. Second
+# validation chapter in Part III: proves that IVD reduces human-AI iteration
+# count by 30-50% using controlled experiments, a human judge evaluation
+# rubric, and a 0-10 alignment scoring scale.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_3_validation.chapters[1]
+# Source:    framework.md, ivd_system_intent.yaml, validation_methodology.md
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Prove that IVD reduces human-AI iteration count by 30-50% through three controlled experiments, a human judge evaluation rubric with 0-10 alignment scoring, and honest analysis of edge cases where baseline outperforms IVD."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Understands the hypothesis: IVD reduces iterations to working implementation by 30-50%
+    2. Has seen three controlled experiments (classification agent, API integration, multi-step workflow) with baseline vs IVD iteration counts
+    3. Understands the human judge evaluation rubric and how alignment is scored on a 0-10 scale
+    4. Has concrete evidence: fewer iterations, higher alignment scores, measurable improvement
+    5. Understands WHY IVD reduces iterations (the causal mechanism, not just correlation)
+    6. Knows the edge cases and scenarios where baseline approaches can outperform IVD
+    7. Can assess the validation status: PROVEN, with honest caveats
+
+    This is the second validation chapter. The reader transitions from context efficiency proof (Ch12)
+    to alignment accuracy proof. The chapter builds credibility through rigorous methodology AND
+    intellectual honesty — section 13.6 explicitly shows when IVD does not win. Prose leads;
+    experiments and data tables illustrate the argument.
+
+  success_metric: |
+    - Reader trusts the 30-50% iteration reduction claim because they've seen the methodology, data, and edge cases
+    - Reader understands the human judge evaluation rubric well enough to apply it to their own projects
+    - Reader can articulate WHY IVD reduces iterations (executable constraints catch misalignment early)
+    - Reader respects the intellectual honesty: edge cases and baseline wins are documented, not hidden
+    - Chapter connects back to Ch11 (validation framework) and forward to Ch14 (knowledge durability)
+    - Measurements are marked as author experience with explicit caveats (constraint: no_unsourced_statistics)
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_3 purpose: prove every claim with data)"
+    - "ivd_system_intent.yaml (IVD framework — principles being validated)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch13)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "13.1"
+      title: "Hypothesis: IVD Reduces Iterations by 30-50%"
+      required_content:
+        - "State the hypothesis clearly: IVD reduces the number of human-AI iterations needed to reach a working, aligned implementation by 30-50% compared to baseline (no IVD)"
+        - "Define 'iteration' precisely: one human-AI exchange cycle where the human reviews AI output, identifies misalignment, and provides corrective feedback"
+        - "Define 'aligned implementation': code that satisfies all stated requirements without silent deviations, as scored by a human judge on a 0-10 scale (threshold: 8+)"
+        - "Connect to Ch11 validation framework: this is Validation Category 2 (Alignment Accuracy)"
+        - "Explain why this metric matters: iterations are the visible cost of misalignment — each iteration is time, tokens, and cognitive load wasted on re-explaining what should have been understood"
+        - "Preview the three experiments: classification agent (Ch5 project), API integration (Ch8 project), multi-step workflow (Ch6 project)"
+
+    - id: "13.2"
+      title: "Experiment 1: Classification Agent (Baseline: 7 iterations, IVD: 3)"
+      required_content:
+        - "Experiment design: build the same lead scoring classifier from Ch5 twice — once with baseline (natural language prompt only), once with IVD (intent artifact with constraints)"
+        - "Baseline run: describe the iteration sequence — what went wrong at each step, what the human had to correct, why it took 7 iterations (ambiguous requirements, silent assumptions, missed edge cases)"
+        - "IVD run: describe the iteration sequence — how the intent artifact front-loaded clarity, how constraint tests caught misalignment early, why it took 3 iterations"
+        - "Human judge evaluation: apply the 0-10 alignment rubric to both final outputs — score breakdown by dimension (functional correctness, requirement coverage, edge case handling, code quality)"
+        - "Data table: iteration count, alignment score per iteration, final alignment score, time elapsed"
+        - "Analysis: what specific misalignments did IVD prevent? (e.g., accuracy threshold was explicit in intent → AI didn't guess)"
+
+    - id: "13.3"
+      title: "Experiment 2: API Integration (Baseline: 5 iterations, IVD: 2)"
+      required_content:
+        - "Experiment design: build the same payment integration from Ch8 twice — baseline vs IVD"
+        - "Baseline run: describe iteration sequence — common API integration failures (wrong endpoint assumptions, missing error handling, incomplete webhook coverage)"
+        - "IVD run: describe how task-level intents for critical functions (process_payment, handle_webhook) eliminated guesswork — the AI knew exactly what to implement and verify"
+        - "Human judge evaluation: 0-10 alignment rubric applied to both outputs"
+        - "Data table: iteration count, alignment scores, time elapsed"
+        - "Analysis: why API integrations benefit strongly from IVD — external contracts + internal intent = double verification"
+
+    - id: "13.4"
+      title: "Experiment 3: Multi-Step Workflow (Baseline: 9 iterations, IVD: 4)"
+      required_content:
+        - "Experiment design: build the same ETL pipeline from Ch6 twice — baseline vs IVD"
+        - "Baseline run: describe iteration sequence — multi-step workflows have compounding misalignment (each step's drift amplifies in the next), explain why 9 iterations is expected"
+        - "IVD run: describe how workflow-level intent with step definitions, data flow, and error handling reduced misalignment propagation — each step had clear input/output contracts"
+        - "Human judge evaluation: 0-10 alignment rubric applied to both outputs"
+        - "Data table: iteration count, alignment scores, time elapsed, misalignment propagation rate"
+        - "Analysis: workflows are where IVD shows the largest absolute improvement — compounding misalignment is IVD's primary target"
+
+    - id: "13.5"
+      title: "Why IVD Reduces Iterations (Analysis)"
+      required_content:
+        - "Aggregate results across all three experiments: summary table with iteration counts, alignment scores, percentage reduction"
+        - "The causal mechanism: IVD reduces iterations because executable constraints catch misalignment at the source — the AI has a verifiable contract, not a guess about what the human meant"
+        - "Three mechanisms at work: (1) front-loaded clarity — intent artifacts eliminate ambiguity before implementation begins, (2) early detection — constraint tests catch drift in the first iteration instead of the fifth, (3) reduced compounding — in multi-step systems, per-step intents prevent misalignment from propagating"
+        - "Statistical analysis: confidence intervals and significance of the 30-50% reduction across experiments"
+        - "Connect to IVD principles: Principle 1 (Intent is Primary), Principle 2 (Understanding Must Be Executable), Principle 4 (Continuous Verification)"
+
+    - id: "13.6"
+      title: "Edge Cases and When Baseline Wins"
+      required_content:
+        - "Intellectual honesty statement: IVD is not universally superior — there are scenarios where baseline approaches match or outperform IVD"
+        - "Edge case 1: Trivial tasks — when the implementation is simple enough that writing an intent artifact takes longer than just prompting and iterating (e.g., single-function utilities, one-line scripts)"
+        - "Edge case 2: Exploratory prototyping — when the human doesn't know what they want yet and needs rapid iteration to discover requirements; IVD's upfront clarity is premature"
+        - "Edge case 3: Highly novel domains — when neither the human nor the AI has prior patterns to draw on, intent artifacts may be inaccurate and require as many iterations to correct as baseline code"
+        - "Edge case 4: Expert-AI pairs — when the human is deeply expert in the domain and can course-correct in real time, the iteration cost is low regardless of methodology"
+        - "Quantitative comparison: show data for at least one edge case where baseline iteration count matched or beat IVD"
+        - "The honest conclusion: IVD's strength scales with complexity, ambiguity, and team size — it provides diminishing returns on trivial, exploratory, or expert-driven tasks"
+        - "Why this honesty matters: cherry-picked results destroy credibility; showing limitations builds trust and helps the reader know when to apply IVD"
+
+    - id: "13.7"
+      title: "Validation Status: PROVEN"
+      required_content:
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Validation verdict: the 30-50% iteration reduction hypothesis is PROVEN across three controlled experiments with human judge evaluation"
+        - "Caveats: measurements are from author experience, not independent controlled study; edge cases documented; results may vary by domain, complexity, and team experience"
+        - "1-2 quotable lines where natural (constraint: quotable_principles)"
+        - "Bridge to Chapter 14: 'Alignment accuracy proves IVD works in the moment — but does the understanding survive? The next chapter tests knowledge durability through simulated team turnover.'"
+        - "Reproducibility note: methodology and rubric are provided so the reader can replicate these experiments on their own projects"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch13 key_points: iteration count, human judge rubric, alignment scoring, 30-50% fewer iterations"
+      - "At least three data tables (one per experiment) with iteration counts and alignment scores"
+      - "Human judge evaluation rubric (0-10 scale) presented as a reusable tool"
+      - "Aggregate summary table in section 13.5"
+      - "Honest edge case analysis in section 13.6 with at least one quantitative comparison"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Clear bridge to Chapter 14 (knowledge durability)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch13; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Iteration count: baseline vs IVD — three controlled experiments show 30-50% fewer iterations with IVD"
+  - "Human judge evaluation rubric: a structured 0-10 alignment scoring system applied to both baseline and IVD outputs"
+  - "Alignment scoring (0-10 scale): functional correctness, requirement coverage, edge case handling, code quality — threshold 8+ for 'aligned'"
+  - "Results: 30-50% fewer iterations across classification agent (7→3), API integration (5→2), and multi-step workflow (9→4)"
+  - "Causal mechanism: front-loaded clarity, early detection via constraint tests, reduced compounding in multi-step systems"
+  - "Edge cases and when baseline wins: trivial tasks, exploratory prototyping, highly novel domains, expert-AI pairs — IVD's value scales with complexity"
+  - "Intellectual honesty: no cherry-picking; limitations documented alongside strengths (IVD canon)"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block summarizing the validation verdict and key findings"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_3"
+    requirement: "Prose leads; experiments, data tables, and examples illustrate the argument. Analysis drives learning, not code."
+    source: "book_system_intent.writing_style.code_and_prose.part_1_3_4"
+    validation: "Manual: prose leads, data/tables support; reader is evaluating evidence, not building"
+    test: "chapter.md has prose paragraphs before and around data tables; no section is data-only without explanatory prose framing the significance"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "evidence_based"
+    requirement: "Every claim in this chapter must be backed by experiment data presented in the chapter itself"
+    source: "book_system_intent.constraints.evidence_based"
+    validation: "Each claim (iteration reduction, alignment score improvement) has a corresponding data table or measurement"
+    test: "Every quantitative claim in prose has a traceable reference to a data table or experiment result within the same chapter"
+
+  - name: "reproducible_experiments"
+    requirement: "Experiment methodology must be detailed enough for a reader to replicate on their own projects"
+    source: "book_system_intent.constraints.evidence_based, validation_methodology.md"
+    validation: "Methodology sections include: task definition, baseline protocol, IVD protocol, measurement criteria, rubric"
+    test: "Each experiment section (13.2–13.4) contains explicit methodology subsections; the human judge rubric is presented as a reusable artifact"
+
+  - name: "honest_edge_cases"
+    requirement: "Section 13.6 must honestly document scenarios where baseline matches or outperforms IVD — no cherry-picking results"
+    source: "IVD canon: intellectual honesty; book_system_intent.constraints.evidence_based"
+    validation: "Section 13.6 contains at least 4 edge cases with explanations and at least 1 quantitative comparison where baseline performed comparably"
+    test: "grep -c 'baseline wins\\|baseline matches\\|baseline outperforms\\|IVD does not\\|diminishing returns' chapter.md returns >= 2 matches; section 13.6 contains a data point or measurement"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch13 aligns with framework principles and validation methodology; no contradictions"
+    test: "No principle or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples or experiment descriptions"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding experiment data/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks and experiment data returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "All measurements must be marked as illustrative (author experience) unless backed by independent controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Chapter includes explicit caveat about measurements being from author experience"
+    test: "chapter.md contains explicit caveat text (e.g., 'author experience', 'illustrative', 'not an independent controlled study') in sections 13.5 or 13.7"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 13 is the second validation chapter — proving alignment accuracy (iteration reduction) through three controlled experiments with human judge evaluation, including honest edge case documentation."
+
+  reasoning: |
+    - Part III purpose: prove every IVD claim with data. Ch13 validates the alignment accuracy claim
+      (30-50% fewer iterations), which is the most directly felt benefit for practitioners.
+    - Three experiments chosen to match Part II projects: classification agent (Ch5), API integration
+      (Ch8), and multi-step workflow (Ch6). This creates a direct connection between "I built this"
+      (Part II) and "here's proof it works" (Part III).
+    - Human judge evaluation rubric with 0-10 scoring provides a structured, reusable tool the reader
+      can apply to their own projects — the chapter teaches methodology, not just results.
+    - Section 13.6 (edge cases and when baseline wins) is the differentiator: most methodology books
+      cherry-pick results. IVD's canon demands intellectual honesty. Showing where IVD doesn't win
+      builds trust and helps the reader make informed decisions about when to apply IVD.
+    - The causal analysis in 13.5 (why IVD reduces iterations) elevates the chapter from "here's data"
+      to "here's understanding" — the reader leaves knowing the mechanism, not just the result.
+    - Prose-leads style (Part III): the argument and analysis drive the chapter; data tables and
+      experiment results illustrate and support the prose narrative.
+
+  evidence: "book/book_system_intent.yaml (part_3, Ch13 key_points, placeholder); ivd_system_intent.yaml (principles validated); research/validation_methodology.md (methodology framework)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Combine alignment accuracy with context efficiency in a single chapter"
+    rejected_because: "Each validation category deserves dedicated depth. Combining would dilute both the context efficiency proof (Ch12) and the alignment accuracy proof (Ch13). Separate chapters allow rigorous methodology per claim."
+    when_it_works: "If the book were shorter and validation needed to be compressed into fewer chapters."
+
+  - name: "Skip edge case analysis (section 13.6) to present cleaner results"
+    rejected_because: "Cherry-picked results destroy credibility. IVD's canon demands honesty. Readers who discover limitations on their own will distrust the entire book. Documenting edge cases builds trust and helps readers make informed decisions."
+    when_it_works: "Never — intellectual honesty is non-negotiable for an evidence-based book."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Experiment results don't reach 30-50% iteration reduction in all cases"
+    action: "Report actual numbers honestly; adjust the hypothesis range if needed; the edge case section (13.6) already establishes that IVD is not universally superior"
+    monitor: "Experiment execution during content creation phase"
+    severity: "high"
+
+  - condition: "Human judge evaluation rubric feels subjective or unreliable to the reader"
+    action: "Present the rubric with clear dimension definitions, scoring anchors (what a 3 vs 7 vs 10 looks like), and inter-rater reliability discussion; provide it as a reusable artifact"
+    monitor: "Beta reader feedback: 'The scoring feels arbitrary' or 'How do I know the judge was fair?'"
+    severity: "medium"
+
+  - condition: "Edge case section (13.6) undermines confidence in IVD instead of building trust"
+    action: "Frame edge cases as scope boundaries, not failures: 'IVD excels at X; for Y, simpler approaches work fine.' Show that knowing when NOT to use IVD is itself a sign of maturity."
+    monitor: "Beta reader feedback: 'After reading 13.6, I'm not sure IVD is worth it'"
+    severity: "medium"
+
+  - condition: "Chapter feels repetitive across three similar experiment writeups (13.2, 13.3, 13.4)"
+    action: "Vary the narrative focus: 13.2 emphasizes the rubric introduction, 13.3 emphasizes API-specific patterns, 13.4 emphasizes compounding misalignment. Each experiment teaches something new beyond iteration counts."
+    monitor: "Beta reader engagement and dropout rate within the chapter"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-3-validation/chapter-13-alignment-accuracy/chapter_13_alignment_accuracy_intent.yaml"
+  output: "manuscript/part-3-validation/chapter-13-alignment-accuracy/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, IVD framework, and methodology)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch13 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (13.1–13.7) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block"
+      validates: "constraints.chapter_takeaways"
+    - check: "Human judge evaluation rubric (0-10 scale) is presented as a reusable artifact with clear dimension definitions"
+      validates: "deliverables.sections[13.2], key_points"
+    - check: "Three experiment data tables present with iteration counts, alignment scores, and time elapsed"
+      validates: "deliverables.manuscript.required_elements"
+    - check: "Aggregate summary table in section 13.5 with cross-experiment analysis"
+      validates: "deliverables.sections[13.5]"
+    - check: "Edge case section (13.6) contains at least 4 documented scenarios where baseline matches or outperforms IVD, with at least 1 quantitative comparison"
+      validates: "constraints.honest_edge_cases"
+    - check: "All measurements marked as author experience with explicit caveats"
+      validates: "constraints.no_unsourced_statistics"
+    - check: "Writing style: prose leads; data tables and experiments illustrate (Part III style)"
+      validates: "constraints.writing_style_part_3"
+    - check: "Bridge to Chapter 14 (knowledge durability) present in 13.7"
+      validates: "deliverables.sections[13.7]"
+    - check: "No contradictions with ivd_system_intent.yaml or book_system_intent.yaml"
+      validates: "constraints.master_intent_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 13 'Results: Alignment Accuracy'.
+      Derived from book_system_intent.yaml Ch13 (key_points, placeholder), ivd_system_intent.yaml
+      (principles being validated), research/validation_methodology.md (methodology framework),
+      and templates/intent.yaml (canonical structure).
+      Sections 13.1–13.7 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part III writing style applied (prose leads, experiments illustrate).
+      Chapter-specific constraints: evidence_based, reproducible_experiments, honest_edge_cases.
+      Unique section 13.6: edge cases and when baseline wins — IVD canon demands no cherry-picking.
+      Human judge evaluation rubric with 0-10 alignment scoring as reusable artifact.
+      Risks identified: results shortfall, rubric subjectivity, edge case framing, repetitive structure.
+    reason: "IVD: one intent per chapter; Ch13 is the alignment accuracy validation chapter. Intent-only; manuscript pending."

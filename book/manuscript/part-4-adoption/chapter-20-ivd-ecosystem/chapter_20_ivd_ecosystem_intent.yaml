@@ -1,0 +1,338 @@
+# ==============================================================================
+# Chapter 20: IVD Ecosystem and Community
+# ==============================================================================
+# Module-level intent for the twentieth chapter of the IVD book. Covers the
+# IVD ecosystem: community recipes, IDE integration, the IVD MCP server as a
+# real-world case study of dogfooding IVD, CLI tools, and future standards.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_4_adoption.chapters[3]
+# Source:    mcp_server/mcp_server_intent.yaml (MCP server interface),
+#            framework.md, templates/intent.yaml
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Present the IVD ecosystem — community recipes, IDE integrations, CLI tools, and the IVD MCP server — with the MCP server as a real-world case study of dogfooding IVD (its own intent artifact with an interface section documenting 15 tools)."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Understands the IVD ecosystem as a living community of recipes, tools, and integrations
+    2. Knows how to find, use, and contribute community recipes
+    3. Can integrate IVD into their IDE of choice (Cursor Rules, Cline Config, Aider, GitHub Copilot)
+    4. Understands the IVD MCP server as a real-world case study of dogfooding IVD — its own intent artifact uses the interface section to document 15 tools, making the tool surface verifiable and implementation-independent
+    5. Can use the IVD CLI tool to validate, generate, and search intent artifacts
+    6. Sees the future roadmap: agent portability, JSON Schema, standards evolution
+    7. Feels invited to join the IVD community and contribute their own patterns
+    
+    This is the ecosystem chapter. The reader transitions from "I can use IVD in my projects" (Parts II–III) to "I can participate in the IVD ecosystem." Prose leads; examples illustrate.
+
+  success_metric: |
+    - Reader can navigate the community recipe repository and find relevant patterns
+    - Reader can configure IVD in at least one IDE (Cursor, Cline, Aider, or Copilot)
+    - Reader understands the IVD MCP server case study: how its own intent artifact documents its 15-tool surface via the interface section (dogfooding)
+    - Reader can run basic IVD CLI commands: validate, generate, search
+    - Reader has a clear picture of IVD's future direction (standards, portability)
+    - Reader knows how to contribute recipes and patterns back to the community
+    - Chapter ends with a getting-started checklist for community participation
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_4 purpose: adoption and scaling)"
+    - "mcp_server/mcp_server_intent.yaml (MCP server as case study)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch20)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "20.1"
+      title: "Community Recipe Repository"
+      required_content:
+        - "What the recipe repository is: a curated, versioned collection of IVD recipes for common patterns (agent-classifier, workflow-orchestration, infrastructure, integration, etc.)"
+        - "How recipes are organized: by pattern type, complexity level, and domain; each recipe has scope, constraints_template, implementation_pattern, verification_pattern, and examples"
+        - "How to discover recipes: browsing the repository, using ivd_list_recipes and ivd_load_recipe tools, semantic search via ivd_search"
+        - "Quality gates: what makes a recipe canonical vs community-contributed; review process and versioning"
+        - "Real example: walk through discovering and loading a recipe for a common problem"
+        - "The recipe ecosystem grows as adoption grows — every validated pattern is a potential recipe"
+
+    - id: "20.2"
+      title: "Contributing Your Patterns"
+      required_content:
+        - "When to contribute: you've built something with IVD, validated it across projects, and the pattern generalizes beyond your specific domain"
+        - "Recipe anatomy review: scope, constraints_template, implementation_pattern, verification_pattern, examples — what each section must contain"
+        - "Contribution workflow: fork → create recipe YAML → validate with ivd_validate → submit PR → community review → merge"
+        - "Quality criteria: the recipe must work with at least 2 distinct examples; constraints must be executable (Principle 2); verification must be automated where possible"
+        - "Attribution and versioning: recipes carry author metadata, version history, and changelog"
+        - "Examples of contributions the community needs: domain-specific recipes (healthcare, fintech, education), language-specific patterns, framework integrations"
+
+    - id: "20.3"
+      title: "IDE Integration (Cursor Rules, Cline Config)"
+      required_content:
+        - "Why IDE integration matters: IVD works best when the AI assistant has IVD context in every conversation — not as a separate step, but as ambient knowledge"
+        - "Cursor integration: .cursorrules file that references IVD principles, points to system_intent.yaml, and instructs the AI to use IVD flow (describe → intent → implement → verify)"
+        - "Cline integration: cline_docs/ configuration that loads IVD context; how Cline's autonomous mode benefits from intent constraints as guardrails"
+        - "Aider integration: .aider.conf.yml and repo-map patterns that expose intent artifacts to Aider's context; conventions files for IVD awareness"
+        - "GitHub Copilot integration: .github/copilot-instructions.md for IVD-aware code suggestions; workspace-level prompt customization"
+        - "Cross-IDE pattern: regardless of tool, the integration pattern is the same — load IVD context, reference intent artifacts, enforce constraints"
+        - "The IVD MCP server as universal bridge: any IDE with MCP support gets all 15 tools without custom configuration"
+
+    - id: "20.4"
+      title: "IVD MCP Server (Universal AI Access — Case Study)"
+      required_content:
+        - "The IVD MCP server as a real-world case study of dogfooding IVD: the server itself has an intent artifact (mcp_server/mcp_server_intent.yaml) that uses the interface section to document its 15-tool surface"
+        - "What dogfooding means here: IVD's own tooling is documented using IVD. The interface section makes the tool surface verifiable (Principle 2) and implementation-independent (Principle 7) — the same principles the book teaches"
+        - "The 15 tools, organized by category: context (ivd_get_context), recipes (ivd_load_recipe, ivd_list_recipes), templates (ivd_load_template), validation (ivd_validate), scaffolding (ivd_init, ivd_scaffold, ivd_find_artifacts, ivd_check_placement), discovery (ivd_list_features, ivd_discover_goal), analysis (ivd_assess_coverage, ivd_propose_inversions), learning (ivd_teach_concept), search (ivd_search)"
+        - "Interface section walkthrough: show how mcp_server_intent.yaml documents each tool with name, description, parameters (name, type, required, description), returns, and test path — making the contract explicit and verifiable"
+        - "Architecture: committed embeddings (clone-to-working, no API key to query), dual transport (stdio for local, SSE for remote), self-contained deployment"
+        - "Why this matters for adoption: any AI agent with MCP support (Cursor, Claude Desktop, custom agents) gets full IVD access through a standard protocol"
+        - "The meta lesson: if your own tools don't use your framework, why should anyone else? Dogfooding is the strongest form of validation"
+        - "Constraints from the MCP server intent that demonstrate IVD in practice: embeddings_committed, zero_setup_query, self_contained — each with executable test"
+
+    - id: "20.5"
+      title: "IVD CLI Tool (Validate, Generate, Search)"
+      required_content:
+        - "The IVD CLI as the developer's local companion: validate artifacts, scaffold new intents, search the knowledge base — all from the terminal"
+        - "ivd validate: check an intent artifact's structure, required sections, constraint completeness; show example output with errors, warnings, suggestions"
+        - "ivd init and ivd scaffold: initialize IVD in an existing project (auto-scan and pre-fill); scaffold new intent artifacts in the correct canonical location"
+        - "ivd search: semantic search across the IVD knowledge base from the command line; uses committed embeddings (no API key needed for querying)"
+        - "ivd find-artifacts and ivd check-placement: discover existing intent artifacts in a repo; verify they follow canonical placement rules"
+        - "Integration with CI/CD: running ivd validate in pre-commit hooks or CI pipelines to catch structural issues before merge"
+
+    - id: "20.6"
+      title: "Future Standards: Agent Portability and JSON Schema"
+      required_content:
+        - "The portability promise: intent artifacts are YAML — they work across AI assistants, IDEs, and toolchains without lock-in"
+        - "JSON Schema for IVD artifacts: formalizing the intent artifact structure so any tool can validate it; schema versioning and backward compatibility"
+        - "Agent portability: how intent artifacts enable switching between AI assistants (Claude, GPT, Gemini, local models) without losing project understanding"
+        - "Standards evolution: where IVD fits in the broader AI tooling ecosystem; potential integration with emerging standards (MCP protocol evolution, AI IDE standards)"
+        - "What stays stable vs what evolves: the 8 principles are stable; recipes, tools, and integrations evolve; the intent artifact structure evolves carefully with backward compatibility"
+
+    - id: "20.7"
+      title: "Join the IVD Community"
+      required_content:
+        - "Community channels: where to find IVD practitioners, ask questions, share experiences"
+        - "Getting started checklist: (1) install IVD CLI or MCP server, (2) run ivd init on a project, (3) write your first intent artifact, (4) validate it, (5) join the community, (6) share your first recipe"
+        - "The community ethos: IVD is built by practitioners for practitioners; every recipe started as someone's real project; contribution is how the ecosystem grows"
+        - "Bridge to Chapter 21: 'Now that you're part of the ecosystem, let's look at where IVD and human-AI collaboration are heading'"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch20 key_points: community, IDE integration, MCP server case study, CLI tools, future standards"
+      - "Getting-started checklist for community participation in section 20.7 (constraint: checklist_included)"
+      - "The IVD MCP server interface section shown inline or referenced (section 20.4) — all 15 tools with parameters and test paths"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Clear bridge to Chapter 21 (future of IVD)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch20; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Community recipes and contributions — the IVD recipe repository as a living, curated collection of validated patterns"
+  - "Integration with Cursor, Cline, Aider, GitHub Copilot — IVD works in any AI-assisted development environment through consistent configuration patterns"
+  - "IVD tools and automation (CLI, MCP server) — validate, scaffold, search, and assess coverage from terminal or AI agent"
+  - "The IVD MCP server as a real-world case study: 15 tools documented via the interface section (dogfooding IVD) — the strongest form of framework validation is using it on your own tools"
+  - "Future roadmap and standards — agent portability, JSON Schema, standards evolution; what stays stable (principles) vs what evolves (tools, recipes)"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_4"
+    requirement: "Prose leads; examples illustrate. Part IV is about adoption — the reader already knows IVD; now they learn to integrate, contribute, and scale."
+    source: "book_system_intent.writing_style.code_and_prose.part_4"
+    validation: "Manual: prose leads each section; code/YAML examples support the narrative rather than drive it"
+    test: "Each section in chapter.md opens with prose (not a code block); code/YAML blocks appear after explanatory context, not before"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths, commands, and tool names; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "checklist_included"
+    requirement: "Section 20.7 includes a getting-started checklist for community participation (install, init, write, validate, join, share)"
+    source: "book_system_intent.constraints.chapter_takeaways (extended for ecosystem chapter)"
+    validation: "chapter.md section 20.7 contains a numbered or bulleted checklist"
+    test: "grep -A 20 '20.7' chapter.md contains checklist items (numbered or bulleted list with action verbs)"
+
+  - name: "tool_accuracy"
+    requirement: "IVD MCP server tools described in section 20.4 must match the actual mcp_server/mcp_server_intent.yaml interface section — all 15 tool names, parameter types, and descriptions must be accurate"
+    source: "mcp_server/mcp_server_intent.yaml (interface section)"
+    validation: "Cross-reference: every tool mentioned in 20.4 exists in mcp_server_intent.yaml interface.tools; no tool is missing or misnamed"
+    test: "Diff tool names in chapter.md section 20.4 against mcp_server_intent.yaml interface.tools — zero mismatches"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch20 aligns with framework principles and book structure; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "No statistics or quantitative claims without explicit source or 'illustrative' caveat"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Any quantitative claim in chapter.md is attributed or marked as illustrative"
+    test: "All numeric claims (percentages, counts, metrics) in chapter.md either cite a source or include 'illustrative'/'author experience' caveat"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 20 covers the IVD ecosystem — community, IDE integration, MCP server case study, CLI tools, and future standards. Section 20.4 is the centerpiece: the IVD MCP server as a dogfooding case study."
+
+  reasoning: |
+    - Part IV purpose: adoption and scaling. Ch20 is the ecosystem chapter — after learning IVD (Parts I–III), the reader needs to know what tools exist, how to integrate them, and how to participate.
+    - The IVD MCP server is the strongest possible case study because it dogfoods IVD: the server's own intent artifact uses the interface section to document its 15-tool surface. This demonstrates that IVD isn't just theory — it's how the IVD project itself operates.
+    - IDE integration matters because IVD works best as ambient knowledge, not a separate step. Covering Cursor, Cline, Aider, and Copilot ensures broad applicability.
+    - The CLI and MCP server provide two complementary access paths: terminal for developers who prefer command-line workflows, MCP for AI agents that need programmatic access.
+    - Future standards section positions IVD in the evolving AI tooling landscape without making promises — what stays stable (principles) vs what evolves (tools, integrations).
+    - The community section (20.1, 20.2, 20.7) frames IVD as a living ecosystem, not a finished product. Every reader is a potential contributor.
+
+  evidence: "book/book_system_intent.yaml (part_4, Ch20 key_points, placeholder); mcp_server/mcp_server_intent.yaml (15 tools, interface section); framework.md (IVD principles)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Split MCP server case study into its own chapter"
+    rejected_because: "The MCP server is part of the ecosystem, not a standalone topic. Extracting it would leave the ecosystem chapter thin and create a chapter that's too focused on one tool."
+    when_it_works: "If the MCP server case study grows beyond 15 pages and needs its own space to cover architecture, deployment, and extension in depth."
+
+  - name: "Cover only Cursor integration, skip other IDEs"
+    rejected_because: "IVD's value proposition is IDE-agnostic. Covering only Cursor would make IVD look tool-specific. Readers using Cline, Aider, or Copilot would feel excluded."
+    when_it_works: "If the book is explicitly branded as a Cursor-specific guide, which it is not."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "MCP server tools change between writing and publication — section 20.4 becomes stale"
+    action: "Reference mcp_server_intent.yaml as source of truth; keep tool list in chapter as a snapshot with version reference; note that the canonical list lives in the intent artifact"
+    monitor: "mcp_server_intent.yaml changelog — any tool additions, removals, or renames require chapter update"
+    severity: "high"
+
+  - condition: "IDE integration instructions become outdated as Cursor, Cline, Aider, and Copilot evolve"
+    action: "Keep integration instructions at pattern level (what to configure, why) rather than step-by-step screenshots; reference official documentation for current setup details"
+    monitor: "IDE release notes and configuration format changes"
+    severity: "medium"
+
+  - condition: "Community infrastructure (recipe repository, contribution workflow) doesn't exist at publication time"
+    action: "Frame community sections as the intended model with clear structure; acknowledge early-stage status if needed; provide the checklist so readers can start contributing as soon as infrastructure is available"
+    monitor: "Community adoption intent (_private/community/community_adoption_intent.yaml) progress"
+    severity: "medium"
+
+  - condition: "Chapter becomes a feature catalog instead of a coherent narrative — reader loses the 'why' behind each tool"
+    action: "Part IV writing style: prose leads, examples illustrate. Each section must open with WHY before showing WHAT. The MCP server case study (20.4) provides narrative cohesion — dogfooding is the thread that ties the ecosystem together"
+    monitor: "Beta reader feedback: 'this felt like a product page' or 'I lost track of why this matters'"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-4-adoption/chapter-20-ivd-ecosystem/chapter_20_ivd_ecosystem_intent.yaml"
+  output: "manuscript/part-4-adoption/chapter-20-ivd-ecosystem/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, MCP server intent, IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch20 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (20.1–20.7) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and getting-started checklist"
+      validates: "constraints.chapter_takeaways, constraints.checklist_included"
+    - check: "Section 20.4 presents the IVD MCP server as a dogfooding case study with all 15 tools documented"
+      validates: "deliverables.sections[20.4], constraints.tool_accuracy"
+    - check: "All 15 tool names in section 20.4 match mcp_server/mcp_server_intent.yaml interface.tools exactly"
+      validates: "constraints.tool_accuracy"
+    - check: "IDE integration section covers Cursor, Cline, Aider, and GitHub Copilot with cross-IDE pattern"
+      validates: "deliverables.sections[20.3]"
+    - check: "Writing style: prose leads, examples illustrate (Part IV style)"
+      validates: "constraints.writing_style_part_4"
+    - check: "Bridge to Chapter 21 (future of IVD) present in 20.7"
+      validates: "deliverables.sections[20.7]"
+    - check: "No contradictions with ivd_system_intent.yaml, book_system_intent.yaml, or mcp_server_intent.yaml"
+      validates: "constraints.master_intent_alignment, constraints.tool_accuracy"
+    - check: "Getting-started checklist in 20.7 has actionable steps (install, init, write, validate, join, share)"
+      validates: "constraints.checklist_included"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 20 'IVD Ecosystem and Community'.
+      Derived from book_system_intent.yaml Ch20 (key_points, placeholder),
+      mcp_server/mcp_server_intent.yaml (15 tools, interface section), framework.md (IVD principles),
+      and templates/intent.yaml (canonical structure).
+      Sections 20.1–20.7 with required_content, constraints, rationale, alternatives, risks, verification.
+      Part IV writing style applied (prose leads, examples illustrate).
+      Key case study: IVD MCP server dogfooding — section 20.4 documents all 15 tools from the
+      mcp_server_intent.yaml interface section as a real-world example of IVD applied to IVD's own tooling.
+      Chapter-specific constraints: checklist_included (20.7), tool_accuracy (20.4 vs mcp_server_intent.yaml).
+      Risks identified: tool staleness, IDE instruction decay, missing community infrastructure, catalog-feel.
+    reason: "IVD: one intent per chapter; Ch20 is the ecosystem chapter. Intent-only; manuscript pending."

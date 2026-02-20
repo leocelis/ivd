@@ -120,6 +120,125 @@ scope:
 #       test: "tests/test_tool.py::test_tool_name"
 
 # ----------------------------------------------------------------------------
+# ROLES (Optional, Experimental - MODULE-LEVEL: AI agents with multiple modes)
+# ----------------------------------------------------------------------------
+# Document the behavioral modes of an AI agent that switches roles depending on
+# context (e.g., implementer, reviewer, architect, teacher).
+#
+# Complements interface: interface = WHAT the agent can do (tools);
+# roles = HOW the agent behaves in different contexts (constraints, tool subsets).
+#
+# When to use:
+# - scope.type is "agent" and agent has 2+ distinct behavioral modes
+# - Each mode has different constraints or tool subsets
+# - Coordinator needs to understand behavioral modes for routing
+#
+# Skip this section when:
+# - Agent has a single mode (just use interface)
+# - Behavioral differences are trivial (tone/prompt only, no constraint changes)
+# - Each role is a separate agent (use coordinator recipe instead)
+
+# roles:
+#   default: "implementer"                # which role the agent starts in
+#
+#   switching:
+#     mechanism: "user_directed"           # user_directed | context_inferred | explicit_command
+#     description: "How the agent transitions between roles"
+#
+#   definitions:
+#     - name: "implementer"
+#       description: "Writes code, creates files, executes commands"
+#       when: "User requests building, fixing, or creating"
+#       constraints:
+#         - "Must write/update intent before implementing"
+#         - "Must verify constraints after implementation"
+#       tools: ["all"]                     # subset of interface.tools, or "all"
+#       verification: "tests/test_role_implementer.py"
+#
+#     - name: "reviewer"
+#       description: "Reviews code for quality, alignment, issues"
+#       when: "User requests review, audit, or check"
+#       constraints:
+#         - "Read-only: no file modifications"
+#         - "Must cite specific file and line references"
+#       tools: ["read", "search", "validate"]
+#       verification: "tests/test_role_reviewer.py"
+
+# ----------------------------------------------------------------------------
+# AUTHORSHIP (Optional, Experimental - WHO originates and controls this intent)
+# ----------------------------------------------------------------------------
+# Declare who can create, modify, or extend this intent artifact and what
+# oversight is required. Formalizes the trust boundary for intent creation.
+#
+# When to use:
+# - AI agents that design workflows or create sub-task intents autonomously
+# - Self-improving systems where AI may modify its own intent
+# - When teams need clarity on what AI can change without asking
+#
+# Skip this section when:
+# - Standard IVD workflow (human describes, AI writes) — the default
+# - Intent is always human-originated with no AI modification authority
+
+# authorship:
+#   origin: "human_directed"              # human_directed | ai_proposed | ai_autonomous
+#   human_oversight: "review_required"    # review_required | audit_trail | escalation_only
+#
+#   ai_authority:
+#     can_create: false                   # can AI create new sub-intents?
+#     can_modify:                         # sections AI can modify without approval
+#       - "implementation"
+#       - "verification"
+#     requires_approval:                  # fields needing human sign-off
+#       - "intent.goal"
+#       - "intent.success_metric"
+#       - "constraints"
+#
+#   escalation: "When AI confidence < threshold or change impacts other intents"
+
+# ----------------------------------------------------------------------------
+# EVALUATION (Optional, Experimental - continuous improvement loop)
+# ----------------------------------------------------------------------------
+# Formalize how output quality is measured, what can be adjusted to improve it,
+# and when the improvement loop should stop or escalate.
+#
+# Extends verification from binary (pass/fail) to continuous (how good, how
+# to improve). Evaluation NEVER relaxes constraints — improves within them.
+#
+# When to use:
+# - Autonomous workflows that run repeatedly and should improve
+# - Self-improving agents that adjust process based on quality feedback
+# - Production systems with measurable quality targets
+#
+# Skip this section when:
+# - One-shot implementations with no iteration
+# - Standard verification (constraints + tests) is sufficient
+# - No feedback mechanism to measure quality
+
+# evaluation:
+#   criteria:
+#     - metric: "output_quality_score"
+#       target: ">= 0.85"
+#       source: "automated"              # automated | human_review | hybrid
+#     - metric: "constraint_pass_rate"
+#       target: "100%"
+#       source: "ivd_validate"
+#
+#   adjustment:
+#     authority: "ai_proposed"            # human_only | ai_proposed | ai_autonomous
+#     scope:                              # what CAN be adjusted
+#       - "implementation"
+#       - "workflow_steps"
+#     protected:                          # what CANNOT be adjusted
+#       - "intent.goal"
+#       - "constraints"
+#
+#   cycle:
+#     trigger: "on_completion"            # on_completion | on_failure | scheduled | continuous
+#     max_iterations: 3
+#     stop_when: "All criteria met or max_iterations reached"
+#     escalate_when: "Cannot meet criteria after max_iterations"
+
+# ----------------------------------------------------------------------------
 # PROJECT CONTEXT (Optional - SYSTEM-LEVEL ONLY)
 # ----------------------------------------------------------------------------
 # Use this section for system-level intents to capture project-wide context.

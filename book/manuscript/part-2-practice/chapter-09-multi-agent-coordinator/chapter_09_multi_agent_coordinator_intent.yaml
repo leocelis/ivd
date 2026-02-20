@@ -1,0 +1,380 @@
+# ==============================================================================
+# Chapter 9: Project 5 — Multi-Agent Coordinator (Orchestration Pattern)
+# ==============================================================================
+# Module-level intent for the ninth chapter of the IVD book. Most complex
+# Part II project: build a multi-agent coordinator that routes to specialist
+# agents using intent propagation, interface/roles/authorship sections, and
+# the coordinator-intent-propagation recipe.
+#
+# Reference: book/book_system_intent.yaml (system)
+# Parent:    book_structure.part_2_practice.chapters[4]
+# Source:    recipes/coordinator-intent-propagation.yaml,
+#            recipes/agent-role-based.yaml, framework.md, templates/intent.yaml
+# Version: 1.0
+# Created: 2026-02-09
+# Status: Pending
+# ==============================================================================
+
+parent_intent: "../../../book_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "chapter"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should this chapter accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Guide the reader through building a multi-agent coordinator that routes to specialist agents using IVD—writing coordinator and agent-level intent artifacts with interface, roles, and authorship sections; applying the coordinator-intent-propagation recipe; implementing intent propagation; verifying alignment across all layers; and measuring coordination errors baseline vs IVD."
+
+  goal: |
+    By the end of this chapter, the reader:
+    1. Has built a working multi-agent coordinator (Customer Intelligence Coordinator) that routes requests to specialist agents using IVD
+    2. Can apply the coordinator-intent-propagation recipe and the agent-role-based recipe together
+    3. Has written a coordinator-level intent artifact defining which agents, what tasks, and authorship boundaries
+    4. Has written agent-level intent artifacts for each specialist with interface, roles, and authorship sections
+    5. Understands intent propagation: Human → Coordinator Intent → Agent Intents — and how structured intent at every delegation prevents coordination errors
+    6. Understands the interface section per agent (tool surface for routing), the roles section per agent (behavioral modes for context-aware routing), and the authorship section (trust boundaries: what authority agents have over intent creation and modification)
+    7. Has verified alignment across interface ↔ roles ↔ authorship ↔ implementation before synthesizing results
+    8. Has measurable evidence: coordination errors baseline (no IVD) vs IVD approach
+    9. Recognizes the orchestration pattern so they can apply it to other multi-agent systems
+
+    This is the most complex Part II project. The reader transitions from single-agent and workflow patterns (Ch5–Ch8) to multi-agent coordination — where intent must propagate across delegation boundaries. Code and intent artifacts are the centerpiece; prose explains steps and rationale.
+
+  success_metric: |
+    - Reader has a working Customer Intelligence Coordinator with 2–3 specialist agents at the end of the chapter
+    - Reader wrote (or followed along with) a coordinator-level intent artifact and agent-level intent artifacts, each with interface, roles, and authorship sections
+    - Reader can articulate what the coordinator-intent-propagation recipe provides and how it differs from single-agent recipes
+    - Reader understands how interface sections enable correct routing, roles sections enable context-aware routing, and authorship sections define trust boundaries
+    - Coordination errors measurement is clear: baseline (ambiguous routing, wrong parameters, trust violations) vs IVD (structured delegation, verifiable contracts)
+    - Reader sees the pattern: coordinator intent → agent intents → implement → verify across layers; ready to apply in Ch10 (full stack)
+    - Chapter ends with pattern recognition bridge to Project 6 (Chapter 10)
+
+  stakeholders:
+    - "IVD book author (manuscript)"
+    - "book/book_system_intent.yaml (part_2 purpose: build real projects with IVD)"
+    - "recipes/coordinator-intent-propagation.yaml (primary recipe)"
+    - "recipes/agent-role-based.yaml (agent recipe for role-based specialists)"
+
+# ==============================================================================
+# DELIVERABLES: Required sections (from book_system_intent Ch9)
+# ==============================================================================
+
+deliverables:
+  sections:
+    - id: "9.1"
+      title: "Project Overview: Customer Intelligence Coordinator"
+      required_content:
+        - "What we're building: a coordinator agent that receives customer intelligence requests and routes them to specialist agents (e.g., sentiment analyzer, churn predictor, segment classifier)"
+        - "Why this project: multi-agent coordination is where most real-world AI systems break — ambiguous routing, wrong parameters passed, conflicting agent behaviors, trust violations"
+        - "What the reader will learn: intent propagation, coordinator-level intents, agent-level intents with interface/roles/authorship, structured delegation, cross-layer verification"
+        - "Prerequisites: Part I concepts; Ch5 agent pattern (interface + roles sections); Ch6 workflow pattern; basic Python; access to an LLM API"
+        - "End state: working coordinator with specialist agents, intent artifacts at both levels, verification across interface ↔ roles ↔ authorship ↔ implementation, and coordination error measurement"
+        - "How this differs from previous projects: for the first time, intent must propagate across agent boundaries — the coordinator's intent defines the contract, each agent's intent fulfills part of it"
+
+    - id: "9.2"
+      title: "The Coordination Problem: Ambiguous Routing, Wrong Parameters"
+      required_content:
+        - "Without structured intent: the coordinator guesses which agent to call, passes ad-hoc parameters, agents behave unpredictably across modes, and no one knows who is allowed to modify what"
+        - "Real failure modes: (1) ambiguous routing — coordinator can't distinguish which agent handles a request; (2) wrong parameters — coordinator passes data the agent doesn't expect; (3) conflicting behaviors — agent operates in wrong mode for the context; (4) trust violations — an agent creates or modifies intent it has no authority over"
+        - "Why prompt engineering alone fails: prompts don't compose — each agent's prompt is isolated, so the coordinator has no verifiable contract with its agents"
+        - "The IVD solution: structured intent at every delegation boundary — the coordinator's intent declares agents, their interfaces, their roles, and their authorship authority; each agent's intent declares what it can do, how it behaves, and what it can author"
+        - "Preview of the three sections that make this work: interface (tool surface for routing), roles (behavioral modes for context-aware routing), authorship (trust boundaries for intent authority)"
+
+    - id: "9.3"
+      title: "Step 1: Define the Coordinator Intent (Which Agents, What Tasks, interface + roles per agent, authorship boundaries)"
+      required_content:
+        - "Start with natural language: reader describes the coordination need ('I need a coordinator that routes customer intelligence requests to specialist agents...')"
+        - "AI writes the coordinator-level intent artifact: scope (level=module, type=coordinator), intent (summary, goal, success_metric), agents list with routing criteria"
+        - "Reference the coordinator-intent-propagation recipe: recipe: 'coordinator-intent-propagation', recipe_version: '1.0' — show how the recipe provides the propagation structure"
+        - "Interface section per agent in the coordinator intent: each agent entry includes its tool surface (tools with name, description, parameters, returns) — the coordinator uses these interfaces to route correctly. Show that interfaces are the routing contract."
+        - "Roles section per agent in the coordinator intent: each agent entry includes its behavioral modes (e.g., real-time vs batch, verbose vs concise) with mode-specific constraints — the coordinator uses these roles for context-aware routing. Show that roles determine HOW an agent is invoked, not just WHETHER it is invoked."
+        - "Authorship section in the coordinator intent: declare what authority the coordinator has over intent creation and modification — can it create new agent intents? modify existing ones? only read? This is the trust boundary. Show the authorship section as experimental but critical for multi-agent systems."
+        - "Human reviews: 'Does this coordinator cover all request types? Are the agent boundaries clear? Are the authorship boundaries appropriate?'"
+        - "Show the complete coordinator-level YAML artifact inline (the chapter's primary teaching artifact), including interface, roles, and authorship sections"
+
+    - id: "9.4"
+      title: "Step 2: Write Agent-Level Intents for Each Specialist (with interface, roles, and authorship sections)"
+      required_content:
+        - "For each specialist agent (2–3 agents: e.g., sentiment analyzer, churn predictor, segment classifier), write a module-level intent artifact"
+        - "Each agent intent includes: scope (level=module, type=agent), intent (summary, goal, success_metric), constraints (agent-specific accuracy, latency, cost)"
+        - "Interface section per agent: type: agent, tools with name, description, parameters, returns, test path — the same interface declared in the coordinator intent but now fully specified with test paths and validation rules"
+        - "Roles section per agent: behavioral modes specific to this agent (e.g., sentiment analyzer has quick-score vs deep-analysis modes; churn predictor has individual vs cohort modes) — each mode with constraints, tool subset, and verification"
+        - "Authorship section per agent: what authority does this agent have? Can it create sub-intents? Modify its own constraints? Only execute within existing intent? Show the gradient of authority (read-only → execute → propose-modify → create)"
+        - "Reference the agent-role-based recipe: recipe: 'agent-role-based', recipe_version: '1.0' — show how each specialist uses this recipe for role-based behavior"
+        - "Intent propagation in practice: show how the coordinator intent links to each agent intent (parent_intent references), and how constraints propagate downward"
+        - "Show at least one complete agent-level YAML artifact inline with interface, roles, and authorship sections"
+
+    - id: "9.5"
+      title: "Step 3: Implement Tools Are Truth, History Is Context"
+      required_content:
+        - "The IVD implementation flow for multi-agent: hand the coordinator intent + agent intents to the AI assistant → AI reads all intents → AI implements coordinator and agents against constraints"
+        - "Show the implementation pattern: directory structure (coordinator/, agents/sentiment/, agents/churn/, agents/segment/, shared/, tests/)"
+        - "Coordinator implementation: routing logic that reads agent interface sections to determine which agent to call, reads agent roles sections to determine which mode to invoke"
+        - "Agent implementation: each specialist implements its interface (tool signatures match), respects its roles (mode constraints enforced), and operates within its authorship boundaries"
+        - "Tools Are Truth: the implemented tools are the ground truth — if an agent's interface says it accepts certain parameters, the implementation must match exactly. No aspirational tool surfaces."
+        - "History Is Context: the coordinator maintains conversation/request history as context for routing decisions, but the intent artifacts are the source of truth for what each agent can do and how it behaves"
+
+    - id: "9.6"
+      title: "Step 4: Verify Before Synthesize — interface ↔ roles ↔ authorship ↔ implementation alignment"
+      required_content:
+        - "Verify Before Synthesize: before the coordinator synthesizes results from multiple agents, verify that each agent's output aligns with its declared interface, was produced in the correct role/mode, and was produced within the agent's authorship authority"
+        - "Interface verification: do implemented tool signatures match the interface sections? Do parameter types, returns, and test paths all align? Run interface contract tests."
+        - "Roles verification: does each agent respect its role constraints? (e.g., quick-score mode doesn't perform deep analysis, batch mode doesn't send individual responses). Run role constraint tests."
+        - "Authorship verification: did any agent exceed its authority? (e.g., an agent with execute-only authority tried to create a new intent, or an agent modified constraints it shouldn't touch). Run authorship boundary tests."
+        - "Cross-layer verification: coordinator intent ↔ agent intents ↔ implementation — all three layers must be consistent. Show the verification matrix."
+        - "Bidirectional verification (Principle 3): does the implementation satisfy the intents? Do the intents still reflect the actual behavior?"
+        - "What if verification fails? Walk through a failure scenario (e.g., agent returns unexpected fields, agent operates in wrong mode) and how to iterate"
+        - "The verification loop closes: coordinator intent → agent intents → implement → verify across all layers → intents are source of truth"
+
+    - id: "9.7"
+      title: "Measurement: Coordination Errors (Baseline vs IVD)"
+      required_content:
+        - "Baseline scenario: build the same coordinator without IVD — describe what happens (ambiguous routing, wrong parameters, conflicting agent behaviors, no trust boundaries, 'which agent handles this?' confusion)"
+        - "IVD scenario: what actually happened following the IVD process (clear routing via interfaces, correct mode selection via roles, trust boundaries via authorship, verifiable contracts at every delegation)"
+        - "Measurement comparison: coordination errors (misroutes, parameter mismatches, mode violations, authorship violations); iterations to working coordinator; ability to add a new agent (how long? how many errors?)"
+        - "This is the most complex evidence so far — multi-agent coordination is where IVD's value becomes most visible"
+        - "Tie back to Chapter 1 (alignment crisis) and Chapter 3 (four levels): 'This is what we meant by intent at every level — including across agent boundaries'"
+        - "Note: measurements are illustrative from author experience, not controlled experiments (constraint: no_unsourced_statistics)"
+
+    - id: "9.8"
+      title: "Recipe Reference: coordinator-intent-propagation.yaml + agent-role-based.yaml"
+      required_content:
+        - "Key Points / Summary block (constraint: chapter_takeaways)"
+        - "Recipe reference: coordinator-intent-propagation.yaml — what it provides (propagation structure, coordinator template, agent slot template, routing verification, authorship template)"
+        - "Recipe reference: agent-role-based.yaml — what it provides (role-based behavior structure, mode templates, role constraint templates, role verification patterns)"
+        - "How the two recipes compose: coordinator recipe defines the orchestration layer; agent recipe defines each specialist. Together they form the multi-agent intent architecture."
+        - "Pattern recognition: what you just did is a repeatable pattern — coordinator intent → agent intents (with interface/roles/authorship) → implement → verify across layers → measure"
+        - "Bridge to Chapter 10: 'In the next project, you'll tackle a complete feature end-to-end — all four IVD levels (system → workflow → module → task) working together'"
+        - "Checklist: 'Before you move on' — did you write coordinator and agent intents? Do interfaces, roles, and authorship sections align? Did coordination errors decrease vs baseline?"
+
+  manuscript:
+    file: "chapter.md"
+    required_elements:
+      - "Key Points or Summary block at end (constraint: chapter_takeaways)"
+      - "Key Points reflect book_system_intent Ch9 key_points: coordinator routing, intent propagation, interface/roles/authorship, coordination errors measurement"
+      - "At least one complete coordinator-level YAML intent artifact inline (section 9.3)"
+      - "At least one complete agent-level YAML intent artifact inline (section 9.4)"
+      - "Code snippets for coordinator and agent implementation (section 9.5) — recipes' code_structure adapted"
+      - "Coordination errors comparison table or clear structured comparison (section 9.7)"
+      - "1–2 quotable lines where natural (constraint: quotable_principles)"
+      - "Checklist in 9.8 (constraint: chapter_takeaways)"
+      - "Clear bridge to Chapter 10 (full stack pattern)"
+
+# ==============================================================================
+# KEY POINTS (from book_system_intent Ch9; must be reflected in chapter)
+# ==============================================================================
+
+key_points:
+  - "Build a coordinator that routes to specialist agents — the first multi-agent project, demonstrating orchestration as a fundamentally different challenge from single-agent work"
+  - "Intent propagation: Human → Coordinator Intent → Agent Intents — structured intent at every delegation boundary prevents coordination errors"
+  - "Apply coordinator-intent-propagation recipe: recipe provides propagation structure, routing verification, authorship template; intent customizes it to the problem"
+  - "Each agent's interface section describes its tool surface — the coordinator uses these to route correctly (parameters, returns, test paths form the routing contract)"
+  - "Each agent's roles section describes its behavioral modes — the coordinator uses these for context-aware routing (not just WHICH agent, but HOW it behaves)"
+  - "Introduce the authorship section (experimental) — declare what authority the coordinator and agents have over intent creation and modification (trust boundaries)"
+  - "Prevent coordination errors through structured intent at every delegation — misroutes, parameter mismatches, mode violations, and authorship violations are all verifiable"
+
+# ==============================================================================
+# CONSTRAINTS (from book intent; chapter-specific)
+# ==============================================================================
+
+constraints:
+  - name: "chapter_takeaways"
+    requirement: "Chapter ends with 'Key Points' or 'Summary' block and a pre-move-on checklist"
+    source: "book_system_intent.constraints.chapter_takeaways"
+    validation: "chapter.md contains a ## Key Points or ## Summary section plus checklist"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match; grep 'checklist\\|Before you move on' chapter.md returns at least 1 match"
+
+  - name: "quotable_principles"
+    requirement: "1–2 quotable, memorable lines in chapter where natural"
+    source: "book_system_intent.writing_style.quotable_lines"
+    validation: "Manual: at least one line is tweetable/memorable"
+    test: "At least one bold standalone sentence in chapter.md works as a tweet/pull-quote"
+
+  - name: "writing_style_part_2"
+    requirement: "Code and intent artifacts are centerpiece; prose explains steps and rationale. 'Build this' drives learning."
+    source: "book_system_intent.writing_style.code_and_prose.part_2"
+    validation: "Manual: code/YAML leads, prose supports; reader is building, not just reading"
+    test: "chapter.md contains at least 5 fenced code/YAML blocks (coordinator intent, agent intent, coordinator code, agent code, verification); code blocks appear before or alongside explanatory prose, not after long prose-only passages"
+
+  - name: "formatting_conventions"
+    requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms, italic for emphasis, code for paths/commands, paragraph structure."
+    source: "book_system_intent.writing_style.formatting_conventions"
+    validation: "Manual: formatting matches conventions"
+    test: "Key terms bolded on first use; code font for file paths and commands; no paragraph exceeds 10 sentences without subheading"
+
+  - name: "recipe_alignment"
+    requirement: "Coordinator implementation must align with recipes/coordinator-intent-propagation.yaml structure (propagation pattern, routing verification, authorship template); agent implementation must align with recipes/agent-role-based.yaml (role-based behavior, mode templates)"
+    source: "recipes/coordinator-intent-propagation.yaml, recipes/agent-role-based.yaml"
+    validation: "Chapter's YAML artifacts and code snippets match both recipe patterns; no contradictions with either recipe"
+    test: "Coordinator structure, propagation pattern, and authorship template in chapter.md match recipes/coordinator-intent-propagation.yaml; agent role structure matches recipes/agent-role-based.yaml; diff produces zero contradictions"
+
+  - name: "interface_roles_authorship_alignment"
+    requirement: "Interface, roles, and authorship sections must be demonstrated in both coordinator-level and agent-level intent artifacts. Interface enables routing, roles enable context-aware routing, authorship defines trust boundaries. All three must be verified in section 9.6."
+    source: "book_system_intent.ch9.key_points (interface, roles, authorship); ivd_system_intent.yaml (optional sections)"
+    validation: "Coordinator intent artifact contains interface, roles, and authorship per agent; at least one agent intent artifact contains all three sections; section 9.6 verifies all three"
+    test: "chapter.md coordinator YAML contains 'interface:', 'roles:', and 'authorship:' sections; agent YAML contains 'interface:', 'roles:', and 'authorship:' sections; section 9.6 references verification of all three"
+
+  - name: "master_intent_alignment"
+    requirement: "Chapter content must not contradict ivd_system_intent.yaml or book_system_intent.yaml"
+    source: "book_system_intent.constraints.master_intent_alignment"
+    validation: "Manual review: Ch9 aligns with framework principles and recipes; no contradictions"
+    test: "No principle, optional section, or framework concept in chapter.md contradicts ivd_system_intent.yaml or book_system_intent.yaml"
+
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in chapter content (days, weeks, months) unless in examples/code"
+    source: "book_system_intent.constraints.no_timeline_references"
+    validation: "grep -i 'days|weeks|months|timeline' chapter.md (excluding code/examples) returns no matches"
+    test: "rg -i '\\b(days|weeks|months|timeline)\\b' chapter.md outside fenced code blocks returns 0 matches"
+
+  - name: "no_unsourced_statistics"
+    requirement: "Coordination error measurements must be marked as illustrative (author experience) unless backed by controlled study"
+    source: "book_system_intent.constraints.no_unsourced_statistics"
+    validation: "Measurement section includes caveat about illustrative data"
+    test: "Section 9.7 contains explicit caveat text (e.g., 'illustrative', 'author experience', 'not a controlled study')"
+
+  - name: "author_sourced_examples"
+    requirement: "The Customer Intelligence Coordinator scenario and code examples should reflect the author's real experience with the coordinator-intent-propagation and agent-role-based recipes"
+    source: "recipes/coordinator-intent-propagation.yaml, recipes/agent-role-based.yaml"
+    validation: "Manual: examples feel real, not generic; reference actual recipe patterns"
+    test: "Coordinator scenario references recipe patterns (propagation, routing, authorship); no generic 'widget factory' or 'todo app' examples"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Chapter 9 is the most complex Part II project — multi-agent coordinator using the coordinator-intent-propagation and agent-role-based recipes. Part II sequence: Ch5 agent (beginner), Ch6 workflow (intermediate), Ch7 infrastructure, Ch8 integration, Ch9 orchestration (intermediate-advanced), Ch10 full-stack (advanced)."
+
+  reasoning: |
+    - Part II purpose: build real projects with IVD; learn by doing. Ch9 is the culmination before the full-stack project — intermediate-advanced complexity, multi-agent orchestration.
+    - Customer Intelligence Coordinator chosen because: (1) relatable business domain (customer data routing), (2) requires multiple specialist agents (sentiment, churn, segmentation), (3) clear failure modes when coordination is ad-hoc (misroutes, wrong parameters, conflicting behaviors), (4) recipes exist for both coordinator and agent patterns.
+    - This is where interface, roles, AND authorship sections converge: Ch5 introduced interface and roles on a single agent. Ch9 demonstrates all three across multiple agents, showing how they enable structured multi-agent coordination.
+    - Authorship section introduced here (not earlier) because trust boundaries only matter when multiple agents interact — a single agent doesn't need to declare what it can author.
+    - Intent propagation is the key concept: Human → Coordinator Intent → Agent Intents. Without this propagation, each agent is isolated. With it, the coordinator has verifiable contracts with every specialist.
+    - Two recipes compose: coordinator-intent-propagation provides the orchestration layer; agent-role-based provides each specialist's behavior structure. Teaching recipe composition prepares the reader for Ch10's full-stack multi-recipe approach.
+    - Coordination error measurement is the most compelling evidence so far: multi-agent systems are where ad-hoc approaches fail most visibly.
+
+  evidence: "book/book_system_intent.yaml (part_2, Ch9 key_points, placeholder); recipes/coordinator-intent-propagation.yaml (propagation pattern); recipes/agent-role-based.yaml (role-based agent pattern); framework.md (IVD flow, optional sections: interface, roles, authorship)"
+  date: "2026-02-09"
+  stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Use a simpler orchestration example (e.g., two agents with static routing)"
+    rejected_because: "Doesn't demonstrate the value of interface/roles/authorship sections — static routing makes structured intent look like overhead. The value of IVD for coordination only shows when routing is non-trivial and agents have distinct behavioral modes."
+    when_it_works: "If the audience only needs basic fan-out orchestration; our audience is building real multi-agent systems where coordination errors are costly."
+
+  - name: "Combine Ch9 orchestration with Ch10 full-stack into one chapter"
+    rejected_because: "Too much complexity in a single chapter — orchestration patterns (interface/roles/authorship/propagation) and full-stack patterns (all four IVD levels) are distinct learning objectives. Combining them would overwhelm the reader and bury the orchestration concepts."
+    when_it_works: "If the book were a reference manual rather than a progressive learning path."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Chapter is too complex — reader loses momentum on the most advanced Part II project"
+    action: "Keep the coordinator to 2–3 specialist agents (not more); focus code on key orchestration snippets (not full listings); reference recipes and repo for complete code; include 'minimum viable coordinator' that works before adding roles and authorship"
+    monitor: "Page count (target 30–40 pages); beta reader completion rate for this chapter"
+    severity: "high"
+
+  - condition: "Authorship section (experimental) confuses readers or feels premature"
+    action: "Mark authorship as experimental explicitly; provide a simple gradient (read-only → execute → propose-modify → create) with concrete examples; show the coordinator working without authorship first, then add it as a layer"
+    monitor: "Beta reader feedback: 'I didn't understand authorship' or 'Why do I need this?'"
+    severity: "medium"
+
+  - condition: "Coordination error baseline feels contrived because the example is small enough to work without IVD"
+    action: "Be honest about scale effects; show that the coordination errors are real at any scale but become critical at production scale; include a 'what happens when you add agent #4?' thought experiment"
+    monitor: "Reviewer feedback on credibility of the baseline comparison"
+    severity: "high"
+
+  - condition: "Two recipes (coordinator-intent-propagation + agent-role-based) create confusion about which recipe does what"
+    action: "Section 9.8 explicitly maps which recipe covers what; use a clear visual or table showing recipe responsibilities; demonstrate recipe composition as a strength, not complexity"
+    monitor: "Beta reader feedback: 'Which recipe should I use for X?'"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  intent_artifact: "manuscript/part-2-practice/chapter-09-multi-agent-coordinator/chapter_09_multi_agent_coordinator_intent.yaml"
+  output: "manuscript/part-2-practice/chapter-09-multi-agent-coordinator/chapter.md"
+  status: "pending"
+  version: 1
+
+  process:
+    reference: "book/chapter_writing_process_intent.yaml"
+    current_step: "step_3_create_chapter_intent"
+    completed_steps:
+      - "step_1_verify_prerequisites"
+      - "step_2_create_chapter_folder"
+      - "step_3_create_chapter_intent"
+    pending_steps:
+      - "step_4_write_manuscript"
+      - "step_5_cross_check"
+      - "step_6_update_chapter_status"
+      - "step_7_update_book_intent"
+
+# ==============================================================================
+# VERIFICATION (cross-check with book intent, recipes, and IVD framework)
+# ==============================================================================
+
+verification:
+  cross_check:
+    - check: "All key_points from book_system_intent Ch9 appear or are clearly implied in chapter"
+      validates: "intent.success_metric"
+    - check: "All deliverables.sections (9.1–9.8) are present with required_content"
+      validates: "deliverables"
+    - check: "Manuscript has Key Points/Summary block and pre-move-on checklist"
+      validates: "constraints.chapter_takeaways"
+    - check: "At least one complete coordinator-level YAML intent artifact inline (section 9.3)"
+      validates: "deliverables.sections[9.3]"
+    - check: "At least one complete agent-level YAML intent artifact inline with interface, roles, and authorship (section 9.4)"
+      validates: "deliverables.sections[9.4]"
+    - check: "Code snippets match coordinator-intent-propagation recipe (coordinator routing, propagation pattern, authorship enforcement)"
+      validates: "constraints.recipe_alignment"
+    - check: "Code snippets match agent-role-based recipe (role-based behavior, mode constraints, role verification)"
+      validates: "constraints.recipe_alignment"
+    - check: "Interface sections present in both coordinator and agent intents; verification of interface alignment in section 9.6"
+      validates: "constraints.interface_roles_authorship_alignment"
+    - check: "Roles sections present in both coordinator and agent intents; verification of role constraints in section 9.6"
+      validates: "constraints.interface_roles_authorship_alignment"
+    - check: "Authorship sections present in both coordinator and agent intents; verification of authorship boundaries in section 9.6"
+      validates: "constraints.interface_roles_authorship_alignment"
+    - check: "Coordination errors comparison present with measurements and caveat about illustrative data"
+      validates: "deliverables.sections[9.7], constraints.no_unsourced_statistics"
+    - check: "Writing style: code/YAML centerpiece; prose explains steps and rationale (Part II style)"
+      validates: "constraints.writing_style_part_2"
+    - check: "Bridge to Chapter 10 (full stack pattern) present in 9.8"
+      validates: "deliverables.sections[9.8]"
+    - check: "No contradictions with ivd_system_intent.yaml, book_system_intent.yaml, recipes/coordinator-intent-propagation.yaml, or recipes/agent-role-based.yaml"
+      validates: "constraints.master_intent_alignment, constraints.recipe_alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: |
+      Initial chapter intent for Chapter 9 'Project 5: Multi-Agent Coordinator (Orchestration Pattern)'.
+      Derived from book_system_intent.yaml Ch9 (key_points, placeholder),
+      recipes/coordinator-intent-propagation.yaml (propagation pattern, routing verification, authorship template),
+      recipes/agent-role-based.yaml (role-based behavior, mode templates),
+      framework.md (IVD flow, optional sections: interface, roles, authorship),
+      and templates/intent.yaml (canonical structure).
+      Sections 9.1–9.8 with required_content, constraints (11 total including chapter-specific
+      interface_roles_authorship_alignment), rationale, alternatives, risks, verification (14 cross-checks).
+      Part II writing style applied (code centerpiece, prose supports).
+      Recipe-specific constraints: recipe_alignment (two recipes), author_sourced_examples.
+      Chapter-specific constraint: interface_roles_authorship_alignment.
+      Risks identified: complexity/momentum, authorship confusion, contrived baseline, recipe composition confusion.
+    reason: "IVD: one intent per chapter; Ch9 is the most complex Part II project. Intent-only; manuscript pending."

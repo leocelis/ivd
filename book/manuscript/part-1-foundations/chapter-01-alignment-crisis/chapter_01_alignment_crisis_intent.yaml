@@ -6,7 +6,7 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[0]
-# Version: 2.4
+# Version: 2.5
 # Created: 2026-01-25
 # Status: Complete
 # ==============================================================================
@@ -106,36 +106,43 @@ constraints:
     requirement: "Chapter ends with 'Key Points' or 'Summary' block"
     source: "book_system_intent.constraints.chapter_takeaways"
     validation: "chapter.md contains a ## Key Points or ## Summary section"
+    test: "grep '## Key Points\\|## Summary' chapter.md returns at least 1 match"
   
   - name: "quotable_principles"
     requirement: "1–2 memorable, tweetable lines (e.g. in 1.4 or 1.1)"
     source: "book_system_intent.writing_style.quotable_lines"
     validation: "Manual: at least one line is quotable on its own"
+    test: "At least one bold standalone sentence that works as a tweet/pull-quote (e.g. 'We have been building at the speed of misunderstanding.')"
   
   - name: "writing_style_part_1"
     requirement: "Prose leads; examples illustrate. Mentor-like, direct, second person. High depth, high accessibility."
     source: "book_system_intent.writing_style (voice, tone, code_and_prose.part_1_3_4)"
     validation: "Manual: voice and tone match"
+    test: "chapter.md uses second person ('you', 'your') as primary address; prose explains before examples illustrate"
   
   - name: "formatting_conventions"
     requirement: "Follow book_system_intent.writing_style.formatting_conventions: bold for key terms and Key Points, italic for emphasis and dialogue, code formatting for technical terms, proper paragraph structure (3-6 sentences typical, 1-2 for emphasis, 7-10 for dense exposition, >10 MUST be broken with subheadings or split), footnotes with blank lines between."
     source: "book_system_intent.writing_style.formatting_conventions"
     validation: "Manual: formatting matches conventions (bold/italic/code usage, NO paragraphs >10 sentences without subheadings, footnote spacing)"
+    test: "Key terms bolded on first use; italic for emphasis/dialogue; code font for technical identifiers; no paragraph exceeds 10 sentences without subheading; footnotes separated by blank lines"
   
   - name: "evidence_for_case_study"
     requirement: "Statistics and claims in 1.3 must be sourced or marked composite/illustrative; no invented, unsourced statistics"
     source: "book_system_intent.constraints.evidence_based"
     validation: "1.3 has inline footnotes with attribution; any $/numbers traceable or labeled"
+    test: "Every number/percentage/dollar figure in section 1.3 has an inline footnote [^N] with attribution within the same paragraph"
   
   - name: "author_sourced_examples"
     requirement: "Concrete examples (1.1 CSV scenario, 1.3 industry data) must derive from the author's direct experience (anonymized) or be explicitly labeled as industry-typical/composite. Prefer author's experience. Pattern: research 6.1 'Author experience and case studies'; book_system_intent.constraints.author_sourced_examples"
     source: "book_system_intent.constraints.author_sourced_examples; research/best_selling_programming_books.md 6.1"
     validation: "1.1 example labeled 'industry-typical'; 1.3 statistics have footnotes; no unanchored fiction"
+    test: "Section 1.1 CSV example is framed as illustrative/typical (not claimed as specific real incident without attribution); 1.3 statistics have footnotes; no unanchored fiction"
   
   - name: "no_solution_yet"
     requirement: "Do not present IVD or intent artifacts as the solution in this chapter; problem only. The phrase 'what if intent was verifiable' (1.4) is allowed—it is the question, not the answer."
     source: "book_system_intent.book_structure (Ch1 sets up; Ch2 introduces IVD)"
     validation: "No exposition of IVD, intent artifacts, or the eight principles; 1.4 may use 'intent' and 'verifiable' in the question"
+    test: "rg -i '(intent.verified|IVD|principle [1-8]|verification workflow|bidirectional sync|eight principles)' chapter.md returns 0 matches"
 
 # ==============================================================================
 # RATIONALE
@@ -153,6 +160,19 @@ rationale:
   evidence: "book/book_system_intent.yaml (part_1_foundations.purpose, book_structure); research/best_selling_programming_books.md (structure, case study)"
   date: "2026-01-25"
   stakeholder: "IVD book author"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Start with IVD solution, then retrospect on the problem"
+    rejected_because: "Reader must feel the pain before the cure. Problem-first is the bestseller pattern (Code Complete, Clean Code). Starting with the solution reduces the 'aha moment' in Ch2."
+    when_it_works: "Workshops or tutorials where the audience already knows the problem and wants immediate action."
+
+  - name: "Merge problem and solution into one chapter (Alignment Crisis + IVD Paradigm)"
+    rejected_because: "Ch1 is the hook; Ch2 is the paradigm shift. Merging reduces the dramatic tension at the chapter boundary. The '1.4 question' creates a page-turn moment."
+    when_it_works: "Shorter books (<200 pages) or blog-format introductions."
 
 # ==============================================================================
 # RISKS
@@ -180,7 +200,7 @@ implementation:
   version: 2
   
   process:
-    reference: "book/chapter_writing_process.yaml"
+    reference: "book/chapter_writing_process_intent.yaml"
     current_step: "step_7_complete"
     completed_steps:
       - "step_1_verify_prerequisites"
@@ -216,6 +236,16 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.5"
+    date: "2026-02-09"
+    change: |
+      Quality alignment with newer intents (front matter, Ch3, Ch5):
+      (1) Added test field to all 7 constraints (Principle 2: Understanding Must Be Executable).
+          Newer intents (front matter v1.1+) have test fields; Ch1 was missing them.
+      (2) Fixed stale process reference: "book/chapter_writing_process.yaml" →
+          "book/chapter_writing_process_intent.yaml" (actual filename).
+      (3) Added alternatives section (present in all other chapter intents but missing from Ch1).
+    reason: "Bring Ch1 intent to the same quality bar as newer intents; Principle 2 compliance."
   - version: "2.4"
     date: "2026-02-09"
     change: |

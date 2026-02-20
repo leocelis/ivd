@@ -201,10 +201,86 @@ def scaffold_artifact_tool(
             '#       returns: "What the tool returns"\n'
             '#       test: "tests/test_tool.py::test_tool_name"\n'
         )
-        # Insert before the intent section
         if "intent:" in template_content:
             template_content = template_content.replace(
                 "intent:", interface_scaffold + "\nintent:", 1
+            )
+
+    # Auto-inject roles scaffold for agent-type modules
+    if level == "module" and "roles:" not in template_content:
+        roles_scaffold = (
+            "\n# ----------------------------------------------------------------------------\n"
+            "# ROLES (Experimental — agents with context-dependent behavior)\n"
+            "# ----------------------------------------------------------------------------\n"
+            "# Uncomment if this agent has 2+ distinct behavioral modes.\n"
+            "# Complements interface: interface = WHAT; roles = HOW in each context.\n"
+            "# roles:\n"
+            '#   default: "implementer"\n'
+            "#\n"
+            "#   switching:\n"
+            '#     mechanism: "user_directed"  # user_directed | context_inferred | explicit_command\n'
+            '#     description: "How the agent transitions between roles"\n'
+            "#\n"
+            "#   definitions:\n"
+            '#     - name: "role_name"\n'
+            '#       description: "One-line: what this role does"\n'
+            '#       when: "Context or trigger that activates this role"\n'
+            "#       constraints:\n"
+            '#         - "Behavioral guardrail specific to this role"\n'
+            '#       tools: ["all"]           # subset of interface.tools, or "all"\n'
+            '#       verification: "tests/test_role_name.py"\n'
+        )
+        if "intent:" in template_content:
+            template_content = template_content.replace(
+                "intent:", roles_scaffold + "\nintent:", 1
+            )
+
+    # Auto-inject authorship scaffold for module/workflow intents (not task/system)
+    if level in ("module", "workflow") and "authorship:" not in template_content:
+        authorship_scaffold = (
+            "\n# ----------------------------------------------------------------------------\n"
+            "# AUTHORSHIP (Experimental — who originates and controls this intent)\n"
+            "# ----------------------------------------------------------------------------\n"
+            "# Uncomment if AI may originate, modify, or extend this intent.\n"
+            "# authorship:\n"
+            '#   origin: "human_directed"       # human_directed | ai_proposed | ai_autonomous\n'
+            '#   human_oversight: "review_required"  # review_required | audit_trail | escalation_only\n'
+            "#   ai_authority:\n"
+            "#     can_create: false\n"
+            '#     can_modify: ["implementation", "verification"]\n'
+            '#     requires_approval: ["intent.goal", "constraints"]\n'
+            '#   escalation: "When AI confidence < threshold or change impacts other intents"\n'
+        )
+        if "intent:" in template_content:
+            template_content = template_content.replace(
+                "intent:", authorship_scaffold + "\nintent:", 1
+            )
+
+    # Auto-inject evaluation scaffold for workflow-level intents
+    if level == "workflow" and "evaluation:" not in template_content:
+        evaluation_scaffold = (
+            "\n# ----------------------------------------------------------------------------\n"
+            "# EVALUATION (Experimental — continuous improvement loop)\n"
+            "# ----------------------------------------------------------------------------\n"
+            "# Uncomment if this workflow should improve over iterations.\n"
+            "# evaluation:\n"
+            "#   criteria:\n"
+            '#     - metric: "output_quality_score"\n'
+            '#       target: ">= 0.85"\n'
+            '#       source: "automated"\n'
+            "#   adjustment:\n"
+            '#     authority: "ai_proposed"      # human_only | ai_proposed | ai_autonomous\n'
+            '#     scope: ["implementation", "workflow_steps"]\n'
+            '#     protected: ["intent.goal", "constraints"]\n'
+            "#   cycle:\n"
+            '#     trigger: "on_completion"\n'
+            "#     max_iterations: 3\n"
+            '#     stop_when: "All criteria met or max_iterations reached"\n'
+            '#     escalate_when: "Cannot meet criteria after max_iterations"\n'
+        )
+        if "intent:" in template_content:
+            template_content = template_content.replace(
+                "intent:", evaluation_scaffold + "\nintent:", 1
             )
 
     # Auto-inject parent_intent

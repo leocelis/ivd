@@ -713,6 +713,49 @@ In large projects, **knowing what features exist** prevents duplication and help
 
 ---
 
+### Optional Section: Parent Intent (Intent Hierarchy)
+
+For **non-system intents** (workflow, module, task), IVD supports an **optional `parent_intent` field** that links a child intent to its parent — establishing hierarchy and enabling context inheritance.
+
+#### When to Use
+
+Use `parent_intent` when:
+- **Any workflow, module, or task intent** that belongs to a project with a system-level intent
+- **Multi-level intent hierarchies** (system → workflow → module → task) where child intents should inherit project conventions
+- **AI agents** that need to load project-wide context (architecture, code rules, key paths) when creating or modifying child intents
+
+Skip this field when:
+- **System-level intents** (they *are* the root; nothing to point to)
+- **Standalone intents** with no parent project context
+- **Single-file projects** where hierarchy adds no value
+
+#### What It Provides
+
+- **Context inheritance:** AI agents read `parent_intent`, load the parent's `project_context` section, and follow project conventions automatically
+- **Hierarchy visibility:** The intent tree (system → workflow → module → task) is explicit, not implicit
+- **Consistency:** All child intents reference the same conventions, architecture, and key paths
+
+#### Why It Matters
+
+Without `parent_intent`, every child intent is an island. AI agents creating a new module intent don't know the project uses event-driven architecture, has a shared auth library, or follows specific logging conventions. With `parent_intent`, the agent loads the parent, reads the project context, and follows conventions — **automatically, not by accident** (Principle 7: Understanding Survives Implementation; Principle 5: Layered Understanding).
+
+#### Example
+
+```yaml
+# agent/lead_scorer/lead_scorer_intent.yaml
+
+parent_intent: "../../system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "agent"
+  # ...
+```
+
+The relative path points to the system intent. AI agents resolve this path, load the parent, and inherit its context. Task intents point to their module; modules point to workflows or directly to the system intent.
+
+---
+
 ### Optional Section: Project Context (System-Level Only)
 
 For **system-level intents in existing projects**, IVD supports an **optional `project_context` section** that captures project-wide conventions, architecture, tools, and key paths—enabling all child intents to reuse and reference them.
@@ -1056,6 +1099,313 @@ TASK INTENT (per critical tool)       → "This tool's internal logic, edge case
 ```
 
 They complement each other — the interface is the summary; task intents are the deep-dive.
+
+---
+
+### Optional Section: Roles (Agents with Context-Dependent Behavior) *(Experimental)*
+
+For AI agents that **switch behavioral modes** depending on context — implementer, reviewer, architect, teacher, debugger — IVD supports an **optional `roles` section** that documents each behavioral profile as a verifiable contract.
+
+> **Status: Experimental** — This section is being validated. Apply it to real agents and report results to help promote it to canonical.
+
+#### When to Use
+
+Use the `roles` section when:
+- **AI agents** that operate in 2+ distinct behavioral modes (e.g., Cursor's agent/plan/debug/ask modes)
+- **Each mode has different constraints** (e.g., reviewer is read-only; implementer can modify files)
+- **Each mode uses a different subset of tools** from the agent's `interface`
+- **Coordinators need to understand** an agent's behavioral modes for routing decisions
+
+Skip this section when:
+- Agent has a single mode (just use `interface`)
+- Behavioral differences are trivial (just tone or prompt differences, no constraint changes)
+- Each role is a separate agent (use the coordinator-intent-propagation recipe instead)
+- The module is not an agent (APIs, CLIs, services don't have roles)
+
+#### What It Provides
+
+The `roles` section documents:
+- **Default role:** Which behavioral mode the agent starts in
+- **Switching mechanism:** How the agent transitions between roles (user-directed, context-inferred, explicit command)
+- **Role definitions:** Each role with name, description, trigger context, constraints, available tools, and verification test
+
+#### Why It Matters
+
+Role behaviors are often undocumented or only exist in system prompts and code, leading to:
+- **Behavioral drift** when prompts change but intent doesn't reflect the new behavior
+- **Unclear expectations** — users and coordinators don't know what constraints apply in each mode
+- **Lost context** — when the agent is rewritten, role definitions disappear with the old code
+
+This section makes role behaviors:
+- **Explicit:** Each role's constraints and available tools are declared in intent
+- **Verifiable:** Each role links to a test (Principle 2: Understanding Must Be Executable)
+- **Implementation-independent:** Rewrite the agent; the roles section still describes the same behavioral modes (Principle 7)
+- **Discoverable:** Coordinators and users can read the intent to understand all available modes (Principle 5)
+
+#### Relationship to Interface
+
+The `roles` and `interface` sections complement each other:
+
+```
+INTERFACE = WHAT the agent can do (tools, parameters, returns)
+ROLES     = HOW the agent behaves in different contexts (constraints, tool subsets)
+```
+
+A role may **restrict** which interface tools are available. For example, a "reviewer" role might only allow `read`, `search`, and `validate` tools from the full interface, while an "implementer" role allows all tools.
+
+#### Example Structure
+
+```yaml
+roles:
+  default: "implementer"
+
+  switching:
+    mechanism: "user_directed"
+    description: "User selects mode explicitly or agent infers from request context"
+
+  definitions:
+    - name: "implementer"
+      description: "Writes code, creates files, executes commands"
+      when: "User requests building, fixing, creating, or implementing"
+      constraints:
+        - "Must write/update intent before implementing"
+        - "Must verify constraints after implementation"
+      tools: ["all"]
+      verification: "tests/test_role_implementer.py"
+
+    - name: "reviewer"
+      description: "Reviews code for quality, alignment, issues"
+      when: "User requests review, audit, check, or code review"
+      constraints:
+        - "Read-only: no file modifications"
+        - "Must cite specific file and line references"
+        - "Must check alignment against intent artifact"
+      tools: ["read", "search", "validate"]
+      verification: "tests/test_role_reviewer.py"
+
+    - name: "architect"
+      description: "Designs systems, proposes structure, evaluates tradeoffs"
+      when: "User requests design, planning, architecture decisions"
+      constraints:
+        - "Must present alternatives with tradeoffs (Principle 8)"
+        - "Must reference existing architecture from parent_intent"
+        - "Read-only: no implementation changes"
+      tools: ["read", "search", "scaffold"]
+      verification: "tests/test_role_architect.py"
+```
+
+#### Relationship to Coordinator Pattern
+
+The `roles` section is for **one agent with multiple modes**. The coordinator-intent-propagation recipe is for **multiple agents, each with its own intent**. They are distinct but compatible:
+
+```
+ONE AGENT, MULTIPLE ROLES    → roles section in that agent's intent
+MULTIPLE AGENTS              → coordinator recipe, each agent has its own intent
+MULTIPLE AGENTS WITH ROLES   → coordinator routes to agents; each agent's intent has roles
+```
+
+A coordinator can read an agent's `roles` section to understand not just what the agent can do (`interface`), but how it behaves in different contexts — enabling smarter routing.
+
+---
+
+### Optional Section: Authorship (Who Originates and Controls Intent) *(Experimental)*
+
+In standard IVD, the human describes what they want and the AI writes the intent artifact. But as AI agents become more autonomous — designing workflows, proposing process changes, creating new intents for sub-tasks — the question arises: **who originated this intent, and what can the AI change without asking?**
+
+The **optional `authorship` section** formalizes the trust boundary for intent creation and modification.
+
+> **Status: Experimental** — This section is being validated. Apply it to real autonomous workflows and report results to help promote it to canonical.
+
+#### When to Use
+
+Use the `authorship` section when:
+- **AI agents design workflows** — the agent decides what steps to include, where to inject LLM calls, what data to pull
+- **Self-improving systems** — the agent may modify its own intent based on evaluation results
+- **Autonomous agents** that create sub-task intents without a direct human request
+- **Teams need clarity** on what the AI can and cannot change in an intent artifact
+
+Skip this section when:
+- Standard IVD workflow (human describes, AI writes, human reviews) — this is the default and doesn't need declaration
+- Intent is always human-originated with no AI modification authority
+- The module is not autonomous (simple libraries, utilities, static configurations)
+
+#### What It Provides
+
+The `authorship` section declares:
+- **Origin:** Who created this intent (human-directed, AI-proposed, AI-autonomous)
+- **Human oversight:** What level of review is required (review_required, audit_trail, escalation_only)
+- **AI authority:** What the AI can create, modify, and what fields require human approval
+- **Escalation:** When the AI must stop and ask a human
+
+#### Why It Matters
+
+Without explicit authorship boundaries:
+- **AI silently modifies intent** — changes goal or constraints without human awareness
+- **No trust gradient** — everything is either fully human-controlled or fully autonomous, no middle ground
+- **Coordinators can't delegate safely** — they don't know which agents have authority to create sub-intents
+- **Accountability gap** — when something goes wrong, unclear whether a human approved the intent
+
+This section makes authorship:
+- **Explicit:** The trust boundary is declared, not implicit (Principle 1)
+- **Verifiable:** Test that AI respects its declared authority — cannot modify protected fields (Principle 2)
+- **Graduated:** From human-directed → AI-proposed → AI-autonomous, with appropriate oversight at each level
+- **Implementation-independent:** Change the AI framework; the authorship rules still apply (Principle 7)
+
+#### Example Structure
+
+```yaml
+authorship:
+  origin: "ai_proposed"              # human_directed | ai_proposed | ai_autonomous
+  human_oversight: "review_required"  # review_required | audit_trail | escalation_only
+
+  ai_authority:
+    can_create: true                  # can AI create new sub-intents?
+    can_modify:                       # which sections AI can modify without approval
+      - "implementation"
+      - "verification"
+      - "workflow.steps"
+    requires_approval:                # fields that need human sign-off before changes take effect
+      - "intent.goal"
+      - "intent.success_metric"
+      - "constraints"
+  
+  escalation: "When AI confidence < 80%, when change impacts other intents, or when modification touches protected fields"
+```
+
+#### Authorship Levels
+
+The three origin levels represent a spectrum of human involvement:
+
+```
+HUMAN_DIRECTED    → Human describes, AI writes, human reviews (current IVD default)
+AI_PROPOSED       → AI proposes new intent or modifications, human reviews before activation
+AI_AUTONOMOUS     → AI creates/modifies intent within declared boundaries, human audits after
+```
+
+Each level requires increasing guardrails:
+- **human_directed:** Standard IVD. No authorship section needed (it's the default).
+- **ai_proposed:** AI can propose but nothing takes effect without human review. Safe for most workflows.
+- **ai_autonomous:** AI operates within `can_modify` boundaries. `requires_approval` fields are locked. Escalation rules are critical.
+
+#### Relationship to Roles
+
+Authorship complements roles: roles define **how an agent behaves** in different contexts; authorship defines **what authority that agent has over intent itself**. An agent in "architect" role might have authority to create new intents (`can_create: true`), while in "implementer" role it can only modify implementation sections.
+
+#### Relationship to Evaluation
+
+Authorship is the **governance layer** for the evaluation loop. When evaluation identifies an improvement, the `adjustment.authority` in the evaluation section must respect the `ai_authority` declared in authorship. If authorship says the AI cannot modify constraints, the evaluation loop cannot relax constraints even if quality would improve.
+
+---
+
+### Optional Section: Evaluation (Continuous Improvement Loop) *(Experimental)*
+
+IVD verification answers: **does the output pass the constraints?** That's binary — pass or fail. But production systems need more: **how good is the output, and how can it improve?**
+
+The **optional `evaluation` section** formalizes the continuous improvement loop: evaluate output quality → identify weakness → propose adjustment → verify the adjustment doesn't violate constraints → apply.
+
+> **Status: Experimental** — This section is being validated. Apply it to real workflows with measurable quality and report results to help promote it to canonical.
+
+#### When to Use
+
+Use the `evaluation` section when:
+- **Autonomous workflows** that run repeatedly and should improve over iterations
+- **Self-improving agents** that adjust their own process based on output quality
+- **Production systems** with quality feedback loops (precision, latency, user satisfaction)
+- **AI-designed workflows** where the agent needs to evaluate and refine its own design
+
+Skip this section when:
+- One-shot implementations with no iteration cycle
+- Task-level intents (too granular for an improvement loop)
+- Standard verification (constraints + tests) is sufficient — quality isn't measured on a spectrum
+- The system has no feedback mechanism to measure quality
+
+#### What It Provides
+
+The `evaluation` section documents:
+- **Criteria:** What quality metrics are measured and their targets (continuous, not binary)
+- **Adjustment:** Who has authority to make improvements, what can be changed, and what's protected
+- **Cycle:** When evaluation triggers, how many iterations are allowed, when to stop, and when to escalate
+
+#### Why It Matters
+
+Without a formalized evaluation loop:
+- **Quality improvement is ad-hoc** — "make it better" with no structure or stopping condition
+- **No guardrails on adjustment** — the improvement process might break constraints
+- **Infinite iteration risk** — no max_iterations, no escalation, the system loops forever
+- **No separation between what CAN and CANNOT change** — improvements might modify the goal itself
+
+This section makes improvement:
+- **Structured:** Evaluate → adjust → re-verify is a defined cycle, not informal iteration
+- **Bounded:** max_iterations prevents infinite loops; stop_when defines success
+- **Safe:** Protected fields cannot be modified by the evaluation loop
+- **Escalatable:** When the loop can't improve enough, humans are notified
+- **Verifiable:** Evaluation criteria are testable metrics, not aspirational goals (Principle 2)
+
+#### Example Structure
+
+```yaml
+evaluation:
+  criteria:
+    - metric: "classification_precision"
+      target: ">= 0.90"
+      source: "automated"              # automated | human_review | hybrid
+    - metric: "end_to_end_latency"
+      target: "p95 < 2s"
+      source: "automated"
+    - metric: "constraint_pass_rate"
+      target: "100%"
+      source: "ivd_validate"
+
+  adjustment:
+    authority: "ai_proposed"            # human_only | ai_proposed | ai_autonomous
+    scope:                              # what CAN be adjusted
+      - "implementation"
+      - "workflow_steps"
+      - "model_parameters"
+    protected:                          # what CANNOT be adjusted
+      - "intent.goal"
+      - "intent.success_metric"
+      - "constraints"
+
+  cycle:
+    trigger: "on_completion"            # on_completion | on_failure | scheduled | continuous
+    max_iterations: 3
+    stop_when: "All criteria met or max_iterations reached"
+    escalate_when: "Cannot meet criteria after max_iterations"
+```
+
+#### The Key Distinction: Verification vs. Evaluation
+
+```
+VERIFICATION   → "Does the output pass the constraints?"         (binary: yes/no)
+EVALUATION     → "How good is the output? How can it improve?"   (continuous: 0.78 → 0.85 → 0.92)
+```
+
+Verification is a gate. Evaluation is a loop. Verification asks pass/fail. Evaluation asks how much better. Both are anchored to intent — but evaluation extends verification with quality measurement, adjustment authority, and bounded iteration.
+
+**Critical rule:** Evaluation NEVER relaxes constraints. Constraints are the floor. Evaluation improves quality above the floor.
+
+#### Relationship to Authorship
+
+The evaluation loop's `adjustment.authority` must respect the authorship section's `ai_authority`. If authorship declares that the AI cannot modify constraints, evaluation cannot relax constraints. If authorship says changes need human review, evaluation proposes adjustments but doesn't apply them until approved.
+
+```
+AUTHORSHIP    → Who can change intent, and what fields are protected
+EVALUATION    → How to improve quality within those boundaries
+```
+
+They work together: authorship sets the rules; evaluation operates within them.
+
+#### Relationship to Constraints
+
+Constraints and evaluation criteria serve different purposes:
+
+```
+CONSTRAINTS     → Binary guardrails: "precision >= 85% or fail"
+EVALUATION      → Quality targets: "precision is 87%, can we reach 92%?"
+```
+
+Constraints define the minimum. Evaluation drives toward the optimum. The evaluation loop cannot change constraints — only improve quality within them.
 
 ---
 
