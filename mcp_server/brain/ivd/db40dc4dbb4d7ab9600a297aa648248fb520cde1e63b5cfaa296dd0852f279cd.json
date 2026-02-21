@@ -19,5 +19,5 @@
     "Derived from book_system_intent.yaml Ch10 (key_points, placeholder), framework.md\n      (four-level model, IVD metrics), and chapters 5\u20139 intents (converging patterns).\n      Sections 10.1\u201310.8 with required_content, constraints, rationale, alternatives, risks, verification.\n      Part II writing style applied (code/YAML centerpiece, prose supports).\n      Chapter-specific constraint: all_levels_demonstrated (all 4 intent levels with inline YAML artifacts).\n      Capstone-specific: comprehensive metrics across ALL IVD claims, pattern convergence from Ch5\u20139.\n      Risks identified: chapter length, over-engineering perception, auth domain barrier, metrics credibility.\n    reason: \"IVD: one intent per chapter; Ch10 is the capstone practice project. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00016064,
-  "processed_at": "2026-02-20T15:58:59.579714"
+  "processed_at": "2026-02-20T15:55:16.131544"
 }

@@ -17,5 +17,5 @@
     "ive where not backed by controlled study\"\n      validates: \"constraints.no_unsourced_statistics\"\n\n# ==============================================================================\n# CHANGELOG\n# ==============================================================================\n\nchangelog:\n  - version: \"1.0\"\n    date: \"2026-02-09\"\n    change: |\n      Initial chapter intent for Chapter 16 'Meta-Analysis and Comprehensive Results'.\n      Derived from book_system_intent.yaml Ch16 (key_points, placeholder), Ch11\u201315\n      (validation framework and individual results), and framework.md (IVD principles).\n      Sections 16.1\u201316.7 with required_content, 11 constraints (all with test fields),\n      rationale, 2 alternatives, 4 risks, 10 verification checks.\n      Part III writing style applied (prose leads, data illustrates).\n      Chapter-specific constraints: evidence_based, summary_table_completeness,\n      skeptics_addressed, checklist_present.\n      Risks identified: incomplete table, fabricated ROI, dismissive skeptic tone, repetition.\n    reason: \"IVD: one intent per chapter; Ch16 is the final validation synthesis. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00013802,
-  "processed_at": "2026-02-20T15:58:57.083626"
+  "processed_at": "2026-02-20T15:55:13.273206"
 }

@@ -17,5 +17,5 @@
     "th callable tools).\"\n  - version: \"1.0\"\n    date: \"2026-02-09\"\n    change: |\n      Initial chapter intent for Chapter 5 'Project 1: AI Classification Agent (Agent Pattern)'.\n      Derived from book_system_intent.yaml Ch5 (key_points, placeholder), recipes/agent-classifier.yaml\n      (structure, constraints, implementation pattern, verification pattern), framework.md (IVD flow),\n      and templates/intent.yaml (canonical structure).\n      Sections 5.1\u20135.7 with required_content, constraints, rationale, alternatives, risks, verification.\n      Part II writing style applied (code centerpiece, prose supports).\n      Recipe-specific constraints: recipe_alignment, author_sourced_examples.\n      Risks identified: API access, stale code, contrived comparison, chapter length.\n    reason: \"IVD: one intent per chapter; Ch5 is the first practice project. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00013824,
-  "processed_at": "2026-02-20T15:58:57.818287"
+  "processed_at": "2026-02-20T15:55:13.817423"
 }

@@ -19,5 +19,5 @@
     "Sections 8.1\u20138.8 with required_content, constraints, rationale, alternatives, risks, verification.\n      Part II writing style applied (code centerpiece, prose supports).\n      Chapter-specific focus: task-level intents (most granular level), field mapping (data-field-mapping\n      recipe), intent nesting (system \u2192 module \u2192 task), iteration count measurement.\n      All 9 constraints include executable test fields (Principle 2: Understanding Must Be Executable).\n      Risks identified: API access, stale code, chapter length, over-engineering perception.\n    reason: \"IVD: one intent per chapter; Ch8 is the fourth practice project. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00016254000000000003,
-  "processed_at": "2026-02-20T15:58:59.027746"
+  "processed_at": "2026-02-20T15:55:15.401779"
 }

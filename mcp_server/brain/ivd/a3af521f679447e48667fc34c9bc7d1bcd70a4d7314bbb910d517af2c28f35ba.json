@@ -17,5 +17,5 @@
     "Derived from book_system_intent.yaml Ch13 (key_points, placeholder), ivd_system_intent.yaml\n      (principles being validated), research/validation_methodology.md (methodology framework),\n      and templates/intent.yaml (canonical structure).\n      Sections 13.1\u201313.7 with required_content, constraints, rationale, alternatives, risks, verification.\n      Part III writing style applied (prose leads, experiments illustrate).\n      Chapter-specific constraints: evidence_based, reproducible_experiments, honest_edge_cases.\n      Unique section 13.6: edge cases and when baseline wins \u2014 IVD canon demands no cherry-picking.\n      Human judge evaluation rubric with 0-10 alignment scoring as reusable artifact.\n      Risks identified: results shortfall, rubric subjectivity, edge case framing, repetitive structure.\n    reason: \"IVD: one intent per chapter; Ch13 is the alignment accuracy validation chapter. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00013438000000000002,
-  "processed_at": "2026-02-20T15:58:55.092390"
+  "processed_at": "2026-02-20T15:55:10.161681"
 }

@@ -17,5 +17,5 @@
     "ok_system_intent.yaml Ch14 (key_points, placeholder), ivd_system_intent.yaml\n      (Principle 7: Understanding Survives Implementation), framework.md (IVD structure),\n      and templates/intent.yaml (canonical structure).\n      Sections 14.1\u201314.7 with required_content, constraints (11), rationale, alternatives (2),\n      risks (4), verification (10 checks).\n      Part III writing style applied (prose leads; evidence illustrates).\n      Chapter-specific constraints: evidence_based, reproducible_experiments, author_sourced_case_study,\n      no_timeline_references with measurement-data exception, no_unsourced_statistics.\n      Risks identified: simulated vs real turnover, retention claim credibility, single case study,\n      measurement-data false positives.\n    reason: \"IVD: one intent per chapter; Ch14 is the third Part III results chapter. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00012988,
-  "processed_at": "2026-02-20T15:58:55.667476"
+  "processed_at": "2026-02-20T15:55:11.160186"
 }

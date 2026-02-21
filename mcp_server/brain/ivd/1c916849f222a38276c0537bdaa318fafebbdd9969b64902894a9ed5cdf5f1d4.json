@@ -17,5 +17,5 @@
     "pty input gracefully\"\n      input:\n        param1: \"\"\n        param2: 0\n      expected_output:\n        status: \"error\"\n        error: \"Input validation failed\"\n      validates_constraint: \"input_validation\"\n      \n    - name: \"error_handling\"\n      description: \"External service failure\"\n      input:\n        param1: \"valid\"\n      mock: \"external_service returns 503\"\n      expected_output:\n        status: \"error\"\n        error: \"Service unavailable\"\n      validates_constraint: \"resilience\"\n  \n  property_tests:\n    - property: \"idempotency\"\n      test: \"Same input always produces same output\"\n      verification: \"tests/test_properties.py::test_idempotent\"\n      \n    - property: \"type_safety\"\n      test: \"Invalid types raise TypeError\"\n      verification: \"tests/test_types.py::test_type_validation\"\n\n# WHEN was this changed?\nchangelog:\n  - version: 1\n    date: \"YYYY-MM-DD\"\n    change: \"Initial implementation\"\n    reason: \"Why this was created\"\n    evidence: \"Link to validation if any\""
   ],
   "cost_usd": 0.00014746000000000003,
-  "processed_at": "2026-02-20T15:59:01.631178"
+  "processed_at": "2026-02-20T15:55:18.514529"
 }

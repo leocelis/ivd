@@ -14,5 +14,5 @@
     "_content: prefer author's direct experience; composite only when labeled. New constraint author_sourced_examples.\"\n    reason: \"Case study must not be unanchored fiction; author credibility (research 6.1).\"\n  - version: \"1.0\"\n    date: \"2026-01-25\"\n    change: \"Initial chapter intent; derived from book/book_system_intent.yaml\"\n    reason: \"IVD: intent before implementation; one intent per chapter folder\""
   ],
   "cost_usd": 0.00010460000000000002,
-  "processed_at": "2026-02-20T15:58:47.165836"
+  "processed_at": "2026-02-20T15:55:01.756902"
 }

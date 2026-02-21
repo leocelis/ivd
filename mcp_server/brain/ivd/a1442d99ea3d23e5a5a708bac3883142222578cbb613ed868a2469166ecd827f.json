@@ -17,5 +17,5 @@
     "required_content, 9 constraints with test fields,\n      rationale, 2 alternatives, 4 risks, 10 verification checks.\n      Part IV writing style applied (prose leads; examples illustrate).\n      Tool-specific constraints: tool_accuracy, checklist_included.\n      Critical constraint: no_timeline_references ('The First Week' is conceptual, not a deadline).\n    reason: \"IVD: one intent per chapter; Ch17 is the Part IV adoption entry point. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00013516,
-  "processed_at": "2026-02-20T15:58:53.536879"
+  "processed_at": "2026-02-20T15:55:07.933449"
 }

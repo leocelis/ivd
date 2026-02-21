@@ -17,5 +17,5 @@
     ",\n      and chapter 17 intent (Part IV style, structural template).\n      Sections 18.1\u201318.7 with required_content (4\u20137 bullets each), 9 constraints with\n      test fields, rationale, 2 alternatives, 4 risks, 10 verification checks.\n      Part IV writing style applied (prose leads; examples illustrate).\n      Chapter-specific constraints: checklist_included (adoption/scaling checklist),\n      author_sourced_case_study (18.7 must be author experience or labeled composite).\n      Risks identified: prescriptive guidance, contrived case study, provider-specific\n      CI/CD, vanity metrics.\n    reason: \"IVD: one intent per chapter; Ch18 is the organizational scaling chapter. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00013220000000000001,
-  "processed_at": "2026-02-20T15:58:52.882421"
+  "processed_at": "2026-02-20T15:55:07.022667"
 }

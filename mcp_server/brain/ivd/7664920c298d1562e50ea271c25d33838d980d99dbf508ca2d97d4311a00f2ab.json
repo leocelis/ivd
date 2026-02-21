@@ -11,5 +11,5 @@
     "unverifiable by the AI. The AI reads, guesses, and fills the gaps. Guesswork is hallucination.\n\n- **The AI Agents era has a core pain point: many turns and hallucinations.** The \"Prompt \u2192 Here's X \u2192 No, I meant\u2026\" loop runs at machine speed. Each turn costs context and attention. Each hallucination compounds. This is the default mode of working with AI today.\n\n- **The scale is enormous: 70\u201390% knowledge loss, hundreds of billions in annual waste.** Research shows 70\u201390% of documentation-code mismatches stem from documentation failures; critical knowledge lives in meetings and heads, not durable artifacts. The financial cost: $260+ billion annually in the U.S. alone, $500 billion globally. The AI prompt that fills in wrong blanks, the feature that ignores unstated constraints\u2014these are the default, not edge cases.\n\n- **The hinge: what if intent was verifiable? What if the AI wrote the intent?** What if the AI could verify its output against a statement of intent\u2014before it ships? What if the guesswork could be replaced with checking? The next chapter explores what happens when intent becomes verifiable\u2014and who should write it."
   ],
   "cost_usd": 6.302e-05,
-  "processed_at": "2026-02-20T15:58:47.744107"
+  "processed_at": "2026-02-20T15:55:02.223378"
 }

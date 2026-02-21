@@ -33,5 +33,5 @@
     "e, clarity_tactics, analogies_and_metaphors,\n      quotable_lines, principles_as_rules). Enhanced: front_matter (TOC: detailed multi-level;\n      Preface: establish problem in first 2 pages; How to Use: path exits, dip-in). Part purposes\n      and part_2 pedagogy_note (spiral). About the Author: credibility, origin, expertise.\n      New constraints: chapter_takeaways (Key Points/Summary/Checklist), quotable_principles.\n      Rationale: first-mover, timeless+timely, evidence-based pattern. source_material: research\n      best_selling_programming_books.md. implementation: target_length 500\u2013750 pp,\n      distribution_options (free excerpt, target publishers).\n  - version: \"1.1\"\n    date: \"2026-01-25\"\n    changes: |\n      Merged IVD_BOOK_ROADMAP into this intent (canon: single system-level intent in book/).\n      Added: rationale, alternatives, source_material; operational constraints\n      (no_timeline_references, source_material_accuracy, kindle_compliance, master_intent_alignment);\n      production_workflow. Deleted ivd/IVD_BOOK_ROADMAP.yaml.\n  - version: \"1.0\"\n    date: \"2026-01-25\"\n    changes: \"Initial book structure created with complete outline, chapters, and placeholders\""
   ],
   "cost_usd": 0.00037208,
-  "processed_at": "2026-02-20T15:58:45.872142"
+  "processed_at": "2026-02-20T15:55:00.539617"
 }

@@ -15,5 +15,5 @@
     "tent_alignment\"\n    - check: \"Call to action is specific with concrete next steps (recipe, tool, case study, research)\"\n      validates: \"deliverables.sections[21.6]\"\n\n# ==============================================================================\n# CHANGELOG\n# ==============================================================================\n\nchangelog:\n  - version: \"1.0\"\n    date: \"2026-02-09\"\n    change: |\n      Initial chapter intent for Chapter 21 'The Future of Intent-Verified Development'.\n      Derived from book_system_intent.yaml Ch21 (key_points, placeholder, deferred_to_future_edition),\n      ivd_system_intent.yaml (roadmap, principles), and research/ivd_implementation_roadmap.md.\n      Sections 21.1\u201321.6 with required_content, constraints (10, all with test fields),\n      rationale, alternatives, risks, verification. Final chapter: narrative arc closure + call to action.\n    reason: \"IVD: one intent per chapter; Ch21 is the final chapter \u2014 future vision, deferred frontiers, call to action. Intent-only; manuscript pending.\""
   ],
   "cost_usd": 0.00011320000000000001,
-  "processed_at": "2026-02-20T15:58:51.583324"
+  "processed_at": "2026-02-20T15:55:05.779759"
 }

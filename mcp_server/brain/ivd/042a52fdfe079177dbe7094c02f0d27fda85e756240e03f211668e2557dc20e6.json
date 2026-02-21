@@ -45,5 +45,5 @@
     "AI reads and guesses at. IVD provides structured intent the AI can write, verify, and self-correct against.\n\n**The paradigm shift:** From \"prompt the AI and hope\" to \"AI writes intent, implements, verifies.\"\n\n---\n\n## Further Reading\n\n### IVD Documentation\n- `README.md` - Quick start guide\n- `cookbook.md` - Practical implementation guide\n- `ivd_system_intent.yaml` - System intent (rules for extending IVD)\n- `cheatsheet.md` - Quick reference\n- `templates/intent_levels_guide.md` - When to use which intent level\n\n### Research and Context\n- `research/lp_research.md` - LP history and theory (Knuth's original vision)\n- `_private/from_lp_to_ivd.md` - Evolution path from LP to IVD\n\n---\n\n**Version:** 1.3  \n**Status:** Production Ready  \n**Maintained by:** Leo Celis  \n**Key Insight:** The AI writes the intent, implements against it, verifies\u2014eliminating many-turns and hallucinations."
   ],
   "cost_usd": 0.0005706800000000001,
-  "processed_at": "2026-02-20T15:58:43.662078"
+  "processed_at": "2026-02-20T15:54:56.330510"
 }
