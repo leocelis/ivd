@@ -57,7 +57,7 @@ The appendices and recipes support **dip-in use**: you can look up a recipe, che
 
 Throughout this book, the following formatting conventions are used:
 
-- **Bold** marks key terms on first introduction (e.g., **intent artifact**, **many turns problem**) and important takeaways.
+- **Bold** key terms on first introduction (e.g., intent artifact, many-turns problem**) and important takeaways.
 - *Italic* marks emphasis within sentences, book titles (e.g., *Code Complete*), and quoted speech or dialogue (e.g., *"Add export to CSV."*).
 - `Code font` marks code snippets, file paths (e.g., `system_intent.yaml`), commands (e.g., `ivd validate`), and technical identifiers.
 - YAML blocks present intent artifacts and recipes. Every YAML example includes a language tag and is copy-pasteable.

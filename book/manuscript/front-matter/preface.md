@@ -1,6 +1,6 @@
 # Preface: Why This Book Exists
 
-I watched a senior engineer spend three hours correcting an AI agent that could have built the entire feature in ten minutes. The prompts were clear. The model was capable. The output kept missing the point. Turn after turn, the engineer refined, clarified, and corrected—until the deadline forced a compromise nobody was happy with.
+I watched a senior engineer spend three hours correcting an AI agent that could have built the entire feature in ten minutes. The prompts were clear. The model was capable. The output kept missing the point. Turn after turn, the engineer refined, clarified, and corrected.
 
 That scene plays out thousands of times a day, across every team that builds with AI. The AI agent writes fast, writes confidently, and writes wrong—because it fills in the gaps in your request with plausible guesses. You correct. It rewrites. You correct again. The cycle has a name in this book: the **many turns problem**. And when the AI's guesses are baked into code before anyone catches them, that's **hallucination**—not a rare failure, but the default mode of working with AI today.
 
