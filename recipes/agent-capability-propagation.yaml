@@ -1,0 +1,304 @@
+# ==============================================================================
+# IVD Recipe: Agent Capability Propagation Pattern
+# ==============================================================================
+# Pattern for propagating agent capability changes UP to the coordinator's
+# routing surface. The inverse of coordinator-intent-propagation.yaml.
+#
+# coordinator-intent-propagation = top-down (coordinator → agents at runtime)
+# agent-capability-propagation   = bottom-up (agent changes → coordinator routing)
+#
+# Reference: recipes/coordinator-intent-propagation.yaml (companion pattern)
+# Status: Canonical
+# Version: 1.0
+# Created: 2026-02-09
+# ==============================================================================
+
+recipe:
+  name: "Agent Capability Propagation"
+  version: "1.0"
+  category: "agent_patterns"
+  status: "canonical"
+  created: "2026-02-09"
+
+  description: |
+    In multi-agent systems, a coordinator routes user requests to specialist
+    agents based on descriptions the coordinator LLM reads at runtime (the
+    "routing surface"). When an agent's capabilities change — new tools,
+    modified behavior, removed features — the routing surface must update
+    or the coordinator can't discover and route to the new capability.
+
+    This pattern defines how capability changes propagate bottom-up:
+
+    Agent capability changes → Update agent intent (interface/roles)
+                             → Update routing surface (descriptions, instructions)
+                             → Verify end-to-end routing
+
+    Companion to coordinator-intent-propagation.yaml, which handles top-down
+    intent flow at runtime (coordinator → agents).
+
+  problem_solved: |
+    Agent capabilities change but the coordinator's routing surface doesn't
+    update. Result: the coordinator can't route to the new capability, users
+    get wrong or missing responses, and the failure is silent — no error, just
+    a coordinator that doesn't know the agent can do something new.
+
+    Root cause: the routing surface (AGENT_DESCRIPTION, COORDINATOR_INSTRUCTIONS,
+    or equivalent) is treated as an implementation detail instead of a verifiable
+    integration surface. Changes to agent capabilities don't trigger updates to
+    the routing surface because no pattern connects them.
+
+  applies_to:
+    - "Multi-agent systems with coordinator/orchestrator"
+    - "Adding new capabilities to existing agents"
+    - "Modifying agent behavior that affects routing decisions"
+    - "Removing agent capabilities that the coordinator still advertises"
+
+  when_to_use:
+    - "Adding a new tool or capability to an existing agent"
+    - "Modifying an agent's behavior in ways that affect what it can handle"
+    - "Removing capabilities the coordinator might still route to"
+    - "Agent's scope.affects_modules includes the coordinator"
+    - "Any change to interface.tools or roles.definitions on a coordinated agent"
+
+  when_NOT_to_use:
+    - "Single-agent systems (no coordinator to propagate to)"
+    - "Internal implementation changes that don't affect the agent's external surface"
+    - "Cosmetic changes (logging, performance) that don't change what the agent can do"
+    - "New standalone agents not yet registered with a coordinator"
+
+# ==============================================================================
+# CORE CONCEPT: ROUTING SURFACE
+# ==============================================================================
+
+routing_surface:
+  definition: |
+    The routing surface is the set of descriptions, instructions, and metadata
+    that the coordinator LLM reads to decide which agent handles which request.
+    In LLM-based multi-agent systems, this typically includes:
+
+    - AGENT_DESCRIPTION: one-line summary of what the agent does
+    - COORDINATOR_INSTRUCTIONS: detailed routing rules in the coordinator's prompt
+    - Tool/function descriptions: if the coordinator calls agents as tools
+    - Routing configuration: any config file that maps requests to agents
+
+  key_insight: |
+    In traditional API systems, the integration surface is the API contract
+    (endpoints, parameters, types). In LLM-based multi-agent systems, the
+    integration surface is the DESCRIPTION STRING — the text the coordinator
+    LLM reads to decide routing. This description is as critical as any API
+    contract, but is often treated as a throwaway string in implementation code.
+
+  where_it_lives: |
+    The routing surface is captured in two places:
+    1. Agent intent: interface.routing (what this agent tells coordinators)
+    2. Coordinator implementation: AGENT_DESCRIPTION, prompt templates, config
+
+    This recipe ensures both stay aligned.
+
+# ==============================================================================
+# PROPAGATION STEPS
+# ==============================================================================
+
+steps:
+  - step: 1
+    action: "Update the agent's intent artifact"
+    details:
+      - "Add/modify/remove tools in interface.tools"
+      - "Add/modify/remove roles in roles.definitions (if applicable)"
+      - "Update interface.routing.description to reflect the new capabilities"
+      - "Update interface.routing.keywords with new routing triggers"
+      - "Bump the intent version and add changelog entry"
+    verification: "ivd_validate passes on updated intent"
+
+  - step: 2
+    action: "Identify affected routing surfaces"
+    details:
+      - "Check interface.routing.consumed_by — which coordinator(s) consume this agent?"
+      - "Check scope.affects_modules — is the coordinator listed?"
+      - "If neither exists, search for the coordinator that registers this agent"
+      - "List all places the routing surface lives: AGENT_DESCRIPTION constant, coordinator prompt template, routing config, tool/function registration"
+    verification: "All routing surface locations identified and listed"
+
+  - step: 3
+    action: "Update the routing surface"
+    details:
+      - "Update AGENT_DESCRIPTION (or equivalent) to include the new capability"
+      - "Update COORDINATOR_INSTRUCTIONS if routing rules need to change"
+      - "If new capability overlaps with another agent's domain, update disambiguation rules"
+      - "If capability is removed, remove it from routing description"
+    verification: "Routing description accurately reflects agent's current interface.tools and roles"
+
+  - step: 4
+    action: "Verify end-to-end routing"
+    details:
+      - "Test: user request mentioning new capability → coordinator routes to correct agent"
+      - "Test: existing capabilities still route correctly (no regression)"
+      - "Test: ambiguous requests between this agent and others are disambiguated correctly"
+      - "Test: removed capabilities no longer appear in routing (coordinator doesn't promise what agent can't deliver)"
+    verification: "All routing tests pass; no capability is advertised but undeliverable"
+
+# ==============================================================================
+# CONSTRAINT TEMPLATE
+# ==============================================================================
+
+constraint_template:
+  - name: "routing_surface_alignment"
+    requirement: "Coordinator's routing description for this agent accurately reflects the agent's actual interface.tools and roles.definitions"
+    test: "Compare interface.routing.description keywords against interface.tools names; every tool category has a corresponding routing keyword"
+    consequence_if_violated: "Coordinator can't discover or route to agent capabilities; users get wrong or missing responses"
+
+  - name: "routing_end_to_end"
+    requirement: "User request mentioning agent capability → coordinator routes to this agent"
+    test: "For each interface.routing.keyword: send a request containing that keyword → verify coordinator selects this agent"
+    consequence_if_violated: "Capability exists but is unreachable through the coordinator"
+
+  - name: "routing_no_stale_claims"
+    requirement: "Coordinator does not advertise capabilities the agent no longer has"
+    test: "Every capability mentioned in routing description maps to an existing interface.tool or roles.definition"
+    consequence_if_violated: "Coordinator routes to agent for capability it can't deliver; user gets error or wrong response"
+
+# ==============================================================================
+# EXAMPLE: ADDING CAPABILITY TO EXISTING AGENT
+# ==============================================================================
+
+example:
+  scenario: "Adding brain-aligned memory to a psychology agent in a multi-agent system"
+
+  before:
+    agent_interface:
+      type: "agent"
+      routing:
+        description: "Psychology and therapy analysis — processes conversations through therapeutic frameworks"
+        keywords: ["psychology", "therapy", "freud", "analysis"]
+        consumed_by: "agent/coordinator"
+      tools:
+        - name: "analyze_conversation"
+          description: "Analyze a conversation through therapeutic lens"
+        - name: "get_patient_history"
+          description: "Retrieve patient interaction history"
+
+    coordinator_description: "Psychology and therapy analysis — processes conversations through therapeutic frameworks"
+
+  change: "Add brain-aligned memory capability (store/recall memories using psychological frameworks)"
+
+  after:
+    agent_interface:
+      type: "agent"
+      routing:
+        description: "Psychology, therapy analysis, and brain-aligned memory — processes conversations through therapeutic frameworks and stores/recalls memories using psychological models"
+        keywords: ["psychology", "therapy", "freud", "analysis", "memory", "brain-aligned", "recall"]
+        consumed_by: "agent/coordinator"
+      tools:
+        - name: "analyze_conversation"
+          description: "Analyze a conversation through therapeutic lens"
+        - name: "get_patient_history"
+          description: "Retrieve patient interaction history"
+        - name: "store_memory"
+          description: "Store a memory using brain-aligned psychological framework"
+        - name: "recall_memories"
+          description: "Recall relevant memories using associative psychological models"
+
+    coordinator_description: "Psychology, therapy analysis, and brain-aligned memory — processes conversations through therapeutic frameworks and stores/recalls memories using psychological models"
+
+  propagation_checklist:
+    - "[x] Updated agent intent: added store_memory, recall_memories to interface.tools"
+    - "[x] Updated interface.routing.description: added 'brain-aligned memory' and 'stores/recalls memories'"
+    - "[x] Updated interface.routing.keywords: added 'memory', 'brain-aligned', 'recall'"
+    - "[x] Updated AGENT_DESCRIPTION in coordinator: matches interface.routing.description"
+    - "[x] Updated COORDINATOR_INSTRUCTIONS: added routing rule for memory-related requests"
+    - "[x] Verified: 'store a memory about X' → coordinator routes to psychology agent"
+    - "[x] Verified: 'analyze this conversation' → still routes to psychology agent (no regression)"
+    - "[x] Verified: no other agent claims memory capability (no ambiguous routing)"
+
+# ==============================================================================
+# COMMON FAILURES
+# ==============================================================================
+
+common_failures:
+  - name: "Capability Added, Routing Surface Stale"
+    description: "New tool added to agent but AGENT_DESCRIPTION not updated"
+    symptom: "User asks for new capability; coordinator routes to wrong agent or says it can't help"
+    root_cause: "Agent intent was updated but propagation steps 2-4 were skipped"
+    solution: "Follow the propagation steps; interface.routing.description must update when interface.tools changes"
+
+  - name: "Routing Description Drift"
+    description: "Routing description was updated once but diverged from actual capabilities over time"
+    symptom: "Coordinator routes to agent for capability it no longer has, or misses capabilities it gained"
+    root_cause: "No verification connecting routing description to actual tools"
+    solution: "Add routing_surface_alignment constraint; run ivd_validate to detect drift"
+
+  - name: "Ambiguous Routing After Capability Addition"
+    description: "New capability overlaps with another agent's domain; coordinator picks randomly"
+    symptom: "Same request sometimes routes to agent A, sometimes to agent B"
+    root_cause: "Routing descriptions overlap without disambiguation rules"
+    solution: "Update COORDINATOR_INSTRUCTIONS with explicit disambiguation; add routing keywords that differentiate"
+
+  - name: "Scope Lists Coordinator but No Routing Changes Defined"
+    description: "Intent scope.affects_modules includes coordinator, but implementation.required_components only defines agent-side changes"
+    symptom: "Coordinator identified as affected but never given implementation changes"
+    root_cause: "affects_modules correctly flags the dependency, but no pattern enforces routing surface updates"
+    solution: "When scope.affects_modules includes a coordinator, implementation must include routing surface updates as required components"
+
+# ==============================================================================
+# VALIDATION CHECKLIST
+# ==============================================================================
+
+validation:
+  pre_flight:
+    - "[ ] Agent intent updated: interface.tools reflects new capabilities"
+    - "[ ] Agent intent updated: interface.routing.description reflects new capabilities"
+    - "[ ] Agent intent updated: interface.routing.keywords includes new routing triggers"
+    - "[ ] Coordinator routing surface identified: where does the description live?"
+    - "[ ] Coordinator AGENT_DESCRIPTION updated to match interface.routing.description"
+    - "[ ] Coordinator instructions updated if routing rules changed"
+    - "[ ] Disambiguation checked: no ambiguous overlap with other agents"
+
+  verification:
+    - scenario: "User requests new capability by name"
+      expected: "Coordinator routes to updated agent"
+    - scenario: "User requests existing capability"
+      expected: "Routing unchanged; no regression"
+    - scenario: "User request is ambiguous between this agent and another"
+      expected: "Coordinator disambiguates correctly per updated instructions"
+    - scenario: "User requests removed capability"
+      expected: "Coordinator does not route to this agent for that capability"
+
+# ==============================================================================
+# RELATIONSHIP TO OTHER PATTERNS
+# ==============================================================================
+
+relationships:
+  - pattern: "coordinator-intent-propagation.yaml"
+    relationship: "Companion. Coordinator-intent-propagation flows top-down (coordinator → agents at runtime). Agent-capability-propagation flows bottom-up (agent changes → coordinator routing). Together they form the complete bidirectional flow."
+
+  - pattern: "interface section"
+    relationship: "Agent-capability-propagation triggers when interface.tools changes. The interface.routing sub-field captures the routing surface in the intent."
+
+  - pattern: "roles section"
+    relationship: "Role changes (new modes, removed modes) may also require routing surface updates if the coordinator uses role information for routing decisions."
+
+  - pattern: "Principle 3 (Bidirectional Synchronization)"
+    relationship: "This recipe is Principle 3 applied to multi-agent routing: agent intent and coordinator routing surface must stay synchronized."
+
+# ==============================================================================
+# REFERENCES
+# ==============================================================================
+
+references:
+  internal:
+    - "recipes/coordinator-intent-propagation.yaml"
+    - "recipes/agent-role-based.yaml"
+    - "framework.md (Principle 6 in Multi-Agent Systems, Interface section)"
+  external:
+    - "OpenAI Agents Documentation (2026) - Tool descriptions as routing contracts"
+    - "Anthropic MCP - Tool discovery and description alignment"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: "Initial recipe for agent capability propagation pattern — bottom-up routing surface updates when agent capabilities change"
+    reason: "Gap identified: framework had top-down intent propagation (coordinator → agents) but no pattern for bottom-up capability propagation (agent changes → coordinator routing surface). Building blocks existed (interface, roles, P6 multi-agent) but connective tissue was missing."

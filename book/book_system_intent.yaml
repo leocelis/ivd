@@ -309,6 +309,7 @@ book_structure:
           - "Intent propagation: Human → Coordinator Intent → Agent Intents"
           - "Apply coordinator-intent-propagation recipe"
           - "Each agent's interface section describes its tool surface — the coordinator uses these to route correctly"
+          - "Each agent's interface.routing captures the routing surface — the description the coordinator LLM reads for routing decisions; when capabilities change, apply the agent-capability-propagation recipe"
           - "Each agent's roles section describes its behavioral modes — the coordinator uses these for context-aware routing"
           - "Introduce the authorship section (experimental) — declare what authority the coordinator and agents have over intent creation and modification"
           - "Prevent coordination errors through structured intent at every delegation"
@@ -633,6 +634,7 @@ book_structure:
       status: "pending"
       placeholder: |
         Complete recipes included:
+        - agent-capability-propagation.yaml (canonical — bottom-up routing surface updates: agent capability changes propagate to coordinator routing)
         - agent-classifier.yaml (canonical — AI classification agents: lead scoring, ticket routing, content classification)
         - agent-role-based.yaml (experimental — context-dependent agent behavior: single agent, multiple modes)
         - coordinator-intent-propagation.yaml (canonical — multi-agent coordination: intent flows from coordinator to specialists)
@@ -1158,6 +1160,15 @@ implementation:
 # ==============================================================================
 
 changelog:
+  - version: "2.3"
+    date: "2026-02-09"
+    changes: |
+      Routing surface gap addressed:
+      (1) Ch9 key_points: added interface.routing (routing surface) and agent-capability-propagation recipe.
+      (2) Appendix B: added agent-capability-propagation.yaml to recipe library (12 recipes total).
+      Companion to coordinator-intent-propagation (top-down); this recipe handles bottom-up
+      capability propagation from agents to the coordinator's routing knowledge.
+
   - version: "2.2"
     date: "2026-02-09"
     changes: |

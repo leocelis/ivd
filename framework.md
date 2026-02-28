@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.4  
+**Version:** 1.5  
 **Created:** January 23, 2026  
-**Updated:** February 9, 2026 (Intent coverage assessment: ivd_assess_coverage)
+**Updated:** February 9, 2026 (Routing surface: interface.routing sub-field + agent-capability-propagation recipe)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -325,7 +325,12 @@ Coordinator synthesizes verified results
 
 **Core principle:** Tools are truth, history is context. The coordinator uses tools to verify current state—never assumes from chat history.
 
-**Recipe:** `recipes/coordinator-intent-propagation.yaml`
+**Routing Surface:** In LLM-based multi-agent systems, the coordinator decides which agent to call based on **description strings** it reads at runtime — `AGENT_DESCRIPTION`, `COORDINATOR_INSTRUCTIONS`, tool descriptions, or equivalent. This description is the **routing surface**: the actual integration contract between coordinator and agent. IVD captures this surface in the agent's intent via the optional `interface.routing` sub-field (`description`, `keywords`, `consumed_by`), making it verifiable. When agent capabilities change (new tools, modified behavior), the routing surface must update — or the coordinator can't route to the new capability. See the `agent-capability-propagation` recipe for the bottom-up propagation pattern (agent changes → coordinator routing update), which complements the top-down `coordinator-intent-propagation` recipe.
+
+**Recipes:**
+- `recipes/coordinator-intent-propagation.yaml` (top-down: coordinator → agents at runtime)
+- `recipes/agent-capability-propagation.yaml` (bottom-up: agent changes → coordinator routing)
+
 **Research:** `research/coordinator_agent_design_patterns.md`
 
 ---
@@ -1050,6 +1055,26 @@ This section makes tool surfaces:
 - **Implementation-independent:** Rewrite Python → TypeScript; the interface section still describes the same tools (Principle 7)
 - **Discoverable:** In the intent artifact, right next to what the module does and why (Principle 5)
 
+#### Optional Sub-Field: Routing (Agents Consumed by a Coordinator)
+
+For agents that are **consumed by a coordinator** (the coordinator routes requests to this agent based on descriptions), the `interface` section supports an optional `routing` sub-field that captures the **routing surface** — the description the coordinator LLM reads to make routing decisions.
+
+**When to Use:**
+- Agent is one of several specialists consumed by a coordinator
+- The coordinator uses description strings (not hard-coded routing) to decide which agent handles which request
+- Agent capabilities change and the coordinator's routing knowledge must update
+
+**Why It Matters:**
+In LLM-based multi-agent systems, the routing surface (the description string) is the **actual runtime interface** between coordinator and agent — as critical as an API contract. Without capturing it in intent, capability changes silently break routing: the coordinator can't discover new capabilities, or still routes to removed ones.
+
+The `routing` sub-field makes this surface:
+- **Explicit:** The description the coordinator sees is declared in intent (Principle 1)
+- **Verifiable:** Compare `routing.description` keywords against actual `tools` — detect drift (Principle 2)
+- **Synchronized:** When `tools` change, `routing.description` must update (Principle 3)
+- **Implementation-independent:** Rewrite the agent; the routing description still describes the same capabilities (Principle 7)
+
+**Recipe:** `recipes/agent-capability-propagation.yaml` (bottom-up propagation pattern)
+
 #### Example Structure
 
 ```yaml
@@ -1057,6 +1082,12 @@ This section makes tool surfaces:
 
 interface:
   type: "mcp"   # "mcp" | "agent" | "api" | "cli" | "service"
+  
+  # Optional — for agents consumed by a coordinator
+  routing:
+    description: "One-line: what the coordinator tells the LLM about this agent"
+    keywords: ["psychology", "therapy", "memory"]
+    consumed_by: "agent/coordinator"
   
   tools:
     - name: "ivd_validate"

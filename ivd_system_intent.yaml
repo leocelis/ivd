@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.6
+# Version: 1.7
 # Created: 2026-01-24
-# Updated: 2026-02-09 (Experimental: authorship + evaluation optional sections)
+# Updated: 2026-02-09 (interface.routing sub-field + agent-capability-propagation recipe)
 # Status: Canonical
 # ==============================================================================
 
@@ -781,6 +781,10 @@ rules:
         structure: |
           interface:
             type: "mcp" | "agent" | "api" | "cli" | "service"
+            routing:                           # Optional — for agents consumed by a coordinator
+              description: "One-line: what the coordinator tells the LLM about this agent"
+              keywords: ["keyword1", "keyword2"]
+              consumed_by: "path/to/coordinator"
             tools:
               - name: "tool_name"
                 description: "One-line: what this tool does"
@@ -795,8 +799,10 @@ rules:
           "Tool surface is verifiable (Principle 2): parameter types and tests catch drift",
           "AI agents can read the interface to understand what the module exposes without reading implementation code",
           "Interface survives rewrites: change language or framework, intent still describes the same tools",
-          "Complements task-level intents: interface is the aggregate view; critical tools can still get individual task-level intents"
+          "Complements task-level intents: interface is the aggregate view; critical tools can still get individual task-level intents",
+          "Routing surface is verifiable: routing.description can be cross-checked against actual tools to detect stale routing"
         ]
+        recipe: "recipes/agent-capability-propagation.yaml (bottom-up routing surface updates when tools change)"
         added: "2026-02-09"
 
       - name: "roles"
@@ -1522,6 +1528,19 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 1.7
+    date: "2026-02-09"
+    change: "Added interface.routing sub-field and agent-capability-propagation recipe"
+    reason: |
+      Gap identified: framework had top-down intent propagation (coordinator → agents via
+      coordinator-intent-propagation recipe) but no pattern for bottom-up capability propagation
+      (agent changes → coordinator routing surface). The routing surface — description strings
+      the coordinator LLM reads to make routing decisions — was unverifiable. Added:
+      (1) Optional routing sub-field in interface section (description, keywords, consumed_by)
+      (2) New recipe: agent-capability-propagation.yaml (bottom-up propagation steps + verification)
+      (3) Routing Surface concept documented in framework.md (Principle 6 Multi-Agent section)
+      Extends existing interface section (no new top-level optional section).
+
   - version: 1.6
     date: "2026-02-09"
     change: "Added experimental authorship and evaluation optional sections"

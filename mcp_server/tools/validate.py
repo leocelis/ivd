@@ -95,6 +95,16 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                                     for pf in ["name", "type", "required", "description"]:
                                         if pf not in param:
                                             warnings.append(f"interface.tools '{tool_name}' param #{j+1} missing '{pf}'")
+                # Validate interface.routing sub-field (optional — agents consumed by a coordinator)
+                if "routing" in iface:
+                    routing = iface["routing"]
+                    if isinstance(routing, dict):
+                        if "description" not in routing or not routing.get("description"):
+                            warnings.append("interface.routing missing or empty 'description' (what the coordinator tells the LLM about this agent)")
+                        if "consumed_by" not in routing or not routing.get("consumed_by"):
+                            warnings.append("interface.routing missing 'consumed_by' (path to coordinator that consumes this agent)")
+                        if "keywords" in routing and not isinstance(routing["keywords"], list):
+                            warnings.append("interface.routing.keywords should be a list of routing trigger words")
 
         # Validate roles section (optional — for agents with context-dependent behavior)
         if artifact_type == "intent" and "roles" in artifact:

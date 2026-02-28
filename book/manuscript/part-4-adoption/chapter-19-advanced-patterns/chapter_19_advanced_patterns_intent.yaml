@@ -9,7 +9,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_4_adoption.chapters[2]
 # Source:    ivd_system_intent.yaml (experimental sections), framework.md, recipes/
-# Version: 1.0
+# Version: 1.1
 # Created: 2026-02-09
 # Status: Pending
 # ==============================================================================
@@ -130,6 +130,7 @@ deliverables:
         - "The roles section structure: default role, switching mechanism (user_directed | context_inferred | explicit_command), role definitions with name, description, when, constraints, tools, verification"
         - "Relationship to interface: interface = WHAT the agent can do (tools); roles = HOW it behaves in different contexts. A role may restrict which interface tools are available."
         - "Relationship to coordinator pattern: roles is for ONE agent with MULTIPLE modes; coordinator recipe is for MULTIPLE agents with their own intents. They are compatible: coordinator routes to agents that each have roles."
+        - "When agent capabilities change: the interface.routing sub-field captures the routing surface (description string the coordinator reads); when tools or roles change, the routing surface must update — the agent-capability-propagation recipe defines the bottom-up propagation pattern"
         - "When to use roles vs separate agents: use roles when modes share most capabilities and differ in constraints/access; use separate agents when modes have fundamentally different tool sets or knowledge"
         - "Verification per role: each role links to a test that verifies behavioral constraints are respected (e.g., reviewer is read-only; implementer writes intent before code)"
         - "Real-world example: Cursor IDE modes (agent, plan, debug, ask) as a roles-based design — each mode has different constraints and available tools"
@@ -356,6 +357,14 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: |
+      Section 19.7 (Dynamic Roles): added required_content bullet on interface.routing sub-field
+      and the agent-capability-propagation recipe for bottom-up routing surface updates when
+      agent capabilities change.
+    reason: "Routing surface gap: when agent tools or roles change, the coordinator's routing knowledge must update. The new recipe and interface.routing sub-field formalize this pattern."
+
   - version: "1.0"
     date: "2026-02-09"
     change: |

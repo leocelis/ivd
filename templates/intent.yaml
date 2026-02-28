@@ -108,6 +108,12 @@ scope:
 # interface:
 #   type: "mcp"                          # "mcp" | "agent" | "api" | "cli" | "service"
 #
+#   # Optional — uncomment if this agent is consumed by a coordinator
+#   # routing:
+#   #   description: "One-line: what the coordinator tells the LLM about this agent"
+#   #   keywords: ["keyword1", "keyword2"]
+#   #   consumed_by: "path/to/coordinator"
+#
 #   tools:
 #     - name: "tool_name"
 #       description: "One-line: what this tool does"

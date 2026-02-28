@@ -190,6 +190,12 @@ def scaffold_artifact_tool(
             "# interface:\n"
             '#   type: "mcp"   # "mcp" | "agent" | "api" | "cli" | "service"\n'
             "#\n"
+            "#   # Uncomment if this agent is consumed by a coordinator\n"
+            "#   # routing:\n"
+            '#   #   description: "One-line: what the coordinator tells the LLM about this agent"\n'
+            '#   #   keywords: ["keyword1", "keyword2"]\n'
+            '#   #   consumed_by: "path/to/coordinator"\n'
+            "#\n"
             "#   tools:\n"
             '#     - name: "tool_name"\n'
             '#       description: "One-line: what this tool does"\n'
