@@ -600,6 +600,11 @@ behavior:
       critical_threshold: "> 500MB per request"
 
 # WHAT must hold true?
+# IMPORTANT: Every constraint MUST have a 'test' field (Principle 2).
+# After implementation, the AI agent executes the Post-Implementation Verification
+# Protocol: re-read intent → diff against constraints → check test paths → report
+# PASS/FAIL/NEEDS_REVIEW. Without test fields, verification is impossible.
+# See: recipes/agent-rules-ivd.yaml, framework.md § Post-Implementation Verification Protocol
 constraints:
   - name: "constraint_id"
     requirement: "metric >= threshold"

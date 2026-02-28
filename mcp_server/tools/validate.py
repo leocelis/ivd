@@ -68,9 +68,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         if artifact_type == "intent" and "constraints" in artifact:
             constraints = artifact["constraints"]
             if isinstance(constraints, list):
+                missing_test_count = 0
                 for i, c in enumerate(constraints):
                     if isinstance(c, dict) and "test" not in c:
-                        warnings.append(f"Constraint #{i+1} missing 'test' field (Principle 2: Understanding Must Be Executable)")
+                        missing_test_count += 1
+                        warnings.append(f"Constraint #{i+1} missing 'test' field — the Post-Implementation Verification Protocol cannot verify this constraint (Principle 2 + Principle 4)")
+                if missing_test_count > 0:
+                    warnings.append(f"{missing_test_count}/{len(constraints)} constraints lack test fields — AI agents cannot execute the verification protocol without them. See recipes/agent-rules-ivd.yaml")
 
         # Validate interface section (optional — for agents, MCP servers, APIs, CLIs, services)
         if artifact_type == "intent" and "interface" in artifact:

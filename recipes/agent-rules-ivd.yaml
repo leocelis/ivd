@@ -1,0 +1,306 @@
+# ==============================================================================
+# IVD Recipe: Agent Rules — IVD Enforcement in AI Agent Instructions
+# ==============================================================================
+# Pattern for embedding IVD verification into the AI agent's instruction file
+# (.cursorrules, .clinerules, Copilot instructions, system prompts, etc.).
+#
+# The agent instruction file is the RUNTIME enforcement point for IVD.
+# Without these rules, the agent may write intent, implement against it,
+# but skip the verification step — silently breaking the IVD loop.
+#
+# Status: Canonical
+# Version: 1.0
+# Created: 2026-02-09
+# ==============================================================================
+
+recipe:
+  name: "Agent Rules for IVD Enforcement"
+  version: "1.0"
+  category: "agent_patterns"
+  status: "canonical"
+  created: "2026-02-09"
+
+  description: |
+    AI agents (Cursor, Copilot, Cline, Aider, Claude, GPT) follow instruction
+    files that define how they behave. IVD's Principle 6 workflow requires the
+    agent to verify its implementation against the intent artifact's constraints.
+    But without explicit rules in the agent's instruction file, nothing ENFORCES
+    that verification step. The agent implements and moves on.
+
+    This recipe provides the IVD rules block to embed in any AI agent's
+    instruction file. It makes the post-implementation verification protocol
+    mandatory — the agent must re-read the intent, diff each change against
+    constraints, check every test path, and report results before declaring
+    the implementation complete.
+
+  problem_solved: |
+    AI agent implements from an intent artifact but skips verification.
+    Constraints exist with test paths, but the agent never goes back to check
+    them. Result: implementation drifts from intent silently — the exact
+    problem IVD was designed to prevent.
+
+    Root cause: the verification step in IVD's workflow is aspirational
+    ("AI verifies") but not enforced. The agent's instruction file is the
+    only place where enforcement can happen at runtime.
+
+  applies_to:
+    - "Any project using IVD with an AI coding agent"
+    - "Cursor IDE (.cursorrules)"
+    - "Cline (.clinerules)"
+    - "GitHub Copilot (system instructions)"
+    - "Aider (.aider.conf.yml)"
+    - "Any LLM-based agent with configurable instructions"
+
+  when_to_use:
+    - "Installing IVD in a project (add during ivd_init)"
+    - "Agent implements from intent artifacts but doesn't verify"
+    - "Post-implementation bugs trace back to unverified constraints"
+    - "Team wants to enforce IVD discipline at the agent level"
+
+  when_NOT_to_use:
+    - "No AI agent is used (pure human development)"
+    - "Project doesn't use IVD intent artifacts"
+
+# ==============================================================================
+# THE POST-IMPLEMENTATION VERIFICATION PROTOCOL
+# ==============================================================================
+
+verification_protocol:
+  name: "Post-Implementation Verification Protocol"
+  trigger: "After ANY implementation derived from an intent artifact"
+
+  description: |
+    After implementing code, documentation, or any artifact from an IVD intent,
+    the AI agent MUST execute this 4-step audit before declaring the work done.
+    This is Principle 4 (Continuous Verification) made concrete.
+
+  steps:
+    - step: 1
+      name: "Re-read the literal intent"
+      action: |
+        Open and re-read the intent artifact file from disk. Do NOT rely on
+        memory or context from earlier in the conversation. The intent may have
+        been updated, or the agent's memory may have drifted.
+      why: "Agent memory drifts during long sessions. The file is the source of truth."
+
+    - step: 2
+      name: "Diff each change against constraints"
+      action: |
+        For every change made during implementation, check: does this change
+        satisfy, violate, or not affect each constraint in the intent artifact?
+        List each constraint and its status.
+      why: "Changes may satisfy some constraints while silently violating others."
+
+    - step: 3
+      name: "Check verification criteria"
+      action: |
+        For each constraint that has a 'test' field, verify:
+        - Does the test path exist?
+        - Can the test be run?
+        - Does the implementation pass the test?
+        If the test can't be run (e.g., manual review), note it and describe
+        what a reviewer should check.
+      why: "Test paths are the executable understanding. Unchecked tests are unverified claims."
+
+    - step: 4
+      name: "Report results"
+      action: |
+        Produce a structured report:
+        - For each constraint: PASS / FAIL / NEEDS_REVIEW
+        - For each FAIL: what specifically doesn't match and what to fix
+        - For each NEEDS_REVIEW: what a human should verify
+        Do not declare implementation complete until all constraints are PASS
+        or explicitly acknowledged as NEEDS_REVIEW.
+      why: "Structured reporting makes verification visible and auditable."
+
+  failure_mode: |
+    If the agent skips this protocol, the IVD loop is broken:
+    Intent exists → Implementation exists → But no verification connects them.
+    The intent becomes decoration, not a contract. This is the exact failure
+    mode IVD was designed to prevent.
+
+# ==============================================================================
+# AGENT RULES BLOCK — COPY INTO YOUR AGENT INSTRUCTION FILE
+# ==============================================================================
+
+agent_rules_block:
+  description: |
+    Copy this block into your agent's instruction file (.cursorrules,
+    .clinerules, Copilot instructions, etc.). Adapt the format to your agent
+    but keep the rules intact.
+
+  cursorrules_format: |
+    # ==============================================================================
+    # IVD: Intent-Verified Development Rules
+    # ==============================================================================
+    # These rules enforce the IVD verification loop. Do not remove them.
+    # Reference: ivd_system_intent.yaml, framework.md (Principle 4, Principle 6)
+
+    ## IVD Rule 1: Intent Before Implementation
+
+    Before implementing any feature, fix, or change that has an associated
+    intent artifact (*_intent.yaml):
+    1. READ the intent artifact first
+    2. UNDERSTAND the constraints and their test paths
+    3. IMPLEMENT against the constraints
+    4. VERIFY using the Post-Implementation Verification Protocol (IVD Rule 2)
+
+    If no intent artifact exists for the change, note it. For significant changes,
+    create one using ivd_scaffold before implementing.
+
+    ## IVD Rule 2: Post-Implementation Verification Protocol
+
+    After ANY implementation derived from an intent artifact, execute this
+    4-step audit BEFORE declaring the work done:
+
+    1. RE-READ the literal intent artifact from disk (not from memory)
+    2. DIFF each change against each constraint — does it satisfy, violate, or
+       not affect the constraint?
+    3. CHECK every constraint that has a 'test' field — does the implementation
+       pass? If the test can't be run, note what a reviewer should verify.
+    4. REPORT structured results: for each constraint, PASS / FAIL / NEEDS_REVIEW
+
+    Do not declare implementation complete until all constraints are PASS or
+    explicitly acknowledged as NEEDS_REVIEW with justification.
+
+    ## IVD Rule 3: Constraint Tests Are Mandatory
+
+    Every constraint in an intent artifact MUST have a 'test' field. If you
+    encounter a constraint without a test, add one before implementing.
+    A constraint without a test is an unverifiable claim — it violates
+    Principle 2 (Understanding Must Be Executable).
+
+  clinerules_format: |
+    # IVD Verification Rules
+    # After implementing from an intent artifact:
+    # 1. Re-read the intent file (not from memory)
+    # 2. Check each change against each constraint
+    # 3. Verify every constraint.test path
+    # 4. Report: PASS / FAIL / NEEDS_REVIEW per constraint
+    # Do not mark task complete until all constraints verified.
+
+  copilot_format: |
+    When implementing from IVD intent artifacts (*_intent.yaml):
+    - Read the intent artifact before starting
+    - After implementation, re-read the intent from disk
+    - Check each constraint: does implementation satisfy it?
+    - For constraints with test fields, verify the test passes
+    - Report pass/fail per constraint before declaring done
+
+# ==============================================================================
+# EXAMPLE: VERIFICATION PROTOCOL IN ACTION
+# ==============================================================================
+
+example:
+  scenario: "Agent implements a scoring function from an intent artifact"
+
+  intent_constraints:
+    - name: "score_threshold"
+      requirement: "score >= 0.70"
+      test: "tests/test_scoring.py::test_threshold"
+    - name: "precision_minimum"
+      requirement: "precision >= 0.80"
+      test: "tests/test_scoring.py::test_precision"
+    - name: "admin_only"
+      requirement: "Only admin users can access scoring API"
+      test: "tests/test_auth.py::test_admin_required"
+
+  agent_implements: "Scoring function with threshold 0.70 and API endpoint"
+
+  verification_report: |
+    ## Post-Implementation Verification Report
+    Intent: agent/lead_scorer/lead_scorer_intent.yaml v3
+
+    | Constraint        | Status       | Evidence                                    |
+    |-------------------|--------------|---------------------------------------------|
+    | score_threshold   | PASS         | threshold = 0.70 in scoring.py L15          |
+    | precision_minimum | NEEDS_REVIEW | Requires running test suite with test data   |
+    | admin_only        | FAIL         | No auth check on /api/score endpoint         |
+
+    Action needed:
+    - admin_only: Add auth middleware to /api/score endpoint
+    - precision_minimum: Run tests/test_scoring.py::test_precision after deploying
+
+  outcome: |
+    Without the protocol: agent ships the endpoint without auth check.
+    With the protocol: agent catches the missing auth check before declaring done.
+    The constraint existed in the intent — the protocol ensures the agent reads it.
+
+# ==============================================================================
+# INTEGRATION WITH IVD TOOLING
+# ==============================================================================
+
+integration:
+  ivd_init:
+    description: "When ivd_init scans a project and finds .cursorrules or equivalent, suggest adding the IVD rules block"
+    trigger: "ivd_init detects agent instruction file"
+    action: "Append IVD rules block to scan summary and next_steps"
+
+  ivd_validate:
+    description: "ivd_validate already checks for constraints without test fields. The verification protocol depends on test fields existing."
+    relationship: "Validation ensures the intent is verifiable; the protocol ensures the agent actually verifies."
+
+  ivd_scaffold:
+    description: "Scaffolded intents include constraints with test placeholders. The protocol ensures the agent fills them in and checks them."
+    relationship: "Scaffold provides structure; the protocol provides enforcement."
+
+# ==============================================================================
+# COMMON FAILURES
+# ==============================================================================
+
+common_failures:
+  - name: "Agent Skips Re-Read"
+    description: "Agent implements from memory of the intent, not from the actual file"
+    symptom: "Implementation matches what agent remembers, not what intent says (intent may have been updated)"
+    root_cause: "Step 1 skipped — agent didn't re-read from disk"
+    solution: "Protocol step 1: always re-read from disk, not from context/memory"
+
+  - name: "Partial Constraint Check"
+    description: "Agent checks some constraints but misses others"
+    symptom: "Some constraints satisfied, others silently violated"
+    root_cause: "Step 2 incomplete — agent didn't enumerate all constraints"
+    solution: "Protocol step 2: list EVERY constraint with status, not just the ones the agent remembers"
+
+  - name: "Aspirational Test Paths"
+    description: "Constraint has a test field but the test doesn't exist or can't run"
+    symptom: "Agent reports PASS but test was never actually run"
+    root_cause: "Step 3 skipped — agent assumed test exists without checking"
+    solution: "Protocol step 3: verify test path exists and can run before reporting PASS"
+
+  - name: "No Report, Just Ship"
+    description: "Agent implements and declares done without structured verification"
+    symptom: "No audit trail; failures discovered later by humans or in production"
+    root_cause: "Step 4 skipped — no structured report produced"
+    solution: "Protocol step 4: require structured report before declaring complete"
+
+# ==============================================================================
+# RELATIONSHIP TO OTHER PATTERNS
+# ==============================================================================
+
+relationships:
+  - pattern: "Principle 4 (Continuous Verification)"
+    relationship: "This recipe IS Principle 4 made concrete for AI agents. The principle says 'verify continuously'; this recipe defines what that means at the implementation level."
+
+  - pattern: "Principle 6 (AI as Understanding Partner)"
+    relationship: "The Principle 6 workflow ends with 'AI verifies.' This recipe defines what that step concretely requires."
+
+  - pattern: "constraints[].test field"
+    relationship: "The test field in constraints is what the verification protocol checks. Without test fields, the protocol can't verify. Without the protocol, test fields are aspirational."
+
+  - pattern: "project_context.code_rules"
+    relationship: "The agent instruction file (.cursorrules) is listed in project_context.code_rules. This recipe adds IVD-specific content to that file."
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: "Initial recipe for IVD agent rules and post-implementation verification protocol"
+    reason: |
+      Gap identified by developer: AI agent implemented from intent artifact but skipped
+      verification. Constraints existed with test paths but agent never checked them.
+      Root cause: IVD Principle 4 says "continuous verification" but doesn't prescribe
+      a concrete mechanism. The agent instruction file is the enforcement point, but
+      IVD didn't provide rules for it. This recipe fills both gaps.

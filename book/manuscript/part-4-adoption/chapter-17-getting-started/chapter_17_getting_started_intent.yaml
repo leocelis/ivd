@@ -11,7 +11,7 @@
 # Parent:    book_structure.part_4_adoption.chapters[0]
 # Source:    framework.md (brownfield workflow, intent coverage assessment,
 #            project_context), mcp_server/tools/scaffold.py, ivd_system_intent.yaml
-# Version: 1.0
+# Version: 1.1
 # Created: 2026-02-09
 # Status: Pending
 # ==============================================================================
@@ -79,7 +79,8 @@ deliverables:
       required_content:
         - "Run ivd init to scan the project and generate a system_intent.yaml with project context"
         - "What ivd init captures: code_rules (.cursorrules, lint configs), architecture (ARCHITECTURE.md, ADRs, principles), tools_scripts (key scripts, CLIs), libraries_reuse (internal shared libs), key_paths ('map to the stars': entrypoints, modules, workflows, docs, tests), existing_docs (README, API.md, CONTRIBUTING)"
-        - "Show example ivd init output: scanned artifacts, generated system_intent.yaml, project context sections"
+        - "ivd init also detects agent instruction files (.cursorrules, .clinerules, .aider.conf.yml) and suggests adding IVD verification rules — the post-implementation verification protocol enforced at the agent level (see recipes/agent-rules-ivd.yaml)"
+        - "Show example ivd init output: scanned artifacts, generated system_intent.yaml, project context sections, agent instruction file detection"
         - "Review and enrich: auto-generated context is a starting point — the team reviews and adds what the scanner missed"
         - "key_paths as 'map to the stars': the navigation index that tells any AI agent (or new team member) where to find what matters"
         - "system_intent.yaml becomes the parent_intent that all child intents reference"
@@ -140,6 +141,7 @@ deliverables:
         - "Update system_intent.yaml as conventions emerge from early adoption"
         - "Document discovered conventions in project_context sections (code_rules, architecture, tools_scripts)"
         - "The 'Intent First' habit: before writing code or asking AI to implement, write (or have AI write) the intent artifact"
+        - "Agent rules: ensure all team members have IVD verification rules in their agent instruction files (.cursorrules, .clinerules) — the post-implementation verification protocol must be enforced at the agent level to close the IVD loop"
         - "When to create intents vs when to skip: critical paths, complex logic, team boundaries YES; trivial utilities, config NO"
         - "Onboarding new team members: the system intent + key_paths + intent artifacts are the onboarding documentation"
         - "Bridge to Chapter 18: from one team adopting IVD to scaling across the organization"
@@ -162,6 +164,7 @@ deliverables:
 key_points:
   - "Two paths: greenfield (new projects) vs brownfield (existing projects) — both converge into the same IVD cycle"
   - "Brownfield: Initialize IVD with project context using ivd init — captures code rules, architecture, tools, key_paths, existing docs"
+  - "ivd init detects agent instruction files (.cursorrules, .clinerules) and suggests adding IVD verification rules — the post-implementation verification protocol enforced at the agent level"
   - "Project context: the 'map to the stars' (key_paths) that tells AI agents and team members where to find what matters"
   - "Assess coverage: ivd_assess_coverage shows which modules have intent and which don't, with prioritized suggestions"
   - "Check before building: ivd_list_features shows what's already built from intent metadata — avoid duplicating features"
@@ -340,6 +343,10 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: "Added agent instruction file detection (ivd init) and IVD verification rules to sections 17.2 and 17.8. Added key_point about agent rules. ivd init now suggests adding post-implementation verification protocol to .cursorrules."
+    reason: "Framework update: agent instruction files are IVD integration surfaces. Ch17 adoption workflow must include adding IVD rules to these files."
   - version: "1.0"
     date: "2026-02-09"
     change: |

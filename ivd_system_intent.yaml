@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.7
+# Version: 1.8
 # Created: 2026-01-24
-# Updated: 2026-02-09 (interface.routing sub-field + agent-capability-propagation recipe)
+# Updated: 2026-02-09 (post-implementation verification protocol + agent rules as IVD integration surface)
 # Status: Canonical
 # ==============================================================================
 
@@ -291,6 +291,33 @@ principles:
         evidence:
           - "research/ivd_existing_projects_and_project_map_gaps.md §2.1: No dedicated brownfield workflow. Coverage assessment fills that gap."
           - "research/ivd_existing_projects_and_project_map_gaps.md §3.1: No existing-project section for discovering and prioritizing modules."
+
+      - name: "Post-implementation verification protocol"
+        status: "canonical"
+        description: |
+          Prescribes the concrete 4-step audit that AI agents must execute after
+          any implementation derived from an intent artifact:
+          1. Re-read the literal intent from disk (not from memory)
+          2. Diff each change against each constraint (satisfy / violate / not-affect)
+          3. Check every constraint.test path (exists? passes? if manual, note it)
+          4. Report structured results: PASS / FAIL / NEEDS_REVIEW per constraint
+          Without this protocol, Principle 4 is aspirational — it says "verify" but
+          doesn't prescribe what "verify" means at the agent level.
+        recipe: "recipes/agent-rules-ivd.yaml"
+        framework_section: "framework.md → Principle 4 → Post-Implementation Verification Protocol"
+        supports_principles:
+          - "Principle 4: Continuous Verification (makes verification concrete and prescribed)"
+          - "Principle 2: Understanding Must Be Executable (protocol depends on test fields existing)"
+          - "Principle 6: AI as Understanding Partner (defines what 'AI verifies' means in the P6 workflow)"
+        use_cases:
+          - "AI agent implements from intent artifact and must verify before declaring done"
+          - "Team wants to enforce verification discipline at the agent level"
+          - "Post-implementation bugs trace back to unverified constraints"
+        integration_surface: |
+          Agent instruction files (.cursorrules, .clinerules, Copilot system prompts)
+          are the runtime enforcement point. The recipe provides the IVD rules block
+          to embed in these files. ivd_init suggests adding this block when it detects
+          an agent instruction file during project scanning.
 
   # --------------------------------------------------------------------------
   # PRINCIPLE 5: Layered Understanding
@@ -1528,6 +1555,21 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 1.8
+    date: "2026-02-09"
+    change: "Added post-implementation verification protocol and agent rules integration surface"
+    reason: |
+      Gap identified by developer: AI agent implemented from intent artifact but skipped
+      verification step. Constraints existed with test paths but agent never checked them.
+      Root cause: Principle 4 says "verify continuously" but doesn't prescribe what verification
+      means at the agent level. Agent instruction files (.cursorrules) are the runtime enforcement
+      point but IVD didn't acknowledge them. Added:
+      (1) Post-implementation verification protocol as Principle 4 extension (4-step audit)
+      (2) Agent rules recipe (recipes/agent-rules-ivd.yaml) with concrete rules blocks
+      (3) Agent instruction files recognized as IVD integration surface
+      (4) ivd_init updated to suggest adding IVD rules when .cursorrules detected
+      (5) framework.md updated with protocol description and agent rules guide
+
   - version: 1.7
     date: "2026-02-09"
     change: "Added interface.routing sub-field and agent-capability-propagation recipe"

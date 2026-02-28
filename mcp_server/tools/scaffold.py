@@ -108,11 +108,23 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
     except (OSError, PermissionError):
         pass
 
+    agent_rules_detected = []
+    if auto_fill:
+        for agent_file in [".cursorrules", ".clinerules", ".aider.conf.yml"]:
+            if (root / agent_file).exists():
+                agent_rules_detected.append(agent_file)
+        scan_summary["agent_instruction_files"] = len(agent_rules_detected)
+
     next_steps = [
         "Review and enrich system_intent.yaml",
         "Add architecture principles not auto-detected",
         "Create intents for 3-5 critical modules (ivd_scaffold)",
     ]
+    if agent_rules_detected:
+        next_steps.append(
+            f"Add IVD verification rules to {', '.join(agent_rules_detected)} "
+            "(see recipes/agent-rules-ivd.yaml for the rules block)"
+        )
     if not written_to_disk:
         next_steps.insert(0, "Create system_intent.yaml with the template_content below")
 
@@ -126,6 +138,9 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
         "template_content": template_content,
         "next_steps": next_steps,
     }
+    if agent_rules_detected:
+        result["agent_rules_detected"] = agent_rules_detected
+        result["agent_rules_recipe"] = "recipes/agent-rules-ivd.yaml"
 
     if not root_exists:
         result["remote_note"] = "Project root not accessible on server. Auto-scan skipped."

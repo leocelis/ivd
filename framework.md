@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.5  
+**Version:** 1.6  
 **Created:** January 23, 2026  
-**Updated:** February 9, 2026 (Routing surface: interface.routing sub-field + agent-capability-propagation recipe)
+**Updated:** February 9, 2026 (Post-implementation verification protocol + agent rules as IVD integration surface)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -163,6 +163,22 @@ UNDERSTANDING VERIFIED ✓
 ```
 
 **Every PR, every deploy, every change:** Verify understanding still matches reality.
+
+#### Post-Implementation Verification Protocol
+
+Principle 4 says *verify continuously*, but what does that concretely mean for an AI agent that just implemented code from an intent artifact? The **Post-Implementation Verification Protocol** is the prescribed 4-step audit that every AI agent must execute after any implementation derived from an intent artifact:
+
+1. **Re-read the literal intent** — Open and re-read the intent artifact from disk. Do not rely on memory or context from earlier in the conversation. The intent may have been updated, or the agent's memory may have drifted during a long session.
+
+2. **Diff each change against constraints** — For every change made during implementation, check: does this change satisfy, violate, or not affect each constraint in the intent artifact? List each constraint and its status.
+
+3. **Check verification criteria** — For each constraint that has a `test` field, verify: does the test path exist? Can the test be run? Does the implementation pass the test? If the test can't be run (e.g., manual review), note what a reviewer should check.
+
+4. **Report results** — Produce a structured report: for each constraint, PASS / FAIL / NEEDS_REVIEW. Do not declare implementation complete until all constraints are PASS or explicitly acknowledged as NEEDS_REVIEW with justification.
+
+Without this protocol, the IVD loop is broken: Intent exists → Implementation exists → But no verification connects them. The intent becomes decoration, not a contract.
+
+See: `recipes/agent-rules-ivd.yaml` for the concrete agent instruction rules that enforce this protocol in `.cursorrules`, `.clinerules`, Copilot instructions, or any AI agent configuration file.
 
 ---
 
@@ -2225,6 +2241,19 @@ Next steps:
 - **Reference parent:** Child intents reference system intent via `parent_intent`
 - **Reuse, don't duplicate:** New intents reference existing tools, scripts, libraries
 - **Incremental:** Don't create intents for entire codebase at once; start with critical paths
+- **Agent rules:** If `.cursorrules` or equivalent agent instruction file exists, add the IVD verification rules (see below)
+
+#### Agent Rules as IVD Integration Surface
+
+AI agent instruction files (`.cursorrules`, `.clinerules`, Copilot system prompts, Aider configuration) are the **runtime enforcement point** for IVD. Without IVD rules in the agent's instructions, nothing enforces the post-implementation verification protocol — the agent implements and moves on.
+
+When `ivd init` scans a project and finds `.cursorrules` or equivalent, it suggests adding the IVD rules block. The block enforces three rules:
+
+1. **Intent Before Implementation:** Read the intent artifact before implementing; understand constraints and test paths.
+2. **Post-Implementation Verification Protocol:** After implementation, execute the 4-step audit (re-read intent → diff against constraints → check test paths → report PASS/FAIL/NEEDS_REVIEW).
+3. **Constraint Tests Are Mandatory:** Every constraint must have a `test` field. A constraint without a test is an unverifiable claim.
+
+See `recipes/agent-rules-ivd.yaml` for the complete rules block in `.cursorrules`, `.clinerules`, and Copilot formats.
 
 ---
 

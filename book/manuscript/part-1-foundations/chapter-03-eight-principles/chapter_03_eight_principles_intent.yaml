@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[2]
 # Source:    ivd_system_intent.yaml (8 principles)
-# Version: 1.6
+# Version: 1.7
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -89,8 +89,10 @@ deliverables:
         - "1–2 paragraphs: Verification is not one-time; CI runs constraint tests; review cadence; drift detection"
         - "Why essential: one-time verification allows drift to compound; continuous catch catches misalignment early"
         - "Sub-principles or examples: automated verification (CI), manual review cadence, drift detection"
+        - "Post-implementation verification protocol: the 4-step audit AI agents execute after implementation — re-read intent from disk, diff against constraints, check test paths, report PASS/FAIL/NEEDS_REVIEW. This is Principle 4 made concrete for AI agents. Without it, 'verify' is aspirational."
+        - "Agent instruction files (.cursorrules, .clinerules) as the runtime enforcement point for the verification protocol — the agent rules recipe (recipes/agent-rules-ivd.yaml) provides the concrete rules block"
         - "Extension to evaluation: for systems that run repeatedly, continuous verification extends to continuous improvement — the experimental evaluation section (Ch6) formalizes evaluate → adjust → re-verify loops"
-        - "Common violations: no automated constraint tests in CI, no review cadence, verification only at initial implementation"
+        - "Common violations: no automated constraint tests in CI, no review cadence, verification only at initial implementation, AI agent implements but skips verification step"
     
     - id: "3.5"
       title: "Principle 5: Layered Understanding"
@@ -162,6 +164,7 @@ key_points:
   - "The eight principles work together as a system, not independent rules"
   - "Principle 6 (AI writes intent, implements, verifies) is the key for the AI Agents era"
   - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring"
+  - "Principle 4: post-implementation verification protocol — the concrete 4-step audit that makes 'continuous verification' actionable for AI agents; agent instruction files (.cursorrules) as runtime enforcement point"
   - "Common violations and how to avoid them; Principle 8: when to use inversion, when to skip"
 
 # ==============================================================================
@@ -314,6 +317,10 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.7"
+    date: "2026-02-09"
+    change: "Section 3.4 (Principle 4): added post-implementation verification protocol and agent rules as required content. Added key_point about verification protocol. Agents must execute 4-step audit after implementation; .cursorrules is the runtime enforcement point."
+    reason: "Framework update: post-implementation verification protocol makes Principle 4 concrete for AI agents. Without it, verification is aspirational."
   - version: "1.5"
     date: "2026-02-09"
     change: "Section 3.4 (Principle 4): added evaluation forward reference — continuous improvement extends continuous verification. Updated manuscript with new paragraph in P4 section. Authorship forward reference was drafted for P6 but removed during audit — too speculative for a foundational principles chapter."
