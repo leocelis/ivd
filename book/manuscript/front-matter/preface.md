@@ -6,7 +6,7 @@ That scene plays out thousands of times a day, across every team that builds wit
 
 The cost is staggering. Industry research estimates that software failures—projects that deliver the wrong thing, overrun, or collapse—drain tens of billions of dollars annually in the United States alone, with global waste reaching into the hundreds of billions.[^1] Most of that waste traces back to the same root: **misalignment** between what someone intended and what got built. AI agents didn't create that gap. They made it run at machine speed.
 
-If you are a developer, a tech lead, or anyone who builds software with AI agents—Cursor, Copilot, Claude, GPT, or whatever ships next—you have felt this. The exhaustion of correcting. The doubt that anyone (human or AI) understands what you actually meant. The growing suspicion that there has to be a better way.
+If you are a developer, a tech lead, or anyone who builds software with AI agents—Cursor, Copilot, Claude, or whatever ships next—you have felt this. The exhaustion of correcting. The doubt that anyone (human or AI) understands what you actually meant. The growing suspicion that there has to be a better way.
 
 There is. This book is about that better way.
 

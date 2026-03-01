@@ -14,11 +14,11 @@ The pattern is simple. You prompt an **AI agent**: *Build X.* The AI returns: *H
 
 Each round—each **turn**—costs time, attention, and **trust**. The AI can produce a full module or a full doc in seconds. The loop can spin dozens of times in a single session.
 
-The cost of each turn is low in wall-clock time; the *total* cost—wrong assumptions, baked into more and more outputs, context overload, and the growing doubt that the AI Agent really understands what "X" really means—compounds fast!
+The cost of each turn is low in wall-clock time; the *total* cost—wrong assumptions, baked into more and more outputs, context overload, and the growing doubt that the AI Agent really understands what "X" really means—compounds fast.
 
 This is the **many turns problem**.
 
-Consider this example. You tell your AI agent: "Add export to CSV." The AI ships a CSV export. You try it: "I meant only these columns, and with this date format, and only for admins." The AI hadn't been told any of that (?)
+Consider this example. You tell your AI agent: "Add export to CSV." The AI ships a CSV export. You try it: "I meant only these columns, and with this date format, and only for admins." The AI hadn't been told any of that.
 
 **Your prompt was incomplete**; the code was a plausible interpretation.
 
@@ -46,7 +46,7 @@ In theory, writing things down fixes the gap. In practice, it doesn't—because 
 
 By **verifiable**, we mean this: the AI can run a deterministic check—execute tests, validate structured constraints—that returns pass or fail, without having to interpret prose.
 
-The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And **inference** is where **hallucination lives**.
+The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And **inference** is **hallucination's food.
 
 Consider what we have tried before:
 - **PRDs (Product Requirements Documents):** Prose documents written by humans for humans. The AI cannot verify whether its code matches a PRD. It can only read the PRD and guess.
@@ -78,7 +78,7 @@ This is the core pain point of the **AI Agents era**: **many turns and hallucina
 - **Many turns:** The back-and-forth correction cycle. Each turn costs context, attention, and time. The AI rewrites; you re-review; errors propagate.
 - **Hallucinations:** The AI "fills the gaps" with plausible but incorrect assumptions. It doesn't know what you meant, so it guesses. The guess becomes code. The code is wrong.
 
-The cost of each turn is small. The compounding cost—wrong structure propagated, your mental model of "what we're building" constantly revised—is large. If you are working with AI agents today, you have felt this. It is exhausting.
+The cost of each turn is small. The compounding cost—wrong structure propagated, your mental model of "what we're building" constantly revised—is large. If you are working with AI agents today, you have felt this. It is **exhausting**.
 
 It's the same pattern as 1.1: no shared, **verifiable statement of intent** that the AI can check against. The AI can't read your mind. It can only use what you give it. If what you give it is a short prompt and some existing code, it will infer. Inference is guesswork. Guesswork is hallucination. The more we rely on AI agents to build, the more we run that guesswork at scale.
 
