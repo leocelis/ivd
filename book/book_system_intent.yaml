@@ -4,7 +4,7 @@
 # System-level intent for creating a top-selling book on IVD that teaches
 # principles, validates them through real projects, and proves effectiveness.
 #
-# Version: 2.4
+# Version: 2.5
 # Created: 2026-01-25
 # Status: In Progress
 # Reference: ../ivd_system_intent.yaml (IVD Framework System Intent)
@@ -164,7 +164,7 @@ book_structure:
           - "Why each principle is essential (what breaks without it)"
           - "How principles work together as a system"
           - "Common violations and how to avoid them"
-          - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring"
+          - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring, intent stress test (Step 4 — adversarial completeness check before implementing)"
           - "Principle 4: post-implementation verification protocol — the 4-step audit that makes verification concrete for AI agents; agent instruction files (.cursorrules) as runtime enforcement point (recipes/agent-rules-ivd.yaml)"
         placeholder: |
           3.1 Principle 1: Intent is Primary (one-line rule first, then 1–2 paragraphs)
@@ -173,7 +173,8 @@ book_structure:
           3.4 Principle 4: Continuous Verification (+ intent coverage assessment for brownfield)
           3.5 Principle 5: Layered Understanding
           3.6 Principle 6: AI as Understanding Partner
-              - Core: AI writes intent, implements, verifies
+              - Core: AI writes intent, stress-tests intent, implements, verifies
+              - Intent stress test (Step 4): after human review, AI adversarially probes intent for completeness — constraint gaps, implementation decisions, implicit assumptions
               - Teaching before intent (canonical): when the user lacks domain knowledge, AI teaches first (structured educational artifact with verification questions)
               - Discovery before intent (experimental): when the user doesn't know what to ask, AI proposes candidate goals
               - Linguistic mirroring: early alignment signal—AI echoes your key terms = understanding; AI substitutes terms = misalignment risk
@@ -1163,6 +1164,14 @@ implementation:
 # ==============================================================================
 
 changelog:
+  - version: "2.5"
+    date: "2026-02-09"
+    changes: |
+      Intent stress test gap addressed:
+      (1) Ch3 key_points: added intent stress test as P6 extension.
+      (2) Ch3 placeholder: updated P6 section to include stress test (Step 4) in workflow.
+      Intent is probed adversarially for completeness before implementation begins.
+
   - version: "2.4"
     date: "2026-02-09"
     changes: |

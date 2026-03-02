@@ -189,7 +189,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     if warnings:
         suggestions.append("Review IVD principles — all constraints should link to tests")
     if not errors and not warnings:
-        suggestions.append("Structure looks good — consider reviewing all 8 principles")
+        suggestions.append("Structure looks good — consider stress-testing intent before implementing (P6 Step 4: edge cases, implementation gaps, implicit assumptions)")
 
     valid = len(errors) == 0
     result = {

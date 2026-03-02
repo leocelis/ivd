@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.8
+# Version: 1.9
 # Created: 2026-01-24
-# Updated: 2026-02-09 (post-implementation verification protocol + agent rules as IVD integration surface)
+# Updated: 2026-02-09 (intent stress test step in P6 workflow)
 # Status: Canonical
 # ==============================================================================
 
@@ -394,17 +394,20 @@ principles:
       1. Human describes what they want (natural language)
       2. AI writes structured intent artifact (YAML with constraints and tests)
       3. Human reviews intent: "Is this what I meant?"
-      4. AI implements against the intent
-      5. AI verifies: "Does my code pass the constraints?"
+      4. AI stress-tests intent: adversarial completeness check
+         (constraint gaps, implementation decisions not addressed, implicit assumptions)
+      5. AI implements against the intent
+      6. AI verifies: "Does my code pass the constraints?"
       
       The workflow (multi-agent systems):
       1. Human describes what they want (natural language)
       2. Coordinator AI writes coordinator-level intent (routing + synthesis)
       3. For each specialist agent, coordinator writes agent-level intent
       4. Human reviews intents: "Is this what I meant?"
-      5. Each agent implements against its intent
-      6. Each agent verifies its output
-      7. Coordinator synthesizes and verifies combined result
+      5. Each agent stress-tests its intent (adversarial completeness check)
+      6. Each agent implements against its intent
+      7. Each agent verifies its output
+      8. Coordinator synthesizes and verifies combined result
       
       The key: Intent exists at EVERY delegation point. The coordinator doesn't 
       just route—it writes intent for each agent it routes to.
@@ -437,6 +440,15 @@ principles:
         rule: "AI produces structured intent artifact from human description"
         example: "Human: 'Add CSV export for admins' → AI writes intent.yaml with constraints, tests"
         
+      - name: "AI stress-tests intent before implementing"
+        rule: "After human review, AI adversarially probes its own intent for completeness before implementing"
+        example: "AI checks: 'What edge case isn't covered? What will implementation force that intent doesn't address? What am I assuming?' → finds missing error-path constraint → adds it → then implements"
+        dimensions:
+          - "Constraint completeness: what input breaks this? What boundary isn't covered?"
+          - "Implementation anticipation: what decisions will code force that intent doesn't address?"
+          - "Assumption challenge: what implicit assumptions about environment, data, or dependencies?"
+        when_to_skip: "Trivial changes where intent is a single constraint with obvious implementation"
+
       - name: "AI implements against intent"
         rule: "AI reads intent it wrote and implements against constraints"
         example: "AI reads constraint 'admin_only' → implements auth check → runs test"
@@ -1555,6 +1567,22 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: 1.9
+    date: "2026-02-09"
+    change: "Added intent stress test as step 4 in P6 workflow"
+    reason: |
+      Gap identified: intent written and approved, but implementation reveals gaps not
+      covered by any constraint. Also: adversarial stress-testing of intent before
+      implementation reveals flaws cheaper than implementation does. Root cause: the P6
+      workflow went directly from human review to implementation — no step to check
+      whether the intent itself is complete. Added:
+      (1) Step 4 in single-agent workflow: AI stress-tests intent (adversarial completeness)
+      (2) Step 5 in multi-agent workflow: each agent stress-tests its intent
+      (3) New sub-principle: "AI stress-tests intent before implementing"
+      (4) Three stress-test dimensions: constraint completeness, implementation anticipation,
+          assumption challenge
+      (5) framework.md updated with full stress test description and when-to-skip guidance
+
   - version: 1.8
     date: "2026-02-09"
     change: "Added post-implementation verification protocol and agent rules integration surface"

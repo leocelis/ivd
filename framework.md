@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.6  
+**Version:** 1.8  
 **Created:** January 23, 2026  
-**Updated:** February 9, 2026 (Post-implementation verification protocol + agent rules as IVD integration surface)
+**Updated:** February 9, 2026 (Intent stress test step in P6 workflow)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -50,7 +50,7 @@ Human writes prompt → AI guesses intent → Builds wrong → Many turns of cor
 
 **Intent-Verified Development (AI Agents Era):**
 ```
-Human describes → AI writes intent → AI implements → AI verifies → Done first try
+Human describes → AI writes intent → Human reviews → AI stress-tests → AI implements → AI verifies → Done first try
 ```
 *The AI writes the intent, implements against it, catches its own hallucinations.*
 
@@ -241,10 +241,27 @@ AI: [Implements against intent, runs tests, all pass]
 1. Human describes (natural language)
 2. AI writes intent (structured YAML)
 3. Human reviews intent (clarification before code)
-4. AI implements against intent
-5. AI verifies (catches hallucinations)
+4. AI stress-tests intent (adversarial completeness check)
+5. AI implements against intent
+6. AI verifies (catches hallucinations)
 
 **Why this matters:** Clarification at intent stage, not after code. Turns drop to one.
+
+#### Step 4: Intent Stress Test (Before Implementation)
+
+After the human approves the intent and before implementation begins, the AI adversarially probes its own intent artifact for completeness. This catches gaps that are cheaper to fix in intent than in code.
+
+The stress test checks three dimensions:
+
+1. **Constraint completeness:** "What input breaks this? What edge case isn't covered? Are there boundary conditions not captured by any constraint?"
+2. **Implementation anticipation:** "What decisions will implementation force that this intent doesn't address? Are there integration points, data shapes, ordering dependencies, or error paths not covered?"
+3. **Assumption challenge:** "What am I assuming about the environment, dependencies, or user behavior? Are those assumptions documented or just implicit?"
+
+If the stress test reveals gaps, the AI updates the intent (adds constraints, test paths, or clarifying notes) before implementing. The human may re-review if the changes are significant.
+
+**Why this step exists:** Intent captures what you know at the time of writing. Implementation forces decisions the intent didn't anticipate. The stress test is a structured way to anticipate those decisions *before* they become implementation rework. It's Principle 2 (Understanding Must Be Executable) applied reflexively — the AI checks whether its own understanding is complete before acting on it.
+
+**When to skip:** Trivial changes where the intent is a single constraint with an obvious implementation. The stress test adds value proportional to the complexity of the intent.
 
 ### When the User Lacks Technical Knowledge: Teaching Before Intent
 
@@ -329,6 +346,8 @@ For each agent, Coordinator writes AGENT INTENT
     ├─→ Specific task
     ├─→ Constraints
     └─→ Verification criteria
+    ↓
+Each Agent stress-tests its intent (edge cases, missing constraints)
     ↓
 Each Agent implements against its intent
     ↓

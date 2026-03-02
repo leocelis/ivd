@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[2]
 # Source:    ivd_system_intent.yaml (8 principles)
-# Version: 1.7
+# Version: 1.8
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -109,11 +109,12 @@ deliverables:
         - "One-line rule first: **AI writes the intent, implements against it, and verifies—not just syncs.**"
         - "1–2 paragraphs: Key principle for AI Agents era; AI writes intent from human description, implements, verifies; catches own hallucinations"
         - "Why essential: without this, AI reads prose and guesses; with this, clarification at intent stage, turns drop, hallucinations caught at source"
-        - "Workflow: You describe → AI writes intent → You review → AI implements → AI verifies"
-        - "Sub-principles or examples: AI writes intent, AI implements against intent, AI verifies own work, linguistic mirroring as alignment signal"
+        - "Workflow: You describe → AI writes intent → You review → AI stress-tests intent → AI implements → AI verifies"
+        - "Intent stress test (Step 4): after human review, AI adversarially probes its own intent for completeness — constraint gaps, implementation decisions not addressed, implicit assumptions. Catches flaws cheaper than implementation does. Skip for trivial changes."
+        - "Sub-principles or examples: AI writes intent, AI stress-tests intent, AI implements against intent, AI verifies own work, linguistic mirroring as alignment signal"
         - "Teaching when user lacks knowledge: AI creates structured educational artifact explaining concepts, user confirms understanding, then proceeds (Step 0a, canonical)"
         - "Discovery when user can't describe: AI proposes goals/recipes/options, user picks, then intent flow (Step 0b, experimental)"
-        - "Common violations: AI only implements (doesn't write intent), no verification step, unstructured prose (AI can't parse)"
+        - "Common violations: AI only implements (doesn't write intent), AI skips stress test and discovers gaps during implementation, no verification step, unstructured prose (AI can't parse)"
     
     - id: "3.7"
       title: "Principle 7: Understanding Survives Implementation"
@@ -163,7 +164,7 @@ key_points:
   - "Each principle is a one-line rule + explanation; why each is essential (what breaks without it)"
   - "The eight principles work together as a system, not independent rules"
   - "Principle 6 (AI writes intent, implements, verifies) is the key for the AI Agents era"
-  - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring"
+  - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring, intent stress test (Step 4 — adversarial completeness check before implementing)"
   - "Principle 4: post-implementation verification protocol — the concrete 4-step audit that makes 'continuous verification' actionable for AI agents; agent instruction files (.cursorrules) as runtime enforcement point"
   - "Common violations and how to avoid them; Principle 8: when to use inversion, when to skip"
 
@@ -317,6 +318,10 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.8"
+    date: "2026-02-09"
+    change: "Section 3.6 (Principle 6): added intent stress test (Step 4) to workflow and required content. Updated key_point with stress test as P6 extension. AI probes intent for completeness before implementing."
+    reason: "Framework update: P6 workflow went from human review directly to implementation. Gaps only surfaced during implementation. Stress test catches them cheaper at intent stage."
   - version: "1.7"
     date: "2026-02-09"
     change: "Section 3.4 (Principle 4): added post-implementation verification protocol and agent rules as required content. Added key_point about verification protocol. Agents must execute 4-step audit after implementation; .cursorrules is the runtime enforcement point."

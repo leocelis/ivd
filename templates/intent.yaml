@@ -14,8 +14,9 @@
 #   1. Human describes what they want (natural language)
 #   2. AI writes this structured intent artifact
 #   3. Human reviews: "Is this what I meant?"
-#   4. AI implements against the intent
-#   5. AI verifies: "Does my output pass the constraints?"
+#   4. AI stress-tests: "What edge cases, gaps, or assumptions did I miss?"
+#   5. AI implements against the intent
+#   6. AI verifies: "Does my output pass the constraints?"
 #
 # NAMING PATTERNS (required for tool discovery):
 #   System:   {project}_system_intent.yaml   (e.g., system_intent.yaml, book_system_intent.yaml)

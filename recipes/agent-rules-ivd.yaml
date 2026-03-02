@@ -15,7 +15,7 @@
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.0"
+  version: "1.1"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -170,8 +170,31 @@ agent_rules_block:
     A constraint without a test is an unverifiable claim — it violates
     Principle 2 (Understanding Must Be Executable).
 
+    ## IVD Rule 4: Stress-Test Intent Before Implementing
+
+    After the human reviews and approves the intent, and BEFORE you start
+    implementing, adversarially probe the intent for completeness:
+
+    1. CONSTRAINT COMPLETENESS: What input breaks this? What edge case isn't
+       covered by any constraint? Are there boundary conditions missing?
+    2. IMPLEMENTATION ANTICIPATION: What decisions will the code force that
+       this intent doesn't address? Integration points? Data shapes? Error
+       paths? Ordering dependencies?
+    3. ASSUMPTION CHALLENGE: What am I assuming about the environment, data,
+       dependencies, or user behavior that isn't documented in the intent?
+
+    If gaps are found, update the intent (add constraints, test paths, or
+    clarifying notes) BEFORE implementing. For significant changes, flag
+    them for the human to re-review.
+
+    Skip this step only for trivial changes where the intent is a single
+    constraint with an obvious implementation.
+
   clinerules_format: |
     # IVD Verification Rules
+    # Before implementing from an intent artifact:
+    # - Stress-test: what edge cases, gaps, assumptions are missing?
+    # - Update intent with found gaps before implementing
     # After implementing from an intent artifact:
     # 1. Re-read the intent file (not from memory)
     # 2. Check each change against each constraint
@@ -182,6 +205,8 @@ agent_rules_block:
   copilot_format: |
     When implementing from IVD intent artifacts (*_intent.yaml):
     - Read the intent artifact before starting
+    - Before implementing, stress-test the intent: what edge cases, gaps, or
+      assumptions are missing? Update intent with found gaps first.
     - After implementation, re-read the intent from disk
     - Check each constraint: does implementation satisfy it?
     - For constraints with test fields, verify the test passes
@@ -295,6 +320,15 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: "Added IVD Rule 4: stress-test intent before implementing. Updated clinerules and Copilot formats."
+    reason: |
+      Gap identified: implementation reveals gaps not covered by intent, and adversarial
+      stress-testing of intent surfaces flaws cheaply. The P6 workflow now includes a
+      stress-test step between human review and implementation. Rule 4 enforces this
+      at the agent level.
+
   - version: "1.0"
     date: "2026-02-09"
     change: "Initial recipe for IVD agent rules and post-implementation verification protocol"

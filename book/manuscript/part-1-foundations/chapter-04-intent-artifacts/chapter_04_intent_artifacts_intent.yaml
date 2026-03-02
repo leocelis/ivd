@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[3]
 # Source:    templates/intent.yaml, intent_levels_guide.md, framework.md
-# Version: 1.4
+# Version: 1.5
 # Created: 2026-01-26
 # Status: Pending
 # ==============================================================================
@@ -116,7 +116,8 @@ deliverables:
     - id: "4.5"
       title: "From Intent to Implementation (the flow)"
       required_content:
-        - "The IVD flow: Describe (human) → AI writes intent → Review (human) → AI implements → AI verifies (constraint tests)"
+        - "The IVD flow: Describe (human) → AI writes intent → Review (human) → AI stress-tests intent → AI implements → AI verifies (constraint tests)"
+        - "Stress test step: after human review, AI adversarially probes intent for completeness — edge cases, implementation decisions not yet addressed, implicit assumptions. Gaps update the intent before implementation begins. Skip for trivial changes."
         - "Bidirectional sync: changes to intent, code, or docs trigger verification (Principle 3); continuous verification (Principle 4)"
         - "Where implementation lives: implementation section in intent (current path, tests path, version)"
         - "Reader understands that intent is the source of truth; code and docs are derived and must align"
