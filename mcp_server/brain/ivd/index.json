@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-02T01:55:43.533719",
+  "last_updated": "2026-03-02T02:28:48.153216",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1018,11 +1018,74 @@
       "num_chunks": 11,
       "cost_usd": 0.0001494,
       "processed_at": "2026-03-02T01:55:43.529740"
+    },
+    "c89539666b32052f396c0f243e2ffcca975c15d3066ebec00b3c5ee15465c9c5": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 32,
+      "cost_usd": 0.0004035600000000001,
+      "processed_at": "2026-03-02T02:28:40.208660"
+    },
+    "3e504c99efd6e523f6c3b80d29878f58695566282b8b5c1c5a94338cd0e49614": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/README.md",
+      "num_chunks": 5,
+      "cost_usd": 7.634e-05,
+      "processed_at": "2026-03-02T02:28:40.788458"
+    },
+    "a9d104e3b6797d3310457f33b505ee86dd5ad1d19b168e9debd0e43ef9eee716": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 42,
+      "cost_usd": 0.00060884,
+      "processed_at": "2026-03-02T02:28:42.961672"
+    },
+    "6922e504b563383b182009bd4c1d685f2451ef3622d363d638d808b0ba3d38f2": {
+      "file_name": "workspace.json",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/.obsidian/workspace.json",
+      "num_chunks": 3,
+      "cost_usd": 4.932000000000001e-05,
+      "processed_at": "2026-03-02T02:28:43.583500"
+    },
+    "876eb91aa56eca8172f85ff31b9fd81c171f46bef13c1f967fed3ef623c8090b": {
+      "file_name": "agent-rules-ivd.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-rules-ivd.yaml",
+      "num_chunks": 7,
+      "cost_usd": 8.238000000000001e-05,
+      "processed_at": "2026-03-02T02:28:44.371246"
+    },
+    "83e61be137e6d9f29530fc471f304cc4b9bd36d99bf3b4644110176c1841715d": {
+      "file_name": "book_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/book_system_intent.yaml",
+      "num_chunks": 28,
+      "cost_usd": 0.00038510000000000004,
+      "processed_at": "2026-03-02T02:28:45.624863"
+    },
+    "51cd085de8633ab0c55e7f570ca54d823a830167800d961b9111c58e39cfae65": {
+      "file_name": "chapter_04_intent_artifacts_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-04-intent-artifacts/chapter_04_intent_artifacts_intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00015708,
+      "processed_at": "2026-03-02T02:28:46.512935"
+    },
+    "b9e322b53dc2b899a75b784c34bf564dcad0672e96e69f9bfadc57977ca37a15": {
+      "file_name": "chapter_03_eight_principles_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-03-eight-principles/chapter_03_eight_principles_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00014634,
+      "processed_at": "2026-03-02T02:28:47.256428"
+    },
+    "b0d7b3e6c879a619e467fba32a786db8de71363b910c54b299547b93fe8e46de": {
+      "file_name": "chapter_17_getting_started_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-4-adoption/chapter-17-getting-started/chapter_17_getting_started_intent.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00014084000000000001,
+      "processed_at": "2026-03-02T02:28:48.151372"
     }
   },
   "stats": {
-    "total_docs": 145,
-    "total_chunks": 1455,
-    "total_cost": 0.019120980000000003
+    "total_docs": 154,
+    "total_chunks": 1606,
+    "total_cost": 0.02117078
   }
 }
