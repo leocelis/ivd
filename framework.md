@@ -2,7 +2,7 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.8  
+**Version:** 1.9  
 **Created:** January 23, 2026  
 **Updated:** February 9, 2026 (Intent stress test step in P6 workflow)
 

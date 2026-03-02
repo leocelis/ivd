@@ -321,6 +321,10 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.5"
+    date: "2026-02-09"
+    change: "Section 4.5 (From Intent to Implementation): updated IVD flow from 5 steps to 6 — added stress-test step between human review and implementation. Added required_content bullet describing stress test purpose and when to skip."
+    reason: "Framework update: P6 workflow now includes intent stress test (Step 4). Chapter 4 teaches the flow; it must reflect the canonical 6-step sequence."
   - version: "1.4"
     date: "2026-02-09"
     change: |

@@ -141,7 +141,7 @@ deliverables:
         - "Update system_intent.yaml as conventions emerge from early adoption"
         - "Document discovered conventions in project_context sections (code_rules, architecture, tools_scripts)"
         - "The 'Intent First' habit: before writing code or asking AI to implement, write (or have AI write) the intent artifact"
-        - "Agent rules: ensure all team members have IVD verification rules in their agent instruction files (.cursorrules, .clinerules) — the post-implementation verification protocol must be enforced at the agent level to close the IVD loop"
+        - "Agent rules: ensure all team members have IVD verification rules in their agent instruction files (.cursorrules, .clinerules, .aider.conf.yml) — the post-implementation verification protocol must be enforced at the agent level to close the IVD loop"
         - "When to create intents vs when to skip: critical paths, complex logic, team boundaries YES; trivial utilities, config NO"
         - "Onboarding new team members: the system intent + key_paths + intent artifacts are the onboarding documentation"
         - "Bridge to Chapter 18: from one team adopting IVD to scaling across the organization"
@@ -164,7 +164,7 @@ deliverables:
 key_points:
   - "Two paths: greenfield (new projects) vs brownfield (existing projects) — both converge into the same IVD cycle"
   - "Brownfield: Initialize IVD with project context using ivd init — captures code rules, architecture, tools, key_paths, existing docs"
-  - "ivd init detects agent instruction files (.cursorrules, .clinerules) and suggests adding IVD verification rules — the post-implementation verification protocol enforced at the agent level"
+  - "ivd init detects agent instruction files (.cursorrules, .clinerules, .aider.conf.yml) and suggests adding IVD verification rules — the post-implementation verification protocol enforced at the agent level"
   - "Project context: the 'map to the stars' (key_paths) that tells AI agents and team members where to find what matters"
   - "Assess coverage: ivd_assess_coverage shows which modules have intent and which don't, with prioritized suggestions"
   - "Check before building: ivd_list_features shows what's already built from intent metadata — avoid duplicating features"

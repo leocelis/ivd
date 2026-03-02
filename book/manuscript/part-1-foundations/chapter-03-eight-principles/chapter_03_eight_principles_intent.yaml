@@ -326,10 +326,6 @@ changelog:
     date: "2026-02-09"
     change: "Section 3.4 (Principle 4): added post-implementation verification protocol and agent rules as required content. Added key_point about verification protocol. Agents must execute 4-step audit after implementation; .cursorrules is the runtime enforcement point."
     reason: "Framework update: post-implementation verification protocol makes Principle 4 concrete for AI agents. Without it, verification is aspirational."
-  - version: "1.5"
-    date: "2026-02-09"
-    change: "Section 3.4 (Principle 4): added evaluation forward reference — continuous improvement extends continuous verification. Updated manuscript with new paragraph in P4 section. Authorship forward reference was drafted for P6 but removed during audit — too speculative for a foundational principles chapter."
-    reason: "Framework update: evaluation extends P4 naturally (binary → continuous). Authorship was removed from P6 because it lacks production evidence and the principles chapter should teach principles, not preview unproven optional sections."
   - version: "1.6"
     date: "2026-02-09"
     change: |
@@ -337,6 +333,10 @@ changelog:
       (1) Added test fields to all 7 constraints (Principle 2: Understanding Must Be Executable).
       (2) Added alternatives section with 2 rejected alternatives and rationale.
     reason: "Structural consistency: Ch1 and Ch2 already have test fields and alternatives. Ch3 was missing both."
+  - version: "1.5"
+    date: "2026-02-09"
+    change: "Section 3.4 (Principle 4): added evaluation forward reference — continuous improvement extends continuous verification. Updated manuscript with new paragraph in P4 section. Authorship forward reference was drafted for P6 but removed during audit — too speculative for a foundational principles chapter."
+    reason: "Framework update: evaluation extends P4 naturally (binary → continuous). Authorship was removed from P6 because it lacks production evidence and the principles chapter should teach principles, not preview unproven optional sections."
   - version: "1.5"
     date: "2026-02-09"
     change: "Section 3.4 (Principle 4): added required_content forward reference to evaluation section. Updated manuscript (chapter.md) with new paragraph in P4 section about continuous quality improvement loops."

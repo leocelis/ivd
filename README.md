@@ -47,11 +47,12 @@ Traditional artifacts (PRDs, user stories, prompts) are **prose written by human
 ## How It Works
 
 ```
-1. You describe    →  what you want (natural language)
-2. AI writes       →  structured intent artifact (YAML with constraints, tests)
-3. You review      →  "Is this what I meant?" (clarification before code)
-4. AI implements   →  against the intent
-5. AI verifies     →  does my code pass the constraints?
+1. You describe      →  what you want (natural language)
+2. AI writes         →  structured intent artifact (YAML with constraints, tests)
+3. You review        →  "Is this what I meant?" (clarification before code)
+4. AI stress-tests   →  edge cases, gaps, assumptions I missed?
+5. AI implements     →  against the intent
+6. AI verifies       →  does my code pass the constraints?
 ```
 
 ## Quick Start

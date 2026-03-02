@@ -9,7 +9,7 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.0
+# Version: 1.1
 # Created: 2026-02-09
 # ==============================================================================
 
@@ -277,26 +277,26 @@ common_failures:
   - name: "Agent Skips Re-Read"
     description: "Agent implements from memory of the intent, not from the actual file"
     symptom: "Implementation matches what agent remembers, not what intent says (intent may have been updated)"
-    root_cause: "Step 1 skipped — agent didn't re-read from disk"
-    solution: "Protocol step 1: always re-read from disk, not from context/memory"
+    root_cause: "Verification Protocol Step 1 skipped — agent didn't re-read from disk"
+    solution: "Verification Protocol Step 1: always re-read from disk, not from context/memory"
 
   - name: "Partial Constraint Check"
     description: "Agent checks some constraints but misses others"
     symptom: "Some constraints satisfied, others silently violated"
-    root_cause: "Step 2 incomplete — agent didn't enumerate all constraints"
-    solution: "Protocol step 2: list EVERY constraint with status, not just the ones the agent remembers"
+    root_cause: "Verification Protocol Step 2 incomplete — agent didn't enumerate all constraints"
+    solution: "Verification Protocol Step 2: list EVERY constraint with status, not just the ones the agent remembers"
 
   - name: "Aspirational Test Paths"
     description: "Constraint has a test field but the test doesn't exist or can't run"
     symptom: "Agent reports PASS but test was never actually run"
-    root_cause: "Step 3 skipped — agent assumed test exists without checking"
-    solution: "Protocol step 3: verify test path exists and can run before reporting PASS"
+    root_cause: "Verification Protocol Step 3 skipped — agent assumed test exists without checking"
+    solution: "Verification Protocol Step 3: verify test path exists and can run before reporting PASS"
 
   - name: "No Report, Just Ship"
     description: "Agent implements and declares done without structured verification"
     symptom: "No audit trail; failures discovered later by humans or in production"
-    root_cause: "Step 4 skipped — no structured report produced"
-    solution: "Protocol step 4: require structured report before declaring complete"
+    root_cause: "Verification Protocol Step 4 skipped — no structured report produced"
+    solution: "Verification Protocol Step 4: require structured report before declaring complete"
 
 # ==============================================================================
 # RELATIONSHIP TO OTHER PATTERNS
