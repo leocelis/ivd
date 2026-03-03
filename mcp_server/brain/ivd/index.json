@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-03T14:56:35.425979",
+  "last_updated": "2026-03-03T16:21:47.424002",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1179,11 +1179,46 @@
       "num_chunks": 11,
       "cost_usd": 0.00013564000000000002,
       "processed_at": "2026-03-03T14:56:35.423413"
+    },
+    "bd2c8c3805e403bb944732a9918a04582ca94a3065c31e13d7964c3640426395": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 37,
+      "cost_usd": 0.00046362000000000004,
+      "processed_at": "2026-03-03T16:21:42.938327"
+    },
+    "d18effe342aa1f30b2a508646097a70af75f56f168187acc5315dbb6f41afe2d": {
+      "file_name": "purpose.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/purpose.md",
+      "num_chunks": 9,
+      "cost_usd": 0.00011764,
+      "processed_at": "2026-03-03T16:21:43.717836"
+    },
+    "6f171f12dfd0ee9b7cd40aa01766b406c3ebcb986156999f70a8ba79ac67eb67": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 45,
+      "cost_usd": 0.00064618,
+      "processed_at": "2026-03-03T16:21:45.189734"
+    },
+    "a9f253dcd6968da1ee5a87ff5ad3d2c07d6d4fda770069bf75dbadc4a68c387a": {
+      "file_name": "book_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/book_system_intent.yaml",
+      "num_chunks": 31,
+      "cost_usd": 0.00043274000000000003,
+      "processed_at": "2026-03-03T16:21:46.463116"
+    },
+    "e7c5e10398548236d7dd994619c4da13587f87b0663f41daf9cdb8f5e2af7b22": {
+      "file_name": "chapter.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/book/manuscript/part-1-foundations/chapter-02-ivd-paradigm/chapter.md",
+      "num_chunks": 12,
+      "cost_usd": 0.00015780000000000001,
+      "processed_at": "2026-03-03T16:21:47.422466"
     }
   },
   "stats": {
-    "total_docs": 168,
-    "total_chunks": 1820,
-    "total_cost": 0.02403842
+    "total_docs": 173,
+    "total_chunks": 1954,
+    "total_cost": 0.0258564
   }
 }
