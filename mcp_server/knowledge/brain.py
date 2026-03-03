@@ -39,6 +39,7 @@ SKIP_DIRS = {
     ".pytest_cache",
     ".do",
     "book",  # Book manuscripts + book_system_intent contain private revenue/monetization data
+    "temp",  # Scratch files — not IVD knowledge
 }
 
 # Root-level files to skip (not IVD knowledge)
@@ -46,6 +47,7 @@ SKIP_FILES = {
     "requirements.txt",
     "runtime.txt",
     "wsgi.py",
+    "ivd_package_validation_intent.yaml",  # Internal release checklist — pollutes "validation" search results
 }
 
 
