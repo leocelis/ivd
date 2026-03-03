@@ -29,6 +29,7 @@ SKIP_DIRS = {
     "mcp_server", "_private", ".venv", "venv", ".git",
     "__pycache__", "node_modules", ".idea", ".vscode",
     ".obsidian", ".pytest_cache", ".do",
+    "book",  # Book manuscripts + book_system_intent contain private revenue/monetization data
 }
 
 # Root-level files to skip (not IVD knowledge)

@@ -129,14 +129,88 @@ intent:
     The test: "Does this generate revenue from writing, or does it require
     building software?" If software → reject. Write instead.
 
+    === PRODUCTION CADENCE (Established Mar 3, 2026) ===
+
+    QUOTAS:
+    - Book: 3 chapters/week (AI writes, Leo reviews)
+    - Blog: 1 post/week (AI writes, Leo reviews)
+    - Leo's review load: ~4 reviews/week (~45 min per chapter, ~30 min blog post)
+
+    WHY 3 CHAPTERS/WEEK (NOT MORE, NOT FEWER):
+    - Bottleneck is Leo's review quality, not AI writing speed.
+    - Each chapter is ~4,500 words. Careful review (checking accuracy, voice,
+      strategic coherence) takes ~45-60 min per chapter (at ~200-250 wpm
+      review pace — Bisanz, LaRocque & Bhatt, 1995).
+    - 3 chapters = 2.5-3 hrs/week of review. Above 3, editorial quality drops
+      (Hayes, 2012, Handbook of Writing Research: critical review accuracy
+      degrades after 2-3 hrs of concentrated evaluation).
+    - Below 3, the math breaks: 18 chapters at 2/week = 9 weeks draft → misses
+      July launch after edit/copyedit/proof phases.
+    - 3/week = minimum pace that lands July 1 with adequate post-draft time.
+
+    WHY 1 BLOG POST/WEEK (NOT MORE, NOT FEWER):
+    - HubSpot (13,500 companies) + Content Marketing Institute: 1/week is the
+      inflection point for B2B thought leadership authority compounding.
+    - Below 1/week: audience forgets you exist between posts. No compounding.
+    - Above 1/week for deep thesis content: diminishing returns. Target reader
+      (CTO/$50M founder) can't absorb 2 deep posts/week.
+    - Joe Pulizzi's Content Inc. research (100+ content-first businesses):
+      minimum 1x/week for 12-18 months to own a niche category. More frequent
+      didn't accelerate category ownership — consistency did.
+    - Blog posts extracted from completed book chapters = one workflow, two
+      outputs. No separate blog writing time.
+
     === THE SEQUENCE ===
 
-    1. Now → April: Publish weekly blog posts (chapter drafts). Outline book.
-    2. April → June: 15+ posts. Book outline complete. First draft 5-6 chapters.
-    3. June → Sept: Book first draft complete. Query publishers OR self-publish.
-    4. Sept → Dec: Book launches. Blog has 35+ posts. Sales + authority compound.
-    5. 2027: Book selling. Blog has 50+ posts. Leo owns the category.
-       Advisory/equity opportunities land. Optional: build tool if demand proven.
+    Phase 1 — First Draft (Mar 3 → Apr 13, 6 weeks):
+      18 chapters at 3/week. AI writes, Leo reviews M/W/F.
+      Blog: 1 post/week extracted from completed chapters.
+      Exit: 21/21 chapters drafted. ~6 blog posts live.
+
+    Phase 2 — Edit Pass (Apr 14 → May 11, 4 weeks):
+      Full manuscript polish. 5 chapters/week review pace (second pass
+      is faster — Leo already reviewed the first draft).
+      Blog continues 1/week. Exit: polished manuscript. ~10 posts live.
+
+    Phase 3 — Professional Copyedit (May 12 → Jun 1, 3 weeks):
+      Hire professional copyeditor (book by May 1, ~$2-4K for 93K words).
+      Blog continues 1/week. Exit: copyedited manuscript. ~13 posts live.
+
+    Phase 4 — Final Proof + Format + Upload (Jun 2 → Jun 15, 2 weeks):
+      Print formatting, Kindle, Audible prep.
+      Blog continues 1/week. Exit: print-ready files. ~15 posts live.
+
+    Phase 5 — Buffer (Jun 16 → Jun 29, 2 weeks):
+      Catch-up, final fixes, pre-launch marketing push.
+      Blog continues 1/week. Exit: everything uploaded. ~17 posts live.
+
+    LAUNCH: July 1, 2026
+      Amazon + Kindle + Audible live.
+      ~17-20 blog posts as pre-launch marketing.
+      Each blog post = entry point that funnels readers to the book.
+
+    Post-Launch (Jul → Dec 2026):
+      Blog continues 1/week. By Dec: 35+ posts.
+      Book selling. Premium inbound conversations starting (Jul-Sep).
+      Speaking invitations arrive (optional, Sep+).
+
+    2027: Book is selling. Blog has 50+ posts. Leo owns the category.
+      Advisory/equity opportunities land. Optional: build tool if
+      demand is proven.
+
+    === STOM CHECK ===
+
+    First measurable STOM checkpoint: September 2026.
+    - Book has been selling for 2 months.
+    - Blog has 25+ posts.
+    - Premium inbound conversations have started.
+    - That's when the flywheel is measurably spinning.
+
+    Revenue streams and when they activate:
+    - Book sales: Jul 1 ($400K-$10M+ lifetime)
+    - Premium inbound (advisory/equity): Jul-Sep (first reader conversations)
+    - Blog authority: already compounding (20+ posts by launch)
+    - Speaking (optional): Sep+ (invitations after book + 25 posts)
   
   stakeholders:
     - "Developers and engineers working with AI agents (Cursor, Copilot, Claude, GPT)"
