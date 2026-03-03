@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-03T16:21:47.424002",
+  "last_updated": "2026-03-03T19:10:04.288415",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1214,11 +1214,88 @@
       "num_chunks": 12,
       "cost_usd": 0.00015780000000000001,
       "processed_at": "2026-03-03T16:21:47.422466"
+    },
+    "8f0a9f1262db8b10e4687033aa5003a24e0a0412546d6b182e74a23d9056efba": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 36,
+      "cost_usd": 0.0004579,
+      "processed_at": "2026-03-03T19:09:58.485275"
+    },
+    "35e8178d4f78d512be8db8b749ca8b2b5999b294bc82f3d73b783c768daea209": {
+      "file_name": "purpose.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/purpose.md",
+      "num_chunks": 9,
+      "cost_usd": 0.00011868000000000001,
+      "processed_at": "2026-03-03T19:09:59.039937"
+    },
+    "f42af0fba068e417d74e9e1faf54dc77000838b7723a925ba0e363e39342f16e": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 45,
+      "cost_usd": 0.0006458400000000001,
+      "processed_at": "2026-03-03T19:09:59.892062"
+    },
+    "9eb72c1eb7c67fb7169fee022f24e7126fafca383b92570995b4056dd3378440": {
+      "file_name": "cookbook.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/cookbook.md",
+      "num_chunks": 12,
+      "cost_usd": 0.00018012000000000003,
+      "processed_at": "2026-03-03T19:10:01.056785"
+    },
+    "34b10f1efa58b6235da3667a424d6b51565d71a77ca1415b7f90d278bb3291d6": {
+      "file_name": "DECISIONS.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/DECISIONS.md",
+      "num_chunks": 8,
+      "cost_usd": 0.00010252000000000001,
+      "processed_at": "2026-03-03T19:10:01.461904"
+    },
+    "7b75dc66158be1af6effd51c1af82876c03fd4cfccf3dccdb652e5850b0fccab": {
+      "file_name": "ivd_implementation_roadmap.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/research/ivd_implementation_roadmap.md",
+      "num_chunks": 18,
+      "cost_usd": 0.00025944,
+      "processed_at": "2026-03-03T19:10:01.990427"
+    },
+    "69aed60de268f893f4284698bbc12304bb8fba2c2bdf521be84c770aaa4b63e1": {
+      "file_name": "agent-capability-propagation.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-capability-propagation.yaml",
+      "num_chunks": 7,
+      "cost_usd": 7.664e-05,
+      "processed_at": "2026-03-03T19:10:02.477033"
+    },
+    "e9968f7c443ee868f039879858655a528c16ab4dcb06d35c69f534bfade7ed0c": {
+      "file_name": "infra-background-job.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/infra-background-job.yaml",
+      "num_chunks": 7,
+      "cost_usd": 8.044000000000001e-05,
+      "processed_at": "2026-03-03T19:10:02.859816"
+    },
+    "a19a546accf45da1d5d41db354223e639ef361eaf6fe512f43c2bb352e324539": {
+      "file_name": "agent-classifier.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-classifier.yaml",
+      "num_chunks": 7,
+      "cost_usd": 8.582000000000002e-05,
+      "processed_at": "2026-03-03T19:10:03.554420"
+    },
+    "ad0b511f4d578839af624e576aefcac8f5aab94b592a250bc5ba21f532e66c54": {
+      "file_name": "doc-meeting-insights.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/doc-meeting-insights.yaml",
+      "num_chunks": 7,
+      "cost_usd": 8.674e-05,
+      "processed_at": "2026-03-03T19:10:03.948333"
+    },
+    "fe03c5012b48633ef16076652cfb292d11d956705252388af5e523a2727d01ff": {
+      "file_name": "coordinator-intent-propagation.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/coordinator-intent-propagation.yaml",
+      "num_chunks": 6,
+      "cost_usd": 6.028e-05,
+      "processed_at": "2026-03-03T19:10:04.286357"
     }
   },
   "stats": {
-    "total_docs": 173,
-    "total_chunks": 1954,
-    "total_cost": 0.0258564
+    "total_docs": 184,
+    "total_chunks": 2116,
+    "total_cost": 0.028010820000000002
   }
 }
