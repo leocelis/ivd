@@ -103,6 +103,17 @@ principles:
     commoditized. The advantage is structured, verifiable, company-specific knowledge.
     Companies that structure it get AI that works with their reality. Companies that
     don't get AI that guesses.
+    
+    The most valuable form of company-specific knowledge is process knowledge:
+    decision points, escalation criteria, approval chains, compliance gates. Generic
+    tools offer generic workflows; organizational recipe libraries encode your company's
+    actual processes so AI agents execute YOUR workflows, not averaged approximations.
+    
+    This kills the enterprise software buy-vs-customize tradeoff. Software was either
+    too rigid (Asana, HubSpot) or too configurable (Salesforce, SAP — specialist army).
+    Both force injecting company knowledge after the fact. When knowledge is structured
+    in intent artifacts, the configuration layer collapses into the contextual knowledge
+    layer. Software is born custom. The consultant/admin model dies.
 
   hierarchy:
     - level: 1

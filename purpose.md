@@ -68,6 +68,10 @@ Generic AI tools — Copilot without project context, Zapier, Notion AI — feed
 
 Companies that structure their knowledge get AI that works with their reality. Companies that don't get AI that guesses.
 
+The most valuable form of this knowledge is **process knowledge**: your decision points, escalation criteria, approval chains, compliance gates. Generic tools offer generic workflows. IVD's recipe libraries encode your company's actual processes — so AI executes YOUR workflows, not averaged approximations.
+
+This kills the enterprise software tradeoff. For decades, software was either too rigid (doesn't fit your process) or too configurable (needs a specialist army). Both problems share the same root: generic software forcing you to inject YOUR knowledge after the fact. When your business rules and processes are structured in intent artifacts, the configuration layer collapses into the contextual knowledge layer — software is born custom, and the consultant model dies.
+
 ---
 
 ## The IVD Solution: AI Writes the Intent

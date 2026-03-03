@@ -225,6 +225,8 @@ book_structure:
           - "The eight principles of IVD (overview; deep dive in Ch3)"
           - "Why this works: executable understanding fails loudly—hallucinations caught at the source"
           - "Company-specific knowledge is the strategic advantage — AI capability is commoditized; structured company knowledge loaded into the contextual channel is the moat"
+          - "Process knowledge (decision points, escalation criteria, approval chains, compliance gates) is the most operationally valuable form of company knowledge — custom workflows beat generic tools"
+          - "AI kills the enterprise software buy-vs-customize tradeoff — when knowledge is structured in intent artifacts, the configuration layer collapses into the contextual knowledge layer; software is born custom; the consultant/admin model dies"
         placeholder: |
           2.1 The Three Paradigms: Traditional → Literate → Intent-Verified
           2.2 The Core Insight: Intent is Primary
@@ -232,7 +234,7 @@ book_structure:
           2.4 IVD in Action: The CSV Example Revisited
           2.5 The Eight Principles: An Overview
           2.6 Why This Works: Executable Understanding Fails Loudly
-          2.7 The Strategic Implication: Company-Specific Knowledge Is the Moat
+          2.7 The Strategic Implication: Company-Specific Knowledge Is the Moat (+ process knowledge as most valuable form + death of buy-vs-customize tradeoff)
       
       - chapter: 3
         title: "The Eight Principles in Depth"
@@ -616,6 +618,8 @@ book_structure:
           - "IVD in code review and CI/CD"
           - "Measuring adoption and impact"
           - "Company-specific knowledge is the competitive moat — AI capability is commoditized; the advantage is structured, verifiable, company-specific knowledge loaded into the contextual channel. Organizational recipe libraries = institutional knowledge capture. project_context = company ground truth. IVD adoption = competitive advantage, not just developer productivity."
+          - "Custom workflows encoding company-specific process knowledge (decision points, escalation criteria, approval chains, compliance gates) outperform generic tool workflows — the value is in the workflow layer, not the model layer"
+          - "IVD adoption eliminates the enterprise software buy-vs-customize tradeoff — structured knowledge in intent artifacts collapses the configuration layer into the contextual knowledge layer; software is born custom; the Salesforce admin / SAP consultant model dies"
         placeholder: |
           18.1 Pilot Team: Proving Value Before Scaling
           18.2 Training Program: Enabling Multiple Teams
@@ -677,7 +681,7 @@ book_structure:
         placeholder: |
           21.1 IVD v2.0: MCP, Schema Validation, AI-Editable Config
           21.2 IVD v3.0: Formal Verification and Automated Drift Detection
-          21.3 Industry Convergence: Why IVD Aligns with Major Players
+          21.3 Industry Convergence: Why IVD Aligns with Major Players (+ enterprise software convergence: the buy-vs-customize tradeoff dies as structured knowledge replaces platform configuration)
           21.4 Research Opportunities and Open Questions
           21.5 Deferred Frontiers (future book edition): Inter-Agent Deliberation (agents negotiating about workflow quality), Meta-Intent (recursive intent — intent that governs other intents), Human Oversight Boundaries (trust boundaries for fully autonomous agent systems). These require production evidence before formalization.
           21.6 Call to Action: Building the Future Together

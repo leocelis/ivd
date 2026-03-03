@@ -80,6 +80,10 @@ Generic AI tools — Copilot without project context, ChatGPT with a pasted prom
 
 Companies that structure their knowledge with IVD get AI that works with their reality. Companies that don't get AI that guesses — faster, but still wrong.
 
+Of all company-specific knowledge, **process knowledge is the most operationally valuable**: your decision points, escalation criteria, approval chains, and compliance gates — the workflows that define how your company actually operates. Generic tools offer generic workflows. IVD's organizational recipe libraries encode your company's actual processes so AI agents execute your workflows correctly, not an averaged approximation of how things "typically" work.
+
+This has a deeper implication for how software is built and bought. Enterprise software has been stuck in a false dichotomy for decades: too rigid (the tool doesn't fit your process) or too configurable (you need a specialist army to make it fit). Both options share the same root problem — software built with generic knowledge, with you paying the cost to inject YOUR knowledge after the fact. When business rules and processes are structured in intent artifacts, the **configuration layer collapses into the contextual knowledge layer.** AI builds software that's custom from day one. The Salesforce admin, the SAP consultant, the ServiceNow specialist — these roles exist because injecting company-specific knowledge into generic platforms is hard. When the knowledge is already structured, the injection cost approaches zero.
+
 ---
 
 ## Core Principles
