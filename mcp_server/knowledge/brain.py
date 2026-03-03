@@ -26,9 +26,18 @@ def get_brain_root() -> str:
 
 # Directories to skip during embedding scans
 SKIP_DIRS = {
-    "mcp_server", "_private", ".venv", "venv", ".git",
-    "__pycache__", "node_modules", ".idea", ".vscode",
-    ".obsidian", ".pytest_cache", ".do",
+    "mcp_server",
+    "_private",
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".idea",
+    ".vscode",
+    ".obsidian",
+    ".pytest_cache",
+    ".do",
     "book",  # Book manuscripts + book_system_intent contain private revenue/monetization data
 }
 
@@ -57,11 +66,13 @@ def scan_directory(directory: str, extra_skip: set = None) -> List[Dict]:
                 continue
             if Path(filename).suffix.lower() in SUPPORTED_EXTENSIONS:
                 file_path = os.path.join(root, filename)
-                files.append({
-                    "path": file_path,
-                    "name": filename,
-                    "size": os.path.getsize(file_path),
-                })
+                files.append(
+                    {
+                        "path": file_path,
+                        "name": filename,
+                        "size": os.path.getsize(file_path),
+                    }
+                )
     return files
 
 
@@ -141,7 +152,12 @@ def process_and_store(
     dh = file_hash(fp)
 
     if skip_if_exists and is_document_processed(kb_path, dh):
-        return {"status": "skipped", "doc_hash": dh, "cost_usd": 0.0, "reason": "already_processed"}
+        return {
+            "status": "skipped",
+            "doc_hash": dh,
+            "cost_usd": 0.0,
+            "reason": "already_processed",
+        }
 
     print(colored(f"  Processing: {file_info['name']}", "cyan"))
 
@@ -199,13 +215,15 @@ def load_kb_embeddings(kb_path: str) -> Tuple[np.ndarray, List[Dict]]:
                 meta = json.load(f)
 
             for i, chunk in enumerate(meta["chunks"]):
-                all_metadata.append({
-                    "kb_name": Path(kb_path).name,
-                    "file_name": meta["file_name"],
-                    "file_path": meta["file_path"],
-                    "chunk_index": i,
-                    "chunk_text": chunk,
-                })
+                all_metadata.append(
+                    {
+                        "kb_name": Path(kb_path).name,
+                        "file_name": meta["file_name"],
+                        "file_path": meta["file_path"],
+                        "chunk_index": i,
+                        "chunk_text": chunk,
+                    }
+                )
 
             all_embeddings.append(embeddings)
 
