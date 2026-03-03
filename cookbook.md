@@ -548,7 +548,7 @@ INTENT VERIFIED ✓
 - Stakeholder: VP Sales approved Dec 2025
 - Risks: Alert if precision drops below 0.75
 
-**Onboarding:** 40% faster
+**Onboarding:** 40% faster *(projected)*
 
 ---
 
@@ -707,7 +707,7 @@ find . -name "*_intent.yaml"
 | Evidence "somewhere" | Evidence linked and runnable |
 | Drifts silently | Drift detected immediately |
 | Knowledge lost on turnover | Knowledge survives |
-| 10-15% knowledge captured | 85-95% knowledge captured |
+| 10-15% knowledge captured | 85-95% knowledge captured *(projected)* |
 
 **The breakthrough:** Understanding becomes a first-class, verifiable artifact—not just prose that can be wrong.
 
@@ -739,7 +739,7 @@ find . -name "*_intent.yaml"
 
 **AI agent reads ONE file, understands everything.**
 
-**Cost reduction: 80-90% less context needed.**
+**Cost reduction: 80-90% less context needed.** *(projected)*
 
 ---
 
@@ -874,7 +874,7 @@ constraints:
 - ✅ Know exactly which files/functions to examine
 - ✅ See business logic without diving into code
 - ✅ Understand error handling paths
-- ✅ 80-90% reduction in context needed
+- ✅ 80-90% reduction in context needed *(projected)*
 
 **For Developers:**
 - ✅ Onboarding: Understand process in 10 minutes (vs hours)

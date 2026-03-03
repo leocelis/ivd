@@ -42,20 +42,20 @@ intent:
     intent artifacts.
   
   success_metric: |
-    - 85-95% knowledge capture (vs 10-15% traditional)
-    - 40% faster onboarding (8-12 days vs 14-21 days)
-    - 80-90% reduction in AI agent context needed for workflow understanding
+    - 85-95% knowledge capture (vs 10-15% traditional) — projected, pending validation
+    - 40% faster onboarding (8-12 days vs 14-21 days) — projected, pending validation
+    - 80-90% reduction in AI agent context needed — projected, pending validation
     - Intent artifacts survive rewrites, team changes, technology shifts
     - Zero tolerance for violations of core principles
 
   # EVIDENCE HONESTY NOTE (Mar 2, 2026):
-  # The numeric metrics above are PROJECTIONS based on Leo's experience
-  # building with IVD on his own projects (ConCntric AI-OS, blog, personal
-  # systems). They have NOT been independently measured or validated by
-  # external teams. No controlled benchmarks exist yet.
+  # The numeric metrics above are PROJECTIONS based on the author's experience
+  # building with IVD on real-world multi-agent systems, content platforms,
+  # and personal productivity tools. They have NOT been independently measured
+  # or validated by external teams. No controlled benchmarks exist yet.
   #
-  # For the book: present these as observed patterns from real work, NOT
-  # as proven benchmarks. "In my experience" > "studies show."
+  # Present these as observed patterns from real work, NOT as proven benchmarks.
+  # "In my experience" > "studies show."
   # The principles are sound. The metrics need external validation.
   
   stakeholders:
@@ -110,10 +110,10 @@ principles:
     actual processes so AI agents execute YOUR workflows, not averaged approximations.
     
     This kills the enterprise software buy-vs-customize tradeoff. Software was either
-    too rigid (Asana, HubSpot) or too configurable (Salesforce, SAP — specialist army).
-    Both force injecting company knowledge after the fact. When knowledge is structured
-    in intent artifacts, the configuration layer collapses into the contextual knowledge
-    layer. Software is born custom. The consultant/admin model dies.
+    too rigid (off-the-shelf tools) or too configurable (enterprise platforms requiring
+    specialist armies). Both force injecting company knowledge after the fact. When
+    knowledge is structured in intent artifacts, the configuration layer collapses into
+    the contextual knowledge layer. Software is born custom. The consultant/admin model dies.
 
   hierarchy:
     - level: 1
@@ -1662,43 +1662,26 @@ verification:
 # ==============================================================================
 # BOOK & DISTRIBUTION: The IVD Book
 # ==============================================================================
-# The primary distribution vehicle for IVD is a book.
-# The framework lives in code; the book carries the ideas to the world.
-# Revenue strategy lives in leocelis_blog_intent.yaml — not here.
+# The primary distribution vehicle for IVD is long-form content.
+# The framework lives in code; the content carries the ideas to the world.
 
 book_and_distribution:
   goal: |
-    Publish THE definitive book on Intent-Verified Development — the
-    methodology for the AI Agents era. Think "Clean Code" for AI-driven
-    development. The book is how IVD reaches thousands of developers,
-    tech leads, and CTOs who will never read a GitHub repo.
+    Distribute IVD methodology through long-form content. Target audience:
+    developers, tech leads, and CTOs working with AI agents.
 
   thesis: |
     AI writes code now. The bottleneck moved from implementation to intent.
     IVD is the framework that makes AI collaboration reliable by making
-    intent executable and verifiable. The book makes this case and teaches
-    the methodology.
-
-    IMPORTANT: The book sells the THESIS, not the framework checklist.
-    IVD is one chapter — the methodology. The book's value is the worldview:
-    "AI replaces decisions, not labor. The bottleneck is now intent."
-    Blog posts that resonate never mention IVD by name. The thinking sells.
-
-  approach: |
-    - Blog posts on leocelis.com are first-draft chapters (written in public)
-    - The content backlog maps to book chapters
-    - Publish weekly → compile → edit → publish the book
-    - No SaaS or tooling required — the book IS the product
-    - IVD framework gets one chapter, not the whole book
+    intent executable and verifiable.
 
   honesty_note: |
     The IVD success metrics in this intent (85-95% knowledge capture, 40%
-    faster onboarding, etc.) are projections from Leo's own projects —
-    NOT independently validated benchmarks. For the book: present as
-    "in my experience" backed by real production examples, not as proven
-    statistics. Readers trust experience over sourceless numbers.
+    faster onboarding, etc.) are projections — NOT independently validated
+    benchmarks. Present as observed patterns from real work, not as proven
+    statistics.
 
-  status: "Outlining — blog posts are accumulating as chapter drafts"
+  status: "In progress"
   date: "2026-03-03"
 
 # ==============================================================================

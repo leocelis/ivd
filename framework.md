@@ -2856,7 +2856,6 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 
 ### Research and Context
 - `research/lp_research.md` - LP history and theory (Knuth's original vision)
-- `_private/from_lp_to_ivd.md` - Evolution path from LP to IVD
 
 ---
 

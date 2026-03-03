@@ -272,15 +272,15 @@ verification_pattern:
 # ------------------------------------------------------------------------------
 
 examples:
-  - name: "Fact Checker Agent (Lore Validation)"
-    location: "agent/fact_checker/"
-    domain: "Gaming / Content Validation"
+  - name: "Content Validation Agent"
+    location: "agent/content_validator/"
+    domain: "Content / Knowledge Validation"
     customization: |
       - Added source citation requirements
       - Multi-category validation (accuracy, canonicity, completeness)
-      - Integration with gaming knowledge bases
-    outcome: "90%+ accuracy on gaming lore fact checking"
-    link_to_intent: "agent/fact_checker/fact_checker_intent.yaml"
+      - Integration with domain-specific knowledge bases
+    outcome: "90%+ accuracy on domain content fact checking"
+    link_to_intent: "agent/content_validator/content_validator_intent.yaml"
     
   - name: "Lead Scoring Classifier"
     location: "agent/lead_scorer/"
@@ -372,7 +372,6 @@ typical_performance:
 
 references:
   documentation:
-    - "EINs/ein003_ai_os/training/AI_DRIVEN_DEVELOPMENT_GUIDE.md - Agent Patterns section"
     - "docs/agents/README.md - Agent architecture overview"
     - "agent/base_agent.py - Base agent class documentation"
     
@@ -401,7 +400,6 @@ references:
 changelog:
   - version: "1.0"
     date: "2026-01-23"
-    change: "Initial recipe creation based on fact_checker, lead_scorer patterns"
+    change: "Initial recipe creation based on content_validator, lead_scorer patterns"
     reason: "Pattern used successfully in 3+ agents, ready to template"
-    author: "Leo Celis"
-    evidence: "agent/fact_checker/, agent/lead_scorer/ implementations"
+    evidence: "agent/content_validator/, agent/lead_scorer/ implementations"

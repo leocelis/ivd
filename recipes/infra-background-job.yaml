@@ -283,16 +283,16 @@ verification_pattern:
 # ------------------------------------------------------------------------------
 
 examples:
-  - name: "Lore Fact Check Job"
-    location: "job/fact_checker/generate_lore_fact_check_report_job.py"
-    domain: "Gaming / Content Validation"
+  - name: "Content Validation Job"
+    location: "job/content_validator/generate_validation_report_job.py"
+    domain: "Content / Knowledge Validation"
     customization: |
-      - Processes gaming lore articles for fact checking
-      - Integrates with fact_checker agent
+      - Processes domain articles for fact checking
+      - Integrates with content_validator agent
       - Long-running (can take minutes per article)
       - Idempotent with S3 result caching
     outcome: "95%+ completion rate, < 5 minute p95 processing time"
-    link_to_intent: "job/fact_checker/generate_lore_fact_check_report_intent.yaml"
+    link_to_intent: "job/content_validator/generate_validation_report_intent.yaml"
 
 # ------------------------------------------------------------------------------
 # BEST PRACTICES
@@ -392,7 +392,6 @@ references:
 changelog:
   - version: "1.0"
     date: "2026-01-23"
-    change: "Initial recipe creation based on fact_checker job pattern"
+    change: "Initial recipe creation based on content validation job pattern"
     reason: "Pattern used successfully in multiple jobs, ready to template"
-    author: "Leo Celis"
-    evidence: "job/fact_checker/generate_lore_fact_check_report_job.py"
+    evidence: "job/content_validator/generate_validation_report_job.py"

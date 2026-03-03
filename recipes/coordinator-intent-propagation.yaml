@@ -304,7 +304,6 @@ validation:
 references:
   internal:
     - "research/coordinator_agent_design_patterns.md"
-    - "_private/ai_driven_development_guide.md (The Coordinator Pattern)"
     - "recipes/workflow-orchestration.yaml"
   external:
     - "OpenAI Agents Documentation (2026) - Tool-First Architecture"

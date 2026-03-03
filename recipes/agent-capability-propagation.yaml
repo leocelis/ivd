@@ -190,24 +190,24 @@ example:
         consumed_by: "agent/coordinator"
       tools:
         - name: "analyze_conversation"
-          description: "Analyze a conversation through therapeutic lens"
-        - name: "get_patient_history"
-          description: "Retrieve patient interaction history"
+          description: "Analyze a conversation through domain-specific lens"
+        - name: "get_entity_history"
+          description: "Retrieve entity interaction history"
         - name: "store_memory"
-          description: "Store a memory using brain-aligned psychological framework"
+          description: "Store a memory using structured psychological framework"
         - name: "recall_memories"
-          description: "Recall relevant memories using associative psychological models"
+          description: "Recall relevant memories using associative models"
 
-    coordinator_description: "Psychology, therapy analysis, and brain-aligned memory — processes conversations through therapeutic frameworks and stores/recalls memories using psychological models"
+    coordinator_description: "Domain analysis and structured memory — processes conversations through analytical frameworks and stores/recalls memories using associative models"
 
   propagation_checklist:
     - "[x] Updated agent intent: added store_memory, recall_memories to interface.tools"
-    - "[x] Updated interface.routing.description: added 'brain-aligned memory' and 'stores/recalls memories'"
-    - "[x] Updated interface.routing.keywords: added 'memory', 'brain-aligned', 'recall'"
+    - "[x] Updated interface.routing.description: added 'structured memory' and 'stores/recalls memories'"
+    - "[x] Updated interface.routing.keywords: added 'memory', 'structured', 'recall'"
     - "[x] Updated AGENT_DESCRIPTION in coordinator: matches interface.routing.description"
     - "[x] Updated COORDINATOR_INSTRUCTIONS: added routing rule for memory-related requests"
-    - "[x] Verified: 'store a memory about X' → coordinator routes to psychology agent"
-    - "[x] Verified: 'analyze this conversation' → still routes to psychology agent (no regression)"
+    - "[x] Verified: 'store a memory about X' → coordinator routes to analysis agent"
+    - "[x] Verified: 'analyze this conversation' → still routes to analysis agent (no regression)"
     - "[x] Verified: no other agent claims memory capability (no ambiguous routing)"
 
 # ==============================================================================

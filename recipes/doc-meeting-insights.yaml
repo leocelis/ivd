@@ -20,9 +20,9 @@ recipe:
     living knowledge base document. Emphasizes conceptual understanding over 
     implementation details, making it suitable for book writing or training material.
     
-    This recipe codifies the exact process used to develop the AI-Driven 
-    Development Guide from 18+ training meetings, supporting the master intent 
-    of creating an evidence-based, publishable book on AI-driven development.
+    This recipe codifies a repeatable process for extracting reusable
+    methodology from real-world practice sessions, supporting the creation
+    of evidence-based technical documentation and training material.
   
   when_to_use:
     - "Building knowledge base from recurring meetings or training sessions"
@@ -77,7 +77,7 @@ rationale_template:
     - Conceptual focus enables future book publication
     - Systematic approach ensures no meetings skipped
   evidence: 
-    - "18 meetings processed with iterative 'review again' pattern"
+    - "Multiple meetings processed with iterative 'review again' pattern"
     - "Multiple passes consistently found additional concepts"
     - "Meeting index tracks processing status and concept counts"
 
@@ -135,13 +135,6 @@ risks_template:
 
 implementation_pattern:
   structure: |
-_private/                  # IVD's own training archive
-    ├── meetings.md                          # Raw meeting transcripts (1,283 lines, 18 meetings)
-    ├── ai_driven_development_guide.md       # Extracted insights (8,870 lines, evolved into IVD)
-    ├── meetings_index.md                    # Processing tracker (18 meetings indexed)
-    
-    OR for new projects:
-    
     [project]/_private/
     ├── meetings.md                          # Raw meeting transcripts/notes
     ├── [KNOWLEDGE_BASE].md                  # Extracted insights (living document)
@@ -227,17 +220,16 @@ verification_pattern:
     - "User satisfaction: 'No more to extract'"
 
 examples:
-  - name: "AI-Driven Development Guide from Training Sessions"
-    location: "_private/"
+  - name: "Development Guide from Training Sessions"
+    location: "[project]/_private/"
     domain: "Software Development / AI Integration"
-    meetings_processed: 18
+    meetings_processed: "20+"
     concepts_extracted: "~150+"
     customization: |
       - Focused on AI development patterns
-      - Evolved from v1.0 to v2.6 over time
-      - Split some content to separate IVD framework book
-      - Maintains conceptual focus for future book publication
-      - Eventually evolved into IVD framework itself
+      - Evolved through multiple versions over time
+      - Maintains conceptual focus for publication
+      - Eventually evolved into a reusable methodology
     lessons_learned:
       - "Multiple review passes essential (user requested 're-review' frequently)"
       - "Meeting index critical for tracking progress"
@@ -250,9 +242,6 @@ examples:
 
 references:
   - "ivd_system_intent.yaml - System intent for IVD framework"
-  - "_private/ai_driven_development_guide.md - Output example (historical)"
-  - "_private/meetings_index.md - Tracking pattern"
-  - "_private/meetings.md - Source material example"
   - "recipe-spec.md - Recipe specification"
   - "Pattern: Literate Programming (Donald Knuth) - Inspiration for documentation approach"
 
@@ -307,21 +296,18 @@ meta:
   recipe_evolution:
     - version: "1.0"
       date: "2026-01-23"
-      change: "Initial recipe based on 18 meetings processed"
-      evidence: "_private/meetings_index.md shows 18 meetings processed"
-      validated_by: "Leo Celis (user requested recipe creation)"
+      change: "Initial recipe based on multiple meetings processed"
+      evidence: "Meeting index shows systematic processing of all sessions"
     
     - version: "1.1"
       date: "2026-01-26"
-      change: "Fixed broken references, aligned with IVD principles, processed meetings 18-20"
-      evidence: "_private/ now contains all source materials and outputs"
-      validated_by: "Recipe compliance audit completed"
+      change: "Fixed broken references, aligned with IVD principles, processed additional meetings"
+      evidence: "Source materials and outputs validated"
     
     - version: "1.2"
       date: "2026-01-26"
       change: "Added explicit project-agnostic requirement, enhanced quality gates and refactoring guidance"
-      evidence: "Meeting 21 extraction required review and cleanup of project-specific references"
-      validated_by: "User feedback: 'review again, remember this should be project agnostic'"
+      evidence: "Extraction required review and cleanup of project-specific references"
       additions:
         - "New extraction principle: 'Project-agnostic only: Remove ALL project names, companies, states, people, specific tools'"
         - "New risk: 'project_specificity_leak' with CRITICAL severity"

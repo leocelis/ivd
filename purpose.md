@@ -276,12 +276,12 @@ Same knowledge works with:
 
 **Total cost:** One turn, higher confidence, no hallucinations
 
-### The ROI
+### The ROI (Projected — Pending Validation)
 
-- **85-95% knowledge capture** (vs 10-15% traditional)
-- **40% faster onboarding** (clear intent vs tribal knowledge)
-- **80-90% reduction in AI context needed** (workflow intents)
-- **30-50% less reinvention** (recipes encode best practices)
+- **85-95% knowledge capture** (vs 10-15% traditional) *(projected)*
+- **40% faster onboarding** (clear intent vs tribal knowledge) *(projected)*
+- **80-90% reduction in AI context needed** (workflow intents) *(projected)*
+- **30-50% less reinvention** (recipes encode best practices) *(projected)*
 
 ---
 

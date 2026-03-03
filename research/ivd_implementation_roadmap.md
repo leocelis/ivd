@@ -661,7 +661,7 @@ ivd:
   
   # Framework location (for reference)
   framework:
-    path: "EINs/ein005_books/ivd"
+    path: "frameworks/ivd"
     master_intent: "ivd_system_intent.yaml"
   
   # Principle activation
@@ -792,7 +792,7 @@ class IVDConfig:
             "ivd": {
                 "version": "2.0",
                 "framework": {
-                    "path": "EINs/ein005_books/ivd",
+                    "path": "frameworks/ivd",
                     "master_intent": "ivd_system_intent.yaml"
                 },
                 "principles": {

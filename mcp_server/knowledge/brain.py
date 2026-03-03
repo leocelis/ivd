@@ -48,6 +48,7 @@ SKIP_FILES = {
     "runtime.txt",
     "wsgi.py",
     "ivd_package_validation_intent.yaml",  # Internal release checklist — pollutes "validation" search results
+    "research/ivd_existing_projects_and_project_map_gaps.md",  # Internal gap analysis with book chapter references
 }
 
 

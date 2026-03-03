@@ -166,7 +166,6 @@
 - Book Ch3 §3.4: lost-in-the-middle explanation for Principle 4 verification protocol
 - Book Ch12 §12.1: full theoretical foundation before experiments — the "why" before the "what"
 
-**Commercial rationale:** The best-selling tech books explain WHY at a level that makes readers feel smarter. IVD can now explain that hallucinations are not "AI being wrong" — they're a predictable consequence of loading the wrong knowledge system with the wrong artifact format. That's the sentence that makes someone buy the book and recommend it to every engineer on their team. Quotable: *"Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system — because you didn't feed the right one."*
 
 **Changes (wave 1):** `ivd_system_intent.yaml` (v2.0), `framework.md` (v2.0), book chapter intents: Ch1 (v2.6), Ch2 (v1.5), Ch3 (v1.9), Ch12 (v1.1).
 
