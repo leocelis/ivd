@@ -6,7 +6,7 @@
 #
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[1]
-# Version: 1.4
+# Version: 1.6
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -72,12 +72,13 @@ deliverables:
       title: "The Contract Model: The AI Writes and Verifies"
       required_content:
         - "Key insight: The AI writes the intent artifact (not the human), following IVD framework"
-        - "Workflow: You describe → AI writes intent → You review → AI implements → AI verifies"
+        - "Workflow: You describe → AI writes intent → You review → AI stress-tests → AI implements → AI verifies"
         - "Table: Who writes it? (PRD: Human, Prompt: Human, Intent Artifact: AI)"
         - "Why this reduces turns: clarification at intent stage, not after code exists"
         - "Linguistic mirroring as early alignment signal (AI echoing key terms = understanding)"
         - "When you don't understand the concepts: teaching step (AI creates educational artifact, you confirm understanding, then proceed); part of Principle 6 (Step 0a)"
         - "When you're not sure what to ask: discovery step (AI proposes options, you pick, then intent flow); part of Principle 6 (Step 0b)"
+        - "Note in the workflow diagram: implementation (Step 5) can trigger a refinement loop back to intent when reality contradicts assumptions. The AI stops, updates the intent with empirical evidence, and continues from the corrected version. This is Principle 3 (Bidirectional Sync) in action — reality is a sync direction."
     
     - id: "2.4"
       title: "IVD in Action: The CSV Example Revisited"
@@ -101,6 +102,8 @@ deliverables:
         - "Prose can be wrong silently; executable constraints fail loudly"
         - "The AI runs tests after implementing—catches its own hallucinations"
         - "Quotable: **Prose fails silently. Executable understanding fails loudly.**"
+        - "The cognitive mechanism behind why IVD works: LLMs have two knowledge systems — parametric (training weights, ~30% reliance) and contextual (the prompt/context window, ~70% reliance). The intent artifact occupies the contextual slot the model prioritizes. Structured YAML with explicit constraints, test paths, and scope boundaries is the optimal format for that slot: parseable, unambiguous, complete. The model doesn't need to guess because the contextual channel answers every question the parametric channel would otherwise fill."
+        - "Why re-reading intent from disk (Verification Protocol Step 1) is cognitively necessary, not just a best practice: the lost-in-the-middle effect degrades attention to information positioned early in long contexts. Information in the middle of a context window is weighted less by the attention mechanism even in strong models. Re-reading repositions the ground truth at the top of the context stack where it receives maximum attention weight."
         - "Summary: IVD is the framework for AI Agents era—AI writes, implements, verifies"
         - "Bridge to Ch3: understand the principles deeply before building"
   
@@ -121,6 +124,8 @@ key_points:
   - "The AI writes the intent artifact (not the human), then implements and verifies"
   - "The eight principles of IVD (overview; deep dive in Ch3)"
   - "Why this works: executable understanding fails loudly—hallucinations are caught at the source"
+  - "The cognitive mechanism: the intent artifact saturates the contextual knowledge channel (~70% model reliance), leaving the parametric gap-filling channel (~30%) with nothing to fill. Structured constraints have near-zero interpretive entropy — the model cannot guess; it can only match or fail."
+  - "Lost-in-the-middle: re-reading intent from disk before verification is cognitively necessary — the attention mechanism degrades for information positioned early in long contexts"
 
 # ==============================================================================
 # CONSTRAINTS (from book intent; chapter-specific)
@@ -278,6 +283,21 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.6"
+    date: "2026-02-09"
+    change: |
+      Section 2.3 (The Contract Model): added empirical refinement loop note to workflow — implementation
+      can trigger a loop back to intent when reality contradicts assumptions. Updated workflow line to
+      include stress-test step.
+    reason: "Framework update: empirical refinement protocol (P3 extension). The workflow diagram should show that implementation is not always linear — empirical discoveries can require updating the intent."
+  - version: "1.5"
+    date: "2026-02-09"
+    change: |
+      Section 2.6 (Why This Works): added cognitive mechanism explanation — parametric vs. contextual
+      knowledge systems (70/30 reliance), intent artifact as contextual channel saturation, structured
+      constraints as near-zero entropy inputs. Added lost-in-the-middle explanation for why re-reading
+      intent from disk is cognitively necessary. Added two new key_points capturing these mechanisms.
+    reason: "Deepens the 'why IVD works' from executable understanding alone to the LLM cognitive architecture. Evidence: 9-LLM study (2024), lost-in-the-middle research (2024). This is the intellectual moat that makes the book a reference, not just a methodology guide."
   - version: "1.4"
     date: "2026-02-09"
     change: |

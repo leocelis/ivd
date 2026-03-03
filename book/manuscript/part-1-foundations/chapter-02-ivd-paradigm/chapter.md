@@ -72,10 +72,13 @@ The workflow changes completely:
 1. **You describe** what you want (natural language, conversation, rough requirements)
 2. **The AI writes** a structured intent artifact following IVD: summary, goal, constraints, success criteria, verification tests
 3. **You review** the intent artifact. Is this what you meant? If not, clarify—before any code is written.
-4. **The AI implements** against the intent artifact
-5. **The AI verifies**: Does my code pass the constraints? If not, fix before shipping.
+4. **The AI stress-tests** the intent: adversarially probes for constraint gaps, implicit assumptions, and implementation decisions not addressed. Catches flaws at the cheapest possible point—before code exists. (Skip for trivial changes.)
+5. **The AI implements** against the intent artifact
+6. **The AI verifies**: Does my code pass the constraints? If not, fix before shipping.
 
 This is why IVD reduces turns. The clarification happens at the intent stage—before code exists. The verification happens automatically—the AI checks its own work. The hallucinations are caught at the source: if the AI "filled a gap" in a way that violates a constraint, the test fails. Loudly.
+
+The workflow is not always linear. During Step 4 (implement), the AI may discover that reality contradicts an assumption in the intent—an API returns a different format, a dependency has an undocumented rate limit, a model's actual accuracy differs from benchmarks. When this happens, the AI stops, updates the intent artifact with empirical evidence, and continues from the corrected version. This is **Principle 3** (Bidirectional Synchronization) in action: reality is a sync direction. The intent stays accurate because it absorbs evidence from implementation, not just from your original description. Chapter 3 covers this **empirical refinement** protocol in depth.
 
 This is the shift from guess to contract. From "Here's X, is this right?" to "Here's the intent artifact I wrote—does this capture what you want?" and then "Here's X, verified against the intent."
 
@@ -222,11 +225,52 @@ This is the difference between **hoping** and **proving**. Prompting an AI hopes
 
 **Prose fails silently. Executable understanding fails loudly.**
 
+### The Cognitive Mechanism: Why Intent Artifacts Work
+
+The reason runs deeper than "tests catch bugs." It is rooted in how LLMs actually process information.
+
+As Chapter 1 established, LLMs have two knowledge systems: **parametric** (training weights, ~30% reliance) and **contextual** (the prompt and context window, ~70% reliance). The model *prioritizes* what you give it in context. The intent artifact occupies exactly the slot the model prioritizes—the **contextual channel**.
+
+Structured YAML with explicit constraints, test paths, and scope boundaries is the optimal format for that slot. It is parseable, unambiguous, and complete. A constraint like `admin_only: test: tests/test_csv_export.py::test_admin_required` leaves nothing to interpret. The model does not need to guess "who can access this?" because the contextual channel already answers the question. There is nothing for the parametric channel to fill.
+
+This is the mechanism: **the intent artifact saturates the contextual knowledge channel**. When every constraint is explicit, every test path is linked, and every scope boundary is declared, the model's ~70% contextual reliance has complete information to work with. The ~30% parametric channel—the one that fills gaps with averaged training patterns—has nothing left to fill. Hallucinations drop because the *cause* of hallucinations (contextual underload → parametric gap-filling) is eliminated.
+
+Prose leaves the contextual channel sparse. The model fills the gaps. That is Chapter 1's problem. The intent artifact fills the contextual channel completely. The model has nothing to guess. That is Chapter 2's solution.
+
+### Why Re-Reading Intent from Disk Matters
+
+One detail that seems like a "best practice" is actually a **cognitive necessity**: re-reading the intent artifact from disk before verification.
+
+Research on long-context LLMs reveals the **lost-in-the-middle effect**: information positioned in the middle of a long context window receives significantly less attention weight than information at the beginning or end. Even strong models—GPT-4, Claude 3—show log-linear attention degradation for mid-positioned content. The *effective* context window can be dramatically smaller than the *advertised* limit for information not at the edges.
+
+What this means for IVD: as a conversation grows—you describe requirements, the AI writes intent, you discuss changes, the AI implements—the original intent artifact drifts toward the middle of the context. The attention mechanism weights it less. The model's fidelity to the original constraints degrades.
+
+Re-reading the intent artifact from disk before verification repositions the ground truth at the **top of the context stack**, where the attention mechanism weights it highest. This is not a ritual. It is a direct response to how transformer attention works. Skip it, and the model verifies against a degraded representation of the intent. Do it, and the model verifies against the full, fresh artifact.
+
 This is why IVD is the framework for the **AI Agents era**:
 - The AI writes the intent (not you)
 - The AI implements against the intent (with constraints to verify)
 - The AI catches its own hallucinations (through executable tests)
 - The turns drop. The quality goes up. The exhaustion ends.
+
+## 2.7 The Strategic Implication: Company-Specific Knowledge Is the Moat
+
+The cognitive mechanism above explains how IVD works at the individual developer level. But the implication is bigger than one developer, one task, one conversation.
+
+Every company has knowledge that does not exist in any LLM's parametric channel — and never will. **Your business rules, your architecture decisions, your compliance requirements, your domain expertise, your internal APIs.** None of it is in GPT's training data. None of it is in Claude's weights. This knowledge is inherently contextual: it can only enter through the context window. There is no other path.
+
+Now think about what generic AI tools do. Copilot without project context, ChatGPT with a pasted prompt, Zapier automations, Notion AI — they feed generic information into the contextual channel. When company-specific gaps appear during generation, the parametric channel fills them. The AI "knows" what a typical permission model looks like. It does not know what *your* permission model requires. That delta — between what's typical and what's yours — is where hallucinations live.
+
+**AI capability is commoditized.** Every team on the planet has access to the same models. GPT-4, Claude, Gemini — they're utilities now. The competitive advantage is not which model you use. The advantage is whether you've structured your company's unique knowledge so the contextual channel is loaded with **your ground truth** instead of generic approximations.
+
+This is what IVD provides at the organizational level:
+- **`project_context` sections** capture your architecture, conventions, key paths, and code rules — the knowledge that makes your codebase yours
+- **Organizational recipe libraries** encode institutional best practices — patterns your team has proven, not patterns the internet averaged
+- **Intent artifacts** encode the specific constraints, verification criteria, and rationale that define your system — not a system like yours
+
+Companies that structure their knowledge with IVD get AI that works with their reality. Companies that don't get AI that guesses — faster, but still wrong.
+
+> **"The moat is not the model. The moat is your knowledge, structured so the model can actually use it."**
 
 The paradigm shift is complete. You now understand:
 - Why intent is primary—and why the AI writes it (2.2, 2.3)
@@ -234,6 +278,7 @@ The paradigm shift is complete. You now understand:
 - What IVD looks like in practice (2.4)
 - The eight principles that make it work (2.5)
 - Why executable verification catches hallucinations (2.6)
+- Why company-specific knowledge is the strategic moat (2.7)
 
 Part II of this book takes you from theory to practice. You'll build real systems using IVD—with AI agents that write intent, implement, and verify. But before you build, you need to understand the principles deeply. That's Chapter 3.
 
@@ -252,3 +297,9 @@ Part II of this book takes you from theory to practice. You'll build real system
 - **The eight principles.** IVD is built on eight principles: Intent is Primary, Understanding Must Be Executable, Bidirectional Synchronization, Continuous Verification, Layered Understanding, AI as Understanding Partner, Understanding Survives Implementation, and Innovation through Inversion. They work as a system—designed for AI agents.
 
 - **Executable understanding fails loudly.** Prose can be wrong silently. Executable constraints fail immediately if the AI's code doesn't match the intent. This is the difference between hoping the AI guessed right and proving it built what you wanted.
+
+- **The cognitive mechanism: the intent artifact saturates the contextual channel.** LLMs allocate ~70% reliance to contextual knowledge and ~30% to parametric. Structured YAML with explicit constraints has near-zero interpretive entropy—nothing for the parametric channel to fill. Hallucinations drop because their cause (contextual underload → parametric gap-filling) is eliminated.
+
+- **Re-reading intent from disk is a cognitive necessity, not a best practice.** The lost-in-the-middle effect degrades attention to information positioned in the middle of long contexts. Re-reading repositions the ground truth at the top of the context stack where the attention mechanism weights it highest.
+
+- **Company-specific knowledge is the strategic moat.** AI capability is commoditized — every team has the same models. Your business rules, architecture, compliance requirements, and domain expertise are inherently contextual: they can only enter through the context window. Generic tools feed generic context; IVD structures your ground truth. The advantage is not the model. The advantage is structured, verifiable, company-specific knowledge.

@@ -46,7 +46,7 @@ In theory, writing things down fixes the gap. In practice, it doesn't—because 
 
 By **verifiable**, we mean this: the AI can run a deterministic check—execute tests, validate structured constraints—that returns pass or fail, without having to interpret prose.
 
-The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And **inference** is **hallucination's food.
+The artifact provides a contract to verify against. A PRD is not that. It is prose. The AI reads it, interprets it, and guesses what matches. That is not verification; that is inference. And **inference** is **hallucination's food.**
 
 Consider what we have tried before:
 - **PRDs (Product Requirements Documents):** Prose documents written by humans for humans. The AI cannot verify whether its code matches a PRD. It can only read the PRD and guess.
@@ -60,6 +60,22 @@ The problem is the same in each case: *none of these artifacts can be verified b
 An AI agent has none of that. It has only what you give it. If what you give it is prose—PRD, user story, or prompt—it will infer. Inference is guesswork. **Guesswork is hallucination.** The AI fills in the gaps with something plausible but wrong.
 
 You have seen this. The `API` that doesn't match the spec. The feature that ignores edge cases mentioned in the ticket. The AI output that looks right until you run the tests.
+
+But why does this happen? The answer is not "the AI is bad at coding." The answer lies in how LLMs actually process information.
+
+LLMs have **two knowledge systems**. The first is **parametric knowledge**—the patterns frozen into the model's weights during training. This is generalized, averaged, and static. It is what the model "knows" from billions of pages of text: common patterns, typical implementations, default behaviors. The second is **contextual knowledge**—everything you provide in the prompt and the context window. This is specific, current, and controllable. It is what you *tell* the model right now.
+
+Research shows that models allocate roughly **~70% reliance to contextual knowledge** and **~30% to parametric knowledge** when both are available (9-LLM study, 2024).[^3] The model *wants* to use what you give it. But when you give it prose—a PRD, a user story, a short prompt—the contextual channel is **underloaded**. There is not enough structured, specific information for the model to rely on. So the parametric channel fills the gap. The model reaches into its training data and produces something *plausible*—something that looks like what most developers would build, given a vague description.
+
+That gap-filling **is** hallucination. Not a bug. Not a failure. A predictable consequence of feeding the model vague input and expecting specific output.
+
+The reframe matters: **hallucinations are not the AI "being wrong."** They are the AI using the wrong knowledge system—because the artifact you gave it did not load the right one. A PRD full of prose does not saturate the contextual channel. A user story with no constraints does not give the model enough to rely on. A prompt with three words leaves 70% of the model's preferred channel empty—and the parametric channel fills every gap with averaged patterns from training data.
+
+The problem is not the AI. The problem is the artifact format.
+
+**Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system—because you didn't feed the right one.**
+
+[^3]: Multi-model study on parametric vs. contextual knowledge reliance across 9 LLMs (2024). Models consistently prioritize contextual information when available. See Appendix F for full references.
 
 We learn to work around it: we add more context, we correct, we iterate. It's wasteful, but it's normal. It is the default mode of working with AI agents today. **The gap between "what I wanted" and "what the AI built" is where misalignment lives.**
 
@@ -113,6 +129,8 @@ This chapter named the problem: the artifacts we use today—PRDs, user stories,
 - **Traditional artifacts fail with AI agents.** PRDs, user stories, and prompts are prose—unverifiable by the AI. The AI reads, guesses, and fills the gaps. Guesswork is hallucination.
 
 - **The AI Agents era has a core pain point: many turns and hallucinations.** The "Prompt → Here's X → No, I meant…" loop runs at machine speed. Each turn costs context and attention. Each hallucination compounds. This is the default mode of working with AI today.
+
+- **The cognitive mechanism: LLMs prioritize contextual knowledge (~70%) over parametric training (~30%).** When you give the model prose, the contextual channel is underloaded and the parametric channel fills the gaps with averaged training patterns. That gap-filling is hallucination. The problem is not the AI—it is the artifact format. **Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system—because you didn't feed the right one.**
 
 - **The scale is enormous: 70–90% knowledge loss, hundreds of billions in annual waste.** Research shows 70–90% of documentation-code mismatches stem from documentation failures; critical knowledge lives in meetings and heads, not durable artifacts. The financial cost: $260+ billion annually in the U.S. alone, $500 billion globally. The AI prompt that fills in wrong blanks, the feature that ignores unstated constraints—these are the default, not edge cases.
 

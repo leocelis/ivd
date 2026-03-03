@@ -65,6 +65,7 @@ deliverables:
       required_content:
         - "State the hypothesis clearly: when an AI agent needs to understand a codebase, reading intent artifacts instead of source files reduces token consumption by 80-90%"
         - "Why context efficiency matters: LLM context windows are finite, tokens cost money, more context ≠ better comprehension — focused context produces better results"
+        - "The theoretical foundation before the experiments: LLMs allocate ~70% reliance on contextual knowledge (what's in the prompt) and ~30% on parametric knowledge (training weights) — 9-LLM study, 2024. More context is not automatically better: the lost-in-the-middle effect degrades attention to information in the center of long contexts (effective window can be 99% of advertised limit smaller). Proactive interference causes log-linear retrieval decay as semantically similar content accumulates. IVD's hypothesis is not just 'fewer tokens' — it is 'higher signal-to-noise in the contextual channel produces better comprehension with less context.' The experiments validate this with data."
         - "Define terms precisely: 'context' = tokens fed to an LLM; 'baseline' = reading all source files; 'IVD' = reading intent artifacts only"
         - "Preview the experimental design: three projects from Part II, each measured with tiktoken, comprehension accuracy tested"
         - "Connect to Chapter 11's validation framework: this chapter executes Validation Category 1 (Context Efficiency)"
@@ -151,6 +152,7 @@ deliverables:
 # ==============================================================================
 
 key_points:
+  - "Theoretical foundation: LLMs allocate ~70% reliance to contextual knowledge (the prompt) vs ~30% to parametric (training); lost-in-the-middle effect degrades comprehension of information not at context edges; IVD targets high signal-to-noise in the contextual channel"
   - "Experiment design: baseline (read all files) vs IVD (read intents) — controlled comparison across three projects of different types and sizes"
   - "Token counts with tiktoken — reproducible, deterministic measurement using OpenAI's tokenizer library"
   - "Comprehension accuracy testing — not just fewer tokens, but equal or better understanding verified through structured questions"
@@ -330,6 +332,15 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "1.1"
+    date: "2026-02-09"
+    change: |
+      Section 12.1: added theoretical foundation before experiments — parametric vs. contextual
+      knowledge systems (70/30 reliance), lost-in-the-middle effect, proactive interference.
+      Reframes the chapter's hypothesis from 'fewer tokens is cheaper' to 'higher signal-to-noise
+      in the contextual channel produces better comprehension with less context.'
+      Added key_point for the theoretical foundation.
+    reason: "Chapter 12 is the natural home for the full cognitive architecture research treatment. The experiments prove the claim; the theory explains WHY the claim is structurally sound before the first experiment begins. Evidence: 9-LLM study (2024), lost-in-the-middle (GPT-4/Claude 3, 2024), proactive interference (2025)."
   - version: "1.0"
     date: "2026-02-09"
     change: |

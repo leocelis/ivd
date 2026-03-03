@@ -28,6 +28,14 @@ def get_brain_root() -> str:
 SKIP_DIRS = {
     "mcp_server", "_private", ".venv", "venv", ".git",
     "__pycache__", "node_modules", ".idea", ".vscode",
+    ".obsidian", ".pytest_cache", ".do",
+}
+
+# Root-level files to skip (not IVD knowledge)
+SKIP_FILES = {
+    "requirements.txt",
+    "runtime.txt",
+    "wsgi.py",
 }
 
 
@@ -41,7 +49,11 @@ def scan_directory(directory: str, extra_skip: set = None) -> List[Dict]:
     files = []
     for root, dirs, filenames in os.walk(directory):
         dirs[:] = [d for d in dirs if d not in skip and not d.startswith("_")]
+        rel_root = os.path.relpath(root, directory)
         for filename in filenames:
+            rel_path = os.path.join(rel_root, filename) if rel_root != "." else filename
+            if rel_path in SKIP_FILES:
+                continue
             if Path(filename).suffix.lower() in SUPPORTED_EXTENSIONS:
                 file_path = os.path.join(root, filename)
                 files.append({

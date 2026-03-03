@@ -35,7 +35,7 @@ You: "Still not right..."                You:  "Done. First try."
 
 ## Why IVD?
 
-Traditional artifacts (PRDs, user stories, prompts) are **prose written by humans** — AI reads them, guesses, and hallucinates. IVD inverts this:
+LLMs rely ~70% on contextual knowledge (the prompt) and ~30% on parametric knowledge (training). Prose underloads the contextual channel — the model fills gaps from training, and those gaps are hallucinations. **IVD saturates the contextual channel** with structured, verifiable intent — so the model has nothing to guess.
 
 | | Traditional | IVD |
 |---|---|---|

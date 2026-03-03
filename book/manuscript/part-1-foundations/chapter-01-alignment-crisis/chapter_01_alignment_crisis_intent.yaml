@@ -64,6 +64,9 @@ deliverables:
         - "PRDs, user stories, prompts are prose—not verifiable by AI"
         - "The AI reads prose and fills in gaps (guesses = hallucinations)"
         - "These artifacts were designed for humans, not AI agents"
+        - "The cognitive mechanism: LLMs have two knowledge systems — parametric (training weights: frozen, generalized, fills gaps with averaged patterns) and contextual (the prompt/context window: specific, current, controllable). Research shows models allocate ~70% reliance to contextual and ~30% to parametric (9-LLM study, 2024). When given vague prose, the contextual channel is underloaded and parametric gap-filling kicks in. That gap-filling IS hallucination."
+        - "The key reframe for the reader: hallucinations are not the AI 'being wrong' — they are the AI using the wrong knowledge system because prose did not load the right one. The problem is not the AI. The problem is the artifact format."
+        - "Quotable: **Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system — because you didn't feed the right one.**"
     
     - id: "1.3"
       title: "The AI Amplification Effect: Many Turns, Many Hallucinations"
@@ -95,6 +98,7 @@ key_points:
   - "Traditional artifacts (PRDs, user stories, prompts) fail with AI—not verifiable by the AI"
   - "The AI Agents era pain points: many turns and hallucinations (AI fills gaps with guesses)"
   - "The scale: 70–90% knowledge loss, hundreds of billions in annual waste"
+  - "The cognitive mechanism: LLMs prioritize contextual knowledge (~70%) over parametric training (~30%); prose underloads the contextual channel, triggering parametric gap-filling = hallucination"
   - "The hinge: what if intent was verifiable by the AI? What if the AI wrote the intent?"
 
 # ==============================================================================
@@ -236,6 +240,14 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.6"
+    date: "2026-02-09"
+    change: |
+      Section 1.2 (Why Traditional Artifacts Fail): added cognitive mechanism explanation grounded in
+      2024 research — parametric vs. contextual knowledge systems (70/30 reliance split), and why
+      prose underloads the contextual channel causing parametric gap-filling (hallucination).
+      Added new key_point capturing the cognitive mechanism. Added quotable line for the mechanism.
+    reason: "Deepens the 'why' of traditional artifact failure from 'not verifiable' to the LLM cognitive architecture that explains it. Evidence: 9-LLM study (2024), Huang et al. ICLR 2024. Increases book's intellectual moat — explains what no one else is explaining."
   - version: "2.5"
     date: "2026-02-09"
     change: |

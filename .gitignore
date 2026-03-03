@@ -24,5 +24,9 @@ Thumbs.db
 *.swo
 .obsidian/
 
+# Build / cache / deploy
+.pytest_cache/
+.do/
+
 # Temp (one-pagers, drafts, local outputs)
 temp/

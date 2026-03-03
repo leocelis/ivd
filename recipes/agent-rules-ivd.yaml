@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.1
+# Version: 1.2
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.1"
+  version: "1.2"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -81,7 +81,14 @@ verification_protocol:
         Open and re-read the intent artifact file from disk. Do NOT rely on
         memory or context from earlier in the conversation. The intent may have
         been updated, or the agent's memory may have drifted.
-      why: "Agent memory drifts during long sessions. The file is the source of truth."
+      why: |
+        This is cognitively necessary, not just a best practice. The lost-in-the-middle
+        effect (2024 research, GPT-4/Claude 3): LLMs degrade in accuracy for information
+        positioned in the middle of long contexts — effective context window can be 99%
+        smaller than advertised. Information discussed early in a session has degraded
+        attention weight by implementation time. Re-reading repositions the intent at the
+        top of the context stack where the attention mechanism weights it highest. The file
+        is the source of truth; the agent's context memory is not.
 
     - step: 2
       name: "Diff each change against constraints"
@@ -190,11 +197,41 @@ agent_rules_block:
     Skip this step only for trivial changes where the intent is a single
     constraint with an obvious implementation.
 
+    ## IVD Rule 5: Empirical Refinement During Implementation
+
+    When implementation reveals that the intent's assumptions are wrong (API
+    returns a different format, model accuracy differs from benchmarks, latency
+    exceeds documented limits, edge cases the research didn't cover):
+
+    1. STOP — do not continue implementing against a stale assumption. The intent
+       is the contextual knowledge spine; if it's wrong, everything built on it
+       will be wrong.
+    2. RECORD — document what the intent assumed vs. what you observed. This is
+       new contextual knowledge.
+    3. UPDATE — revise the intent artifact on disk: fix the constraint, adjust the
+       threshold, add a new constraint for the discovered edge case, update the
+       rationale with empirical evidence.
+    4. ENRICH — if the discovery reveals a knowledge gap, pull more contextual
+       knowledge into the session (API documentation, model cards, actual error
+       responses, performance benchmarks).
+    5. CONTINUE — re-read the updated intent (Rule 2, Step 1) and continue
+       implementing from the corrected version.
+
+    If the discovery changes scope significantly (what was a simple API call now
+    requires retry logic, circuit breakers, and fallback handling), flag for human
+    review before continuing.
+
+    The stress test (Rule 4) anticipates. Empirical refinement discovers. Together
+    they close the loop.
+
   clinerules_format: |
     # IVD Verification Rules
     # Before implementing from an intent artifact:
     # - Stress-test: what edge cases, gaps, assumptions are missing?
     # - Update intent with found gaps before implementing
+    # During implementation:
+    # - If reality contradicts the intent (API format, accuracy, latency differs):
+    #   STOP → RECORD finding → UPDATE intent on disk → ENRICH context → CONTINUE
     # After implementing from an intent artifact:
     # 1. Re-read the intent file (not from memory)
     # 2. Check each change against each constraint
@@ -207,6 +244,10 @@ agent_rules_block:
     - Read the intent artifact before starting
     - Before implementing, stress-test the intent: what edge cases, gaps, or
       assumptions are missing? Update intent with found gaps first.
+    - During implementation, if reality contradicts the intent (API format,
+      accuracy, latency differs from what the intent says): STOP, update the
+      intent on disk with the empirical finding, then continue from the updated
+      version
     - After implementation, re-read the intent from disk
     - Check each constraint: does implementation satisfy it?
     - For constraints with test fields, verify the test passes
@@ -298,6 +339,12 @@ common_failures:
     root_cause: "Verification Protocol Step 4 skipped — no structured report produced"
     solution: "Verification Protocol Step 4: require structured report before declaring complete"
 
+  - name: "Implementing Against Stale Assumptions"
+    description: "Agent discovers that reality contradicts the intent (API format differs, accuracy is lower) but continues implementing against the original intent"
+    symptom: "Implementation has workarounds, hardcoded fixes, or silent data transformations that the intent doesn't capture; future agents re-read the intent and build wrong"
+    root_cause: "Empirical Refinement (Rule 5) skipped — agent treated the discovery as a code problem instead of an intent problem"
+    solution: "Rule 5: STOP, RECORD finding, UPDATE intent on disk, ENRICH context, CONTINUE from corrected intent"
+
 # ==============================================================================
 # RELATIONSHIP TO OTHER PATTERNS
 # ==============================================================================
@@ -312,6 +359,9 @@ relationships:
   - pattern: "constraints[].test field"
     relationship: "The test field in constraints is what the verification protocol checks. Without test fields, the protocol can't verify. Without the protocol, test fields are aspirational."
 
+  - pattern: "Principle 3 (Bidirectional Synchronization)"
+    relationship: "Rule 5 (Empirical Refinement) is Principle 3 extended to a new sync direction: reality → intent. When implementation reveals that the intent's assumptions are wrong, the agent syncs empirical evidence back into the intent before continuing."
+
   - pattern: "project_context.code_rules"
     relationship: "The agent instruction file (.cursorrules) is listed in project_context.code_rules. This recipe adds IVD-specific content to that file."
 
@@ -320,6 +370,16 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.2"
+    date: "2026-02-09"
+    change: "Added IVD Rule 5: empirical refinement during implementation. Updated clinerules and Copilot formats."
+    reason: |
+      Gap identified: when implementation reveals that the intent's assumptions don't match
+      reality (API returns different format, model accuracy differs, latency exceeds limits),
+      no agent rule existed to stop, update the intent, and continue from the corrected
+      version. Rule 4 (stress test) anticipates gaps before implementation; Rule 5 catches
+      gaps that only running the code reveals. Together they close the loop.
+
   - version: "1.1"
     date: "2026-02-09"
     change: "Added IVD Rule 4: stress-test intent before implementing. Updated clinerules and Copilot formats."

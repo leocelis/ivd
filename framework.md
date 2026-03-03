@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 1.9  
+**Version:** 2.0  
 **Created:** January 23, 2026  
-**Updated:** February 9, 2026 (Intent stress test step in P6 workflow)
+**Updated:** February 9, 2026 (Cognitive foundation: parametric vs. contextual knowledge systems)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -53,6 +53,32 @@ Human writes prompt → AI guesses intent → Builds wrong → Many turns of cor
 Human describes → AI writes intent → Human reviews → AI stress-tests → AI implements → AI verifies → Done first try
 ```
 *The AI writes the intent, implements against it, catches its own hallucinations.*
+
+### Why This Works: The Cognitive Architecture of LLMs
+
+IVD works not just because structured artifacts are "better" — it works because of how LLMs process information at a fundamental level.
+
+LLMs have two distinct knowledge systems. **Parametric knowledge** is encoded in the model's weights during training — generalized, frozen, and shared across all users and tasks. **Contextual knowledge** is what's in the current prompt and context window — specific, current, and fully controllable. Research across nine LLMs found that models allocate approximately **70% reliance on contextual knowledge and 30% on parametric knowledge** when generating responses, regardless of context size.
+
+When you give an AI agent vague prose (a PRD, a user story, a natural-language prompt), the contextual channel is underloaded. The model compensates by filling gaps from parametric memory — which encodes averaged patterns from training data, not your specific constraints. That gap-filling **is** hallucination. The problem is not the AI. The problem is that prose doesn't load the contextual channel with enough specificity to prevent parametric gap-filling.
+
+A structured intent artifact — with explicit constraints, test paths, scope boundaries, and rationale — saturates the contextual channel. A constraint like `p95 latency < 200ms` linked to `tests/perf/test_latency.py` has near-zero interpretive entropy. The model cannot guess; it can only match or fail. That is why executable understanding fails loudly.
+
+**The lost-in-the-middle effect** explains why the verification protocol's Step 1 ("re-read the intent from disk") is not a best practice — it is a cognitive necessity. Research shows that LLMs degrade in accuracy for information positioned in the middle of long contexts, even in strong models. The effective context window can differ from the advertised limit by up to 99%. Re-reading the intent artifact before verification repositions the ground truth at the top of the context stack, where the attention mechanism weights it highest.
+
+> **"Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system — because you didn't feed the right one."**
+
+### Why Company-Specific Knowledge Matters
+
+The cognitive mechanism above explains *how* IVD works at the individual developer level. But the strategic implication is larger.
+
+Every company has knowledge that does not exist in any LLM's parametric channel — and never will. Your business rules, your architecture decisions, your compliance requirements, your domain expertise, your internal APIs. This knowledge is **inherently contextual**: it can only enter through the context window. There is no other path.
+
+Generic AI tools — Copilot without project context, ChatGPT with a pasted prompt, Zapier automations, Notion AI — feed generic context. When company-specific gaps appear, the parametric channel fills them with averaged patterns from training data. The AI "knows" what a typical permission model looks like, not what *your* permission model requires. That delta between typical and yours is the hallucination.
+
+**AI capability is commoditized.** Every team has access to the same models. The competitive advantage is not the model — it's whether you've structured your company's unique knowledge so the contextual channel is loaded with **your ground truth** instead of generic approximations. IVD is the framework for doing exactly that: `project_context` sections capture architecture and code rules, organizational recipe libraries encode institutional best practices, and intent artifacts encode the specific constraints and verification criteria that define your system.
+
+Companies that structure their knowledge with IVD get AI that works with their reality. Companies that don't get AI that guesses — faster, but still wrong.
 
 ---
 
@@ -139,6 +165,28 @@ def qualify_lead(score: float) -> bool:
 2. System asks: "Update intent? Or revert code?"
 3. If intent updates → Docs regenerate, tests rerun
 4. If code reverts → Implementation restored to match intent
+
+#### Empirical Refinement: When Implementation Reveals New Knowledge
+
+Bidirectional sync handles *code drift* — you changed the code, now update the intent. But there is a second, equally important direction: **reality contradicts the intent's assumptions.**
+
+This happens constantly during LLM workflow development. Your research says the model should return confidence scores between 0 and 1 — but the actual API returns logits. Your intent assumes p95 latency under 200ms — but the real service has a 500ms cold start. Your constraint says classification accuracy >= 85% — but empirical testing shows 72% on your actual data. The intent was written from research; reality is different.
+
+This is not a code bug. This is new contextual knowledge that the intent didn't have at write time. The intent's assumptions were based on parametric-level information (general knowledge, documentation, research). Implementation revealed empirical evidence that changes what the intent should say.
+
+**The Empirical Refinement Protocol:**
+
+1. **STOP** — Do not continue implementing against a stale assumption. The intent is the contextual knowledge spine; if it's wrong, everything built on it will be wrong.
+2. **RECORD** — Document the empirical finding: what the intent assumed vs. what you observed. This is new contextual knowledge.
+3. **UPDATE** — Revise the intent artifact on disk: fix the constraint, adjust the threshold, add a new constraint for the discovered edge case, update the rationale with empirical evidence.
+4. **ENRICH** — If the discovery reveals a knowledge gap, pull more contextual knowledge into the session: API documentation, model cards, actual error responses, performance benchmarks. Saturate the contextual channel with reality, not assumptions.
+5. **CONTINUE** — Re-read the updated intent (Verification Protocol Step 1) and continue implementing from the corrected version.
+
+If the discovery changes the scope significantly (what was a simple API call now requires retry logic, circuit breakers, and fallback handling), flag for human review before continuing.
+
+**Why this matters through the cognitive lens:** The intent artifact is the spine of contextual knowledge. When it contains assumptions instead of empirical facts, the model fills gaps between those assumptions and reality using parametric knowledge — exactly the gap-filling mechanism that causes hallucinations. Empirical refinement replaces assumptions with observed behavior, strengthening the contextual channel at the exact point where it was weakest.
+
+**The stress test (Step 4) anticipates. Empirical refinement discovers.** Together, they close the loop: the stress test catches what you can reason about before building; empirical refinement catches what only running the code reveals.
 
 ---
 

@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 1.9
+# Version: 2.1
 # Created: 2026-01-24
-# Updated: 2026-02-09 (intent stress test step in P6 workflow)
+# Updated: 2026-02-09 (empirical refinement: when implementation reveals new knowledge)
 # Status: Canonical
 # ==============================================================================
 
@@ -47,6 +47,16 @@ intent:
     - 80-90% reduction in AI agent context needed for workflow understanding
     - Intent artifacts survive rewrites, team changes, technology shifts
     - Zero tolerance for violations of core principles
+
+  # EVIDENCE HONESTY NOTE (Mar 2, 2026):
+  # The numeric metrics above are PROJECTIONS based on Leo's experience
+  # building with IVD on his own projects (ConCntric AI-OS, blog, personal
+  # systems). They have NOT been independently measured or validated by
+  # external teams. No controlled benchmarks exist yet.
+  #
+  # For the book: present these as observed patterns from real work, NOT
+  # as proven benchmarks. "In my experience" > "studies show."
+  # The principles are sound. The metrics need external validation.
   
   stakeholders:
     - "Developers and engineers working with AI agents (Cursor, Copilot, Claude, GPT)"
@@ -62,6 +72,38 @@ intent:
 # Principles are hierarchical: Principle 1 is most fundamental.
 
 principles:
+  cognitive_foundation: |
+    IVD works because of how LLMs process information at the architecture level.
+    LLMs have two knowledge systems:
+    - Parametric knowledge: training weights — frozen, generalized, fills gaps with averaged patterns (~30% reliance)
+    - Contextual knowledge: the prompt/context window — specific, current, controllable (~70% reliance)
+    Source: 9-LLM study (2024) — consistent 70/30 split regardless of context size.
+    
+    When given vague prose, the contextual channel is underloaded; the model fills gaps from
+    parametric memory. That gap-filling IS hallucination. Structured intent artifacts saturate
+    the contextual channel with specific, verifiable, near-zero-entropy information.
+    
+    The lost-in-the-middle effect (2024): accuracy degrades for information in the middle of long
+    contexts — effective window can be 99% smaller than advertised. This is why the verification
+    protocol mandates re-reading intent from disk before every verification step.
+    
+    References: Huang et al. ICLR 2024 (self-correction limits); 9-LLM contextual/parametric
+    study (2024); lost-in-the-middle (GPT-4, Claude 3, 2024); proactive interference (2025).
+    Full treatment: framework.md "Why This Works: The Cognitive Architecture of LLMs"
+    Book chapters: Ch1 §1.2, Ch2 §2.6, Ch3 §3.2+3.4, Ch12 §12.1
+    
+    The strategic implication: every company has unique knowledge — business rules,
+    architecture decisions, compliance requirements, domain expertise — that does not
+    exist in any LLM's parametric channel. It never will. This knowledge is inherently
+    contextual: it can only enter through the context window. Generic AI tools (Copilot
+    without project context, Zapier, Notion AI) feed generic context, so the parametric
+    channel fills company-specific gaps with averaged patterns. IVD is the framework for
+    structuring company-specific knowledge so that the contextual channel is loaded with
+    YOUR ground truth. The competitive advantage is not AI capability — that is
+    commoditized. The advantage is structured, verifiable, company-specific knowledge.
+    Companies that structure it get AI that works with their reality. Companies that
+    don't get AI that guesses.
+
   hierarchy:
     - level: 1
       name: "Intent is Primary"
@@ -226,6 +268,50 @@ principles:
       - "Intent change without updating code"
       - "Documentation contradicting intent"
       - "Silent drift between intent and implementation"
+
+    extensions:
+      - name: "Empirical refinement during implementation"
+        status: "canonical"
+        description: |
+          Bidirectional sync handles code drift (code changed, update intent). But there
+          is a second, equally important direction: reality contradicts the intent's
+          assumptions. During implementation, empirical evidence often reveals that the
+          intent was written from research/documentation that doesn't match actual behavior
+          (API returns different format, model accuracy differs from benchmarks, latency
+          exceeds documented limits).
+
+          This is new contextual knowledge the intent didn't have at write time. Continuing
+          to implement against a stale assumption is the same failure mode as prose-driven
+          development: the contextual channel contains wrong information, and the model fills
+          gaps between assumptions and reality using parametric knowledge.
+
+          The Empirical Refinement Protocol:
+          1. STOP — do not continue implementing against a stale assumption
+          2. RECORD — document what the intent assumed vs. what was observed
+          3. UPDATE — revise the intent artifact on disk (fix constraint, adjust threshold,
+             add new constraint for discovered edge case, update rationale with evidence)
+          4. ENRICH — if discovery reveals a knowledge gap, pull more contextual knowledge
+             (API docs, model cards, actual error responses, benchmarks)
+          5. CONTINUE — re-read the updated intent (Verification Protocol Step 1) and
+             continue implementing from the corrected version
+
+          If discovery changes scope significantly, flag for human review before continuing.
+        recipe: "recipes/agent-rules-ivd.yaml"
+        framework_section: "framework.md → Principle 3 → Empirical Refinement"
+        supports_principles:
+          - "Principle 1: Intent is Primary (intent must reflect reality, not stale assumptions)"
+          - "Principle 3: Bidirectional Synchronization (reality → intent is a sync direction)"
+          - "Principle 4: Continuous Verification (updated intent must be re-verified)"
+        cognitive_rationale: |
+          The intent artifact is the contextual knowledge spine. When it contains assumptions
+          instead of empirical facts, the model fills gaps between those assumptions and
+          reality using parametric knowledge — the exact gap-filling that causes hallucinations.
+          Empirical refinement replaces assumptions with observed behavior, strengthening the
+          contextual channel at the point where it was weakest.
+        relationship_to_stress_test: |
+          The stress test (P6 Step 4) anticipates gaps before implementation.
+          Empirical refinement discovers gaps during implementation.
+          Together they close the loop: anticipation + discovery.
 
   # --------------------------------------------------------------------------
   # PRINCIPLE 4: Continuous Verification
@@ -1510,7 +1596,7 @@ implementation:
       standard: "Must be validated in real project"
       purpose: "Ensure patterns are practical, not theoretical"
   
-  version: 1.9
+  version: 2.1
   
   review_cadence:
     - frequency: "Quarterly"
@@ -1563,10 +1649,82 @@ verification:
       validates: "Real-world validation"
 
 # ==============================================================================
+# BOOK & DISTRIBUTION: The IVD Book
+# ==============================================================================
+# The primary distribution vehicle for IVD is a book.
+# The framework lives in code; the book carries the ideas to the world.
+# Revenue strategy lives in leocelis_blog_intent.yaml — not here.
+
+book_and_distribution:
+  goal: |
+    Publish THE definitive book on Intent-Verified Development — the
+    methodology for the AI Agents era. Think "Clean Code" for AI-driven
+    development. The book is how IVD reaches thousands of developers,
+    tech leads, and CTOs who will never read a GitHub repo.
+
+  thesis: |
+    AI writes code now. The bottleneck moved from implementation to intent.
+    IVD is the framework that makes AI collaboration reliable by making
+    intent executable and verifiable. The book makes this case and teaches
+    the methodology.
+
+    IMPORTANT: The book sells the THESIS, not the framework checklist.
+    IVD is one chapter — the methodology. The book's value is the worldview:
+    "AI replaces decisions, not labor. The bottleneck is now intent."
+    Blog posts that resonate never mention IVD by name. The thinking sells.
+
+  approach: |
+    - Blog posts on leocelis.com are first-draft chapters (written in public)
+    - The content backlog maps to book chapters
+    - Publish weekly → compile → edit → publish the book
+    - No SaaS or tooling required — the book IS the product
+    - IVD framework gets one chapter, not the whole book
+
+  honesty_note: |
+    The IVD success metrics in this intent (85-95% knowledge capture, 40%
+    faster onboarding, etc.) are projections from Leo's own projects —
+    NOT independently validated benchmarks. For the book: present as
+    "in my experience" backed by real production examples, not as proven
+    statistics. Readers trust experience over sourceless numbers.
+
+  status: "Outlining — blog posts are accumulating as chapter drafts"
+  date: "2026-03-03"
+
+# ==============================================================================
 # CHANGELOG: Evolution of IVD framework rules
 # ==============================================================================
 
 changelog:
+  - version: 2.1
+    date: "2026-02-09"
+    change: "Added empirical refinement as canonical extension under Principle 3"
+    reason: |
+      Gap identified: when implementation reveals that the intent's assumptions are wrong
+      (API returns different format, model accuracy differs from benchmarks, latency exceeds
+      documented limits), no protocol existed for updating the intent with empirical evidence
+      before continuing. This is distinct from code drift (P3 already covers code → intent sync)
+      and from the stress test (P6 catches gaps before implementation). Empirical refinement
+      catches gaps that only running the code reveals. Added:
+      (1) Empirical Refinement Protocol (5-step: stop, record, update, enrich, continue) as
+          P3 canonical extension in ivd_system_intent.yaml
+      (2) framework.md new section under Principle 3
+      (3) Agent Rule 5 in recipes/agent-rules-ivd.yaml
+      (4) Book intents: Ch3 §3.3, Ch2 §2.3, book_system_intent Ch3 key_points
+      (5) DECISIONS.md FDR-009
+
+  - version: 2.0
+    date: "2026-02-09"
+    change: "Added cognitive_foundation to principles section — parametric vs. contextual knowledge systems"
+    reason: |
+      Research finding: LLMs allocate ~70% reliance on contextual knowledge and ~30% on parametric
+      (training weights). Prose underloads the contextual channel, triggering parametric gap-filling
+      = hallucination. Structured intent artifacts saturate the contextual channel with near-zero-entropy
+      information. The lost-in-the-middle effect explains why verification protocol Step 1 (re-read
+      from disk) is cognitively necessary, not optional. This is the theoretical foundation for why
+      IVD works — previously unexplained at this level. Sources: 9-LLM study (2024), Huang et al.
+      ICLR 2024, lost-in-the-middle (GPT-4/Claude 3, 2024), proactive interference (2025).
+      Applied across: framework.md, book Ch1 §1.2, Ch2 §2.6, Ch3 §3.2+3.4, Ch12 §12.1.
+      Implementation.version also updated to 2.0.
   - version: 1.9
     date: "2026-02-09"
     change: "Added intent stress test as step 4 in P6 workflow"

@@ -32,6 +32,42 @@ You: "Still not right..." (frustration, exhaustion)
 
 **The problem:** These artifacts were designed for humans to read and interpret. AI reads them and guesses. Guessing is hallucination. Hallucination causes many turns.
 
+### Why This Happens: Two Knowledge Systems
+
+LLMs have two distinct knowledge systems:
+
+| | **Parametric Knowledge** | **Contextual Knowledge** |
+|---|---|---|
+| **What** | Training weights — everything the model learned from the internet, books, code | The prompt — what you tell it right now |
+| **When created** | During training (frozen) | Each conversation (live) |
+| **Specificity** | Generalized — averaged patterns across millions of sources | Specific — your constraints, your codebase, your intent |
+| **Control** | None — you cannot change it | Full — you decide exactly what goes in |
+| **Reliance** | ~30% | ~70% |
+
+Research across nine LLMs found a consistent split: **models allocate ~70% reliance on contextual knowledge and ~30% on parametric knowledge.** The model prefers what you tell it over what it "knows."
+
+**So why do hallucinations happen?**
+
+When you give the AI vague prose — a PRD, a user story, a natural-language prompt — the contextual channel is **underloaded**. There isn't enough specific information to answer the questions the model needs to answer during generation. The model compensates by filling gaps from parametric memory — generalized, averaged patterns from training data. *Your* columns, *your* date format, *your* permission model? Not in training. The model guesses from patterns it's seen in other codebases. That guess is the hallucination.
+
+**Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system — because you didn't feed the right one.**
+
+The fix is not "better prompts." The fix is **saturating the contextual channel** with specific, structured, verifiable information — so the model has no reason to fall back on parametric gap-filling.
+
+That is what IVD does.
+
+### The Organizational Case: Your Knowledge Is the Moat
+
+Now extend this beyond a single developer.
+
+Every company has knowledge that does not exist in any LLM's parametric channel: your business rules, your architecture decisions, your compliance requirements, your domain expertise. This knowledge is **inherently contextual** — it can only enter through the context window. There is no other path.
+
+Generic AI tools — Copilot without project context, Zapier, Notion AI — feed generic information into the contextual channel. When company-specific gaps appear, the parametric channel fills them with averaged training-data patterns. The AI "knows" what a typical API looks like, not what *your* API requires.
+
+**AI capability is commoditized.** Every team has access to the same models. The competitive advantage is whether you've structured your company's unique knowledge so the contextual channel is loaded with your ground truth. IVD provides the structure: `project_context` captures architecture and conventions, organizational recipe libraries encode institutional best practices, and intent artifacts encode the specific constraints that define your system.
+
+Companies that structure their knowledge get AI that works with their reality. Companies that don't get AI that guesses.
+
 ---
 
 ## The IVD Solution: AI Writes the Intent
