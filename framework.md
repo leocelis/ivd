@@ -60,7 +60,7 @@ IVD works not just because structured artifacts are "better" — it works becaus
 
 LLMs have two distinct knowledge systems. **Parametric knowledge** is encoded in the model's weights during training — generalized, frozen, and shared across all users and tasks. **Contextual knowledge** is what's in the current prompt and context window — specific, current, and fully controllable. Research across nine LLMs found that models allocate approximately **70% reliance on contextual knowledge and 30% on parametric knowledge** when generating responses, regardless of context size.
 
-When you give an AI agent vague prose (a PRD, a user story, a natural-language prompt), the contextual channel is underloaded. The model compensates by filling gaps from parametric memory — which encodes averaged patterns from training data, not your specific constraints. That gap-filling **is** hallucination. The problem is not the AI. The problem is that prose doesn't load the contextual channel with enough specificity to prevent parametric gap-filling.
+When you give an AI agent vague prose (a PRD, a user story, a natural-language prompt), the contextual channel is underloaded. The model compensates by filling gaps from parametric memory — which encodes averaged patterns from training data, not your specific constraints. That gap-filling produces two distinct failure modes: **hallucination** (factually wrong output) and **homogenization** (factually acceptable but generically averaged output). For code, homogenization is largely invisible — correct code is correct code. For creative work, documentation, marketing copy, and narrative artifacts, homogenization is the primary failure mode: the output isn't wrong, it's indistinguishable from every other LLM output on the same prompt. The problem is not the AI. The problem is that prose doesn't load the contextual channel with enough specificity to prevent parametric gap-filling.
 
 A structured intent artifact — with explicit constraints, test paths, scope boundaries, and rationale — saturates the contextual channel. A constraint like `p95 latency < 200ms` linked to `tests/perf/test_latency.py` has near-zero interpretive entropy. The model cannot guess; it can only match or fail. That is why executable understanding fails loudly.
 
@@ -143,6 +143,98 @@ def qualify_lead(score: float) -> bool:
 - `@validates_with` links to tests that verify
 
 **System can check:** Do tests verify the constraints? Does implementation match intent?
+
+The code example above shows the canonical form for a technical constraint. But Principle 2 applies to every artifact type IVD covers — code, architecture, documentation, research, books, marketing copy. For non-technical artifacts, the form of an executable constraint differs. The next two subsections define how.
+
+#### Constraint Quality: The Interpretive Entropy Spectrum
+
+Not all constraints are equal in their verifiability. Constraints exist on a spectrum of **interpretive entropy** — how much interpretive space remains between the constraint and its verification.
+
+**The spectrum (research grounding: CMU 2025 underspecification study; UltraBench 2025; DETAIL 2024):**
+
+```
+Near-zero entropy  ──────────────────────────────────────────────────  High entropy
+│ p95 latency < 200ms          │ tone: melancholic             │ write well    │
+│ precision >= 0.80            │ length: 1,200–1,400 words     │ be creative   │
+│ test: tests/perf/latency.py  │ structure: three-act          │ sound natural │
+└────────────────────────────  └──────────────────────────────  └──────────────┘
+      Binary pass/fail              Qualitative + measurable        Pure prose
+      Model cannot guess            Model can evaluate              Model averages
+```
+
+**Why entropy matters:** A constraint like `p95 latency < 200ms` has near-zero interpretive entropy — the model cannot guess; it can only match or fail. A constraint like "write well" has near-total entropy — the model fills it from parametric averaged patterns, producing output that is statistically indistinguishable from other LLM outputs (what research calls **creative homogenization**). The 2025 study "We're Different, We're the Same" found LLM outputs are significantly more similar to each other than human outputs are to each other, even across models from different organizations — direct evidence that high-entropy prompts trigger parametric averaging.
+
+**Constraint design rules by artifact type:**
+
+For **code and technical artifacts** — target near-zero entropy. Every constraint must be binary and testable:
+```yaml
+- name: "latency"
+  requirement: "p95 < 200ms"
+  test: "tests/perf/test_latency.py::test_p95"
+  entropy: "near-zero"
+```
+
+For **creative, narrative, and documentary artifacts** — decompose into the lowest-entropy constraints you can construct. Qualitative constraints are acceptable when they include measurable proxies:
+```yaml
+- name: "tone"
+  requirement: "melancholic but not sentimental — no emotional resolution in final paragraph; protagonist does not cry"
+  test: "human review against checklist: does final paragraph resolve? does protagonist cry?"
+  entropy: "low-qualitative"
+  proxy_measurable: true
+
+- name: "length"
+  requirement: "1,200–1,400 words"
+  test: "wc -w output | awk '$1 >= 1200 && $1 <= 1400'"
+  entropy: "near-zero"
+
+- name: "structure"
+  requirement: "exactly three scenes, each set in a different room; no flashbacks"
+  test: "human review: count scene breaks, verify settings, check for temporal reversals"
+  entropy: "low-qualitative"
+```
+
+**The key insight for non-code artifacts:** Constraints that feel "creative" are often decomposable into near-zero-entropy sub-constraints. "Write a compelling story" is pure entropy. "1,400 words, three scenes, first person, present tense, melancholic protagonist, no dialogue in final scene" is six near-zero or low-qualitative constraints. The CS4 benchmark (2024) demonstrated this directly: increasing prompt constraint specificity measurably improves creative output quality and reduces reliance on parametric averaging.
+
+#### Constraint Satisfiability: The Multi-Constraint Problem
+
+A critical failure mode that IVD's original constraint model did not address: **constraints can conflict, and LLMs fail disproportionately when all constraints must be satisfied simultaneously.**
+
+**Research grounding (UltraBench 2025, multi-dimensional constraint framework 2025):** Models exceed 70% accuracy on individual constraints but fail when satisfying all constraints at once. The UltraBench study found **position bias** — models prioritize constraints appearing later in the prompt list — causing earlier constraints to be silently violated. The CMU underspecification study found constraint sets where even explicit specification produced 20%+ accuracy drops from this interaction effect.
+
+**This changes how intents must be written.** Before finalizing constraints, the stress test (Principle 6, Step 4) must now include a fourth probe:
+
+**Probe 4 — Constraint conflict check:** "Do any two constraints in this intent conflict? Is it possible to satisfy all constraints simultaneously? Are any constraints likely to be violated due to position bias (appearing early in a long list while later constraints dominate)?"
+
+**Practical rules:**
+- **Conflict detection before implementation.** If two constraints can't both be satisfied — a length constraint of 500 words and a structural constraint requiring six detailed sections — the conflict must be resolved at the intent stage, not discovered after implementation.
+- **Priority ordering.** When constraint conflicts are possible but not certain, declare a priority order explicitly in the intent. The model follows the priority when simultaneous satisfaction is impossible.
+- **Position-aware ordering.** Critical constraints go last in the constraint list. Position bias is real: the model weights later constraints more heavily. If tone fidelity matters most, declare tone last.
+
+```yaml
+constraints:
+  # Order: less critical first, most critical last (position-bias mitigation)
+  - name: "word_count"
+    requirement: "1,200–1,400 words"
+    test: "wc -w"
+    priority: 3
+
+  - name: "structure"
+    requirement: "three scenes, different rooms, no flashbacks"
+    test: "human checklist"
+    priority: 2
+
+  - name: "tone"
+    requirement: "melancholic, no resolution, no tears"
+    test: "human checklist"
+    priority: 1  # highest priority; declared last for position-bias
+
+constraint_satisfiability:
+  conflicts_checked: true
+  known_tensions:
+    - between: ["word_count", "structure"]
+      resolution: "If three full scenes require > 1,400 words, reduce non-scene material (transitions, descriptions), not scenes"
+  simultaneous_satisfaction: "All constraints satisfiable with known tensions resolved above"
+```
 
 ---
 
@@ -303,15 +395,16 @@ AI: [Implements against intent, runs tests, all pass]
 
 After the human approves the intent and before implementation begins, the AI adversarially probes its own intent artifact for completeness. This catches gaps that are cheaper to fix in intent than in code.
 
-The stress test checks three dimensions:
+The stress test checks four dimensions:
 
 1. **Constraint completeness:** "What input breaks this? What edge case isn't covered? Are there boundary conditions not captured by any constraint?"
 2. **Implementation anticipation:** "What decisions will implementation force that this intent doesn't address? Are there integration points, data shapes, ordering dependencies, or error paths not covered?"
 3. **Assumption challenge:** "What am I assuming about the environment, dependencies, or user behavior? Are those assumptions documented or just implicit?"
+4. **Constraint satisfiability:** "Do any two constraints conflict? Is simultaneous satisfaction of all constraints possible? Are the most critical constraints listed last to counter position bias?" *(Research grounding: UltraBench 2025 — models exceed 70% on individual constraints but fail at simultaneous satisfaction; position bias causes earlier constraints to be silently violated.)*
 
 If the stress test reveals gaps, the AI updates the intent (adds constraints, test paths, or clarifying notes) before implementing. The human may re-review if the changes are significant.
 
-**Why this step exists:** Intent captures what you know at the time of writing. Implementation forces decisions the intent didn't anticipate. The stress test is a structured way to anticipate those decisions *before* they become implementation rework. It's Principle 2 (Understanding Must Be Executable) applied reflexively — the AI checks whether its own understanding is complete before acting on it.
+**Why this step exists:** Intent captures what you know at the time of writing. Implementation forces decisions the intent didn't anticipate. The stress test is a structured way to anticipate those decisions *before* they become implementation rework. It's Principle 2 (Understanding Must Be Executable) applied reflexively — the AI checks whether its own understanding is complete before acting on it. The fourth probe (constraint satisfiability) prevents the especially costly failure mode where all individual constraints are well-formed but the set as a whole is impossible to satisfy simultaneously.
 
 **When to skip:** Trivial changes where the intent is a single constraint with an obvious implementation. The stress test adds value proportional to the complexity of the intent.
 

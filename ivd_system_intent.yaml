@@ -235,6 +235,62 @@ principles:
       - "Evidence link to non-existent file"
       - "Metric without measurement mechanism"
       - "Prose claims without verification"
+      - "High-entropy constraint without decomposition into measurable proxies (e.g., 'write well', 'be creative', 'sound natural')"
+      - "Constraint set not checked for satisfiability conflicts"
+      - "Critical constraints listed first when position bias would cause them to be deprioritized"
+
+    constraint_quality:
+      summary: |
+        Constraints exist on a spectrum of interpretive entropy. IVD targets the LOWEST
+        ACHIEVABLE entropy for every artifact type — near-zero for technical artifacts,
+        low-qualitative (decomposed with measurable proxies) for creative/narrative artifacts.
+        High-entropy constraints ("write well", "be creative") are always rejected regardless
+        of artifact type. Research: CMU 2025 underspecification study; UltraBench 2025;
+        CS4 2024; DETAIL 2024.
+
+      entropy_spectrum:
+        near_zero:
+          description: "Binary, measurable, testable — model cannot guess"
+          example: "precision >= 0.85, test: tests/test_precision.py"
+          artifact_types: ["code", "APIs", "data pipelines"]
+
+        low_qualitative:
+          description: "Qualitative but decomposed into measurable proxies — model can evaluate"
+          example: "tone: melancholic, no resolution in final paragraph, no crying"
+          artifact_types: ["creative writing", "documentation", "marketing copy", "books"]
+          requirement: "Must include human-review checklist or measurable proxy as test"
+
+        high_entropy:
+          description: "Pure prose — model fills with parametric averages — REJECTED by IVD"
+          example: "'write well', 'be creative', 'sound professional'"
+          artifact_types: ["any"]
+          action: "Decompose into low-qualitative or near-zero constraints before proceeding"
+
+      satisfiability:
+        summary: |
+          LLMs exceed 70% on individual constraints but fail at simultaneous satisfaction.
+          UltraBench 2025: position bias causes models to prioritize later-listed constraints,
+          silently violating earlier ones. CMU 2025: conflicting constraints produce 20%+
+          accuracy drops even when all constraints are individually explicit.
+        rules:
+          - "Check all constraints for internal conflicts before writing implementation"
+          - "Declare priority ordering when conflict is possible but not certain"
+          - "List most critical constraints LAST to counter position bias"
+          - "Add constraint_satisfiability block to intent when 3+ constraints exist and artifact is non-trivial"
+          - "Resolve conflicts at intent stage; empirical refinement handles what survives into implementation"
+
+      homogenization_prevention:
+        summary: |
+          Underspecified prompts produce averaged, generic output — not wrong but
+          indistinguishable from all other LLM outputs. Research: 'We're Different,
+          We're the Same' (2025) — LLM outputs are significantly more similar to each
+          other than human outputs are to each other, even across models from different
+          organizations. Homogenization is the creative failure mode;
+          hallucination is the factual failure mode. IVD addresses both.
+        rules:
+          - "For creative/narrative artifacts, add at minimum: voice/tone constraint, structure constraint, distinctiveness note"
+          - "Distinctiveness note: describe what makes this output NOT the parametric average (reference material, unique angle, explicit style prohibition)"
+          - "Evaluation section (optional) should include diversity/distinctiveness metric for creative artifacts"
 
   # --------------------------------------------------------------------------
   # PRINCIPLE 3: Bidirectional Synchronization
@@ -544,6 +600,7 @@ principles:
           - "Constraint completeness: what input breaks this? What boundary isn't covered?"
           - "Implementation anticipation: what decisions will code force that intent doesn't address?"
           - "Assumption challenge: what implicit assumptions about environment, data, or dependencies?"
+          - "Constraint satisfiability: do any two constraints conflict? Can all be satisfied simultaneously? Are critical constraints listed last to counter position bias? (Research: UltraBench 2025 — 70%+ on individual constraints, failure on simultaneous satisfaction; position bias is systematic)"
         when_to_skip: "Trivial changes where intent is a single constraint with obvious implementation"
 
       - name: "AI implements against intent"
@@ -1607,7 +1664,7 @@ implementation:
       standard: "Must be validated in real project"
       purpose: "Ensure patterns are practical, not theoretical"
   
-  version: 2.1
+  version: 2.2
   
   review_cadence:
     - frequency: "Quarterly"
@@ -1689,6 +1746,36 @@ book_and_distribution:
 # ==============================================================================
 
 changelog:
+  - version: 2.2
+    date: "2026-02-09"
+    change: "Added constraint quality framework: interpretive entropy spectrum, constraint satisfiability, homogenization as named failure mode"
+    reason: |
+      Three research-backed gaps identified through empirical study of LLM behavior on constrained tasks:
+      (1) ENTROPY SPECTRUM: IVD's constraint model assumed all constraints were binary/near-zero-entropy
+          (e.g., p95 < 200ms). Research (CMU 2025 underspecification study, CS4 2024) shows constraints
+          exist on a spectrum; creative and narrative artifacts require low-qualitative constraints with
+          measurable proxies — not prose. High-entropy constraints ("write well") trigger parametric averaging.
+      (2) CONSTRAINT SATISFIABILITY: UltraBench 2025 shows models exceed 70% on individual constraints but
+          fail at simultaneous satisfaction. Position bias (earlier constraints violated when later ones
+          dominate) is systematic. IVD had no guidance on conflict detection, priority ordering, or
+          position-aware constraint list ordering.
+      (3) HOMOGENIZATION: LLM outputs on underspecified prompts are not just wrong — they are
+          statistically averaged ('We're Different, We're the Same', 2025: LLM outputs are more
+          similar to each other than human outputs are to each other, even cross-model). For code,
+          this is largely harmless. For creative/narrative artifacts, homogenization is the primary
+          failure mode. IVD only named hallucination; homogenization is now a first-class failure mode.
+      Added: constraint_quality block under P2; fourth stress test dimension under P6; vocabulary
+      updated in cognitive foundation (framework.md); DECISIONS.md FDR-010, FDR-011, FDR-012.
+    evidence: |
+      - CMU 2025: 'What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts'
+        (underspecified prompts 2x regression rate, 41.1% correct inference, 20%+ accuracy drops)
+      - UltraBench 2025: >70% individual constraint accuracy, failure at simultaneous satisfaction,
+        position bias systematic across models
+      - 'We're Different, We're the Same' (arXiv 2501.19361, 2025): LLM creative outputs cross-model
+        more similar to each other than human outputs to each other
+      - CS4 2024: constraint specificity measurably improves creative output quality, reduces parametric averaging
+      - DETAIL 2024: increased prompt specificity improves accuracy, especially procedural tasks
+
   - version: 2.1
     date: "2026-02-09"
     change: "Added empirical refinement as canonical extension under Principle 3"

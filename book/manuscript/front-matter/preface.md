@@ -1,8 +1,12 @@
 # Preface: Why This Book Exists
 
-I watched a senior engineer spend three hours correcting an AI agent that could have built the entire feature in ten minutes. The prompts were clear. The model was capable. The output kept missing the point. Turn after turn, the engineer refined, clarified, and corrected.
+I watched a senior engineer spend one hour correcting an AI agent that could have built the entire feature in ten minutes. The prompts were clear. The model was capable. The output kept missing the point. Turn after turn, the engineer refined, clarified, and corrected.
 
-That scene plays out thousands of times a day, across every team that builds with AI. The AI agent writes fast, writes confidently, and writes wrong—because it fills in the gaps in your request with plausible guesses. You correct. It rewrites. You correct again. The cycle has a name in this book: the **many turns problem**. And when the AI's guesses are baked into code before anyone catches them, that's **hallucination**—not a rare failure, but the default mode of working with AI today.
+That scene plays out thousands of times a day, across every team that builds with AI.
+
+The AI agent writes fast, writes confidently, and writes wrong—because it fills in the gaps in your request with plausible guesses. You correct. It rewrites. You correct again.
+
+The cycle has a name in this book: the **many turns problem**. And when the AI's guesses are baked into code before anyone catches them, that's **hallucination**—not a rare failure, but the default mode of working with AI today.
 
 The cost is staggering. Industry research estimates that software failures—projects that deliver the wrong thing, overrun, or collapse—drain tens of billions of dollars annually in the United States alone, with global waste reaching into the hundreds of billions.[^1] Most of that waste traces back to the same root: **misalignment** between what someone intended and what got built. AI agents didn't create that gap. They made it run at machine speed.
 
@@ -41,7 +45,9 @@ There is. This book is about that better way.
 
 [PLACEHOLDER: "The first time it worked..." — describe what changed. Fewer turns. Fewer hallucinations. The AI checking its own work instead of you checking it. One concrete before/after.]
 
-That experience became a framework. I tested it across [PLACEHOLDER: number] real projects—classification agents, data pipelines, API integrations, multi-agent systems—and measured the results. Not opinions. Data. Every claim in this book is backed by experiments you can reproduce. The framework is called **Intent-Verified Development**, and this book teaches it from first principles to production adoption.
+That experience became a framework. I tested it across [PLACEHOLDER: number] real projects—data pipelines, API integrations, LLM workflows, multi-agent systems—and measured the results. Not opinions. Data. Every claim in this book is backed by experiments you can reproduce.
+
+The framework is called **Intent-Verified Development**, and this book teaches it from first principles to production adoption.
 
 ---
 
@@ -75,11 +81,15 @@ This is not a book about prompting. It is a book about **alignment**: making sur
 
 This book is for **developers and engineers** who build with AI agents and are tired of many turns and hallucinations. It is for **tech leads and engineering managers** who need their teams to ship faster and with fewer corrections. It is for **indie developers and startup founders** who rely on AI to build fast and can't afford the rework. It is for **computer science educators** teaching the next generation how to build with AI. And it is for anyone who believes that working with AI should feel like collaboration, not correction.
 
-You need a working knowledge of software development. You don't need a PhD, a specific language, or prior experience with IVD. Part I starts from first principles. Part II provides hands-on projects. If you can read code and write a prompt, you can use this book.
+You need a working knowledge of software development. You don't need a PhD, a specific language, or prior experience with IVD. **Part I** starts from first principles. **Part II** provides hands-on projects.
+
+If you can read code and write a prompt, you can use this book.
 
 ## Who This Book Is *Not* For
 
-If you are not building software—or not building with AI—this book will not serve you. IVD is a framework for the AI Agents era; if AI agents are not part of your workflow, the problem this book solves is not yours. Similarly, if you are looking for a prompt engineering guide or a tutorial on a specific AI model, look elsewhere. This book is about the layer above the model: the **intent** that tells the AI what to build and how to verify it.
+If you are not building software—or not building with AI—this book will not serve you.
+
+IVD is a framework for the AI Agents era; if AI agents are not part of your workflow, the problem this book solves is not yours. Similarly, if you are looking for a prompt engineering guide or a tutorial on a specific AI model, look elsewhere. This book is about the layer above the model: the **intent** that tells the AI what to build and how to verify it.
 
 ---
 

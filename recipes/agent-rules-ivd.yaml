@@ -189,6 +189,15 @@ agent_rules_block:
        paths? Ordering dependencies?
     3. ASSUMPTION CHALLENGE: What am I assuming about the environment, data,
        dependencies, or user behavior that isn't documented in the intent?
+    4. CONSTRAINT SATISFIABILITY: Do any two constraints conflict? Can ALL
+       constraints be satisfied simultaneously? Are critical constraints listed
+       LAST (position bias — models weight later constraints more heavily;
+       earlier ones are silently violated when conflicts arise)?
+       Research: UltraBench 2025 — >70% on individual constraints, systematic
+       failure at simultaneous satisfaction. CMU 2025 — conflicting constraints
+       cause 20%+ accuracy drops even when all are individually explicit.
+       If conflicts exist, resolve them NOW: add priority ordering and a
+       constraint_satisfiability block before implementing.
 
     If gaps are found, update the intent (add constraints, test paths, or
     clarifying notes) BEFORE implementing. For significant changes, flag
@@ -224,10 +233,48 @@ agent_rules_block:
     The stress test (Rule 4) anticipates. Empirical refinement discovers. Together
     they close the loop.
 
+    ## IVD Rule 6: Constraint Quality — Entropy and Satisfiability
+
+    WHEN TO APPLY: During intent writing — BEFORE the stress test (Rule 4)
+    and before implementation. Run this check immediately after writing the
+    constraints block, as part of intent authoring (Principle 6, Step 2).
+
+    Before finalizing any intent, verify constraints meet quality standards:
+
+    ENTROPY CHECK — Every constraint must be on the spectrum toward near-zero
+    interpretive entropy. High-entropy constraints are REJECTED:
+      ❌ "write well" / "be creative" / "sound professional" / "use appropriate tone"
+      ✅ "melancholic tone: no emotional resolution in final paragraph; protagonist does not cry"
+      ✅ "1,200–1,400 words" / "three scenes, different rooms, no flashbacks"
+    For creative/narrative artifacts: decompose tone, voice, and style into
+    measurable proxies. Include a human-review checklist as the test.
+    Research: CMU 2025 — high-entropy prompts 2x regression rate; CS4 2024 —
+    constraint specificity measurably improves creative output quality.
+
+    HOMOGENIZATION CHECK — For creative, documentary, and narrative artifacts,
+    ask: "Does this output, if produced from these constraints, risk being the
+    parametric average?" If yes, add a distinctiveness constraint:
+      - Reference a specific style, voice, or existing work as the target
+      - Explicitly prohibit the generic pattern ("no inspirational ending",
+        "no summary paragraph", "no em-dash overuse")
+    Research: 'We're Different, We're the Same' arXiv 2501.19361, 2025 —
+    LLM outputs are significantly more similar to each other than human outputs
+    are to each other, even across models from different organizations.
+
+    SATISFIABILITY CHECK — Already covered in Rule 4 Probe 4 above. If the
+    constraint set has 3+ constraints, add a constraint_satisfiability block
+    documenting conflicts checked, known tensions, and resolution strategy.
+
   clinerules_format: |
     # IVD Verification Rules
+    # When writing constraints in an intent artifact:
+    # - Reject high-entropy constraints ("write well", "be creative") — decompose
+    #   into measurable proxies before proceeding
+    # - For 3+ constraints: check for conflicts; list most critical constraint LAST
+    #   (position bias: models prioritize later constraints)
     # Before implementing from an intent artifact:
-    # - Stress-test: what edge cases, gaps, assumptions are missing?
+    # - Stress-test: (1) edge cases? (2) implementation decisions? (3) assumptions?
+    #   (4) constraint conflicts? Can all constraints be satisfied simultaneously?
     # - Update intent with found gaps before implementing
     # During implementation:
     # - If reality contradicts the intent (API format, accuracy, latency differs):
@@ -240,10 +287,20 @@ agent_rules_block:
     # Do not mark task complete until all constraints verified.
 
   copilot_format: |
-    When implementing from IVD intent artifacts (*_intent.yaml):
+    When writing or reviewing IVD intent artifacts (*_intent.yaml):
+    - Reject high-entropy constraints ("write well", "be creative", "sound natural")
+      — decompose into measurable proxies. For creative artifacts, use human-review
+      checklists as the test.
+    - For creative/narrative artifacts, add a distinctiveness constraint: what makes
+      this output NOT the parametric average? (prohibitions are often more effective
+      than requirements)
+    - For 3+ constraints: check for conflicts; list most critical LAST (position bias)
+    When implementing from an intent artifact:
     - Read the intent artifact before starting
-    - Before implementing, stress-test the intent: what edge cases, gaps, or
-      assumptions are missing? Update intent with found gaps first.
+    - Before implementing, stress-test the intent: (1) what edge cases? (2) what
+      implementation decisions does this not address? (3) what assumptions? (4) do
+      any constraints conflict? Can all be satisfied simultaneously?
+    - Update intent with found gaps first.
     - During implementation, if reality contradicts the intent (API format,
       accuracy, latency differs from what the intent says): STOP, update the
       intent on disk with the empirical finding, then continue from the updated
@@ -345,6 +402,18 @@ common_failures:
     root_cause: "Empirical Refinement (Rule 5) skipped — agent treated the discovery as a code problem instead of an intent problem"
     solution: "Rule 5: STOP, RECORD finding, UPDATE intent on disk, ENRICH context, CONTINUE from corrected intent"
 
+  - name: "High-Entropy Constraint Accepted"
+    description: "Agent writes constraints like 'write well', 'be professional', 'use appropriate tone' for a documentary or creative artifact"
+    symptom: "Output is factually correct but generically averaged — indistinguishable from any other LLM response to the same prompt (homogenization)"
+    root_cause: "Rule 6 ENTROPY CHECK skipped — high-entropy prose accepted as a constraint instead of being decomposed into measurable proxies"
+    solution: "Rule 6: reject high-entropy constraints; decompose tone, voice, structure into specific, checklist-verifiable requirements"
+
+  - name: "Silent Constraint Violation by Position Bias"
+    description: "Multiple constraints in the intent; the most critical constraint is listed first but violated because a later constraint dominates"
+    symptom: "Agent output satisfies the last few constraints but ignores or minimally satisfies the first constraint in the list (the one the user cared about most)"
+    root_cause: "Rule 6 SATISFIABILITY CHECK and Rule 4 Probe 4 skipped — no conflict check, no position-aware ordering"
+    solution: "Rule 6 + Rule 4 Probe 4: check for conflicts; list the most critical constraint LAST; add constraint_satisfiability block when 3+ constraints"
+
 # ==============================================================================
 # RELATIONSHIP TO OTHER PATTERNS
 # ==============================================================================
@@ -365,11 +434,29 @@ relationships:
   - pattern: "project_context.code_rules"
     relationship: "The agent instruction file (.cursorrules) is listed in project_context.code_rules. This recipe adds IVD-specific content to that file."
 
+  - pattern: "Principle 2 (Understanding Must Be Executable)"
+    relationship: "Rule 6 (Constraint Quality) is Principle 2 extended to the constraint design level. Principle 2 says 'constraints must be executable'; Rule 6 defines what 'executable' means for different artifact types (near-zero for code, low-qualitative for creative/narrative) and adds the satisfiability requirement (constraints must be executable both individually and simultaneously)."
+
 # ==============================================================================
 # CHANGELOG
 # ==============================================================================
 
 changelog:
+  - version: "1.3"
+    date: "2026-02-09"
+    change: "Added IVD Rule 6: constraint quality (entropy spectrum, homogenization, satisfiability). Extended Rule 4 stress test with fourth probe (constraint satisfiability)."
+    reason: |
+      Three research-backed gaps identified: (1) IVD constraints assumed near-zero entropy for all
+      artifact types — no guidance for creative/narrative artifacts where qualitative constraints
+      with measurable proxies are the correct form. (2) Stress test had three probes but didn't
+      check constraint internal consistency — UltraBench 2025 shows simultaneous constraint
+      satisfaction fails systematically. (3) Homogenization (averaged, generic output) was not
+      named as a failure mode alongside hallucination — 'We're Different, We're the Same' (2025)
+      provides hard evidence this is a distinct, research-documented failure mode.
+    evidence: |
+      UltraBench 2025; CMU 2025 underspecification study; arXiv 2501.19361 ('We're Different,
+      We're the Same'); CS4 2024; DETAIL 2024.
+
   - version: "1.2"
     date: "2026-02-09"
     change: "Added IVD Rule 5: empirical refinement during implementation. Updated clinerules and Copilot formats."

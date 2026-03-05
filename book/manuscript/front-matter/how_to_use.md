@@ -6,19 +6,19 @@ This book has four parts. You don't have to read them all, and you don't have to
 
 ## Three Reading Paths
 
-| Path | Route | Focus | You exit with |
-|------|-------|-------|---------------|
-| **Practitioner** | Part I → Part II | Build with IVD. Hands-on projects, intent artifacts, measurable results. | The ability to build real projects using IVD with AI agents. |
-| **Leader** | Part I → Part III → Part IV | Understand the ROI, the proof, and the adoption playbook. | The case for IVD and a plan to scale it across your team or organization. |
-| **Complete** | Read sequentially, Part I → II → III → IV | Full mastery: theory, practice, validation, and adoption. | Expert-level understanding of IVD, ready to teach and lead adoption. |
+| Path             | Route                                     | Focus                                                                    | You exit with                                                             |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| **Practitioner** | Part I → Part II                          | Build with IVD. Hands-on projects, intent artifacts, measurable results. | The ability to build real projects using IVD with AI agents.              |
+| **Leader**       | Part I → Part III → Part IV               | Understand the ROI, the proof, and the adoption playbook.                | The case for IVD and a plan to scale it across your team or organization. |
+| **Complete**     | Read sequentially, Part I → II → III → IV | Full mastery: theory, practice, validation, and adoption.                | Expert-level understanding of IVD, ready to teach and lead adoption.      |
 
-**Practitioner Path** — You want to *do*. Read Part I (four chapters, one sitting) to understand the paradigm and principles. Then go straight to Part II and build six hands-on projects—from a classification agent to a full-stack feature—each one comparing IVD to the usual prompt-and-correct approach so you see the difference. Skip Part III and IV for now; come back when you want proof or need to convince your team.
+**Practitioner Path** — You want to ***do***. Read **Part I** (four chapters, one sitting) to understand the paradigm and principles. Then go straight to **Part II** and build six hands-on projects—from a classification agent to a full-stack feature—each one comparing IVD to the usual prompt-and-correct approach so you see the difference. Skip Part III and IV for now; come back when you want proof or need to convince your team.
 
-**Leader Path** — You want to *decide*. Read Part I for the framework. Skip Part II (the projects) and go to Part III, where every IVD claim is validated with data: context efficiency, alignment accuracy, knowledge durability. Then read Part IV for the adoption playbook: getting started, scaling, and organizational patterns. Come back to Part II when you want to build.
+**Leader Path** — You want to ***decide***. Read **Part I** for the framework. Skip Part II (the projects) and go to **Part III**, where every IVD claim is validated with data: context efficiency, alignment accuracy, knowledge durability. Then read **Part IV** for the adoption playbook: getting started, scaling, and organizational patterns. Come back to Part II when you want to build.
 
-**Complete Path** — You want it all. Read front to back. Part I gives you the paradigm. Part II makes you a practitioner. Part III gives you the evidence. Part IV makes you a leader. This is the path for anyone who wants to teach IVD, lead its adoption, or contribute to the framework.
+**Complete Path** — You want it **all**. Read front to back. Part I gives you the paradigm. Part II makes you a practitioner. Part III gives you the evidence. Part IV makes you a leader. This is the path for anyone who wants to teach IVD, lead its adoption, or contribute to the framework.
 
-Every path starts with Part I. The four chapters of Part I (roughly two hours of reading) give you the problem, the paradigm, the principles, and the artifact structure. That foundation makes everything else land.
+Every path starts with **Part I**. The four chapters of Part I (roughly two hours of reading) give you the problem, the paradigm, the principles, and the artifact structure. That foundation makes everything else land.
 
 ---
 
@@ -57,7 +57,7 @@ The appendices and recipes support **dip-in use**: you can look up a recipe, che
 
 Throughout this book, the following formatting conventions are used:
 
-- **Bold** key terms on first introduction (e.g., intent artifact, many-turns problem**) and important takeaways.
+- **Bold** key terms on first introduction (e.g., **intent artifact**, **many-turns problem**) and important takeaways.
 - *Italic* marks emphasis within sentences, book titles (e.g., *Code Complete*), and quoted speech or dialogue (e.g., *"Add export to CSV."*).
 - `Code font` marks code snippets, file paths (e.g., `system_intent.yaml`), commands (e.g., `ivd validate`), and technical identifiers.
 - YAML blocks present intent artifacts and recipes. Every YAML example includes a language tag and is copy-pasteable.
@@ -66,4 +66,4 @@ Throughout this book, the following formatting conventions are used:
 
 ---
 
-Start with Part I. By the end of four chapters, you will understand the problem, the paradigm, and the tools. Then pick your path.
+Start with **Part I**. By the end of four chapters, you will understand the problem, the paradigm, and the tools. Then pick your path.

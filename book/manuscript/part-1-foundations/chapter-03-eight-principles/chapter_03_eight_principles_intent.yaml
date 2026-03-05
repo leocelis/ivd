@@ -73,6 +73,10 @@ deliverables:
         - "The entropy argument: prose like 'the system should be fast and reliable' has high interpretive entropy — the model must choose between many plausible meanings using parametric training data. A constraint like 'p95 latency < 200ms' with a test path has near-zero entropy — nothing to interpret, nothing for the parametric channel to fill. Executable understanding reduces entropy to near-zero; that is why it fails loudly rather than silently."
         - "Sub-principles or examples: constraints are executable, evidence is reproducible, metrics are measurable"
         - "Common violations: constraint without test path, prose claims without verification"
+        - "THE ENTROPY SPECTRUM — constraints are not all equal: three tiers exist: (1) Near-zero: binary, measurable, testable — 'p95 < 200ms, test: tests/perf/latency.py'. Model cannot guess. (2) Low-qualitative: qualitative but decomposed into measurable proxies — 'tone: melancholic; no resolution in final paragraph; protagonist does not cry'. Human-review checklist as test. Acceptable for creative artifacts. (3) High-entropy: REJECTED — 'write well', 'be creative', 'sound professional'. These are not constraints; they are invitations for the model to average its training data. Research: CMU 2025 underspecification study — underspecified prompts 2x regression rate; CS4 2024 — increasing constraint specificity measurably reduces LLM reliance on parametric patterns."
+        - "For creative/narrative/documentary artifacts: IVD applies with adjusted constraint form. 'Write a compelling story about loss' has near-total interpretive entropy. 'Write a 1,400-word story, first person, present tense, three scenes in different rooms, melancholic but not sentimental, no resolution in final scene' has six near-zero or low-qualitative constraints. The decomposition is the intent. The same principle (executable understanding) applies — the form changes, not the principle."
+        - "THE SATISFIABILITY PROBLEM — LLMs fail at simultaneous multi-constraint satisfaction even when each constraint is individually satisfiable. Research: UltraBench 2025 — models exceed 70% on individual constraints but fail when all must be satisfied at once. Position bias: constraints listed earlier in the prompt are silently violated when later constraints dominate. Practical implication: (1) check constraint sets for internal conflicts before implementation (stress test Probe 4), (2) declare priority ordering when conflicts are possible, (3) list the most critical constraints LAST to counter position bias. The intent template now includes a constraint_satisfiability block for declaring conflict resolution strategy."
+        - "Common violations: constraint without test path, prose claims without verification, high-entropy constraint accepted ('be creative'), critical constraints listed first (position bias), no conflict check on multi-constraint intent"
     
     - id: "3.3"
       title: "Principle 3: Bidirectional Synchronization"
@@ -113,7 +117,7 @@ deliverables:
         - "1–2 paragraphs: Key principle for AI Agents era; AI writes intent from human description, implements, verifies; catches own hallucinations"
         - "Why essential: without this, AI reads prose and guesses; with this, clarification at intent stage, turns drop, hallucinations caught at source"
         - "Workflow: You describe → AI writes intent → You review → AI stress-tests intent → AI implements → AI verifies"
-        - "Intent stress test (Step 4): after human review, AI adversarially probes its own intent for completeness — constraint gaps, implementation decisions not addressed, implicit assumptions. Catches flaws cheaper than implementation does. Skip for trivial changes."
+        - "Intent stress test (Step 4): after human review, AI adversarially probes its own intent for completeness — four probes: (1) constraint completeness: what input breaks this? (2) implementation anticipation: what decisions will code force that intent doesn't address? (3) assumption challenge: what is implicitly assumed? (4) constraint satisfiability: do any constraints conflict? Can all be satisfied simultaneously? Are critical constraints listed last to counter position bias? Research backing probe 4: UltraBench 2025 — simultaneous satisfaction fails even when individual constraints pass at 70%+ accuracy. Catches flaws cheaper than implementation does. Skip for trivial changes."
         - "Sub-principles or examples: AI writes intent, AI stress-tests intent, AI implements against intent, AI verifies own work, linguistic mirroring as alignment signal"
         - "Teaching when user lacks knowledge: AI creates structured educational artifact explaining concepts, user confirms understanding, then proceeds (Step 0a, canonical)"
         - "Discovery when user can't describe: AI proposes goals/recipes/options, user picks, then intent flow (Step 0b, experimental)"
@@ -322,6 +326,20 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.1"
+    date: "2026-02-09"
+    change: |
+      Section 3.2 (Principle 2): added entropy spectrum (three tiers: near-zero, low-qualitative, high-entropy
+      REJECTED) + satisfiability problem (UltraBench 2025: simultaneous constraint failure, position bias).
+      Section 3.6 (Principle 6): stress test Probe 4 (constraint satisfiability check) added.
+      Section 3.1 (Ch1 intent — homogenization): second failure mode of parametric gap-filling named.
+      Added new common violation for §3.2: high-entropy constraints, position bias, no conflict check.
+    reason: |
+      Three research-backed gaps addressed: (1) entropy spectrum — constraint design for non-code artifacts
+      had no guidance; CS4 2024, CMU 2025. (2) Satisfiability — UltraBench 2025 shows multi-constraint
+      failure is systematic. (3) Homogenization — 'We're Different, We're the Same' arXiv 2501.19361 2025
+      provides hard evidence averaged output is a distinct failure mode from hallucination.
+    evidence: "CMU 2025; UltraBench 2025; arXiv 2501.19361; CS4 2024; DETAIL 2024. See DECISIONS.md FDR-010, FDR-011, FDR-012."
   - version: "2.0"
     date: "2026-02-09"
     change: |

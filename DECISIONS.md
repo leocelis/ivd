@@ -216,6 +216,119 @@ If the discovery changes scope significantly, flag for human review before conti
 
 ---
 
+## FDR-010: Interpretive Entropy Spectrum — Constraint Design for Non-Code Artifacts
+
+**Date:** 2026-02-09  
+**Status:** Fixed (Canonical)  
+**Identified by:** Research review — empirical LLM studies on prompt specificity and constraint design revealed that IVD's constraint model was implicitly code-centric, treating all constraints as binary/near-zero-entropy. Creative, narrative, and documentary artifacts require a different approach.
+
+**Gap:** IVD used "near-zero interpretive entropy" as the target for all constraints, with `p95 latency < 200ms` as the canonical example. This is correct for code. But the framework scope states "any AI-produced artifact" — and for creative writing, documentation, marketing copy, and book chapters, the constraint format `requirement: "metric >= threshold"` and `test: "path/to/test.py"` doesn't apply. The gap: no guidance for writing constraints when the artifact is inherently qualitative.
+
+**Evidence base:**
+- **CMU 2025** ("What Prompts Don't Say"): Underspecified prompts are 2x as likely to regress; models infer unspecified requirements correctly only 41.1% of the time; the remaining 59% fill from parametric averaged patterns. Fragility persists even with explicit specification when requirements conflict.
+- **CS4 2024** (measuring LLM creativity through constraint specificity): Increasing prompt specificity via constraint count measurably reduces LLM reliance on training data patterns. More constraints = less parametric averaging.
+- **DETAIL 2024**: Increased prompt specificity improves accuracy, especially for procedural/structured tasks. The specificity–performance relationship is real and measurable.
+
+**Analysis:** Constraints exist on a spectrum of interpretive entropy — how much interpretation space remains between the constraint statement and its verification. Three tiers:
+1. **Near-zero**: Binary, measurable, testable. `precision >= 0.85, test: tests/test_precision.py`. Model cannot guess.
+2. **Low-qualitative**: Qualitative but decomposed into measurable proxies. `tone: melancholic — no resolution in final paragraph`. Human-review checklist as test. Acceptable for creative artifacts.
+3. **High-entropy**: Pure prose. `"write well"`, `"be creative"`. Triggers parametric averaging. **Rejected by IVD.**
+
+For creative artifacts, "write well" must be decomposed: `1,200–1,400 words` + `three scenes, different rooms, no flashbacks` + `first person, present tense` + `melancholic tone: no resolution, no crying` = six low-qualitative or near-zero constraints. The CS4 benchmark demonstrated this decomposition reduces parametric reliance.
+
+**Decision:** Added as **canonical** extension to Principle 2 (Understanding Must Be Executable). The entropy spectrum is now a documented concept in `framework.md` (Principle 2 section), `ivd_system_intent.yaml` (constraint_quality block), `templates/intent.yaml` (constraint comment block), and `recipes/agent-rules-ivd.yaml` (Rule 6). All three tiers are defined with examples; high-entropy constraints are explicitly rejected.
+
+**Changes:**
+- `framework.md`: New subsection "Constraint Quality: The Interpretive Entropy Spectrum" under Principle 2
+- `ivd_system_intent.yaml` (v2.2): `constraint_quality.entropy_spectrum` block under P2; v2.2 changelog
+- `templates/intent.yaml`: Updated constraints block comment with entropy classification and position-bias guidance
+- `recipes/agent-rules-ivd.yaml` (v1.3): IVD Rule 6 (constraint quality); updated changelog
+
+**Relationship to other FDRs:**
+- **FDR-007 (Self-Critique):** Both address what happens when the contextual channel is underspecified for the task type. FDR-010 addresses it at the constraint-design level.
+- **FDR-008 (Cognitive Foundation):** High-entropy constraints trigger parametric gap-filling — same mechanism. FDR-010 operationalizes FDR-008 for constraint writing.
+
+---
+
+## FDR-011: Constraint Satisfiability — Multi-Constraint Failure Mode
+
+**Date:** 2026-02-09  
+**Status:** Fixed (Canonical)  
+**Identified by:** Research review — UltraBench 2025 and CMU 2025 identified that LLMs fail at simultaneous multi-constraint satisfaction even when each constraint is individually satisfiable at high accuracy.
+
+**Gap:** IVD treated the `constraints` list as a set of independent items, each with its own test. No concept of constraint interaction, conflict, or satisfiability existed. The stress test (Principle 6, Step 4) had three probes — none checked whether the constraint set as a whole could be satisfied simultaneously.
+
+**Evidence base:**
+- **UltraBench 2025**: Models exceed 70% accuracy on individual constraints but fail when satisfying all constraints simultaneously. **Position bias** is systematic: constraints listed earlier in the prompt are silently violated when later constraints conflict with them. Structural constraints are harder to satisfy than content-based ones.
+- **CMU 2025** ("What Prompts Don't Say"): Conflicting constraints produce 20%+ accuracy drops even when all constraints are individually explicit and well-formed. Standard prompt optimizers provide limited benefit against this failure mode.
+- **Multi-dimensional constraint framework 2025** (arXiv): Average accuracy drops from 77.67% at difficulty Level I to 32.96% at Level IV as constraint complexity increases. This is not a model capability issue — it's a constraint interaction issue.
+
+**Analysis:** Three distinct problems:
+1. **Conflict**: Two constraints that cannot both be satisfied (e.g., "500 words" + "six detailed sections"). Detectable at intent stage.
+2. **Position bias**: Models weight later-listed constraints more heavily. Critical constraints listed first get silently violated when conflicts arise with later constraints.
+3. **Complexity cascade**: Each additional constraint reduces the probability of simultaneous full satisfaction. At 5+ constraints, failure is likely without explicit priority ordering.
+
+**Decision:** Added as **canonical** extension to Principle 2 and Principle 6 (stress test). Changes:
+- Fourth stress test probe: "Do any two constraints conflict? Can all be satisfied simultaneously? Are critical constraints listed last to counter position bias?"
+- `constraint_satisfiability` block added to `templates/intent.yaml` (optional, recommended at 3+ constraints)
+- Framework documentation with position-aware constraint ordering guidance
+- IVD Rule 4 updated with Probe 4 in `recipes/agent-rules-ivd.yaml`
+
+**Practical rule:** Most critical constraints go **last** in the constraint list. If tone fidelity matters most, declare it last. This is counterintuitive but research-backed.
+
+**Changes:**
+- `framework.md`: Constraint satisfiability subsection under Principle 2; Probe 4 added to stress test (Step 4)
+- `ivd_system_intent.yaml` (v2.2): `constraint_quality.satisfiability` block; P6 stress test dimensions extended
+- `templates/intent.yaml`: `constraint_satisfiability` block (optional, with research citation)
+- `recipes/agent-rules-ivd.yaml` (v1.3): Rule 4 Probe 4 with research grounding; Rule 6 SATISFIABILITY CHECK
+
+**Relationship to other FDRs:**
+- **FDR-006 (Intent Stress Test):** Probe 4 is a direct extension of the stress test framework. Same mechanism, new dimension.
+- **FDR-010 (Entropy Spectrum):** Constraint satisfiability compounds with entropy — high-entropy constraints are harder to check for satisfiability conflicts because their verification is qualitative. Design both together.
+
+---
+
+## FDR-012: Creative Homogenization as a Named Failure Mode
+
+**Date:** 2026-02-09  
+**Status:** Fixed (Canonical)  
+**Identified by:** Research review — "We're Different, We're the Same" (arXiv 2501.19361, 2025) provided direct empirical evidence of cross-model creative homogenization as a distinct failure mode from hallucination.
+
+**Gap:** IVD's cognitive foundation section named exactly one failure mode of parametric gap-filling: **hallucination** (factually wrong output). For code, this is the primary failure mode. But for creative, narrative, and documentary artifacts, there is a second, equally important failure mode: **homogenization** — output that is not factually wrong but statistically averaged, indistinguishable from other LLM outputs on the same prompt. IVD had no name, definition, or mitigation guidance for this.
+
+**Evidence base:**
+- **"We're Different, We're the Same" (arXiv 2501.19361, January 2025)**: Evaluates creative outputs from multiple LLMs using standardized creativity tests. Finding: LLM responses are significantly more similar to each other than human responses are to each other, *even after controlling for response structure and other key variables*. This holds across models from different organizations — shared training data distributions are the likely cause.
+- **Homogenization effects on human ideation (2024)**: Users employing LLMs as creative assistants produce more homogeneous outputs than control groups. ChatGPT users generated "less semantically distinct ideas." InstructGPT feedback caused "statistically significant reduction in diversity" between different authors' work.
+- **CreativityPrism benchmark (2025)**: Strong performance on one creativity dimension (quality) does not generalize to others (novelty, diversity). Current evaluation metrics often measure quality but miss homogenization.
+- **CMU 2025**: Hallucination occurred in 30% of model outputs overall in underspecified contexts, approaching 40% in some models — but the more insidious failure for creative artifacts is homogenized output that passes quality checks but lacks distinctiveness.
+
+**Analysis:** Homogenization and hallucination share the same root cause — parametric gap-filling — but they manifest differently and require different mitigations:
+
+| | Hallucination | Homogenization |
+|---|---|---|
+| **Output is** | Factually wrong | Factually acceptable but averaged |
+| **Primary artifact** | Code, factual content | Creative writing, narrative, marketing |
+| **Detection** | Test fails | Human review ("this sounds like every LLM") |
+| **Mitigation** | Structured constraints + tests | Distinctiveness constraints + style reference |
+
+IVD's contextual channel mechanism addresses hallucination: saturate the channel with specific constraints, leave nothing for parametric fill. Homogenization requires an additional step: explicitly constrain *distinctiveness* — what makes this output NOT the parametric average. Prohibitions are often more effective than requirements: "no inspirational ending," "no summary paragraph," "no em-dash overuse," "not in the voice of a Harvard Business Review article."
+
+**Decision:** Added as **canonical** named failure mode alongside hallucination. Homogenization is now documented in:
+- `framework.md`: Cognitive foundation section — both failure modes named with definitions
+- `ivd_system_intent.yaml` (v2.2): `constraint_quality.homogenization_prevention` block
+- `recipes/agent-rules-ivd.yaml` (v1.3): Rule 6 HOMOGENIZATION CHECK
+
+**Practical rule for intents:** For any creative or narrative artifact, add at minimum:
+1. Voice/tone constraint (decomposed into measurable proxies — see FDR-010)
+2. Structure constraint
+3. Distinctiveness note: what makes this output NOT the parametric average (reference material, prohibitions, explicit style target)
+
+**Relationship to other FDRs:**
+- **FDR-008 (Cognitive Foundation):** Homogenization is the creative-artifact expression of the same parametric gap-filling mechanism. FDR-012 extends FDR-008's vocabulary.
+- **FDR-010 (Entropy Spectrum):** High-entropy constraints produce homogenized output. FDR-012 explains *why* high-entropy is dangerous — it's not just imprecision, it's convergence to the statistical mean.
+
+---
+
 ## Template for New Entries
 
 ```markdown

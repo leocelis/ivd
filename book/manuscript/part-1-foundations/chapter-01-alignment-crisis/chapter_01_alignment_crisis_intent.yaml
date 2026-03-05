@@ -66,7 +66,9 @@ deliverables:
         - "These artifacts were designed for humans, not AI agents"
         - "The cognitive mechanism: LLMs have two knowledge systems — parametric (training weights: frozen, generalized, fills gaps with averaged patterns) and contextual (the prompt/context window: specific, current, controllable). Research shows models allocate ~70% reliance to contextual and ~30% to parametric (9-LLM study, 2024). When given vague prose, the contextual channel is underloaded and parametric gap-filling kicks in. That gap-filling IS hallucination."
         - "The key reframe for the reader: hallucinations are not the AI 'being wrong' — they are the AI using the wrong knowledge system because prose did not load the right one. The problem is not the AI. The problem is the artifact format."
+        - "TWO failure modes from parametric gap-filling, not one: (1) HALLUCINATION — factually wrong output (e.g., wrong API response format, invented function names). (2) HOMOGENIZATION — factually acceptable but statistically averaged output, indistinguishable from every other LLM response to the same prompt. For code, hallucination is the primary concern. For creative, narrative, and documentary work, homogenization is equally dangerous — the output isn't wrong, it's generic. Research: 'We're Different, We're the Same' (arXiv 2501.19361, 2025) — LLM outputs are significantly more similar to each other than human outputs are to each other, even across models from different organizations."
         - "Quotable: **Hallucinations aren't AI being wrong. They're AI using the wrong knowledge system — because you didn't feed the right one.**"
+        - "Quotable: **Homogenization is hallucination for creative work. The output isn't wrong — it's the average of everything the model has ever seen.**"
     
     - id: "1.3"
       title: "The AI Amplification Effect: Many Turns, Many Hallucinations"
@@ -240,6 +242,21 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.7"
+    date: "2026-02-09"
+    change: |
+      Section 1.2 (Why Traditional Artifacts Fail): added homogenization as the second, distinct failure
+      mode of parametric gap-filling alongside hallucination. Homogenization = factually acceptable but
+      statistically averaged output, indistinguishable from other LLM outputs on the same prompt.
+      Primarily affects creative, narrative, and documentary artifacts. Added research citation:
+      'We're Different, We're the Same' arXiv 2501.19361 2025 (LLM outputs cross-model more similar
+      to each other than human outputs are to each other). Added second quotable for homogenization.
+    reason: |
+      IVD's failure mode vocabulary was incomplete: only hallucination was named. For the book's use
+      case (creative/documentary artifacts like chapters, articles), homogenization is the more common
+      and insidious failure — output that passes a reader's quality check but carries no distinctive
+      voice. Naming both failure modes makes IVD's value proposition stronger for non-code audiences.
+    evidence: "arXiv 2501.19361 ('We're Different, We're the Same', 2025); DECISIONS.md FDR-012."
   - version: "2.6"
     date: "2026-02-09"
     change: |

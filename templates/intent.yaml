@@ -606,11 +606,45 @@ behavior:
 # Protocol: re-read intent → diff against constraints → check test paths → report
 # PASS/FAIL/NEEDS_REVIEW. Without test fields, verification is impossible.
 # See: recipes/agent-rules-ivd.yaml, framework.md § Post-Implementation Verification Protocol
+#
+# CONSTRAINT QUALITY (Principle 2 extension — research-backed):
+# All constraints must target near-zero interpretive entropy. Three types:
+#
+#   near-zero:       Binary, measurable, testable — "p95 < 200ms", "precision >= 0.85"
+#                    Use for: code, APIs, data pipelines, performance targets
+#
+#   low-qualitative: Qualitative but decomposed into measurable proxies
+#                    "tone: melancholic — no resolution in final paragraph; protagonist does not cry"
+#                    Test: human-review checklist (acceptable for creative/narrative artifacts)
+#                    Use for: creative writing, marketing copy, documentation tone, book chapters
+#
+#   HIGH-ENTROPY:    ❌ REJECTED — "write well", "be creative", "sound professional"
+#                    These trigger parametric averaging (homogenization). Decompose before writing.
+#                    Research: CMU 2025 underspecification study; CS4 2024; 'We're Different, We're
+#                    the Same' arXiv 2501.19361 2025 — LLM outputs more similar to each other than
+#                    human outputs are, even cross-model. High-entropy = averaged output.
+#
+# ORDER: List most critical constraints LAST. Position bias (UltraBench 2025) causes LLMs to
+# prioritize later constraints and silently violate earlier ones when conflicts arise.
 constraints:
   - name: "constraint_id"
-    requirement: "metric >= threshold"
-    test: "path/to/test.py::test_name"
+    requirement: "metric >= threshold (near-zero) OR qualitative with measurable proxy (low-qualitative)"
+    test: "path/to/test.py::test_name OR human review checklist"
+    entropy: "near-zero | low-qualitative"   # optional but recommended
+    priority: 1                               # 1=highest; list highest-priority constraints LAST
     consequence_if_violated: "What breaks if this fails"
+
+# CONSTRAINT SATISFIABILITY (optional — recommended when 3+ constraints exist)
+# Research: UltraBench 2025 — models fail at simultaneous constraint satisfaction even when
+# each constraint is individually met at 70%+ accuracy. CMU 2025 — constraint conflicts
+# cause 20%+ accuracy drops.
+#
+# constraint_satisfiability:
+#   conflicts_checked: true
+#   known_tensions:
+#     - between: ["constraint_a", "constraint_b"]
+#       resolution: "When they conflict, do X (e.g., reduce Y before reducing Z)"
+#   simultaneous_satisfaction: "All satisfiable given known tensions resolved above"
 
 # WHY this approach?
 rationale:
