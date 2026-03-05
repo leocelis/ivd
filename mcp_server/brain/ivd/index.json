@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-03T19:10:04.288415",
+  "last_updated": "2026-03-05T14:00:55.809858",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1291,11 +1291,46 @@
       "num_chunks": 6,
       "cost_usd": 6.028e-05,
       "processed_at": "2026-03-03T19:10:04.286357"
+    },
+    "c0a52df0d3c827573e66b8cf86b2b08d5868215fddc22b1db20c4d6021f459d4": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 39,
+      "cost_usd": 0.0004912,
+      "processed_at": "2026-03-05T14:00:51.049369"
+    },
+    "953587c214e461398dbff830471f8321831b4b2d02755941e197a87e243f09c1": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 48,
+      "cost_usd": 0.0006857800000000001,
+      "processed_at": "2026-03-05T14:00:53.621065"
+    },
+    "148a526254c150cc69976c4ad07c789f94c9e6d33d6d92045bf5d2cf4dc8ff36": {
+      "file_name": "DECISIONS.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/DECISIONS.md",
+      "num_chunks": 12,
+      "cost_usd": 0.00016448000000000002,
+      "processed_at": "2026-03-05T14:00:54.416968"
+    },
+    "6b5de861644916283a8add76310ad85382bbe2f1d2b5609dd1ffcabbadce9b09": {
+      "file_name": "agent-rules-ivd.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-rules-ivd.yaml",
+      "num_chunks": 11,
+      "cost_usd": 0.00013908,
+      "processed_at": "2026-03-05T14:00:55.093488"
+    },
+    "c227d460cae44e86a65dc0fc5549bdc3e9b30ba6b0c7d0d1a088e95b4ea972b5": {
+      "file_name": "intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/templates/intent.yaml",
+      "num_chunks": 12,
+      "cost_usd": 0.00016188,
+      "processed_at": "2026-03-05T14:00:55.804459"
     }
   },
   "stats": {
-    "total_docs": 184,
-    "total_chunks": 2116,
-    "total_cost": 0.028010820000000002
+    "total_docs": 189,
+    "total_chunks": 2238,
+    "total_cost": 0.02965324
   }
 }
