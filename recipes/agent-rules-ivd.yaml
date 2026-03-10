@@ -221,8 +221,26 @@ agent_rules_block:
        threshold, add a new constraint for the discovered edge case, update the
        rationale with empirical evidence.
     4. ENRICH — if the discovery reveals a knowledge gap, pull more contextual
-       knowledge into the session (API documentation, model cards, actual error
-       responses, performance benchmarks).
+       knowledge into the session. Not all sources are equal — use the highest-
+       signal source available:
+
+       Source hierarchy for code failures (ranked by signal):
+       (a) Actual error message/stack trace — paste verbatim into context
+       (b) GitHub issues and PRs matching the error — maintainer-confirmed,
+           version-specific, real workarounds. This is the single highest-value
+           enrichment channel for code failures.
+       (c) Library changelogs/release notes — what changed between versions
+       (d) Official documentation — authoritative but may lag implementation
+       (e) Model's parametric knowledge — lowest signal; already proven
+           insufficient (you're in the ENRICH step because it failed)
+
+       THE 2-ATTEMPT TRIGGER RULE: if the same error or failure pattern persists
+       after two implementation attempts without new external data, you MUST stop
+       and ENRICH before attempting again. Repeated iteration without enrichment
+       is drawing from the same parametric well — each attempt is a variation of
+       the same wrong pattern. Search GitHub, read the changelog, find the actual
+       error in an issue thread. One confirmed fix replaces many wasted turns.
+
     5. CONTINUE — re-read the updated intent (Rule 2, Step 1) and continue
        implementing from the corrected version.
 
@@ -402,6 +420,12 @@ common_failures:
     root_cause: "Empirical Refinement (Rule 5) skipped — agent treated the discovery as a code problem instead of an intent problem"
     solution: "Rule 5: STOP, RECORD finding, UPDATE intent on disk, ENRICH context, CONTINUE from corrected intent"
 
+  - name: "Repeated Iteration Without Enrichment"
+    description: "Agent hits the same error multiple times, makes cosmetic code changes, retries without introducing new external data"
+    symptom: "3+ implementation attempts produce variations of the same wrong answer; turns pile up; user eventually searches GitHub themselves and finds the fix immediately"
+    root_cause: "ENRICH step (Rule 5, step 4) not triggered — agent treats each failure as a code problem solvable by parametric knowledge instead of recognizing that the parametric channel doesn't have the answer"
+    solution: "Rule 5 2-attempt trigger: after two failures with the same error pattern, STOP iterating and ENRICH — search GitHub issues/PRs for the error, read the library changelog, find the actual fix. One confirmed external source replaces many parametric variations."
+
   - name: "High-Entropy Constraint Accepted"
     description: "Agent writes constraints like 'write well', 'be professional', 'use appropriate tone' for a documentary or creative artifact"
     symptom: "Output is factually correct but generically averaged — indistinguishable from any other LLM response to the same prompt (homogenization)"
@@ -442,6 +466,17 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.4"
+    date: "2026-02-09"
+    change: "Expanded Rule 5 ENRICH step: contextual knowledge source hierarchy, GitHub as named enrichment channel, 2-attempt trigger rule. Added common_failure 'Repeated Iteration Without Enrichment'."
+    reason: |
+      Empirical observation: GitHub search for a persistent error replaces 5–10 correction
+      turns. The ENRICH step had no source ranking and no trigger heuristic — agents iterated
+      indefinitely using parametric variations. Added: source hierarchy for code failures (error →
+      GitHub → changelogs → docs → parametric), 2-attempt trigger (same error twice = mandatory
+      ENRICH), and a named common failure for the iteration-without-enrichment anti-pattern.
+    evidence: "Production observation: GitHub search replacing multi-turn correction cycles. DECISIONS.md FDR-013."
+
   - version: "1.3"
     date: "2026-02-09"
     change: "Added IVD Rule 6: constraint quality (entropy spectrum, homogenization, satisfiability). Extended Rule 4 stress test with fourth probe (constraint satisfiability)."

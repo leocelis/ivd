@@ -275,12 +275,24 @@ This is not a code bug. This is new contextual knowledge that the intent didn't 
 1. **STOP** — Do not continue implementing against a stale assumption. The intent is the contextual knowledge spine; if it's wrong, everything built on it will be wrong.
 2. **RECORD** — Document the empirical finding: what the intent assumed vs. what you observed. This is new contextual knowledge.
 3. **UPDATE** — Revise the intent artifact on disk: fix the constraint, adjust the threshold, add a new constraint for the discovered edge case, update the rationale with empirical evidence.
-4. **ENRICH** — If the discovery reveals a knowledge gap, pull more contextual knowledge into the session: API documentation, model cards, actual error responses, performance benchmarks. Saturate the contextual channel with reality, not assumptions.
+4. **ENRICH** — If the discovery reveals a knowledge gap, pull more contextual knowledge into the session. Not all sources are equal. Use the highest-signal source available for the problem type:
+
+   **Source hierarchy for code failures (ranked by signal):**
+   1. **The actual error message/stack trace** — empirical, specific, current; paste it into the context verbatim
+   2. **GitHub issues and PRs matching the error** — maintainer-confirmed fixes, version-specific behavior, real workarounds from people who hit the exact same problem. This is the single highest-value enrichment channel for code failures — one issue thread can replace 5–10 correction turns because it injects *confirmed empirical knowledge* where the model only had *parametric approximations*
+   3. **Library changelogs and release notes** — what changed between versions; explains breaking changes that documentation hasn't caught up to
+   4. **Official documentation** — authoritative but often lags implementation; may describe the intended behavior rather than the actual behavior
+   5. **The AI's parametric knowledge** — lowest signal; averaged, possibly stale, and already proven insufficient (you're in the ENRICH step because it failed)
+
+   Iterating without enrichment — making repeated implementation attempts using only the model's parametric knowledge — is drawing from the same well that already produced the wrong answer. Each attempt is a parametric variation of the same incorrect pattern.
+
+   **The 2-attempt trigger rule:** If the same error or failure pattern persists after two implementation attempts without new external data, STOP and ENRICH before attempting again. Two attempts establish that the parametric channel doesn't have the answer. Further attempts without new contextual knowledge are wasted turns.
+
 5. **CONTINUE** — Re-read the updated intent (Verification Protocol Step 1) and continue implementing from the corrected version.
 
 If the discovery changes the scope significantly (what was a simple API call now requires retry logic, circuit breakers, and fallback handling), flag for human review before continuing.
 
-**Why this matters through the cognitive lens:** The intent artifact is the spine of contextual knowledge. When it contains assumptions instead of empirical facts, the model fills gaps between those assumptions and reality using parametric knowledge — exactly the gap-filling mechanism that causes hallucinations. Empirical refinement replaces assumptions with observed behavior, strengthening the contextual channel at the exact point where it was weakest.
+**Why this matters through the cognitive lens:** The intent artifact is the spine of contextual knowledge. When it contains assumptions instead of empirical facts, the model fills gaps between those assumptions and reality using parametric knowledge — exactly the gap-filling mechanism that causes hallucinations. Empirical refinement replaces assumptions with observed behavior, strengthening the contextual channel at the exact point where it was weakest. The source hierarchy exists because not all contextual knowledge is equal — a GitHub issue with a confirmed fix is higher signal than documentation that may not cover the edge case, which is higher signal than parametric recall that already failed.
 
 **The stress test (Step 4) anticipates. Empirical refinement discovers.** Together, they close the loop: the stress test catches what you can reason about before building; empirical refinement catches what only running the code reveals.
 

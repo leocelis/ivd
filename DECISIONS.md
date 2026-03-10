@@ -329,6 +329,54 @@ IVD's contextual channel mechanism addresses hallucination: saturate the channel
 
 ---
 
+## FDR-013: Contextual Knowledge Source Hierarchy and 2-Attempt Enrichment Trigger
+
+**Date:** 2026-02-09  
+**Status:** Fixed (Canonical)  
+**Identified by:** Production observation — when code doesn't work, searching GitHub for the error immediately surfaces the fix, replacing 5–10 correction turns. The ENRICH step in the Empirical Refinement Protocol existed but had no source ranking and no trigger heuristic — agents iterated indefinitely using parametric variations.
+
+**Gap:** The ENRICH step (Empirical Refinement Protocol, step 4) listed generic examples: "API documentation, model cards, actual error responses, performance benchmarks." Two problems:
+
+1. **No source hierarchy.** Not all contextual knowledge is equal. A GitHub issue with a maintainer-confirmed fix is higher signal than official documentation (which may lag implementation), which is higher signal than the model's parametric knowledge (which already proved insufficient — that's why ENRICH was triggered). Without a ranked hierarchy, agents default to the lowest-effort source — their own parametric knowledge — which is the exact source that already failed.
+
+2. **No trigger heuristic.** The protocol said ENRICH "if the discovery reveals a knowledge gap" but provided no concrete signal for when an agent should recognize it's stuck. In practice, agents iterate 3, 5, 10 times — producing variations of the same wrong answer, each time making cosmetic changes — because they have no rule that says "stop, this isn't working, go external." This is the most expensive failure mode in AI-assisted development: wasted turns drawing from the same parametric well.
+
+**Analysis through the cognitive lens:**
+
+When code fails and the agent retries without new external data, each attempt draws from the same parametric knowledge that produced the original failure. The parametric channel is frozen and averaged — it contains the popular usage of a library, not the edge case, not the breaking change in v3.2.1, not the workaround from the GitHub issue where the maintainer explains the real behavior.
+
+GitHub issues are the optimal enrichment source for code failures because they contain:
+- The actual error message (exact match for context injection)
+- The confirmed workaround (empirically validated, not parametrically averaged)
+- Version-specific context (what changed and when)
+- Maintainer commentary (authoritative, specific)
+
+One GitHub issue thread injects confirmed empirical knowledge into the contextual channel where the model previously had only parametric approximation. This is IVD's core mechanism at the debugging level: the problem is never the model; the problem is what's in the context.
+
+**Decision:** Expanded the ENRICH step with two canonical additions:
+
+**1. Source hierarchy for code failures (ranked by signal):**
+1. Actual error message/stack trace — empirical, specific, current
+2. GitHub issues and PRs matching the error — maintainer-confirmed, version-specific
+3. Library changelogs/release notes — what changed between versions
+4. Official documentation — authoritative but may lag implementation
+5. Model's parametric knowledge — lowest signal; already proven insufficient
+
+**2. The 2-attempt trigger rule:** If the same error or failure pattern persists after two implementation attempts without new external data, the agent MUST stop and ENRICH before attempting again. Two attempts establish that the parametric channel doesn't have the answer. Further attempts without new contextual knowledge are wasted turns.
+
+**Changes:**
+- `framework.md`: ENRICH step expanded with source hierarchy, GitHub as named channel, 2-attempt trigger rule, cognitive rationale for why source ranking matters
+- `ivd_system_intent.yaml` (v2.3): ENRICH step updated with source hierarchy (a–e), 2-attempt trigger, cognitive rationale extended
+- `recipes/agent-rules-ivd.yaml` (v1.4): Rule 5 ENRICH expanded with source hierarchy + 2-attempt trigger. New `common_failures` entry: "Repeated Iteration Without Enrichment"
+- `mcp_server/tools/context.py`: P3 description in `ivd_get_context` now surfaces empirical refinement and 2-attempt rule
+- Book Ch3 intent: §3.3 Principle 3 extended with GitHub search as concrete ENRICH example and 2-attempt heuristic
+
+**Relationship to other FDRs:**
+- **FDR-009 (Empirical Refinement):** FDR-013 extends step 4 of FDR-009's protocol. The 5-step structure is unchanged; the ENRICH step is now more actionable.
+- **FDR-008 (Cognitive Foundation):** Validates the core claim empirically — the problem is what's in the context. GitHub search works because it changes the contextual channel, not the instruction.
+
+---
+
 ## Template for New Entries
 
 ```markdown

@@ -22,7 +22,7 @@ def get_context_tool() -> str:
         "core_principles": [
             "1. Intent is Primary — Intent describes WHAT/WHY, code describes HOW",
             "2. Understanding Must Be Executable — Every claim links to verifiable tests",
-            "3. Bidirectional Synchronization — Changes flow intent↔code↔docs with verification",
+            "3. Bidirectional Synchronization — Changes flow intent↔code↔docs with verification. Includes Empirical Refinement: when implementation reveals wrong assumptions, STOP→RECORD→UPDATE intent→ENRICH (search GitHub, read changelogs — not just parametric retry)→CONTINUE. 2-attempt rule: same error twice = mandatory external enrichment before retrying.",
             "4. Continuous Verification — Verify alignment at every commit/PR/deploy",
             "5. Layered Understanding — Intent→Constraints→Rationale→Alternatives→Risks",
             "6. AI as Understanding Partner — AI writes intent, implements, verifies; teaches when user lacks knowledge; discovers when user can't describe",

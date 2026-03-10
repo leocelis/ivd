@@ -85,8 +85,9 @@ deliverables:
         - "1–2 paragraphs: Changes from intent, code, or docs; all trigger verification to prevent drift"
         - "Why essential: one-way flow (e.g. intent→code only) allows silent drift when code or docs change"
         - "Sub-principles or examples: intent changes propagate, code changes verify against intent, doc changes validate"
-        - "Empirical refinement: when implementation reveals that the intent's assumptions are wrong (API returns different format, model accuracy differs from benchmarks, latency exceeds documented limits). This is a sync direction the reader hasn't considered: reality → intent. The protocol: STOP, RECORD (what intent assumed vs. what you observed), UPDATE the intent on disk, ENRICH (pull more contextual knowledge — API docs, model cards, actual error responses), CONTINUE from corrected version. Through the cognitive lens: the intent is the contextual knowledge spine; when it contains assumptions instead of empirical facts, the model fills gaps with parametric knowledge — the exact gap-filling that causes hallucinations. The stress test (P6 Step 4) anticipates before implementation; empirical refinement discovers during implementation. Together they close the loop."
-        - "Common violations: code change without running constraint tests, documentation contradicting intent, discovering reality contradicts intent but continuing to implement against the stale assumption instead of updating the intent"
+        - "Empirical refinement: when implementation reveals that the intent's assumptions are wrong (API returns different format, model accuracy differs from benchmarks, latency exceeds documented limits). This is a sync direction the reader hasn't considered: reality → intent. The protocol: STOP, RECORD (what intent assumed vs. what you observed), UPDATE the intent on disk, ENRICH (pull more contextual knowledge), CONTINUE from corrected version. Through the cognitive lens: the intent is the contextual knowledge spine; when it contains assumptions instead of empirical facts, the model fills gaps with parametric knowledge — the exact gap-filling that causes hallucinations. The stress test (P6 Step 4) anticipates before implementation; empirical refinement discovers during implementation. Together they close the loop."
+        - "THE ENRICH STEP IN DEPTH — not all contextual knowledge sources are equal. The book should present a concrete scenario: an AI agent tries to integrate a library, the code fails with an error the model doesn't understand. The agent retries — same error, cosmetic changes. Retries again — same error, different variation. Each attempt draws from the same parametric knowledge that produced the first failure. Then the user (or the agent, following the protocol) searches GitHub for the error message. One issue thread with a maintainer-confirmed workaround surfaces the fix. One turn instead of ten. Why? Because the GitHub issue injected empirical contextual knowledge — specific, confirmed, version-accurate — where the model had only parametric approximation (averaged, frozen, already proven insufficient). SOURCE HIERARCHY for code failures: (1) actual error message, (2) GitHub issues/PRs matching the error, (3) library changelogs, (4) official documentation, (5) model's parametric knowledge. THE 2-ATTEMPT TRIGGER RULE: if the same error persists after two implementation attempts without new external data, the agent must stop and enrich before retrying. Two attempts establish that the parametric channel doesn't have the answer. This is the most relatable IVD principle in action — every developer has lived the 'just retry with a small change' loop."
+        - "Common violations: code change without running constraint tests, documentation contradicting intent, discovering reality contradicts intent but continuing to implement against the stale assumption instead of updating the intent, iterating 3+ times on the same error without searching for external evidence (the most expensive common violation — wasted turns drawing from the same parametric well)"
     
     - id: "3.4"
       title: "Principle 4: Continuous Verification"
@@ -326,6 +327,19 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.2"
+    date: "2026-02-09"
+    change: |
+      Section 3.3 (Principle 3): expanded ENRICH step in empirical refinement with source hierarchy
+      for code failures, GitHub issues/PRs as named enrichment channel, 2-attempt trigger rule, and
+      vivid scenario for the book (agent retries → same error → GitHub search → one-turn fix).
+      Added new common violation: iterating 3+ times without external evidence.
+    reason: |
+      Empirical observation: GitHub search for persistent errors replaces 5–10 correction turns.
+      The ENRICH step existed but had no source ranking and no trigger heuristic — agents iterated
+      indefinitely using parametric variations. The scenario is the most relatable IVD principle
+      in action for the book's audience — every developer has lived the retry loop.
+    evidence: "Production observation. DECISIONS.md FDR-013."
   - version: "2.1"
     date: "2026-02-09"
     change: |

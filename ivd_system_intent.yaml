@@ -357,8 +357,17 @@ principles:
           2. RECORD — document what the intent assumed vs. what was observed
           3. UPDATE — revise the intent artifact on disk (fix constraint, adjust threshold,
              add new constraint for discovered edge case, update rationale with evidence)
-          4. ENRICH — if discovery reveals a knowledge gap, pull more contextual knowledge
-             (API docs, model cards, actual error responses, benchmarks)
+          4. ENRICH — if discovery reveals a knowledge gap, pull more contextual knowledge.
+             Not all sources are equal. Source hierarchy for code failures (ranked by signal):
+             (a) Actual error message/stack trace (empirical, specific, current)
+             (b) GitHub issues and PRs matching the error (maintainer-confirmed, version-specific)
+             (c) Library changelogs/release notes (what changed between versions)
+             (d) Official documentation (authoritative but may lag implementation)
+             (e) Model's parametric knowledge (lowest signal — already failed)
+             The 2-attempt trigger rule: if the same error persists after two implementation
+             attempts without new external data, STOP and ENRICH before attempting again.
+             Repeated iteration without enrichment is drawing from the same parametric well —
+             each attempt is a variation of the same wrong pattern.
           5. CONTINUE — re-read the updated intent (Verification Protocol Step 1) and
              continue implementing from the corrected version
 
@@ -374,7 +383,12 @@ principles:
           instead of empirical facts, the model fills gaps between those assumptions and
           reality using parametric knowledge — the exact gap-filling that causes hallucinations.
           Empirical refinement replaces assumptions with observed behavior, strengthening the
-          contextual channel at the point where it was weakest.
+          contextual channel at the point where it was weakest. The source hierarchy exists
+          because not all contextual knowledge is equal: a GitHub issue with a confirmed fix
+          is higher signal than documentation that may not cover the edge case, which is higher
+          signal than parametric recall that already proved insufficient. The 2-attempt trigger
+          operationalizes this: two failed attempts establish that the parametric channel does
+          not have the answer; further attempts without new external data are wasted turns.
         relationship_to_stress_test: |
           The stress test (P6 Step 4) anticipates gaps before implementation.
           Empirical refinement discovers gaps during implementation.
@@ -1664,7 +1678,7 @@ implementation:
       standard: "Must be validated in real project"
       purpose: "Ensure patterns are practical, not theoretical"
   
-  version: 2.2
+  version: 2.3
   
   review_cadence:
     - frequency: "Quarterly"
@@ -1746,6 +1760,20 @@ book_and_distribution:
 # ==============================================================================
 
 changelog:
+  - version: 2.3
+    date: "2026-02-09"
+    change: "Expanded ENRICH step with contextual knowledge source hierarchy, GitHub as named channel, and 2-attempt trigger rule"
+    reason: |
+      Empirical observation: when code doesn't work, searching GitHub for the error surfaces
+      confirmed fixes and replaces 5–10 correction turns. The ENRICH step listed generic sources
+      (API docs, model cards, benchmarks) but didn't name GitHub issues/PRs — the highest-signal
+      channel for code failures. Additionally, no trigger heuristic existed for when to ENRICH:
+      agents iterated indefinitely using parametric variations of the same wrong pattern.
+      Added: (1) Source hierarchy ranked by signal quality, (2) GitHub issues/PRs as explicitly
+      named channel with rationale, (3) 2-attempt trigger rule — if same error persists after
+      two attempts without new external data, ENRICH is mandatory.
+    evidence: "Empirical validation in production: GitHub search replacing multi-turn correction cycles. See DECISIONS.md FDR-013."
+
   - version: 2.2
     date: "2026-02-09"
     change: "Added constraint quality framework: interpretive entropy spectrum, constraint satisfiability, homogenization as named failure mode"
