@@ -149,8 +149,36 @@ agent_rules_block:
     intent artifact (*_intent.yaml):
     1. READ the intent artifact first
     2. UNDERSTAND the constraints and their test paths
-    3. IMPLEMENT against the constraints
+    3. IMPLEMENT using constraint-segmented approach:
+
+       FOR INTENTS WITH 3+ CONSTRAINTS (threshold based on IFScale 2025 degradation
+       data and Liu et al. 2023 lost-in-the-middle effect):
+
+         a. GROUP constraints into functional segments after the stress test.
+            Example groups: input validation | core logic / output | performance |
+            error handling | security
+         b. IMPLEMENT one segment
+         c. RE-READ the intent constraints for that segment from disk
+            (not from memory — forces attention reset; counters lost-in-the-middle)
+         d. VERIFY the segment satisfies its constraints before proceeding
+         e. Repeat steps b–d for each segment
+
+       FOR INTENTS WITH 1–2 CONSTRAINTS:
+         Single-pass implementation is acceptable. Proceed directly to Rule 2.
+
+       WHY THIS MATTERS: LLMs exhibit a read-acknowledge-violate pattern
+       (anthropics/claude-code GitHub #26848, #6120, #32290, #742). An AI can
+       recite all constraints and confirm understanding — then violate them 10
+       lines later. Segmented implementation converts one long attention span
+       into multiple short ones, each starting with fresh constraint attention.
+       Constraint compliance is orthogonal to task completion (MOSAIC 2025);
+       68% accuracy at high density (IFScale 2025). These are structural LLM
+       limitations, not model quality issues.
+
     4. VERIFY using the Post-Implementation Verification Protocol (IVD Rule 2)
+       When segmented implementation was used: Rule 2 functions as a final
+       cross-cutting sweep for inter-constraint gaps. When single-pass was used:
+       Rule 2 is the primary per-constraint check.
 
     If no intent artifact exists for the change, note it. For significant changes,
     create one using ivd_scaffold before implementing.
@@ -426,6 +454,12 @@ common_failures:
     root_cause: "ENRICH step (Rule 5, step 4) not triggered — agent treats each failure as a code problem solvable by parametric knowledge instead of recognizing that the parametric channel doesn't have the answer"
     solution: "Rule 5 2-attempt trigger: after two failures with the same error pattern, STOP iterating and ENRICH — search GitHub issues/PRs for the error, read the library changelog, find the actual fix. One confirmed external source replaces many parametric variations."
 
+  - name: "Single-Pass Implementation Against Complex Intent"
+    description: "Agent reads a 5-constraint intent, acknowledges all constraints, then generates 200 lines of code in a single pass — missing 2–3 constraints that appeared in the middle of the intent"
+    symptom: "Post-implementation audit (Rule 2) consistently surfaces gaps; user asks AI to compare output vs intent and something always comes up; correction turns pile up"
+    root_cause: "Rule 1 step 3 single-pass implementation used on an intent with 3+ constraints — triggering the read-acknowledge-violate pattern (GitHub #26848) and lost-in-the-middle attention degradation (Liu et al. 2023). Constraint compliance is orthogonal to task completion (MOSAIC 2025); the model produces working code while silently dropping constraints from the middle of the constraint list."
+    solution: "Rule 1 step 3: use constraint-segmented implementation when 3+ constraints. GROUP by functional area → IMPLEMENT segment → RE-READ constraints from disk → VERIFY segment → repeat. Each re-read repositions constraint text at the top of the context stack where attention is highest."
+
   - name: "High-Entropy Constraint Accepted"
     description: "Agent writes constraints like 'write well', 'be professional', 'use appropriate tone' for a documentary or creative artifact"
     symptom: "Output is factually correct but generically averaged — indistinguishable from any other LLM response to the same prompt (homogenization)"
@@ -466,6 +500,24 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.5"
+    date: "2026-02-09"
+    change: "Expanded Rule 1 IMPLEMENT step with constraint-segmented protocol (3+ constraint threshold); added common_failure 'Single-Pass Implementation Against Complex Intent'"
+    reason: |
+      Post-implementation audits consistently reveal missed requirements even when the AI read
+      and acknowledged all constraints before implementing. Root cause is structural: the
+      read-acknowledge-violate pattern (GitHub anthropics/claude-code #26848, #6120, #32290, #742)
+      and lost-in-the-middle effect (Liu et al. 2023 — >30% attention degradation at middle
+      positions during long generation). A single-pass implementation of a 200-line module
+      against a 5-constraint intent is architecturally likely to miss constraints 2–3. Constraint
+      compliance is also an orthogonal capability to task completion (MOSAIC 2025); 68% accuracy
+      at high density (IFScale 2025). Segmented implementation converts one long attention span
+      into multiple short ones, each starting with fresh constraint attention from re-reading the
+      intent from disk. This is the same mechanism as Rule 2 (re-read from disk), applied during
+      generation rather than after. Threshold set at 3+ constraints based on IFScale degradation
+      curve: nonlinear, with threshold effects appearing at medium density.
+    evidence: "See DECISIONS.md FDR-014. Research: Liu et al. 2023, MOSAIC 2025, IFScale 2025, CodeIF 2025, GitHub anthropics/claude-code issues."
+
   - version: "1.4"
     date: "2026-02-09"
     change: "Expanded Rule 5 ENRICH step: contextual knowledge source hierarchy, GitHub as named enrichment channel, 2-attempt trigger rule. Added common_failure 'Repeated Iteration Without Enrichment'."

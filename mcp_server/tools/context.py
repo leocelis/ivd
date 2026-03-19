@@ -25,7 +25,7 @@ def get_context_tool() -> str:
             "3. Bidirectional Synchronization — Changes flow intent↔code↔docs with verification. Includes Empirical Refinement: when implementation reveals wrong assumptions, STOP→RECORD→UPDATE intent→ENRICH (search GitHub, read changelogs — not just parametric retry)→CONTINUE. 2-attempt rule: same error twice = mandatory external enrichment before retrying.",
             "4. Continuous Verification — Verify alignment at every commit/PR/deploy",
             "5. Layered Understanding — Intent→Constraints→Rationale→Alternatives→Risks",
-            "6. AI as Understanding Partner — AI writes intent, implements, verifies; teaches when user lacks knowledge; discovers when user can't describe",
+            "6. AI as Understanding Partner — AI writes intent, stress-tests (constraint completeness, implementation gaps, implicit assumptions, satisfiability), implements using constraint-segmented approach (for 3+ constraints: GROUP→IMPLEMENT→RE-READ from disk→VERIFY per segment→cross-cut sweep; why: read-acknowledge-violate pattern + lost-in-the-middle >30% degradation + constraint compliance orthogonal to task completion), then verifies full cross-cut; teaches when user lacks knowledge; discovers when user can't describe",
             "7. Understanding Survives Implementation — Intent persists through rewrites/tech changes",
             "8. Innovation through Inversion — State default, invert, evaluate, implement; capture in inversion_opportunities",
         ],

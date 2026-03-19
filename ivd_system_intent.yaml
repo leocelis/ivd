@@ -4,9 +4,9 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 2.1
+# Version: 2.4
 # Created: 2026-01-24
-# Updated: 2026-02-09 (empirical refinement: when implementation reveals new knowledge)
+# Updated: 2026-02-09 (constraint-segmented implementation: mitigating compliance degradation during generation)
 # Status: Canonical
 # ==============================================================================
 
@@ -486,6 +486,42 @@ principles:
           to embed in these files. ivd_init suggests adding this block when it detects
           an agent instruction file during project scanning.
 
+      - name: "Constraint-segmented implementation"
+        status: "canonical"
+        description: |
+          For intents with 3+ constraints, implementation must be structured in
+          segments aligned with constraint groups rather than executed in a single
+          pass. The protocol:
+          1. GROUP constraints into functional segments after the stress test
+          2. IMPLEMENT one segment
+          3. RE-READ the intent constraints for that segment from disk
+             (not from memory — forces attention reset; counters lost-in-the-middle)
+          4. VERIFY the segment satisfies its constraints before proceeding
+          5. Repeat steps 2–4 for each segment
+          6. CROSS-CUT: run the full Post-Implementation Verification Protocol as
+             a final sweep for inter-constraint gaps
+
+          When segmented implementation was used, the Post-Implementation Verification
+          Protocol functions as a cross-cutting sweep, not the primary per-constraint
+          check. Its value shifts to catching inter-constraint violations.
+        research_citations:
+          - "read-acknowledge-violate pattern (anthropics/claude-code GitHub #26848, #6120, #32290, #742 — 2025)"
+          - "lost-in-the-middle >30% attention degradation at middle positions (Liu et al. 2023, Stanford NLP)"
+          - "constraint compliance orthogonal to task completion (MOSAIC 2025)"
+          - "68% accuracy at high constraint density with nonlinear degradation (IFScale 2025)"
+          - "task completion vs. full compliance as distinct capabilities (CodeIF 2025)"
+        recipe: "recipes/agent-rules-ivd.yaml → IVD Rule 1"
+        framework_section: "framework.md → Principle 6 → Step 5: Constraint-Segmented Implementation"
+        supports_principles:
+          - "Principle 2: Understanding Must Be Executable (constraints must be verifiable per segment)"
+          - "Principle 4: Continuous Verification (re-reading per segment is micro-verification)"
+          - "Principle 6: AI as Understanding Partner (prescribes how the AI implements, not just that it does)"
+        use_cases:
+          - "AI agent implements complex module with 5+ constraints and must not miss any"
+          - "Post-implementation audits consistently reveal missed requirements — this breaks that cycle"
+          - "Team wants to enforce compliance discipline during generation, not just after"
+        threshold: "3+ constraints. Below 3, single-pass with verification is acceptable."
+
   # --------------------------------------------------------------------------
   # PRINCIPLE 5: Layered Understanding
   # --------------------------------------------------------------------------
@@ -562,18 +598,28 @@ principles:
       2. AI writes structured intent artifact (YAML with constraints and tests)
       3. Human reviews intent: "Is this what I meant?"
       4. AI stress-tests intent: adversarial completeness check
-         (constraint gaps, implementation decisions not addressed, implicit assumptions)
-      5. AI implements against the intent
-      6. AI verifies: "Does my code pass the constraints?"
+         (constraint gaps, implementation decisions not addressed, implicit assumptions,
+          constraint satisfiability)
+      5. AI implements using constraint-segmented approach:
+         - For 3+ constraints: GROUP by functional area → IMPLEMENT segment →
+           RE-READ constraints from disk → VERIFY segment → next segment
+         - For 1–2 constraints: single-pass acceptable
+         Research basis: read-acknowledge-violate pattern (anthropics/claude-code
+         GitHub #26848); lost-in-the-middle >30% degradation (Liu et al. 2023);
+         constraint compliance orthogonal to task completion (MOSAIC 2025);
+         68% accuracy at high constraint density (IFScale 2025)
+      6. AI verifies (full cross-cutting sweep): "Does every constraint pass?"
       
       The workflow (multi-agent systems):
       1. Human describes what they want (natural language)
       2. Coordinator AI writes coordinator-level intent (routing + synthesis)
       3. For each specialist agent, coordinator writes agent-level intent
       4. Human reviews intents: "Is this what I meant?"
-      5. Each agent stress-tests its intent (adversarial completeness check)
-      6. Each agent implements against its intent
-      7. Each agent verifies its output
+      5. Each agent stress-tests its intent (adversarial completeness check,
+         incl. constraint satisfiability)
+      6. Each agent implements using constraint-segmented approach
+         (GROUP→IMPLEMENT→RE-READ→VERIFY protocol, same as single-agent)
+      7. Each agent verifies its output (segment-level + final cross-cut sweep)
       8. Coordinator synthesizes and verifies combined result
       
       The key: Intent exists at EVERY delegation point. The coordinator doesn't 
@@ -1678,7 +1724,7 @@ implementation:
       standard: "Must be validated in real project"
       purpose: "Ensure patterns are practical, not theoretical"
   
-  version: 2.3
+  version: 2.4
   
   review_cadence:
     - frequency: "Quarterly"
@@ -1760,6 +1806,28 @@ book_and_distribution:
 # ==============================================================================
 
 changelog:
+  - version: 2.4
+    date: "2026-02-09"
+    change: "Added Constraint-Segmented Implementation as canonical P4 extension; updated P6 single and multi-agent workflows; added research-backed threshold rule (3+ constraints)"
+    reason: |
+      Post-implementation audits consistently reveal missed requirements even when the AI
+      explicitly reviewed the intent. Root cause is structural: LLMs exhibit a read-acknowledge-
+      violate pattern (anthropics/claude-code GitHub #26848+), attention degradation at middle
+      positions during generation (Liu et al. 2023 lost-in-the-middle >30%), and constraint
+      compliance as a capability orthogonal to task completion (MOSAIC 2025). Single-pass
+      implementation against a 5-constraint intent is architecturally likely to miss constraints —
+      not a model quality problem, a context mechanics problem. Constraint-segmented implementation
+      converts one long attention span into multiple short ones, each starting with fresh constraint
+      attention from re-reading. This is the same cognitive mechanism as the Post-Implementation
+      Verification Protocol (re-read from disk), applied during generation instead of after.
+    evidence: "See DECISIONS.md FDR-014. Research: Liu et al. 2023, MOSAIC 2025, IFScale 2025, CodeIF 2025, GitHub anthropics/claude-code issues."
+    files_changed:
+      - "ivd_system_intent.yaml (this file) — P6 workflows updated, P4 extension added"
+      - "framework.md — Step 5: Constraint-Segmented Implementation added to P6 section"
+      - "recipes/agent-rules-ivd.yaml — Rule 1 IMPLEMENT step expanded, new common_failure"
+      - "mcp_server/tools/context.py — P6 description updated"
+      - "DECISIONS.md — FDR-014 added"
+
   - version: 2.3
     date: "2026-02-09"
     change: "Expanded ENRICH step with contextual knowledge source hierarchy, GitHub as named channel, and 2-attempt trigger rule"

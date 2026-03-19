@@ -8,7 +8,7 @@
 # Reference: book/book_system_intent.yaml (system)
 # Parent:    book_structure.part_1_foundations.chapters[2]
 # Source:    ivd_system_intent.yaml (8 principles)
-# Version: 2.0
+# Version: 2.3
 # Created: 2026-01-26
 # Status: Complete
 # ==============================================================================
@@ -99,8 +99,10 @@ deliverables:
         - "Post-implementation verification protocol: the 4-step audit AI agents execute after implementation — re-read intent from disk, diff against constraints, check test paths, report PASS/FAIL/NEEDS_REVIEW. This is Principle 4 made concrete for AI agents. Without it, 'verify' is aspirational."
         - "Agent instruction files (.cursorrules, .clinerules) as the runtime enforcement point for the verification protocol — the agent rules recipe (recipes/agent-rules-ivd.yaml) provides the concrete rules block"
         - "Why re-reading intent from disk (Protocol Step 1) is cognitively necessary: the lost-in-the-middle effect — research shows attention degrades log-linearly for information positioned in the middle of long contexts, even in GPT-4 and Claude 3. The effective context window can be 99% smaller than the advertised limit for information not at the edges. Re-reading repositions the ground truth where the attention mechanism weights it highest. This is not a best practice; it is a cognitive necessity given how LLMs process context."
+        - "READ-ACKNOWLEDGE-VIOLATE PATTERN: A subtle finding from production (GitHub anthropics/claude-code #26848, 2025) that every developer should know. An AI agent can read an instruction file, recite all constraints when asked, explicitly confirm it will follow them — and then violate them 10 lines later in the same session. This was documented systematically across 400-line instruction files with 24 enforcement hooks. The problem isn't model quality or instruction file length. The problem is that compliance with stated constraints is an orthogonal capability to task completion (MOSAIC 2025): generating correct, working code and following all stated constraints are separately measured skills. Under attention pressure, the model defaults to the stronger skill — producing correct code — and constraint adherence degrades. The Post-Implementation Verification Protocol is the direct counter: it separates verification from generation, eliminating the attention competition by making constraint checking its own dedicated pass."
+        - "WHEN SEGMENTED IMPLEMENTATION WAS USED: The protocol (Step 1–4) serves as a cross-cutting final sweep rather than the primary per-constraint check. Per-constraint compliance was already established at the segment level during implementation. The sweep's value shifts to catching inter-constraint gaps — situations where satisfying one group of constraints created a violation in another. Research basis: constraint compliance is orthogonal to task completion (MOSAIC 2025); 68% accuracy at high constraint density with nonlinear degradation (IFScale 2025). See §3.6 for the full constraint-segmented implementation protocol."
         - "Extension to evaluation: for systems that run repeatedly, continuous verification extends to continuous improvement — the experimental evaluation section (Ch6) formalizes evaluate → adjust → re-verify loops"
-        - "Common violations: no automated constraint tests in CI, no review cadence, verification only at initial implementation, AI agent implements but skips verification step"
+        - "Common violations: no automated constraint tests in CI, no review cadence, verification only at initial implementation, AI agent implements but skips verification step, verification used as the only per-constraint check on a complex multi-constraint intent (post-hoc is too late when the read-acknowledge-violate pattern applies)"
     
     - id: "3.5"
       title: "Principle 5: Layered Understanding"
@@ -117,12 +119,13 @@ deliverables:
         - "One-line rule first: **AI writes the intent, implements against it, and verifies—not just syncs.**"
         - "1–2 paragraphs: Key principle for AI Agents era; AI writes intent from human description, implements, verifies; catches own hallucinations"
         - "Why essential: without this, AI reads prose and guesses; with this, clarification at intent stage, turns drop, hallucinations caught at source"
-        - "Workflow: You describe → AI writes intent → You review → AI stress-tests intent → AI implements → AI verifies"
+        - "Workflow: You describe → AI writes intent → You review → AI stress-tests intent → AI implements (segmented) → AI verifies"
         - "Intent stress test (Step 4): after human review, AI adversarially probes its own intent for completeness — four probes: (1) constraint completeness: what input breaks this? (2) implementation anticipation: what decisions will code force that intent doesn't address? (3) assumption challenge: what is implicitly assumed? (4) constraint satisfiability: do any constraints conflict? Can all be satisfied simultaneously? Are critical constraints listed last to counter position bias? Research backing probe 4: UltraBench 2025 — simultaneous satisfaction fails even when individual constraints pass at 70%+ accuracy. Catches flaws cheaper than implementation does. Skip for trivial changes."
-        - "Sub-principles or examples: AI writes intent, AI stress-tests intent, AI implements against intent, AI verifies own work, linguistic mirroring as alignment signal"
+        - "CONSTRAINT-SEGMENTED IMPLEMENTATION (Step 5): After the stress test, for intents with 3+ constraints, implementation must be structured in segments rather than executed in a single pass. The protocol: (1) GROUP constraints into functional areas — input validation, core logic, performance, error handling; (2) IMPLEMENT one segment; (3) RE-READ the intent constraints for that segment from disk; (4) VERIFY the segment satisfies its constraints; (5) repeat for each segment; (6) CROSS-CUT sweep for inter-constraint gaps. Why this works: each re-read repositions constraint text at the top of the context stack where transformer attention is highest. This converts one long attention span (where early constraints fade into low-attention middle positions) into multiple short ones, each starting fresh. Research basis: read-acknowledge-violate pattern (GitHub anthropics/claude-code #26848, 2025) — AI reads, confirms, violates; lost-in-the-middle >30% attention degradation (Liu et al. 2023, Stanford NLP); constraint compliance orthogonal to task completion (MOSAIC 2025) — producing correct code and following all constraints are separate capabilities; 68% compliance accuracy at high density with nonlinear degradation (IFScale 2025). The threshold (3+ constraints) is based on the IFScale degradation curve — threshold effects appear at medium density. Below 3, single-pass with the verification protocol is acceptable."
+        - "Sub-principles or examples: AI writes intent, AI stress-tests intent, AI implements with constraint-segmented approach, AI verifies own work, linguistic mirroring as alignment signal"
         - "Teaching when user lacks knowledge: AI creates structured educational artifact explaining concepts, user confirms understanding, then proceeds (Step 0a, canonical)"
         - "Discovery when user can't describe: AI proposes goals/recipes/options, user picks, then intent flow (Step 0b, experimental)"
-        - "Common violations: AI only implements (doesn't write intent), AI skips stress test and discovers gaps during implementation, no verification step, unstructured prose (AI can't parse)"
+        - "Common violations: AI only implements (doesn't write intent), AI skips stress test and discovers gaps during implementation, AI implements in a single pass against a 5-constraint intent (structurally guaranteed to miss constraints), no verification step, unstructured prose (AI can't parse)"
     
     - id: "3.7"
       title: "Principle 7: Understanding Survives Implementation"
@@ -174,7 +177,8 @@ key_points:
   - "Principle 6 (AI writes intent, implements, verifies) is the key for the AI Agents era"
   - "Principle 6 extensions: teaching before intent (canonical), discovery before intent (experimental), linguistic mirroring, intent stress test (Step 4 — adversarial completeness check before implementing)"
   - "Principle 3: empirical refinement — when implementation reveals that the intent's assumptions are wrong, STOP and update the intent with empirical evidence before continuing. The stress test anticipates; empirical refinement discovers. Together they close the loop."
-  - "Principle 4: post-implementation verification protocol — the concrete 4-step audit that makes 'continuous verification' actionable for AI agents; agent instruction files (.cursorrules) as runtime enforcement point"
+  - "Principle 4: post-implementation verification protocol — the concrete 4-step audit that makes 'continuous verification' actionable for AI agents; agent instruction files (.cursorrules) as runtime enforcement point. When constraint-segmented implementation is used, the protocol serves as a cross-cutting final sweep, not the primary per-constraint check."
+  - "Read-acknowledge-violate pattern (GitHub anthropics/claude-code #26848, 2025): AI agents can read, confirm, and violate constraints in sequence. Constraint compliance and task completion are orthogonal capabilities (MOSAIC 2025). Constraint-segmented implementation (Step 5) is the structural counter."
   - "Common violations and how to avoid them; Principle 8: when to use inversion, when to skip"
 
 # ==============================================================================
@@ -327,6 +331,26 @@ verification:
 # ==============================================================================
 
 changelog:
+  - version: "2.3"
+    date: "2026-02-09"
+    change: |
+      Section 3.4 (Principle 4): added read-acknowledge-violate pattern (GitHub #26848) as named
+      phenomenon; clarified role of Post-Implementation Verification Protocol as final cross-cutting
+      sweep when constraint-segmented implementation is used; new common violation for post-hoc-only
+      verification on complex intents.
+      Section 3.6 (Principle 6): added CONSTRAINT-SEGMENTED IMPLEMENTATION as Step 5 in the P6
+      workflow; full protocol (GROUP→IMPLEMENT→RE-READ→VERIFY→CROSS-CUT); complete research basis
+      (Liu et al. 2023 lost-in-the-middle, MOSAIC 2025 orthogonality, IFScale 2025 density
+      degradation); threshold rule (3+ constraints); new common violation (single-pass on complex
+      intent).
+      key_points: added read-acknowledge-violate note + constraint-segmented implementation.
+    reason: |
+      Post-implementation audits consistently surface missed requirements. Research establishes that
+      this is structural: LLMs exhibit a read-acknowledge-violate pattern; constraint compliance is
+      orthogonal to task completion; attention degrades for middle positions during long generation
+      spans. Segmented implementation converts one long span into multiple short ones, each starting
+      with fresh constraint attention from re-reading the intent. See DECISIONS.md FDR-014.
+    evidence: "Liu et al. 2023 (lost-in-the-middle), MOSAIC 2025, IFScale 2025, CodeIF 2025, GitHub anthropics/claude-code #26848+. DECISIONS.md FDR-014."
   - version: "2.2"
     date: "2026-02-09"
     change: |

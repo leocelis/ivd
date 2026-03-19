@@ -332,6 +332,10 @@ Principle 4 says *verify continuously*, but what does that concretely mean for a
 
 4. **Report results** — Produce a structured report: for each constraint, PASS / FAIL / NEEDS_REVIEW. Do not declare implementation complete until all constraints are PASS or explicitly acknowledged as NEEDS_REVIEW with justification.
 
+**When constraint-segmented implementation (Step 5) was used:** The protocol functions as a cross-cutting final sweep. Per-constraint compliance was already established at the segment level during implementation. The sweep's value is catching inter-constraint gaps — situations where satisfying one segment's constraints introduced a violation in another.
+
+**When single-pass implementation was used (1–2 constraints):** The protocol is the primary verification mechanism. Re-reading from disk (Step 1) is especially critical here — it counteracts the lost-in-the-middle effect by repositioning intent at the top of the attention window.
+
 Without this protocol, the IVD loop is broken: Intent exists → Implementation exists → But no verification connects them. The intent becomes decoration, not a contract.
 
 See: `recipes/agent-rules-ivd.yaml` for the concrete agent instruction rules that enforce this protocol in `.cursorrules`, `.clinerules`, Copilot instructions, or any AI agent configuration file.
@@ -398,8 +402,8 @@ AI: [Implements against intent, runs tests, all pass]
 2. AI writes intent (structured YAML)
 3. Human reviews intent (clarification before code)
 4. AI stress-tests intent (adversarial completeness check)
-5. AI implements against intent
-6. AI verifies (catches hallucinations)
+5. AI implements using constraint-segmented approach
+6. AI verifies (full constraint sweep)
 
 **Why this matters:** Clarification at intent stage, not after code. Turns drop to one.
 
@@ -419,6 +423,52 @@ If the stress test reveals gaps, the AI updates the intent (adds constraints, te
 **Why this step exists:** Intent captures what you know at the time of writing. Implementation forces decisions the intent didn't anticipate. The stress test is a structured way to anticipate those decisions *before* they become implementation rework. It's Principle 2 (Understanding Must Be Executable) applied reflexively — the AI checks whether its own understanding is complete before acting on it. The fourth probe (constraint satisfiability) prevents the especially costly failure mode where all individual constraints are well-formed but the set as a whole is impossible to satisfy simultaneously.
 
 **When to skip:** Trivial changes where the intent is a single constraint with an obvious implementation. The stress test adds value proportional to the complexity of the intent.
+
+#### Step 5: Constraint-Segmented Implementation
+
+After the stress test and before the final verification sweep, implementation itself must account for a documented architectural limitation of transformer-based LLMs: **constraint compliance degrades during long generation spans**.
+
+**The research basis:**
+
+The problem is structural, not a model quality issue:
+
+- **Read-acknowledge-violate pattern** (GitHub anthropics/claude-code #26848, #6120, #32290, #742 — 2025): AI agents read instruction files, can recite constraints verbatim, explicitly confirm understanding — then violate them in the next generation step. Documented systematically across model versions and user tiers. Persists even with 24+ enforcement hooks and 400-line instruction files.
+- **Lost-in-the-middle** (Liu et al. 2023, Stanford NLP): Transformers attend strongly to the start and end of context; middle positions degrade by more than 30%. The intent artifact is injected at the top. As the AI generates implementation code, intent tokens are pushed toward the middle. By line 80 of a 200-line implementation, the first constraint listed in the intent is in the low-attention zone.
+- **Constraint compliance is orthogonal to task completion** (MOSAIC 2025): producing correct, working code and following all stated constraints are measured separately — they are distinct capabilities. A model can deliver high-quality implementation that misses 2–3 constraints without any tension. The model defaults to "produce correct code" under attention pressure; constraint adherence is secondary.
+- **Constraint density degradation** (IFScale 2025): frontier models achieve only 68% accuracy at high instruction density. Degradation is nonlinear — each additional constraint reduces overall compliance probability. The drop is not gradual; there are threshold effects at medium constraint densities.
+
+**The protocol:**
+
+For intents with 3+ constraints, do not implement in a single pass. Use constraint segments:
+
+```
+CONSTRAINT-SEGMENTED IMPLEMENTATION:
+
+1. GROUP — After the stress test, group constraints into implementation
+   segments by functional area. Example groups:
+   - Input validation constraints
+   - Core logic / output constraints  
+   - Performance / latency constraints
+   - Error handling constraints
+
+2. IMPLEMENT one segment
+
+3. RE-READ the constraints for that segment from the intent artifact
+   (not from memory — counter lost-in-the-middle)
+
+4. VERIFY the segment satisfies its constraints before proceeding
+
+5. NEXT SEGMENT — repeat steps 2–4
+
+6. CROSS-CUT — after all segments, run the full Post-Implementation
+   Verification Protocol as a final sweep for inter-constraint gaps
+```
+
+**Why re-reading after each segment works:** Each re-read repositions the constraint text at the top of the context stack, where the transformer's attention mechanism weights it highest. This converts one long generation (where early constraints fade into low-attention middle positions) into multiple short generations, each starting with fresh constraint attention. The cognitive necessity of re-reading intent from disk (established for Verification Protocol Step 1) applies equally here — not as a best practice, but as a structural requirement.
+
+**When to skip:** Intents with 1–2 constraints where a single implementation pass is trivially verifiable. The segmented approach adds value proportional to constraint count. Below 3 constraints, the overhead exceeds the benefit.
+
+**What this changes about post-implementation verification:** When constraint-segmented implementation was used, the Post-Implementation Verification Protocol (Principle 4) functions as a cross-cutting final sweep — most per-constraint compliance is already established at the segment level. The sweep's primary value shifts to catching inter-constraint gaps and verifying that segment-level fixes didn't introduce cross-segment violations.
 
 ### When the User Lacks Technical Knowledge: Teaching Before Intent
 

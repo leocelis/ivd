@@ -377,6 +377,62 @@ One GitHub issue thread injects confirmed empirical knowledge into the contextua
 
 ---
 
+## FDR-014: Constraint-Segmented Implementation — Mitigating Compliance Degradation During Generation
+
+**Date:** 2026-02-09
+**Status:** Accepted — Canonical Extension
+
+**Gap identified:**
+Post-implementation audits against intent artifacts consistently surface missed requirements, even when the AI agent explicitly read and acknowledged all constraints before starting. The user-reported pattern: "when you ask to compare [output] with the intent and find gaps, always something comes up." The problem persists across model generations and enforcement hook counts (documented in production in anthropics/claude-code GitHub).
+
+**Evidence base:**
+
+1. **Read-acknowledge-violate pattern** (GitHub anthropics/claude-code issues #26848, #6120, #32290, #742 — 2025): Users across model tiers document the same pattern — AI reads an instruction file, recites constraints when asked, confirms it will follow them, then violates them during generation. Reported with 24+ enforcement hooks and 400-line instruction files. The issue is systematic, not user error.
+
+2. **Lost-in-the-middle effect** (Liu et al. 2023, Stanford NLP Group): Transformer attention is highest at the beginning and end of context. Information in middle positions degrades by >30%. An intent artifact injected at the top of the context becomes a middle-position document by the time 80+ lines of implementation are generated. Constraints listed in the middle of the artifact are the most vulnerable.
+
+3. **Constraint compliance is orthogonal to task completion** (MOSAIC 2025): Producing correct, working code and following all stated constraints are separately measured capabilities. A model can achieve high task completion scores while missing 2–3 constraints without tension — the model defaults to "produce correct code" and deprioritizes constraint adherence under attention pressure. These are distinct capabilities, not aspects of the same one.
+
+4. **Constraint density degradation** (IFScale 2025): Frontier models achieve ~68% accuracy at high instruction density, with nonlinear degradation — threshold effects appear at medium constraint density. Each additional constraint reduces the probability of full compliance, not proportionally but with cascading effects.
+
+5. **Additional evidence** (CodeIF 2025): Confirms the orthogonality of task-level quality and instruction-following quality as separately evaluable metrics.
+
+**Analysis:**
+
+The failure mode is structural, not model-quality-related. Three architectural factors combine in single-pass implementation:
+
+- **Attention gradient:** Early constraints shift to middle positions during long generation spans; they receive less attention than constraints near the prompt boundary.
+- **Capability gap:** Task completion (produce working code) and constraint compliance (follow all stated rules) are orthogonal. Optimizing for one does not guarantee the other.
+- **Density cascading:** Adding more constraints to the intent doesn't linearly reduce each constraint's compliance probability — it creates threshold effects where overall compliance drops nonlinearly.
+
+These factors make single-pass implementation of a complex intent architecturally likely to miss constraints, regardless of how thoroughly the AI reviewed the intent before starting.
+
+**Decision: Canonical extension to P4 and P6**
+
+Introduce **Constraint-Segmented Implementation** as a canonical protocol:
+
+- **Trigger:** 3+ constraints in the intent (based on IFScale degradation curve — threshold effects appear at medium density; below 3, single-pass is acceptable)
+- **Protocol:** GROUP constraints by functional area → IMPLEMENT one segment → RE-READ constraints for that segment from disk → VERIFY segment → repeat → CROSS-CUT sweep
+- **Mechanism:** Each re-read repositions constraint text at the top of the context stack where transformer attention weights it highest. This converts one long attention span into multiple short ones, each starting with fresh constraint attention. The same cognitive mechanism as the Post-Implementation Verification Protocol (re-read from disk), applied during generation.
+- **Post-implementation verification role:** When segmented implementation was used, Rule 2 (Post-Implementation Verification Protocol) functions as a cross-cutting final sweep — catching inter-constraint gaps — rather than as the primary per-constraint compliance check.
+
+**What this is NOT:** A workaround for a model deficiency. The lost-in-the-middle effect and constraint compliance orthogonality are inherent to current transformer architectures. Segmented implementation is a protocol that works with the architecture rather than against it.
+
+**Files changed:**
+- `framework.md`: Step 5: Constraint-Segmented Implementation added to P6 section; Post-Implementation Verification Protocol updated to note its role when segmented implementation was used
+- `ivd_system_intent.yaml` (v2.4): P6 single-agent and multi-agent workflows updated; P4 canonical extension "Constraint-segmented implementation" added with full research citations
+- `recipes/agent-rules-ivd.yaml` (v1.5): Rule 1 IMPLEMENT step expanded with full segmented protocol; new `common_failures` entry "Single-Pass Implementation Against Complex Intent"
+- `mcp_server/tools/context.py`: P6 description in `ivd_get_context` updated with segmented protocol summary
+- Book Ch3 intent: §3.4 and §3.6 updated
+- Book Ch1 intent: §1.3 updated with constraint compliance gap
+
+**Relationship to other FDRs:**
+- **FDR-011 (Constraint Satisfiability):** FDR-011 addresses conflict detection and priority ordering at intent design time. FDR-014 addresses the implementation phase — how constraints are attended to during code generation. Both target constraint compliance failure but at different stages of the IVD workflow.
+- **FDR-009 (Empirical Refinement):** FDR-014 is a sister protocol — both extend P4 and P6 with prescriptive steps that address structural LLM limitations (FDR-009: what to do when the implementation reveals wrong assumptions; FDR-014: how to implement without missing constraints).
+- **FDR-008 (Cognitive Foundation):** The mechanism of constraint-segmented implementation (re-reading from disk = fresh contextual injection) is a direct application of the contextual knowledge principle — high-signal context injected at the right moment overrides parametric defaults.
+
+---
+
 ## Template for New Entries
 
 ```markdown
