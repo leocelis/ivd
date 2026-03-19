@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-10T21:37:08.594730",
+  "last_updated": "2026-03-19T20:43:25.008037",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1354,11 +1354,39 @@
       "num_chunks": 12,
       "cost_usd": 0.00015450000000000001,
       "processed_at": "2026-03-10T21:37:08.586266"
+    },
+    "547624fc8c8041b79f5a89ba4206591834924876aabbc332339f86711fb1923f": {
+      "file_name": "ivd_system_intent.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/ivd_system_intent.yaml",
+      "num_chunks": 42,
+      "cost_usd": 0.00052672,
+      "processed_at": "2026-03-19T20:43:20.975827"
+    },
+    "a57b4846d7aea5e1914e2fdcf54f1bd86807c77b1789d0ec6c08ca9250fc46ab": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 50,
+      "cost_usd": 0.00071678,
+      "processed_at": "2026-03-19T20:43:22.467186"
+    },
+    "7add6f8efcf5d670b5a53858e2ba8ef3844ddb03f09081629c26ec70da671764": {
+      "file_name": "DECISIONS.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/DECISIONS.md",
+      "num_chunks": 17,
+      "cost_usd": 0.00022258,
+      "processed_at": "2026-03-19T20:43:23.770207"
+    },
+    "9d44b7d0743b971753602d9daa3a63047d9281e1fec334fdf87a95e8c35f66c8": {
+      "file_name": "agent-rules-ivd.yaml",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/agent-rules-ivd.yaml",
+      "num_chunks": 14,
+      "cost_usd": 0.00017752,
+      "processed_at": "2026-03-19T20:43:24.997742"
     }
   },
   "stats": {
-    "total_docs": 193,
-    "total_chunks": 2352,
-    "total_cost": 0.031195720000000003
+    "total_docs": 197,
+    "total_chunks": 2475,
+    "total_cost": 0.032839320000000005
   }
 }
