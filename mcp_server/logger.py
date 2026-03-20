@@ -22,7 +22,7 @@ Usage:
         tool="ivd_search",
         duration_ms=670,
         status="ok",
-        key_id="O9T4HnV6...",
+        key_id="abc12345...",
         origin_ip="45.123.45.67",
         payload_preview='{"query": "What are the eight principles?"}',
         response_preview="**Result 1** (similarity: 0.57)...",
@@ -261,7 +261,7 @@ def extract_key_id(api_key: Optional[str]) -> str:
         api_key: Full API key or None
     
     Returns:
-        Partial key ID (e.g., "O9T4HnV6...") or "stdio" if None
+        Partial key ID (e.g., "abc12345...") or "stdio" if None
     """
     if not api_key:
         return "stdio"

@@ -9,7 +9,7 @@
 #   ./mcp_server/devops/logs.sh --tools             # Show tool call summary (local)
 #   ./mcp_server/devops/logs.sh --errors            # Show only errors (local)
 #   ./mcp_server/devops/logs.sh --auth              # Show auth events (local)
-#   ./mcp_server/devops/logs.sh --key O9T4HnV6      # Filter by partial key (local)
+#   ./mcp_server/devops/logs.sh --key abc12345      # Filter by partial key (local)
 #   ./mcp_server/devops/logs.sh --tool ivd_search   # Filter by tool name (local)
 #   ./mcp_server/devops/logs.sh --ip 45.123.45.67   # Filter by origin IP (local)
 #   ./mcp_server/devops/logs.sh --since 2026-02-08  # Filter by date (local)
@@ -440,7 +440,7 @@ main() {
             echo "  --files                List log files with sizes"
             echo ""
             echo "Filters (local logs only):"
-            echo "  --key <partial_key>    Filter by partial API key (e.g. O9T4HnV6)"
+            echo "  --key <partial_key>    Filter by partial API key (e.g. abc12345)"
             echo "  --tool <tool_name>     Filter by tool (e.g. ivd_search)"
             echo "  --ip <ip_address>      Filter by origin IP"
             echo "  --since <YYYY-MM-DD>   Filter entries since date"

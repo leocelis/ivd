@@ -358,12 +358,12 @@ implementation:
   log_file_schema:
     format: "JSON lines (one JSON object per line)"
     example: |
-      {"ts":"2026-02-08T14:30:00.123Z","level":"INFO","event":"tool_call","tool":"ivd_search","duration_ms":670,"status":"ok","key_id":"O9T4HnV6...","origin_ip":"45.123.45.67","payload_preview":"{\"query\": \"What are the eight principles?\", \"top_k\": 3}","response_preview":"**Result 1** (similarity: 0.57) Source: `chapter.md`..."}
+      {"ts":"2026-02-08T14:30:00.123Z","level":"INFO","event":"tool_call","tool":"ivd_search","duration_ms":670,"status":"ok","key_id":"abc12345...","origin_ip":"45.123.45.67","payload_preview":"{\"query\": \"What are the eight principles?\", \"top_k\": 3}","response_preview":"**Result 1** (similarity: 0.57) Source: `chapter.md`..."}
       {"ts":"2026-02-08T14:30:01.000Z","level":"WARNING","event":"auth","status":"error","key_id":"badkey12...","origin_ip":"192.168.1.1","error":"invalid_key"}
 
   console_format:
     example: |
-      2026-02-08 14:30:00 [INFO]  tool_call  ivd_search  670ms  ok  key=O9T4HnV6...  ip=45.123.45.67
+      2026-02-08 14:30:00 [INFO]  tool_call  ivd_search  670ms  ok  key=abc12345...  ip=45.123.45.67
       2026-02-08 14:30:01 [WARN]  auth       error       1ms    invalid_key  ip=192.168.1.1
 
 # ==============================================================================
