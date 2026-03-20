@@ -92,4 +92,3 @@ references:
   extension: "Discovery before intent (ivd_system_intent.yaml principle_6_ai_partner.extensions)"
   framework_section: "framework.md → When the User Cannot Yet Describe: Discovery Before Intent"
   implementation_guide: "framework.md → Step 0b (optional): Discovery When You're Not Sure What to Build"
-  research: "research/discovery_before_intent.md"

@@ -4,7 +4,6 @@
 # Pattern for how intent flows from human → coordinator → specialist agents
 # in multi-agent architectures.
 #
-# Reference: research/coordinator_agent_design_patterns.md
 # Version: 1.0
 # Created: 2026-01-26
 # ==============================================================================
@@ -194,8 +193,6 @@ key_principles:
   - name: "Tools are truth, history is context"
     rule: "Coordinator uses tools to verify current state, never assumes from chat history"
     anti_pattern: "Returning file path from chat history without calling tool to verify it exists"
-    reference: "research/COORDINATOR_AGENT_DESIGN_PATTERNS.md"
-    
   - name: "Intent at every routing decision"
     rule: "Before routing to an agent, coordinator writes what that agent should accomplish"
     anti_pattern: "Coordinator routes with vague 'handle this' instruction"
@@ -303,7 +300,6 @@ validation:
 
 references:
   internal:
-    - "research/coordinator_agent_design_patterns.md"
     - "recipes/workflow-orchestration.yaml"
   external:
     - "OpenAI Agents Documentation (2026) - Tool-First Architecture"

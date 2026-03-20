@@ -487,7 +487,7 @@ Sometimes the user lacks the technical knowledge to understand domain concepts, 
 
 **Example:** User needs ETL but doesn't know what ETL is → AI creates educational artifact explaining Extract/Transform/Load, batch vs streaming, incremental vs full refresh, with verification questions → user understands → then discovery (which ETL pattern?) → describe → intent.
 
-**Tools:** Use `ivd_teach_concept` to create educational artifact. **Recipe:** `recipes/teaching-before-intent.yaml`. **Research:** `research/teaching_before_intent.md`.
+**Tools:** Use `ivd_teach_concept` to create educational artifact. **Recipe:** `recipes/teaching-before-intent.yaml`.
 
 **For reverse engineering:** When AI writes intent from existing code, add an optional `education` section to the intent itself so the user learns domain patterns while reviewing.
 
@@ -507,7 +507,7 @@ Sometimes the user doesn't have enough knowledge to give clear instructions or k
 3. User picks or narrows ("that one, but for compliance not sales").
 4. Standard flow: user describes (now with a direction) → AI writes intent → review → implement → verify.
 
-**Tools:** Use `ivd_discover_goal` (or list recipes + list features) to gather options; then proceed to intent writing. **Recipe:** `recipes/discovery-before-intent.yaml`. **Research:** `research/discovery_before_intent.md`.
+**Tools:** Use `ivd_discover_goal` (or list recipes + list features) to gather options; then proceed to intent writing. **Recipe:** `recipes/discovery-before-intent.yaml`.
 
 This is still Principle 6 (AI as understanding partner)—the AI helps the user form intent when they can't yet articulate it.
 
@@ -572,8 +572,6 @@ Coordinator synthesizes verified results
 **Recipes:**
 - `recipes/coordinator-intent-propagation.yaml` (top-down: coordinator → agents at runtime)
 - `recipes/agent-capability-propagation.yaml` (bottom-up: agent changes → coordinator routing)
-
-**Research:** `research/coordinator_agent_design_patterns.md`
 
 ---
 
