@@ -2,7 +2,7 @@
   "kb_name": "ivd",
   "source_path": "/Users/leocelis/workspace/leocelis/ivd",
   "created_at": "2026-02-07T17:42:30.404475",
-  "last_updated": "2026-03-19T20:43:25.008037",
+  "last_updated": "2026-03-20T15:29:09.926982",
   "documents": {
     "9edc97ce2e3a8c79f8414fca761dbc18c28bbae3b68b31386f03faa7d08fabe4": {
       "file_name": "ivd_system_intent.yaml",
@@ -1382,11 +1382,53 @@
       "num_chunks": 14,
       "cost_usd": 0.00017752,
       "processed_at": "2026-03-19T20:43:24.997742"
+    },
+    "a2f3b8e7cc13ff33305b78b7c5eeb3833f00b03bd99f0aa27b2e9609913268f0": {
+      "file_name": "cheatsheet.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/cheatsheet.md",
+      "num_chunks": 7,
+      "cost_usd": 9.518000000000002e-05,
+      "processed_at": "2026-03-20T15:29:06.046137"
+    },
+    "39d17607894cd665a083b8275cada8ac13bd504c05e13443b10b389a7d8791ae": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/README.md",
+      "num_chunks": 6,
+      "cost_usd": 8.380000000000002e-05,
+      "processed_at": "2026-03-20T15:29:07.139147"
+    },
+    "2ae576aba8675be9682ca6e1898cfd85b7e50800a95b4cbedfac9f5ea9347fbf": {
+      "file_name": "purpose.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/purpose.md",
+      "num_chunks": 9,
+      "cost_usd": 0.00012184,
+      "processed_at": "2026-03-20T15:29:07.614266"
+    },
+    "6dfeb7ab4dacc9c80dc7d1c091182b93cd87493cb72036c52765596572624a9d": {
+      "file_name": "framework.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/framework.md",
+      "num_chunks": 50,
+      "cost_usd": 0.00071672,
+      "processed_at": "2026-03-20T15:29:08.629491"
+    },
+    "b408a2db01804dd19868dbeb436af9f4673af1b9e9de3b7a75a6861f014b43d8": {
+      "file_name": "cookbook.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/cookbook.md",
+      "num_chunks": 13,
+      "cost_usd": 0.00019466000000000004,
+      "processed_at": "2026-03-20T15:29:09.498673"
+    },
+    "7462117cc9a17e5fd0e399ca19428acf8cc5d2acb464503c43c39f0894d99349": {
+      "file_name": "README.md",
+      "file_path": "/Users/leocelis/workspace/leocelis/ivd/recipes/README.md",
+      "num_chunks": 1,
+      "cost_usd": 1e-05,
+      "processed_at": "2026-03-20T15:29:09.920176"
     }
   },
   "stats": {
-    "total_docs": 197,
-    "total_chunks": 2475,
-    "total_cost": 0.032839320000000005
+    "total_docs": 203,
+    "total_chunks": 2561,
+    "total_cost": 0.034061520000000005
   }
 }
