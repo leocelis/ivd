@@ -63,7 +63,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="ivd_validate",
-            description="Validate an IVD artifact before finalizing. Checks structure, required sections, and basic compliance. Phase 1: structure validation only.",
+            description="Validate an IVD artifact before finalizing. Checks structure, required sections, and basic compliance.",
             inputSchema={"type": "object", "properties": {
                 "artifact_yaml": {"type": "string", "description": "YAML content of the artifact to validate"},
                 "artifact_type": {"type": "string", "description": "Type of artifact", "enum": ["intent", "recipe", "workflow"], "default": "intent"},

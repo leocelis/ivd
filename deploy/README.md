@@ -38,17 +38,17 @@ Set these in the DO dashboard (Settings → Environment Variables):
 
 ## App Spec
 
-The DO app spec lives at `_private/do/app.yaml` (in the private repo). Key settings:
+Key settings used for the DO app spec:
 
 ```yaml
 build_command: "pip install -r requirements.txt && python mcp_server/devops/embed.py"
 run_command: "python deploy/wsgi.py --port 8080"
 ```
 
-To update the live app spec:
+To update the live app spec with `doctl`, point to your own `app.yaml` (see the [doctl docs](https://docs.digitalocean.com/reference/doctl/reference/apps/update/)):
 
 ```bash
-doctl apps update <app_id> --spec _private/do/app.yaml
+doctl apps update <app_id> --spec path/to/app.yaml
 ```
 
 ## Local Development (SSE mode)
@@ -65,14 +65,8 @@ python deploy/wsgi.py --port 8080
 
 ## API Key Management
 
-Generate and manage API keys for remote users:
+`IVD_API_KEYS` is a comma-separated list of tokens set in your DO environment variables. To add or revoke a key:
 
-```bash
-./_private/devops/keys.sh --generate alice     # create key
-./_private/devops/keys.sh --add alice_<token>   # push to DO
-./_private/devops/keys.sh --verify alice_<token> # test key
-./_private/devops/keys.sh --revoke alice         # revoke
-./_private/devops/keys.sh --list                 # show all
-```
-
-> `keys.sh` is a private operational tool — clone [`ivd-private`](https://github.com/leocelis/ivd-private) into `_private/` to use it.
+1. Generate a random token (e.g. `openssl rand -hex 32`)
+2. Prepend a username prefix for easy identification: `alice_<token>`
+3. Update `IVD_API_KEYS` in the DO dashboard (append or remove entries) and redeploy

@@ -218,7 +218,7 @@ _SKIP_DIRS: Set[str] = {
     "node_modules", "__pycache__", ".mypy_cache", ".pytest_cache",
     "venv", ".venv", "env", ".env",
     "dist", "build", "target", "out",
-    "templates", "examples", "research", "docs", "_private",
+    "templates", "examples", "docs",
     "brain", "knowledge",  # MCP server internal
 }
 

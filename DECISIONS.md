@@ -66,7 +66,7 @@
 2. New sub-field: `interface.routing` (captures the descriptive string used for LLM routing).
 3. Canonical status — the pattern is proven in production multi-agent systems.
 
-**Changes:** `recipes/agent-capability-propagation.yaml` (new), `ivd_system_intent.yaml`, `framework.md`, `templates/intent.yaml`, `mcp_server/tools/scaffold.py`, `mcp_server/tools/validate.py`, book intents (Ch3, Ch9, Ch19).
+**Changes:** `recipes/agent-capability-propagation.yaml` (new), `ivd_system_intent.yaml`, `framework.md`, `templates/intent.yaml`, `mcp_server/tools/scaffold.py`, `mcp_server/tools/validate.py`.
 
 ---
 
@@ -85,7 +85,7 @@
 3. `ivd_init` detects agent instruction files and suggests adding the IVD rules block.
 4. Canonical status — this is Principle 4 made concrete.
 
-**Changes:** `recipes/agent-rules-ivd.yaml` (new), `ivd_system_intent.yaml`, `framework.md`, `templates/intent.yaml`, `mcp_server/tools/validate.py`, `mcp_server/tools/scaffold.py`, book intents (Ch3, Ch4, Ch17), `book_system_intent.yaml`.
+**Changes:** `recipes/agent-rules-ivd.yaml` (new), `ivd_system_intent.yaml`, `framework.md`, `templates/intent.yaml`, `mcp_server/tools/validate.py`, `mcp_server/tools/scaffold.py`.
 
 ---
 
@@ -100,7 +100,7 @@
 
 **Decision:** Added Step 4 to the P6 workflow: "AI stress-tests intent." Three challenge dimensions: constraint completeness, implementation anticipation, assumption challenge. This is Principle 2 (Understanding Must Be Executable) applied reflexively to the intent itself. Canonical status — it addresses a structural workflow gap, not an optional enhancement.
 
-**Changes:** `ivd_system_intent.yaml`, `framework.md`, `README.md`, `templates/intent.yaml`, `recipes/agent-rules-ivd.yaml` (Rule 4), `mcp_server/tools/validate.py`, book intents (Ch3, Ch4), `book_system_intent.yaml`.
+**Changes:** `ivd_system_intent.yaml`, `framework.md`, `README.md`, `templates/intent.yaml`, `recipes/agent-rules-ivd.yaml` (Rule 4), `mcp_server/tools/validate.py`.
 
 ---
 
@@ -160,16 +160,10 @@
 **Decision:** Incorporate as canonical framework foundation. Not a new principle — a theoretical explanation for existing principles. Applied at:
 - `ivd_system_intent.yaml`: `cognitive_foundation` field under `principles` (canonical reference)
 - `framework.md`: new section "Why This Works: The Cognitive Architecture of LLMs" under The Evolution
-- Book Ch1 §1.2: cognitive mechanism added to "Why Traditional Artifacts Fail"
-- Book Ch2 §2.6: intent artifact as contextual channel saturation; lost-in-the-middle for Protocol Step 1
-- Book Ch3 §3.2: entropy argument for Principle 2 (executable understanding)
-- Book Ch3 §3.4: lost-in-the-middle explanation for Principle 4 verification protocol
-- Book Ch12 §12.1: full theoretical foundation before experiments — the "why" before the "what"
 
+**Changes (wave 1):** `ivd_system_intent.yaml` (v2.0), `framework.md` (v2.0).
 
-**Changes (wave 1):** `ivd_system_intent.yaml` (v2.0), `framework.md` (v2.0), book chapter intents: Ch1 (v2.6), Ch2 (v1.5), Ch3 (v1.9), Ch12 (v1.1).
-
-**Changes (wave 2 — prominence upgrade):** `purpose.md` (new "Two Knowledge Systems" section with table and mechanism), `README.md` (cognitive mechanism in "Why IVD?" section), `book_system_intent.yaml` (v2.8, cognitive foundation in book goal/thesis), `recipes/agent-rules-ivd.yaml` (Step 1 `why` updated with lost-in-the-middle rationale), `DECISIONS.md` (this entry updated).
+**Changes (wave 2 — prominence upgrade):** `purpose.md` (new "Two Knowledge Systems" section with table and mechanism), `README.md` (cognitive mechanism in "Why IVD?" section), `recipes/agent-rules-ivd.yaml` (Step 1 `why` updated with lost-in-the-middle rationale), `DECISIONS.md` (this entry updated).
 
 ---
 
@@ -205,9 +199,6 @@ If the discovery changes scope significantly, flag for human review before conti
 - `framework.md`: new section under Principle 3 "Empirical Refinement: When Implementation Reveals New Knowledge"
 - `ivd_system_intent.yaml` (v2.1): `empirical_refinement` canonical extension under P3
 - `recipes/agent-rules-ivd.yaml` (v1.2): Rule 5 "Empirical Refinement During Implementation" + common failure + P3 relationship
-- Book Ch3 intent (v2.0): §3.3 required_content extended with empirical refinement + new key_point
-- Book Ch2 intent (v1.6): §2.3 workflow note — implementation can trigger refinement loop back to intent
-- `book_system_intent.yaml` (v2.9): Ch3 key_points + placeholder updated
 - `DECISIONS.md`: this entry (FDR-009)
 
 **Relationship to other FDRs:**

@@ -24,10 +24,10 @@ def get_brain_root() -> str:
     return str(Path(__file__).parent.parent / "brain")
 
 
-# Directories to skip during embedding scans
+# Directories to skip during embedding scans.
+# Dirs starting with "_" or "." are also skipped by the scan_directory walk logic.
 SKIP_DIRS = {
     "mcp_server",
-    "_private",
     ".venv",
     "venv",
     ".git",
@@ -39,8 +39,6 @@ SKIP_DIRS = {
     ".obsidian",
     ".pytest_cache",
     ".do",
-    "book",
-    "research",
     "deploy",
     "temp",
 }

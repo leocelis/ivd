@@ -11,7 +11,7 @@ LOG = "IVD Tools"
 
 
 def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") -> str:
-    """Validate an IVD artifact (Phase 1: structure validation)."""
+    """Validate an IVD artifact (structure and required section checks)."""
     print(colored(f"[{LOG}] ivd_validate: type={artifact_type}", "cyan"))
 
     try:
@@ -32,7 +32,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             "suggestions": ["Provide a valid YAML artifact with at least an 'intent' section"],
             "artifact_type": artifact_type,
             "validation_level": "structure_only",
-            "note": "Schema validation and principle alignment checks coming in Phase 2",
+            "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
         }, indent=2)
 
     errors = []
@@ -199,7 +199,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "suggestions": suggestions,
         "artifact_type": artifact_type,
         "validation_level": "structure_only",
-        "note": "Schema validation and principle alignment checks coming in Phase 2",
+        "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
 
     status = "passed" if valid else "failed"

@@ -1891,7 +1891,7 @@ find agent/reviewer/ -name "*_reviewer_intent.yaml"
 **Example hierarchy:**
 
 ```
-SYSTEM: AI Development Book (book_system_intent.yaml)
+SYSTEM: My Writing Project (my_project_system_intent.yaml)
   └─ WORKFLOW: Meeting extraction workflow (workflows/meeting_extraction_intent.yaml)
       ├─ MODULE: Meeting extractor agent (agent/meeting_extractor/meeting_extractor_intent.yaml)
       │   └─ TASK: extract_insights() function (agent/meeting_extractor/intents/extract_insights_intent.yaml)

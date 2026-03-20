@@ -458,7 +458,7 @@ changelog:
     date: "2026-02-08"
     change: "Initial recipe creation for structured logging pattern"
     reason: |
-      IVD MCP Server needs tool call tracking for private alpha. Pattern is
+      IVD MCP Server needs tool call tracking. Pattern is
       reusable across any service with a dispatch layer. Based on research:
       Twelve-Factor App (stdout), Stripe (canonical log lines), structlog
       (best practices), OpenTelemetry MCP conventions (semantic fields).

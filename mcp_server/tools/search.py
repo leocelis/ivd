@@ -24,7 +24,7 @@ def ivd_search_tool(query: str, top_k: int = 5) -> str:
         return json.dumps({
             "error": "Knowledge base not found",
             "brain_root": brain_root,
-            "suggestion": "Generate embeddings first. See migration_plan.md Step 4.",
+            "suggestion": "Generate embeddings first. Run: python mcp_server/devops/embed.py (see deploy/README.md).",
             "alternative": "Use ivd_get_context, ivd_load_recipe, or ivd_load_template instead.",
         }, indent=2)
 

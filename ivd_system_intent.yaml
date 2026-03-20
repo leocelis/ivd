@@ -90,7 +90,6 @@ principles:
     References: Huang et al. ICLR 2024 (self-correction limits); 9-LLM contextual/parametric
     study (2024); lost-in-the-middle (GPT-4, Claude 3, 2024); proactive interference (2025).
     Full treatment: framework.md "Why This Works: The Cognitive Architecture of LLMs"
-    Book chapters: Ch1 §1.2, Ch2 §2.6, Ch3 §3.2+3.4, Ch12 §12.1
     
     The strategic implication: every company has unique knowledge — business rules,
     architecture decisions, compliance requirements, domain expertise — that does not
@@ -1883,7 +1882,7 @@ changelog:
           P3 canonical extension in ivd_system_intent.yaml
       (2) framework.md new section under Principle 3
       (3) Agent Rule 5 in recipes/agent-rules-ivd.yaml
-      (4) Book intents: Ch3 §3.3, Ch2 §2.3, book_system_intent Ch3 key_points
+      (4) Private content intents updated to include empirical refinement
       (5) DECISIONS.md FDR-009
 
   - version: 2.0
@@ -1897,7 +1896,7 @@ changelog:
       from disk) is cognitively necessary, not optional. This is the theoretical foundation for why
       IVD works — previously unexplained at this level. Sources: 9-LLM study (2024), Huang et al.
       ICLR 2024, lost-in-the-middle (GPT-4/Claude 3, 2024), proactive interference (2025).
-      Applied across: framework.md, book Ch1 §1.2, Ch2 §2.6, Ch3 §3.2+3.4, Ch12 §12.1.
+      Applied across: framework.md and related private content intents.
       Implementation.version also updated to 2.0.
   - version: 1.9
     date: "2026-02-09"

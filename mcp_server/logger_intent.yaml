@@ -60,8 +60,8 @@ intent:
     - Logging never crashes or slows a tool call
 
   stakeholders:
-    - "IVD framework maintainer (usage visibility during private alpha)"
-    - "Alpha users (benefit from faster bug diagnosis via log files)"
+    - "IVD framework maintainer (usage and error visibility)"
+    - "Framework users (benefit from faster bug diagnosis via log files)"
 
 # ==============================================================================
 # CONSTRAINTS
@@ -190,7 +190,7 @@ rationale:
 
     Why partial key instead of hash?
     - First 8 chars of the key are directly identifiable ("which user is this?")
-    - Hash requires a lookup table to identify users — friction during alpha
+    - Hash requires a lookup table to identify users — friction in practice
     - 8-char prefix is not enough to reconstruct the full key (32+ chars)
 
     Why partial payload and response?
@@ -230,7 +230,7 @@ alternatives:
     when_it_works: "Never — Python logging stdlib already does this"
 
   - name: "database_backed_logging"
-    rejected_because: "Overkill; adds managed DB cost; rotating files are sufficient for alpha"
+    rejected_because: "Overkill; adds managed DB cost; rotating files are sufficient for most deployments"
     when_it_works: "Need complex queries (joins, aggregations) across log data"
 
 # ==============================================================================
@@ -245,7 +245,7 @@ risks:
 
   - condition: "DO App Platform ephemeral storage loses log files on redeploy"
     action: |
-      Accept for alpha. If retention across deploys is needed:
+      Accept this trade-off. If retention across deploys is needed:
       1. Mount a DO Volume (persistent block storage) to LOG_DIR
       2. Or add a third-party handler (Papertrail, Datadog) for remote retention
     monitor: "Check if logs survive deploys; if not, evaluate volume mount"
@@ -253,7 +253,7 @@ risks:
 
   - condition: "Partial API key (8 chars) is enough to identify user patterns but not to impersonate"
     action: "Acceptable trade-off: 8 chars from 32+ char key is not reconstructable"
-    monitor: "Review if alpha users are comfortable with partial key logging"
+    monitor: "Review if users are comfortable with partial key logging"
     severity: "low"
 
   - condition: "Payload/response previews leak sensitive user data"

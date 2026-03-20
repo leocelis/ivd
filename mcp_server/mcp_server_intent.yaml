@@ -39,14 +39,10 @@ intent:
       ivd_check_placement, ivd_list_features, ivd_assess_coverage,
       ivd_propose_inversions, ivd_discover_goal, ivd_teach_concept, ivd_search
     
-    The knowledge base (brain/) contains pre-generated vector embeddings of the
-    entire IVD framework: core docs, recipes, templates, research, and the book.
-    These embeddings MUST be committed to the repository so that:
-    
-    - MCP tools (especially ivd_search) work immediately after clone
-    - No OpenAI API key is required to USE the tools (only to REGENERATE embeddings)
-    - The knowledge base is versioned alongside the content it represents
-    - Multi-device workflows work without re-running embedding generation
+    The knowledge base (brain/) contains vector embeddings of the public IVD
+    framework: core docs, recipes, and templates. Embeddings are generated at
+    deploy time (not committed to git). Run `mcp_server/devops/embed.py` locally
+    to enable ivd_search.
     
     This is a deliberate design decision: embeddings are a build artifact that
     we version-control, not a runtime dependency that we regenerate on every use.
@@ -313,7 +309,7 @@ constraints:
   - name: "embedding_content_scope"
     requirement: |
       Public: embeddings include framework docs, recipes, templates only.
-      Embeddings must exclude: mcp_server/, _private/, .venv/, .git/, deploy/, temp/.
+      Embeddings must exclude: mcp_server/, dirs starting with _ or ., .venv/, .git/, deploy/, temp/.
       The SKIP_DIRS set in brain.py is the authoritative exclusion list.
     test: "Run embed.py with --dry-run, verify included/excluded directories"
     consequence_if_violated: |
@@ -334,25 +330,24 @@ constraints:
 
   - name: "deploy_via_script_only"
     requirement: |
-      Production deployments MUST use _private/devops/deploy.sh.
-      NEVER deploy via raw git push, doctl, or DO dashboard.
-      The deploy script runs the env var validation gate (check_env_vars)
-      which verifies all required env vars exist in the DO app spec
-      before allowing the deploy to proceed.
-    test: "deploy.sh --help shows usage; check_env_vars blocks deploy if vars missing"
+      Production deployments should use a deployment script that:
+      1. Validates all required env vars are present in the DO app spec
+      2. Runs tests (gate — must pass before push)
+      3. Pushes to main (triggers DO auto-deploy via deploy_on_push)
+      4. Waits for and verifies the deployment
+      NEVER deploy via raw git push without validation.
+    test: "check_env_vars blocks deploy if vars missing"
     consequence_if_violated: |
-      Deploying without the script bypasses the env var gate. A missing
-      env var (like OPENAI_API_KEY) will cause the server to crash at boot
-      or tools to silently fail at runtime. The deploy script is the ONLY
-      safe path to production because it validates env vars, runs tests,
-      and verifies health after deployment.
+      Deploying without env var validation risks a missing var (like
+      OPENAI_API_KEY) causing the server to crash at boot or tools to
+      silently fail at runtime.
 
   - name: "env_vars_validated"
     requirement: |
       All required production env vars are declared in mcp_server/env_check.py.
       When adding a new env var dependency:
         1. Add to env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
-        2. Add to _private/do/app.yaml
+        2. Add to your deployment environment spec (DO app spec or equivalent)
         3. Add to .env and .env.example
         4. Update mcp_server_intent.yaml deployment section
       The server refuses to start if any required var is missing.
@@ -478,7 +473,7 @@ risks:
 implementation:
   current: "mcp_server/"
   version: 2
-  tests: "mcp_server/tests/ (123 unit, e2e, smoke — includes env validation + keys.sh tests)"
+  tests: "mcp_server/tests/ (123 unit, e2e, smoke — includes env validation and devops tests)"
   documentation: "mcp_server/.env.example"
 
   # Component map (file paths verifiable via ls)
@@ -531,7 +526,7 @@ implementation:
   #
   # When adding a new env var dependency:
   #   1. Add to mcp_server/env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
-  #   2. Add to _private/do/app.yaml envs section
+  #   2. Add to your deployment environment spec (DO app spec or equivalent)
   #   3. Add to .env and .env.example
   #   4. Update this section
   #
@@ -539,8 +534,7 @@ implementation:
   # from the DO app spec. server.py validates at boot — server refuses to
   # start if any var is missing from the environment.
   deployment:
-    platform: "DigitalOcean App Platform"
-    spec: "_private/do/app.yaml"
+    platform: "DigitalOcean App Platform (see deploy/README.md)"
     required_env_vars:
       - var: "IVD_API_KEYS"
         purpose: "API key auth for remote MCP clients (comma-separated)"
@@ -555,7 +549,7 @@ implementation:
       - var: "REDIS_URL"
         purpose: "Redis connection URL for StreamableHTTP session resumability"
         used_by: ["event_store.py", "redis_utils.py"]
-        managed_by: "_private/do/app.yaml"
+        managed_by: "DO dashboard or deployment spec"
 
     validation_chain:
       - "mcp_server/env_check.py declares required vars (source of truth)"

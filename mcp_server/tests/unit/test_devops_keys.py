@@ -1,13 +1,13 @@
 # mcp_server/tests/unit/test_devops_keys.py
 
 """
-Unit tests for _private/devops/keys.sh script.
+Unit tests for the devops keys management script.
 
-Tests the critical bug fix where keys.sh was reading from encrypted
-DigitalOcean spec values instead of local .env, causing all existing
+Tests the critical bug fix where the script was reading from encrypted
+deployment spec values instead of local .env, causing all existing
 API keys to be silently overwritten when adding a new key.
 
-These tests validate that keys.sh:
+These tests validate that the script:
 1. Reads current keys from .env (source of truth), not from DO spec
 2. Appends new keys instead of overwriting existing ones
 3. Fails safely if .env is missing or empty
@@ -27,11 +27,10 @@ class TestKeysScriptKeyPreservation:
         """
         CRITICAL: Verify keys.sh reads from .env, not from encrypted DO spec.
         
-        The original bug: keys.sh tried to parse encrypted values like:
-          value: EV[1:FcS9wvenG9blv+frtri4mnTOysZjhb+v:...]
-        
-        The sed regex expected plaintext and returned empty, causing the script
-        to overwrite all keys with just the new one.
+        The original bug: the script tried to parse encrypted deployment spec
+        values instead of reading the local .env file. The sed regex expected
+        plaintext and returned empty, causing the script to overwrite all keys
+        with just the new one.
         
         This test simulates the key-reading logic to ensure it reads .env.
         """
@@ -158,8 +157,8 @@ class TestKeysScriptKeyPreservation:
         """
         Verify encrypted DO spec values cannot be parsed.
         
-        DigitalOcean returns:
-          value: EV[1:FcS9wvenG9blv+frtri4mnTOysZjhb+v:...]
+        Deployment platforms may return encrypted/opaque env var values like:
+          value: EV[1:EXAMPLE_ENCRYPTED_VALUE:...]
         
         The buggy sed pattern expected:
           value: "key1,key2"
@@ -167,7 +166,7 @@ class TestKeysScriptKeyPreservation:
         This test confirms the encrypted format doesn't match the pattern,
         validating why .env must be used as the source of truth.
         """
-        encrypted_line = "    value: EV[1:FcS9wvenG9blv+frtri4mnTOysZjhb+v:...]"
+        encrypted_line = "    value: EV[1:EXAMPLE_ENCRYPTED_VALUE:...]"
         
         # The buggy sed pattern: sed 's/.*value: "\(.*\)"/\1/'
         # It won't match encrypted values (no quotes around EV[...])
