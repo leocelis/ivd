@@ -27,6 +27,13 @@ Thumbs.db
 .pytest_cache/
 .do/
 
+# Brain (generated embeddings — not versioned, regenerate with embed.sh)
+mcp_server/brain/
+
+# Production-only devops tools (not for public users)
+mcp_server/devops/deploy.sh
+mcp_server/devops/keys.sh
+
 # Temp (one-pagers, drafts, local outputs)
 temp/
 

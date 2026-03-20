@@ -97,9 +97,18 @@ Ask your AI agent to use IVD tools. For example:
 
 - *"Use ivd_get_context to learn about the IVD framework"*
 - *"Use ivd_scaffold to create an intent for my user authentication module"*
-- *"Use ivd_search to find how IVD handles verification"*
+- *"Use ivd_validate to check my intent artifact"*
 
-That's it. The MCP server uses **pre-built embeddings** shipped in the repo — semantic search works immediately with zero configuration.
+That's it. 14 of 15 tools work immediately with zero configuration.
+
+### 4. Enable semantic search (optional)
+
+`ivd_search` requires embeddings. Generate them once (~$0.01, under a minute):
+
+```bash
+export OPENAI_API_KEY=your-key
+./mcp_server/devops/embed.sh
+```
 
 ---
 
@@ -191,15 +200,17 @@ cp .env.example .env
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `OPENAI_API_KEY` | No | Regenerate embeddings with your own key |
+| `OPENAI_API_KEY` | For `ivd_search` | Generate embeddings and run semantic search |
 | `REDIS_URL` | No | Session storage for remote server deployment |
 | `IVD_API_KEYS` | No | Auth for remote server deployment |
 
-Pre-built embeddings ship in the repo (~200 chunks). Semantic search works immediately. To regenerate:
+Embeddings are not shipped in the repo — they are generated locally. To enable `ivd_search`:
 
 ```bash
 export OPENAI_API_KEY=your-key
-python mcp_server/devops/embed.py
+./mcp_server/devops/embed.sh          # generate (~$0.01)
+./mcp_server/devops/embed.sh --force  # regenerate all
+./mcp_server/devops/embed.sh --dry-run # preview what gets embedded
 ```
 
 ---
@@ -218,16 +229,21 @@ python mcp_server/devops/embed.py
 ## Development
 
 ```bash
+# Setup
+./mcp_server/devops/setup.sh             # Create venv, install deps
+
 # Run tests
 ./mcp_server/devops/test.sh              # All tests (unit + e2e)
 ./mcp_server/devops/test.sh --unit       # Unit only
 ./mcp_server/devops/test.sh --e2e        # E2E only
 
-# Search embeddings locally
-./mcp_server/devops/search.sh "query"
+# Embeddings (requires OPENAI_API_KEY)
+./mcp_server/devops/embed.sh             # Generate embeddings
+./mcp_server/devops/embed.sh --dry-run   # Preview what gets embedded
+./mcp_server/devops/embed.sh --force     # Regenerate everything
 
-# Regenerate embeddings (requires OPENAI_API_KEY)
-./mcp_server/devops/embed.sh
+# Search embeddings locally (requires generated brain + OPENAI_API_KEY)
+./mcp_server/devops/search.sh "query"
 ```
 
 ---

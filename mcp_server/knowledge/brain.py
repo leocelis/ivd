@@ -31,6 +31,7 @@ SKIP_DIRS = {
     ".venv",
     "venv",
     ".git",
+    ".github",
     "__pycache__",
     "node_modules",
     ".idea",
@@ -38,17 +39,15 @@ SKIP_DIRS = {
     ".obsidian",
     ".pytest_cache",
     ".do",
-    "book",  # Book manuscripts + book_system_intent contain private revenue/monetization data
-    "temp",  # Scratch files — not IVD knowledge
+    "book",
+    "research",
+    "deploy",
+    "temp",
 }
 
 # Root-level files to skip (not IVD knowledge)
 SKIP_FILES = {
     "requirements.txt",
-    "runtime.txt",
-    "wsgi.py",
-    "ivd_package_validation_intent.yaml",  # Internal release checklist — pollutes "validation" search results
-    "research/ivd_existing_projects_and_project_map_gaps.md",  # Internal gap analysis with book chapter references
 }
 
 
@@ -88,7 +87,7 @@ def create_kb(kb_name: str, source_path: str) -> str:
     if not os.path.exists(index_path):
         index = {
             "kb_name": kb_name,
-            "source_path": source_path,
+            "source_path": ".",
             "created_at": datetime.utcnow().isoformat(),
             "last_updated": datetime.utcnow().isoformat(),
             "documents": {},
@@ -148,7 +147,8 @@ def is_document_processed(kb_path: str, doc_hash: str) -> bool:
 
 
 def process_and_store(
-    kb_path: str, file_info: Dict, skip_if_exists: bool = True
+    kb_path: str, file_info: Dict, skip_if_exists: bool = True,
+    source_root: str = "",
 ) -> Dict:
     """Process single file: extract text -> chunk -> embed -> store."""
     fp = file_info["path"]
@@ -178,9 +178,10 @@ def process_and_store(
 
     np.save(os.path.join(kb_path, f"{dh}.npy"), embeddings)
 
+    rel_path = os.path.relpath(fp, source_root) if source_root else fp
     metadata = {
         "doc_hash": dh,
-        "file_path": fp,
+        "file_path": rel_path,
         "file_name": file_info["name"],
         "num_chunks": len(chunks),
         "chunks": chunks,

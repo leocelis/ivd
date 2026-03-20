@@ -89,7 +89,9 @@ def main():
 
     for f in files:
         try:
-            result = process_and_store(kb_path, f, skip_if_exists=not args.force)
+            result = process_and_store(
+                kb_path, f, skip_if_exists=not args.force, source_root=source,
+            )
             if result["status"] == "processed":
                 stats["processed"] += 1
                 stats["cost"] += result["cost_usd"]
