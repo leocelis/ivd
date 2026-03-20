@@ -29,3 +29,10 @@ Thumbs.db
 
 # Temp (one-pagers, drafts, local outputs)
 temp/
+
+# Secret scrubbing artifacts — never commit these
+gitleaks-report.json
+secrets.txt
+
+# Research / internal planning docs — not for public
+research/
