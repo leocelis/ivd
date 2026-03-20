@@ -3009,9 +3009,6 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 - `cheatsheet.md` - Quick reference
 - `templates/intent_levels_guide.md` - When to use which intent level
 
-### Research and Context
-- `research/lp_research.md` - LP history and theory (Knuth's original vision)
-
 ---
 
 **Version:** 2.4  

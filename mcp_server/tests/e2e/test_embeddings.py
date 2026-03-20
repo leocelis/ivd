@@ -3,14 +3,12 @@
 """
 End-to-end validation of IVD embeddings via ivd_search.
 
-Verifies that committed embeddings (brain/ivd/) contain content from:
-- Book chapters (private alpha content)
+Verifies that embeddings (brain/ivd/) contain content from:
 - Framework docs (framework.md, cookbook.md, etc.)
 - Recipes
-- Research documents
 
-Each test queries for content that is unique to a specific source,
-then validates the search returns relevant results from that source.
+Each test queries for content unique to a specific source and validates
+the search returns relevant results.
 
 Requires: OPENAI_API_KEY in environment (for query embedding generation).
 """
@@ -46,44 +44,6 @@ def assert_contains(result: dict, *keywords: str):
         f"Expected at least one of {keywords} in search results, "
         f"got: {result['raw'][:300]}..."
     )
-
-
-# ---------------------------------------------------------------------------
-# Book content (chapter.md files in book/manuscript/)
-# ---------------------------------------------------------------------------
-
-class TestBookEmbeddings:
-    """Verify book content is included in embeddings."""
-
-    def test_chapter_1_alignment_crisis(self):
-        """Chapter 1 unique phrase: 'building at the speed of misunderstanding'."""
-        result = search("building at the speed of misunderstanding")
-        assert result["has_results"]
-        assert_contains(result, "misunderstanding", "misalignment", "alignment")
-
-    def test_chapter_1_prd_failure(self):
-        """Chapter 1 discusses why PRDs fail with AI agents."""
-        result = search("Why do PRDs and user stories fail with AI agents?")
-        assert result["has_results"]
-        assert_contains(result, "prd", "user stor", "prose", "verify")
-
-    def test_chapter_1_many_turns(self):
-        """Chapter 1 introduces the 'many turns' problem."""
-        result = search("What is the many turns problem in AI development?")
-        assert result["has_results"]
-        assert_contains(result, "many turns", "turn", "hallucination")
-
-    def test_chapter_2_ivd_paradigm(self):
-        """Chapter 2 introduces the IVD paradigm shift."""
-        result = search("How does IVD shift from human-written to AI-written intent?")
-        assert result["has_results"]
-        assert_contains(result, "intent", "ai writes", "paradigm", "shift")
-
-    def test_chapter_3_principles_depth(self):
-        """Chapter 3 has deep explanations of each principle."""
-        result = search("What breaks without executable understanding in IVD?")
-        assert result["has_results"]
-        assert_contains(result, "executable", "prose", "fails", "loudly")
 
 
 # ---------------------------------------------------------------------------
@@ -130,20 +90,6 @@ class TestRecipeEmbeddings:
         result = search("Background job processing recipe with retry and idempotency")
         assert result["has_results"]
         assert_contains(result, "background", "job", "retry", "idempoten")
-
-
-# ---------------------------------------------------------------------------
-# Research documents
-# ---------------------------------------------------------------------------
-
-class TestResearchEmbeddings:
-    """Verify research docs are included in embeddings."""
-
-    def test_agent_knowledge_standards(self):
-        """Research on MCP and agent knowledge sharing."""
-        result = search("What is Model Context Protocol and how does it help AI agents?")
-        assert result["has_results"]
-        assert_contains(result, "mcp", "model context protocol", "agent")
 
 
 # ---------------------------------------------------------------------------
