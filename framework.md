@@ -2,9 +2,9 @@
 
 **Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 2.0  
+**Version:** 2.4  
 **Created:** January 23, 2026  
-**Updated:** February 9, 2026 (Cognitive foundation: parametric vs. contextual knowledge systems)
+**Updated:** March 19, 2026 (Constraint-Segmented Implementation, FDR-014; constraint quality framework; source hierarchy; cognitive foundation)
 
 > **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
 
@@ -3014,7 +3014,7 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 
 ---
 
-**Version:** 1.3  
+**Version:** 2.4  
 **Status:** Production Ready  
 **Maintained by:** Leo Celis  
-**Key Insight:** The AI writes the intent, implements against it, verifies—eliminating many-turns and hallucinations.
+**Key Insight:** The AI writes the intent, implements against it (constraint-segmented for 3+ constraints), verifies—eliminating many-turns and hallucinations.

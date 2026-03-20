@@ -1,6 +1,6 @@
 # Intent-Verified Development: Cheat Sheet
 
-**The Framework for the AI Agents Era (v1.4)**
+**The Framework for the AI Agents Era (v2.4)**
 
 **Core Insight:** The AI writes the intent, implements against it, verifies—so hallucinations are caught and turns drop to one.
 
@@ -189,6 +189,13 @@ constraints:
     test: "tests/test_scoring.py::test_precision"
 ```
 
+**Constraint quality** — not all constraints are equal:
+- **Near-zero entropy** ✅: binary, measurable — `p95 < 200ms, test: tests/perf/latency.py`
+- **Low-qualitative** ✅: qualitative but decomposed — `tone: melancholic; no resolution in final paragraph`
+- **High-entropy** ❌ REJECTED: `"write well"`, `"be creative"` — triggers parametric averaging (homogenization)
+
+**Satisfiability**: check constraint sets for internal conflicts before implementing. List the most critical constraint **last** to counter position bias (LLMs attend strongest to the end).
+
 ---
 
 ### Principle 3: Bidirectional Synchronization
@@ -203,6 +210,8 @@ System detects drift and forces alignment
 
 **Example:** Threshold changes from 0.70 to 0.75?  
 System asks: "Update intent? Or revert code?"
+
+**Empirical Refinement** *(canonical extension)*: When implementation reveals that intent assumptions are wrong (API returns a different format, latency exceeds documented limits), use the 5-step protocol: STOP → RECORD what was assumed vs. observed → UPDATE the intent on disk → ENRICH with external context → CONTINUE from corrected intent. Source hierarchy for code failures: (1) actual error message, (2) GitHub issues/PRs matching the error, (3) library changelogs, (4) official docs, (5) model's parametric knowledge. **2-attempt rule**: same error twice without new external data = mandatory ENRICH before retrying.
 
 ---
 
@@ -236,23 +245,24 @@ Each layer is executable, not just readable.
 
 **AI writes the intent, implements against it, verifies.**
 
-**Teaching:** If the user lacks technical knowledge → AI creates educational artifact (e.g. `ivd_teach_concept(concept="ETL")`) → user understands → then proceed. Recipe: `teaching-before-intent.yaml`.
-
-**Discovery:** *(Experimental)* If the user can't describe yet (but understands concepts) → AI proposes goals/recipes/options (e.g. `ivd_discover_goal`, list recipes) → user picks → then AI writes intent. Recipe: `discovery-before-intent.yaml`.
-
+**The complete workflow:**
 ```
-You: "Add export to CSV for admin compliance"
-
-AI: [Writes structured intent with constraints and tests]
-    "Here's the intent I wrote. Does this capture what you meant?"
-
-You: "Yes"
-
-AI: [Implements against intent, runs tests, all pass]
-    "Done. All constraints verified."
+1. You describe    → natural language
+2. AI writes       → structured intent (YAML, constraints, tests)
+3. You review      → "Is this what I meant?"
+4. AI stress-tests → 4 probes: constraint completeness, implementation gaps,
+                     implicit assumptions, constraint satisfiability
+5. AI implements   → constraint-segmented (3+ constraints):
+                     GROUP by area → IMPLEMENT segment →
+                     RE-READ constraints from disk → VERIFY → next segment
+6. AI verifies     → full cross-cutting sweep
 ```
 
-AI writes intent, implements, verifies—not just executes prompts.
+**Why step 5 matters**: LLMs exhibit a read-acknowledge-violate pattern — can recite all constraints then miss them in generation. Step 5 counters this by resetting attention per segment.
+
+**Teaching:** If the user lacks technical knowledge → `ivd_teach_concept(concept="ETL")` → user understands → then proceed. Recipe: `teaching-before-intent.yaml`.
+
+**Discovery:** *(Experimental)* If the user can't describe yet → `ivd_discover_goal` → user picks → AI writes intent. Recipe: `discovery-before-intent.yaml`.
 
 **Multi-Agent Systems:**
 
@@ -288,6 +298,25 @@ When you rewrite in Go, or replace with a vendor service, the intent artifact tr
 # problem, dominant_belief, proposed_inversions (name, description, rationale, status: chosen|rejected|deferred)
 # Use ivd_propose_inversions tool to scaffold; then document chosen/rejected in intent.
 ```
+
+---
+
+### IVD Agent Rules
+
+Embed IVD verification discipline directly in your agent instruction file (`.cursorrules`, `.clinerules`, Copilot system prompt, etc):
+
+```
+Recipe: recipes/agent-rules-ivd.yaml
+Tool:   ivd_load_recipe(recipe_name="agent-rules-ivd")
+```
+
+**Six rules agents enforce automatically:**
+- **Rule 1** — Intent before implementation; constraint-segmented for 3+ constraints
+- **Rule 2** — Post-implementation verification protocol (4-step audit)
+- **Rule 3** — Every constraint must have a `test` field
+- **Rule 4** — Stress-test intent before implementing (4 probes)
+- **Rule 5** — Empirical refinement: STOP→RECORD→UPDATE→ENRICH→CONTINUE when implementation reveals wrong assumptions; 2-attempt trigger for external enrichment
+- **Rule 6** — Constraint quality: reject high-entropy constraints; check satisfiability
 
 ---
 
@@ -370,12 +399,13 @@ SPECIFIC INTENT + DOCUMENTED RATIONALE + CLEAN CODE + CONTINUOUS VERIFICATION = 
 
 **IVD Principles (How):**
 1. Intent is primary
-2. Understanding is executable
-3. Bidirectional synchronization
-4. Continuous verification
+2. Understanding is executable (constraint quality: entropy spectrum + satisfiability)
+3. Bidirectional synchronization (empirical refinement + source hierarchy)
+4. Continuous verification (post-implementation protocol: re-read → diff → check tests → report)
 5. Layered understanding
-6. AI as understanding partner
+6. AI as understanding partner (stress-test → constraint-segmented implement → verify)
 7. Understanding survives implementation
+8. Innovation through inversion
 
 ---
 

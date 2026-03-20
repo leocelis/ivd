@@ -8,10 +8,10 @@
 
 <p align="center">
   <a href="https://mcp.ivdframework.dev/health"><img src="https://img.shields.io/badge/MCP_Server-live-brightgreen?style=flat-square" alt="MCP Server"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-1.3-blue?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-2.4-blue?style=flat-square" alt="Version"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/tests-114_passed-brightgreen?style=flat-square" alt="Tests"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/license-private_alpha-orange?style=flat-square" alt="License"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/tests-211_passed-brightgreen?style=flat-square" alt="Tests"></a>
+  <a href="https://github.com/leocelis/ivd/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
 </p>
 
 ---
@@ -50,9 +50,9 @@ LLMs rely ~70% on contextual knowledge (the prompt) and ~30% on parametric knowl
 1. You describe      →  what you want (natural language)
 2. AI writes         →  structured intent artifact (YAML with constraints, tests)
 3. You review        →  "Is this what I meant?" (clarification before code)
-4. AI stress-tests   →  edge cases, gaps, assumptions I missed?
-5. AI implements     →  against the intent
-6. AI verifies       →  does my code pass the constraints?
+4. AI stress-tests   →  edge cases, gaps, assumptions, constraint conflicts?
+5. AI implements     →  constraint-segmented (3+ constraints: segment → re-read → verify → next)
+6. AI verifies       →  full sweep: does every constraint pass?
 ```
 
 ## Quick Start
@@ -187,7 +187,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 }
 ```
 
-**Note**: Replace `<your-api-key>` with your IVD API key. Contact the maintainer for access during private alpha.
+**Note**: Replace `<your-api-key>` with your IVD API key. Request one by opening an issue or starting a discussion on this repository.
 
 ### Available Tools
 
@@ -198,6 +198,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 | `ivd_validate` | Validate an intent artifact against IVD rules |
 | `ivd_scaffold` | Generate a new intent artifact from a template |
 | `ivd_init` | Initialize IVD in an existing project (system intent) |
+| `ivd_assess_coverage` | Scan a project and report intent coverage (prioritized) |
 | `ivd_load_recipe` | Load a specific recipe pattern |
 | `ivd_list_recipes` | Browse all available recipes |
 | `ivd_load_template` | Load an intent template |
@@ -229,11 +230,15 @@ Reusable patterns that encode proven solutions:
 
 | Recipe | Pattern |
 |--------|---------|
+| [agent-rules-ivd](recipes/agent-rules-ivd.yaml) | **IVD agent rules** — embed in `.cursorrules`, Copilot, or any agent instruction file |
 | [workflow-orchestration](recipes/workflow-orchestration.yaml) | Multi-step process orchestration |
 | [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |
+| [agent-role-based](recipes/agent-role-based.yaml) | Context-dependent agent behavior (roles) |
+| [agent-capability-propagation](recipes/agent-capability-propagation.yaml) | Propagate agent capabilities to coordinator routing |
 | [infra-background-job](recipes/infra-background-job.yaml) | Background job processing |
 | [data-field-mapping](recipes/data-field-mapping.yaml) | Data source/target field mapping |
 | [infra-structured-logging](recipes/infra-structured-logging.yaml) | Structured JSON logging for services |
+| [self-evaluating-workflow](recipes/self-evaluating-workflow.yaml) | Continuous improvement loop for AI workflows |
 | [coordinator-intent-propagation](recipes/coordinator-intent-propagation.yaml) | Multi-agent intent delegation |
 | [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teaching concepts before intent |
 | [discovery-before-intent](recipes/discovery-before-intent.yaml) | Goal discovery before intent |
@@ -293,7 +298,7 @@ ivd/
 │   ├── tests/                          # Unit, E2E, smoke tests
 │   └── devops/                         # Deploy, embed, test scripts
 │
-└── book/                               # IVD book (private alpha)
+└── book/                               # IVD book (coming soon)
 ```
 
 ## Documentation
@@ -350,4 +355,4 @@ No build step. No package manager. No runtime. Works everywhere.
 
 ---
 
-**Created by** Leo Celis | **Version** 1.3 | **Status** Private Alpha
+**Created by** Leo Celis | **Version** 2.4 | **License** MIT

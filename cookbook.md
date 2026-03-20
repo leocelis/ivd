@@ -2,9 +2,9 @@
 
 **The Framework for the AI Agents Era**
 
-**Version:** 1.4  
+**Version:** 2.4  
 **Date:** January 23, 2026  
-**Updated:** February 9, 2026 (Added assess coverage step to brownfield workflow)
+**Updated:** March 19, 2026 (Constraint-segmented implementation, stress-test step, post-implementation verification protocol, empirical refinement)
 
 ---
 
@@ -260,6 +260,26 @@ constraints:
 
 ---
 
+### 3b. Empirical Refinement — When Implementation Reveals New Reality
+
+During implementation, you'll sometimes discover that the intent's assumptions were wrong: an API returns a different format, a latency assumption was off, a library behaves differently than documented. This is a **sync direction IVD specifically handles**: reality → intent.
+
+**The protocol:**
+1. **STOP** — don't implement against a stale assumption
+2. **RECORD** — note what the intent assumed vs. what you observed
+3. **UPDATE** — correct the intent artifact on disk
+4. **ENRICH** — pull better contextual knowledge; use this source hierarchy for code failures:
+   1. Actual error message (paste verbatim)
+   2. GitHub issues/PRs matching the error (highest signal — confirmed, version-specific)
+   3. Library changelogs
+   4. Official documentation
+   5. Model's parametric knowledge (last resort — already proven insufficient if you're here)
+5. **CONTINUE** — resume implementation from the corrected intent
+
+**2-attempt rule:** If the same error persists after two implementation attempts without new external data, STOP and ENRICH before attempting again. Two attempts establish the parametric channel doesn't have the answer.
+
+---
+
 ### 4. Verification is Continuous
 
 Not "document once and forget." Every PR, every deploy:
@@ -277,7 +297,7 @@ $ verify crm/lead_scoring/
 
 ### 5. AI Writes, Implements, and Verifies
 
-AI doesn't just implement. It writes the intent, implements, and verifies:
+AI doesn't just implement. It writes the intent, stress-tests it, implements using a segmented approach, and verifies:
 
 ```
 You: "Add CSV export for admin compliance"
@@ -288,9 +308,17 @@ AI: "I'll write the intent artifact first."
 
 You: "Yes"
 
-AI: [Implements against intent, runs tests]
+AI: [Stress-tests intent: constraint gaps? implementation decisions? conflicts?]
+    [Implements constraint-segmented: group → implement → re-read → verify → next]
+    [Final verification sweep]
     "Done. All constraints verified."
 ```
+
+**Step 4 — Stress-test intent before implementing:** After you review the intent, and before any code, the AI adversarially probes it: (1) What input breaks a constraint? (2) What code decisions does the intent leave ambiguous? (3) What assumptions are implicit? (4) Do any constraints conflict — can all be satisfied simultaneously?
+
+**Step 5 — Constraint-segmented implementation:** For intents with 3+ constraints, the AI groups constraints by functional area (input validation, core logic, performance, error handling) and implements one group at a time, re-reading those constraints from disk before verifying. This counters a structural LLM limitation: models can read and acknowledge all constraints, then miss constraints in the middle of a long generation span. Re-reading per segment resets attention.
+
+**Step 6 — Post-implementation verification protocol:** After implementation, the AI executes a 4-step audit: (1) Re-read the intent artifact from disk (not from memory), (2) Diff each change against each constraint, (3) Check every test path, (4) Report PASS/FAIL/NEEDS_REVIEW per constraint. Do not declare done until all constraints are PASS.
 
 ---
 

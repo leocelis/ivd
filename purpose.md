@@ -91,12 +91,13 @@ You: [review code] "Done. First try."
 **The workflow:**
 
 0a. **(Optional) Teaching**: If you lack technical knowledge to understand concepts, AI creates educational artifact explaining what you need to know; you confirm understanding. Then continue.
-0b. **(Optional) Discovery** *(Experimental)*: If you don't know what to ask (but understand concepts), AI proposes candidate goals or patterns (e.g. from recipes); you pick or refine. Then continue with 1–5.
+0b. **(Optional) Discovery** *(Experimental)*: If you don't know what to ask (but understand concepts), AI proposes candidate goals or patterns (e.g. from recipes); you pick or refine. Then continue with 1–6.
 1. **You describe** what you want (natural language)
 2. **AI writes** structured intent artifact (YAML with constraints, success criteria, tests)
 3. **You review** the intent: "Is this what I meant?" (clarification before code)
-4. **AI implements** against the intent artifact
-5. **AI verifies**: Does my code pass the constraints? (catches hallucinations)
+4. **AI stress-tests** the intent: adversarial completeness check — constraint gaps, implementation decisions not addressed, implicit assumptions, constraint conflicts
+5. **AI implements** using constraint-segmented approach (for 3+ constraints: group by functional area → implement segment → re-read constraints from disk → verify segment → repeat)
+6. **AI verifies**: full sweep — does every constraint pass? (catches hallucinations and compliance gaps)
 
 **Why this works:**
 
@@ -575,8 +576,9 @@ That's why it exists.
 ## Reference
 
 **Governed by:** `ivd_system_intent.yaml`  
-**Version:** 1.2  
+**Version:** 2.4  
 **Created:** January 24, 2026  
+**Updated:** March 19, 2026  
 **Author:** Leo Celis
 
 ---
