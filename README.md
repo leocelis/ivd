@@ -17,7 +17,7 @@
 
 AI agents hallucinate not because they're bad — but because you're feeding the wrong knowledge system.
 
-LLMs rely ~70% on **contextual knowledge** (the prompt) and ~30% on **parametric knowledge** (training data). When you give vague prose — a PRD, a user story, a chat message — the context channel is underloaded. The model fills the gaps from training. Those gaps are the hallucinations.
+Research shows LLMs rely primarily on **contextual knowledge** (the prompt) over **parametric knowledge** (training data) — but only when the context is structured and precise ([Huang et al., ICLR 2024](https://openreview.net/forum?id=IVnodl8XR2); [9-LLM contextual vs. parametric study, 2024](https://arxiv.org/abs/2404.04838)). When you give vague prose — a PRD, a user story, a chat message — the context channel is underloaded. The model fills the gaps from training. Those gaps are the hallucinations.
 
 ```
 Without IVD                              With IVD
@@ -295,7 +295,7 @@ A comprehensive book on Intent-Verified Development — the cognitive foundation
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Issues, bug reports, and recipe suggestions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
