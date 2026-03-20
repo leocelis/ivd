@@ -1,45 +1,27 @@
-# Private content (book manuscript, planning docs — not for public repo)
+# ── Private & generated content ───────────────────────────────────────────────
 _private/
+mcp_server/brain/
+temp/
 
-# Environment
+# ── Environment & runtime ────────────────────────────────────────────────────
 .env
 *.pyc
 __pycache__/
 .venv/
 venv/
-
-# Logs
+.pytest_cache/
 mcp_server/logs/*.log
 mcp_server/logs/*.log.*
 
-# OS
+# ── OS & IDE ─────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 .obsidian/
 
-# Build / cache / deploy
-.pytest_cache/
-.do/
-
-# Brain (generated embeddings — not versioned, regenerate with embed.sh)
-mcp_server/brain/
-
-# Production-only devops tools (not for public users)
-mcp_server/devops/deploy.sh
-mcp_server/devops/keys.sh
-
-# Temp (one-pagers, drafts, local outputs)
-temp/
-
-# Secret scrubbing artifacts — never commit these
+# ── Safety (scrubbing artifacts) ─────────────────────────────────────────────
 gitleaks-report.json
 secrets.txt
-
-# Research / internal planning docs — not for public
-research/

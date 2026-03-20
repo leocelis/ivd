@@ -1,7 +1,7 @@
 # mcp_server/tests/unit/test_devops_keys.py
 
 """
-Unit tests for mcp_server/devops/keys.sh script.
+Unit tests for _private/devops/keys.sh script.
 
 Tests the critical bug fix where keys.sh was reading from encrypted
 DigitalOcean spec values instead of local .env, causing all existing

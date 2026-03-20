@@ -11,7 +11,7 @@ Used by:
 
 When adding a new env var dependency:
   1. Add it here (REQUIRED_ENV_VARS_REMOTE or REQUIRED_ENV_VARS_ALL)
-  2. Add it to .do/app.yaml
+  2. Add it to _private/do/app.yaml
   3. Add it to .env and .env.example
   4. Update mcp_server_intent.yaml deployment section
 """
@@ -91,7 +91,7 @@ def check_and_warn(transport: str = "sse") -> None:
 
     if transport != "stdio":
         print(colored(f"[{NAME}] Server cannot start with missing variables.", "red"))
-        print(colored(f"[{NAME}] Add them to .do/app.yaml and redeploy.", "red"))
+        print(colored(f"[{NAME}] Add them to _private/do/app.yaml and redeploy.", "red"))
         raise SystemExit(1)
     else:
         # stdio mode: warn but don't block (local dev may not need all vars)

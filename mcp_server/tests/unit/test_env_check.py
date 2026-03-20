@@ -11,7 +11,7 @@ in the validation chain:
 
 Critical bug this prevents:
   ivd_search was broken in production because OPENAI_API_KEY was never
-  added to .do/app.yaml. The server started fine but the tool failed
+  added to the DO app spec. The server started fine but the tool failed
   at runtime. Now the server refuses to start without required vars.
 """
 
@@ -176,11 +176,11 @@ class TestCheckAndWarn:
 
 
 class TestAppYamlSync:
-    """Tests that .do/app.yaml stays in sync with env_check.py."""
+    """Tests that _private/do/app.yaml stays in sync with env_check.py."""
 
     def test_app_yaml_has_all_required_vars(self):
         """
-        Every var in REQUIRED_ENV_VARS_REMOTE must exist in .do/app.yaml.
+        Every var in REQUIRED_ENV_VARS_REMOTE must exist in _private/do/app.yaml.
         
         This is the test that would have caught the OPENAI_API_KEY bug.
         If someone adds a new required var to env_check.py but forgets
@@ -188,8 +188,9 @@ class TestAppYamlSync:
         """
         from mcp_server.env_check import REQUIRED_ENV_VARS_REMOTE
 
-        app_yaml_path = Path(__file__).parent.parent.parent.parent / ".do" / "app.yaml"
-        assert app_yaml_path.exists(), f"app.yaml not found at {app_yaml_path}"
+        app_yaml_path = Path(__file__).parent.parent.parent.parent / "_private" / "do" / "app.yaml"
+        if not app_yaml_path.exists():
+            pytest.skip("_private/do/app.yaml not available (private repo not cloned)")
 
         app_yaml_content = app_yaml_path.read_text()
 
@@ -199,8 +200,8 @@ class TestAppYamlSync:
                 missing.append(var)
 
         assert missing == [], (
-            f"Required env vars missing from .do/app.yaml: {missing}. "
-            f"Add them to .do/app.yaml envs section."
+            f"Required env vars missing from _private/do/app.yaml: {missing}. "
+            f"Add them to _private/do/app.yaml envs section."
         )
 
     def test_env_example_has_all_required_vars(self):

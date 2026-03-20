@@ -38,7 +38,7 @@ Set these in the DO dashboard (Settings → Environment Variables):
 
 ## App Spec
 
-The DO app spec lives at `.do/app.yaml` (gitignored — local only). Key settings:
+The DO app spec lives at `_private/do/app.yaml` (in the private repo). Key settings:
 
 ```yaml
 build_command: "pip install -r requirements.txt && python mcp_server/devops/embed.py"
@@ -48,7 +48,7 @@ run_command: "python deploy/wsgi.py --port 8080"
 To update the live app spec:
 
 ```bash
-doctl apps update <app_id> --spec .do/app.yaml
+doctl apps update <app_id> --spec _private/do/app.yaml
 ```
 
 ## Local Development (SSE mode)
@@ -68,9 +68,11 @@ python deploy/wsgi.py --port 8080
 Generate and manage API keys for remote users:
 
 ```bash
-./mcp_server/devops/keys.sh --generate alice     # create key
-./mcp_server/devops/keys.sh --add alice_<token>   # push to DO
-./mcp_server/devops/keys.sh --verify alice_<token> # test key
-./mcp_server/devops/keys.sh --revoke alice         # revoke
-./mcp_server/devops/keys.sh --list                 # show all
+./_private/devops/keys.sh --generate alice     # create key
+./_private/devops/keys.sh --add alice_<token>   # push to DO
+./_private/devops/keys.sh --verify alice_<token> # test key
+./_private/devops/keys.sh --revoke alice         # revoke
+./_private/devops/keys.sh --list                 # show all
 ```
+
+> `keys.sh` is a private operational tool — clone [`ivd-private`](https://github.com/leocelis/ivd-private) into `_private/` to use it.

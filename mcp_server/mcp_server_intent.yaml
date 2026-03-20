@@ -337,7 +337,7 @@ constraints:
 
   - name: "deploy_via_script_only"
     requirement: |
-      Production deployments MUST use mcp_server/devops/deploy.sh.
+      Production deployments MUST use _private/devops/deploy.sh.
       NEVER deploy via raw git push, doctl, or DO dashboard.
       The deploy script runs the env var validation gate (check_env_vars)
       which verifies all required env vars exist in the DO app spec
@@ -355,7 +355,7 @@ constraints:
       All required production env vars are declared in mcp_server/env_check.py.
       When adding a new env var dependency:
         1. Add to env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
-        2. Add to .do/app.yaml
+        2. Add to _private/do/app.yaml
         3. Add to .env and .env.example
         4. Update mcp_server_intent.yaml deployment section
       The server refuses to start if any required var is missing.
@@ -364,42 +364,34 @@ constraints:
     consequence_if_violated: |
       Tools fail silently in production. Server appears healthy but specific
       tools break at runtime. Exact bug that happened with ivd_search when
-      OPENAI_API_KEY was missing from .do/app.yaml.
+      OPENAI_API_KEY was missing from the DO app spec.
 
 # ==============================================================================
 # RATIONALE
 # ==============================================================================
 
 rationale:
-  decision: "Commit embeddings to git; treat them as versioned build artifacts"
+  decision: "Embeddings are generated on demand, not versioned in git"
 
   reasoning: |
-    Why commit embeddings instead of generating on-the-fly or gitignoring?
+    Embeddings are gitignored and generated locally or at deploy time.
     
-    1. Clone-to-working experience
-       Cloning the repo and running pip install should be enough to use all
-       15 MCP tools, including semantic search. No API key needed to query.
+    1. No private content in public repo
+       Embedding JSON files contain raw text chunks from source documents.
+       Versioning them would leak private content (book, research) into
+       the public repo's git history.
     
-    2. Versioned knowledge
-       Embeddings represent the state of IVD content at a point in time.
-       Version-controlling them means we can see what the knowledge base
-       looked like at any commit. This aligns with Principle 7 (Understanding
-       Survives Implementation) — the knowledge base persists alongside the
-       content it represents.
+    2. 14 of 15 tools work without embeddings
+       Only ivd_search requires embeddings. Users can clone and use IVD
+       immediately. Generating embeddings is optional (~$0.01, under a minute).
     
-    3. Multi-device workflow
-       The maintainer works across multiple laptops. Committed embeddings
-       mean pulling the repo gives you the full working system everywhere.
+    3. Build-time generation on deploy
+       DigitalOcean App Platform generates embeddings at build time via
+       embed.py. No pre-built artifacts needed in the repo.
     
     4. Regeneration is explicit
        Embeddings are regenerated via devops/embed.sh only when content
        changes. This is a deliberate act, not an automatic process.
-       The maintainer reviews what changed before committing updated embeddings.
-    
-    5. Size is manageable
-       IVD content is ~50-100 files. The embedding files (.npy + .json) are
-       small enough that git handles them without issue. This is NOT a
-       large-scale embedding store — it's a focused knowledge base.
     
     Trade-offs accepted:
     - Slightly larger repo size (embeddings add ~few MB) — acceptable
@@ -542,7 +534,7 @@ implementation:
   #
   # When adding a new env var dependency:
   #   1. Add to mcp_server/env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
-  #   2. Add to .do/app.yaml envs section
+  #   2. Add to _private/do/app.yaml envs section
   #   3. Add to .env and .env.example
   #   4. Update this section
   #
@@ -551,7 +543,7 @@ implementation:
   # start if any var is missing from the environment.
   deployment:
     platform: "DigitalOcean App Platform"
-    spec: ".do/app.yaml"
+    spec: "_private/do/app.yaml"
     required_env_vars:
       - var: "IVD_API_KEYS"
         purpose: "API key auth for remote MCP clients (comma-separated)"
@@ -566,7 +558,7 @@ implementation:
       - var: "REDIS_URL"
         purpose: "Redis connection URL for StreamableHTTP session resumability"
         used_by: ["event_store.py", "redis_utils.py"]
-        managed_by: ".do/app.yaml"
+        managed_by: "_private/do/app.yaml"
 
     validation_chain:
       - "mcp_server/env_check.py declares required vars (source of truth)"
