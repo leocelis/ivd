@@ -1,0 +1,338 @@
+# test_strategy_intent.yaml
+# Module-Level Intent: IVD MCP Server Test Strategy
+#
+# Co-located with implementation per IVD placement rules:
+#   mcp_server/tests/test_strategy_intent.yaml (alongside test code)
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "module"
+  type: "testing"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "test_strategy"
+  category: "quality"
+  tags: ["testing", "unit-tests", "smoke-tests", "e2e", "verification"]
+  status: "implemented"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Comprehensive test coverage for the IVD MCP server — unit, smoke, and end-to-end — ensuring all 15 tools work correctly across both transports."
+
+  goal: |
+    Establish a test suite that verifies the IVD MCP server at three levels:
+
+    1. Unit Tests
+       Test individual tool functions and knowledge components in isolation.
+       Each of the 15 tools gets dedicated test coverage for:
+       - Happy path (valid inputs → expected output)
+       - Error handling (invalid inputs → graceful errors)
+       - Edge cases (empty repos, missing files, malformed YAML)
+
+    2. Smoke Tests
+       Post-deploy verification that the live server is healthy.
+       Callable from the deploy script (deploy.sh --smoke).
+       Verifies:
+       - Server is reachable and returns health status
+       - SSE connection establishes with valid API key
+       - All 15 tools are registered (tools/list)
+       - Critical tools return valid responses (ivd_get_context, ivd_search, ivd_validate)
+
+    3. End-to-End (E2E) Tests
+       Full MCP protocol flow from client connection to tool response.
+       Tests both transports:
+       - stdio: spawn server process, send JSON-RPC, verify response
+       - SSE: connect to SSE endpoint, send tool calls via /messages, verify response
+       Tests authentication:
+       - Valid key → access granted
+       - Invalid key → 401
+       - No key (local stdio) → access granted
+
+    The test suite must be runnable with a single command (pytest) and must
+    not require external services (OpenAI API) for unit and e2e tests.
+    Smoke tests are the exception — they hit the live deployed server.
+
+  success_metric: |
+    - All 15 tools have unit test coverage
+    - Post-deploy smoke test catches broken deployments before users do
+    - E2E tests verify both stdio and SSE transports
+    - Tests run in < 30 seconds (unit + e2e, excluding smoke)
+    - Zero flaky tests
+
+  stakeholders:
+    - "IVD framework maintainer (runs tests before deploy)"
+    - "Deploy script (calls smoke tests post-deploy)"
+    - "CI pipeline (runs unit + e2e on every push)"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  - name: "all_tools_tested"
+    requirement: "Each of the 15 MCP tools must have at least one unit test"
+    test: "pytest mcp_server/tests/unit/ --collect-only | count unique tool names >= 15"
+    consequence_if_violated: |
+      Untested tools may silently break after code changes.
+      Regressions go undetected until a user reports them.
+
+  - name: "no_external_dependencies"
+    requirement: "Unit and e2e tests must not call external APIs (OpenAI, etc.)"
+    test: "Run tests with OPENAI_API_KEY unset — all unit/e2e tests pass"
+    consequence_if_violated: |
+      Tests become flaky (API rate limits, network issues).
+      Tests cost money on every run.
+      Tests fail in CI without API keys configured.
+
+  - name: "smoke_in_deploy"
+    requirement: "deploy.sh --smoke must run post-deploy smoke tests and exit non-zero on failure"
+    test: "deploy.sh --smoke against live server returns exit code 0 on success, 1 on failure"
+    consequence_if_violated: |
+      Broken deployments are not caught automatically.
+      Maintainer must manually verify after every deploy.
+
+  - name: "transport_coverage"
+    requirement: "E2E tests must cover both stdio and SSE transports"
+    test: "pytest mcp_server/tests/e2e/ collects tests for both transports"
+    consequence_if_violated: |
+      One transport may work while the other is broken.
+      Stdio works locally but SSE fails in production (or vice versa).
+
+  - name: "auth_coverage"
+    requirement: "Tests must verify authentication enforcement for SSE and bypass for stdio"
+    test: "E2E auth tests: valid key → 200, invalid key → 401, stdio without key → works"
+    consequence_if_violated: |
+      Auth bypass bugs go undetected — server open to public.
+      Or auth too strict — blocks legitimate local usage.
+
+  - name: "fast_feedback"
+    requirement: "Unit + e2e tests complete in under 30 seconds"
+    test: "time pytest mcp_server/tests/ -k 'not smoke' — wall time < 30s"
+    consequence_if_violated: |
+      Slow tests discourage running them frequently.
+      Developer feedback loop degrades.
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Three-tier testing strategy (unit → smoke → e2e) with mocked external dependencies"
+
+  reasoning: |
+    Why three tiers instead of just unit tests?
+
+    1. Unit tests catch logic bugs in individual tools
+       - Fast, isolated, no infrastructure needed
+       - But they don't verify the MCP protocol layer or deployment
+
+    2. Smoke tests catch deployment and infrastructure bugs
+       - Server running? Auth working? Tools registered?
+       - Run post-deploy against the live server
+       - Lightweight — only critical-path verification
+
+    3. E2E tests catch protocol and integration bugs
+       - Full JSON-RPC flow: connect → call → response
+       - Both transports (stdio + SSE) tested
+       - Catches bugs that only appear when components interact
+
+    Why mock OpenAI for unit/e2e?
+    - Embedding generation is an external dependency we don't control
+    - Tests should verify OUR code, not OpenAI's API
+    - ivd_search tests use pre-generated test fixtures (small .npy/.json files)
+    - Smoke tests against live server are the only tests that touch real embeddings
+
+    Why not integration tests as a separate tier?
+    - The MCP server is self-contained (no database, no external services)
+    - E2E tests effectively ARE integration tests for this architecture
+    - Adding a separate tier would be bureaucracy without value
+
+  evidence: "Current state: zero tests. mcp_server_intent.yaml verification section lists manual smoke testing only."
+  date: "2026-02-07"
+  stakeholder: "Leo Celis"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Manual testing only (current state)"
+    rejected_because: |
+      - No regression detection — breakage found by users
+      - Deploy script can't verify deployment automatically
+      - Knowledge is in the maintainer's head, not in tests
+    when_it_works: |
+      Prototype phase with a single developer. IVD is past this stage —
+      the server is deployed and shared with other developers.
+
+  - name: "Only unit tests (no smoke or e2e)"
+    rejected_because: |
+      - Doesn't catch deployment issues (server won't start, auth misconfigured)
+      - Doesn't verify MCP protocol layer (JSON-RPC, SSE, session management)
+      - Unit tests pass but server is broken in production
+    when_it_works: |
+      Libraries with no deployment component. MCP server has both
+      a protocol layer and a deployment lifecycle that need testing.
+
+  - name: "Property-based testing (hypothesis)"
+    rejected_because: |
+      - Overkill for the current stage — 15 tools with well-defined inputs/outputs
+      - Adds complexity (hypothesis library, custom strategies)
+      - Standard example-based tests are sufficient for now
+    when_it_works: |
+      Complex input spaces where edge cases are hard to enumerate manually.
+      Could be added later for ivd_validate (arbitrary YAML input).
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Tests become stale — code changes but tests not updated"
+    action: |
+      - CI runs tests on every push (catches immediately)
+      - Deploy script refuses to deploy if tests fail
+      - Tests co-located with implementation (easy to find and update)
+    monitor: "CI pass rate; test count vs tool count"
+    severity: "medium"
+
+  - condition: "Smoke tests flaky due to network or cold starts"
+    action: |
+      - Add retry logic with backoff to smoke test script
+      - Health check with timeout before running tool tests
+      - Log failures with context for debugging
+    monitor: "Smoke test pass rate over deployments"
+    severity: "low"
+
+  - condition: "E2E tests slow down as more tools are added"
+    action: |
+      - Parallelize tool tests (each tool is independent)
+      - Use test fixtures instead of real file I/O where possible
+      - Monitor total test time; address if exceeding 30s
+    monitor: "pytest --durations=10 output"
+    severity: "low"
+
+  - condition: "Mock diverges from real behavior — tests pass but production fails"
+    action: |
+      - Smoke tests against live server are the safety net
+      - Keep mocks minimal (mock only external APIs, not internal logic)
+      - Review mocks when updating external dependencies
+    monitor: "Compare smoke test results vs unit test results"
+    severity: "medium"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "mcp_server/tests/"
+  version: 1
+  tests: "Self-referential — this IS the test module"
+  documentation: "This intent file"
+
+  # Planned directory structure
+  structure:
+    - dir: "mcp_server/tests/"
+      purpose: "Test root — pytest discovers tests here"
+      files:
+        - "conftest.py         — Shared fixtures (mock brain, temp repos, test config)"
+        - "test_strategy_intent.yaml  — This intent (co-located)"
+
+    - dir: "mcp_server/tests/unit/"
+      purpose: "Unit tests — one file per tool module"
+      files:
+        - "test_context.py     — ivd_get_context"
+        - "test_recipes.py     — ivd_load_recipe, ivd_list_recipes"
+        - "test_templates.py   — ivd_load_template"
+        - "test_validate.py    — ivd_validate"
+        - "test_scaffold.py    — ivd_init, ivd_scaffold"
+        - "test_discover.py    — ivd_find_artifacts, ivd_check_placement, ivd_list_features, ivd_assess_coverage"
+        - "test_inversions.py  — ivd_propose_inversions"
+        - "test_learning.py    — ivd_teach_concept"
+        - "test_search.py      — ivd_search (with fixture embeddings)"
+
+    - dir: "mcp_server/tests/e2e/"
+      purpose: "End-to-end tests — full MCP protocol flow"
+      files:
+        - "test_stdio.py       — Spawn server via stdio, send JSON-RPC calls"
+        - "test_sse.py         — Connect via SSE, send tool calls via /messages"
+        - "test_auth.py        — Authentication enforcement (valid/invalid/missing keys)"
+
+    - dir: "mcp_server/tests/smoke/"
+      purpose: "Post-deploy smoke tests — run against live server"
+      files:
+        - "smoke.py            — Called by deploy.sh --smoke"
+
+    - dir: "mcp_server/tests/fixtures/"
+      purpose: "Test data — small embeddings, sample YAML, temp repo structures"
+      files:
+        - "sample_intent.yaml  — Valid intent for validation tests"
+        - "bad_intent.yaml     — Invalid intent for error handling tests"
+        - "test_embeddings/    — Small .npy + .json for ivd_search tests"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  test_cases:
+    - name: "all_15_tools_have_unit_tests"
+      description: "Collect unit tests and verify all 15 tool names appear"
+      command: "pytest mcp_server/tests/unit/ --collect-only -q"
+      validates_constraint: "all_tools_tested"
+
+    - name: "tests_pass_without_api_key"
+      description: "Run unit + e2e with OPENAI_API_KEY unset"
+      command: "unset OPENAI_API_KEY && pytest mcp_server/tests/ -k 'not smoke'"
+      validates_constraint: "no_external_dependencies"
+
+    - name: "smoke_exits_nonzero_on_failure"
+      description: "Smoke test against unreachable server returns exit code 1"
+      command: "IVD_MCP_URL=http://localhost:9999 python mcp_server/tests/smoke/smoke.py; echo $?"
+      validates_constraint: "smoke_in_deploy"
+
+    - name: "both_transports_tested"
+      description: "E2E test collection includes both stdio and SSE tests"
+      command: "pytest mcp_server/tests/e2e/ --collect-only -q | grep -E 'stdio|sse'"
+      validates_constraint: "transport_coverage"
+
+    - name: "auth_tests_exist"
+      description: "E2E auth tests cover valid, invalid, and missing key scenarios"
+      command: "pytest mcp_server/tests/e2e/test_auth.py --collect-only -q"
+      validates_constraint: "auth_coverage"
+
+    - name: "tests_under_30_seconds"
+      description: "Full non-smoke test suite completes quickly"
+      command: "time pytest mcp_server/tests/ -k 'not smoke' --timeout=30"
+      validates_constraint: "fast_feedback"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: 1
+    date: "2026-02-07"
+    change: "Implemented full test suite — 114 tests covering all 15 tools"
+    reason: |
+      Intent written first (v0), then implemented. 114 tests across 3 tiers:
+      - Unit: 9 files covering all 15 tools (context, recipes, templates, validate, scaffold, discover, inversions, learning, search)
+      - E2E: registry dispatch, SSE health, auth enforcement (valid/invalid/disabled/multi-key)
+      - Smoke: post-deploy script integrated with deploy.sh --smoke
+      Also fixed a bug in validate.py (empty YAML handling) caught by tests.
+    evidence: "114 passed in 1.30s — pytest mcp_server/tests/ -v"
+
+  - version: 0
+    date: "2026-02-07"
+    change: "Initial test strategy intent — defines the plan before implementation"
+    reason: |
+      IVD MCP server is deployed and shared with developers but has zero test
+      coverage. Current verification is manual (devops/search.sh, curl).
+      This intent defines what testing should look like before writing any tests,
+      per Principle 1 (Intent is Primary) and Principle 4 (Continuous Verification).
+    evidence: "Zero test files in mcp_server/; mcp_server_intent.yaml lists manual testing only"

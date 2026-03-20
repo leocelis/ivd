@@ -1,0 +1,636 @@
+# mcp_server_intent.yaml
+# Module-Level Intent: IVD MCP Server
+#
+# Co-located with implementation per IVD placement rules:
+#   mcp_server/mcp_server_intent.yaml (alongside mcp_server/ code)
+
+parent_intent: "../ivd_system_intent.yaml"
+
+scope:
+  level: "module"
+  type: "service"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "mcp_server"
+  category: "tooling"
+  tags: ["mcp", "tools", "embeddings", "knowledge-base", "ai-agents"]
+  status: "implemented"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Standalone MCP server that gives AI agents full access to the IVD framework through 15 tools backed by committed embeddings."
+
+  goal: |
+    Provide a self-contained Model Context Protocol (MCP) server that:
+    
+    1. Exposes 15 IVD tools for AI agents (Cursor, Claude, etc.)
+    2. Uses a committed knowledge base (embeddings) for semantic search
+    3. Runs locally via stdio for development (Cursor integration)
+    4. Deploys remotely via SSE for production
+    5. Has zero external dependencies on other projects
+    
+    Tools exposed (15):
+      ivd_get_context, ivd_load_recipe, ivd_list_recipes, ivd_load_template,
+      ivd_validate, ivd_init, ivd_scaffold, ivd_find_artifacts,
+      ivd_check_placement, ivd_list_features, ivd_assess_coverage,
+      ivd_propose_inversions, ivd_discover_goal, ivd_teach_concept, ivd_search
+    
+    The knowledge base (brain/) contains vector embeddings of the public IVD
+    framework: core docs, recipes, and templates. Embeddings are generated at
+    deploy time (not committed to git). Run `mcp_server/devops/embed.py` locally
+    to enable ivd_search.
+    
+    This is a deliberate design decision: embeddings are a build artifact that
+    we version-control, not a runtime dependency that we regenerate on every use.
+
+  success_metric: |
+    - All 15 tools callable via MCP protocol (stdio and SSE transports)
+    - ivd_search returns relevant results from committed embeddings
+    - Clone-to-working: zero setup beyond installing dependencies
+    - Embedding regeneration only needed when content changes
+    - Self-contained: no imports from external projects
+
+  stakeholders:
+    - "AI agents consuming IVD tools (Cursor MCP, Claude Desktop)"
+    - "Developers using IVD in their projects"
+    - "IVD framework maintainer (embedding regeneration)"
+
+# ==============================================================================
+# INTERFACE (Optional — module exposes callable tools via MCP protocol)
+# ==============================================================================
+
+interface:
+  type: "mcp"
+
+  tools:
+    - name: "ivd_get_context"
+      description: "Get complete IVD context for AI agent — principles, when to use, available resources"
+      parameters: []
+      returns: "JSON with IVD principles, usage guidelines, and available resources"
+      test: "tests/unit/test_context.py"
+
+    - name: "ivd_load_recipe"
+      description: "Load a specific IVD recipe by name (e.g., agent-classifier, workflow-orchestration)"
+      parameters:
+        - name: "recipe_name"
+          type: "string"
+          required: true
+          description: "Recipe name (e.g., 'agent-classifier', 'workflow-orchestration')"
+      returns: "Full recipe content as YAML string"
+      test: "tests/unit/test_recipes.py::test_load_recipe"
+
+    - name: "ivd_list_recipes"
+      description: "List all available IVD recipes with descriptions and use cases"
+      parameters: []
+      returns: "JSON array of recipes with name, description, use_cases"
+      test: "tests/unit/test_recipes.py::test_list_recipes"
+
+    - name: "ivd_load_template"
+      description: "Load an IVD artifact template (intent, recipe, task, workflow)"
+      parameters:
+        - name: "template_type"
+          type: "string"
+          required: true
+          description: "Template type: intent, recipe, task, workflow"
+      returns: "Template content as YAML string"
+      test: "tests/unit/test_templates.py"
+
+    - name: "ivd_validate"
+      description: "Validate structure of an IVD artifact — checks required sections, constraints, compliance"
+      parameters:
+        - name: "artifact_yaml"
+          type: "string"
+          required: true
+          description: "Raw YAML content of the artifact to validate"
+        - name: "artifact_type"
+          type: "string"
+          required: false
+          description: "Type: intent, recipe, workflow (default: intent)"
+      returns: "JSON with valid (bool), errors, warnings, suggestions"
+      test: "tests/unit/test_validate.py"
+
+    - name: "ivd_init"
+      description: "Initialize IVD in an existing project — creates system_intent.yaml with auto-scanned project context"
+      parameters:
+        - name: "project_root"
+          type: "string"
+          required: true
+          description: "Path to repo root (absolute or relative)"
+        - name: "auto_fill"
+          type: "boolean"
+          required: false
+          description: "If true, scan and pre-fill project context (default: true)"
+      returns: "JSON with created path, scan summary, template content, next steps"
+      test: "tests/unit/test_scaffold.py::test_init"
+
+    - name: "ivd_scaffold"
+      description: "Create a new IVD intent artifact in the correct canonical location (co-locate with implementation)"
+      parameters:
+        - name: "level"
+          type: "string"
+          required: true
+          description: "Intent level: system, workflow, module, task"
+        - name: "name"
+          type: "string"
+          required: true
+          description: "Name for the artifact (e.g., 'lead_qualifier')"
+        - name: "module_path"
+          type: "string"
+          required: false
+          description: "Required for module/task level (e.g., 'agent/marketing')"
+        - name: "coordinator_path"
+          type: "string"
+          required: false
+          description: "Optional for workflow level; create alongside coordinator"
+        - name: "project_root"
+          type: "string"
+          required: false
+          description: "Optional path to repo root"
+      returns: "JSON with created path, template content, next steps"
+      test: "tests/unit/test_scaffold.py::test_scaffold"
+
+    - name: "ivd_find_artifacts"
+      description: "Discover IVD intent artifacts in a repo by scope"
+      parameters:
+        - name: "scope"
+          type: "string"
+          required: false
+          description: "Search scope: all, workflow, module, task, system (default: all)"
+        - name: "project_root"
+          type: "string"
+          required: false
+          description: "Optional path to repo root"
+      returns: "JSON array of discovered artifacts with path, level, name"
+      test: "tests/unit/test_scaffold.py::test_find_artifacts"
+
+    - name: "ivd_check_placement"
+      description: "Validate that an IVD artifact is in the correct canonical location per framework rules"
+      parameters:
+        - name: "artifact_path"
+          type: "string"
+          required: true
+          description: "Path to the artifact (relative to project_root, or absolute)"
+        - name: "project_root"
+          type: "string"
+          required: false
+          description: "Optional path to repo root"
+      returns: "JSON with valid placement (bool), expected location, suggestions"
+      test: "tests/unit/test_scaffold.py::test_check_placement"
+
+    - name: "ivd_list_features"
+      description: "Derive feature inventory from all IVD intent artifacts — use before adding a feature to avoid duplication"
+      parameters:
+        - name: "root_dir"
+          type: "string"
+          required: false
+          description: "Optional subpath to search"
+        - name: "project_root"
+          type: "string"
+          required: false
+          description: "Optional path to repo root"
+        - name: "category"
+          type: "string"
+          required: false
+          description: "Optional filter by metadata.category"
+        - name: "status"
+          type: "string"
+          required: false
+          description: "Optional filter: implemented, planned, deprecated"
+      returns: "JSON array of features with id, category, status, intent path"
+      test: "tests/unit/test_discover.py::test_list_features"
+
+    - name: "ivd_discover_goal"
+      description: "Propose 2-3 candidate goals or patterns when the user doesn't know what to ask (Principle 6 discovery)"
+      parameters:
+        - name: "domain_or_context"
+          type: "string"
+          required: false
+          description: "Optional domain context"
+        - name: "user_hint"
+          type: "string"
+          required: false
+          description: "Optional vague hint from user"
+        - name: "project_root"
+          type: "string"
+          required: false
+          description: "Optional path to repo root; if set, includes existing features"
+      returns: "JSON with 2-3 candidate goals including description, pattern, suggested recipe"
+      test: "tests/unit/test_discover.py::test_discover_goal"
+
+    - name: "ivd_assess_coverage"
+      description: "Assess intent coverage across a project — coverage %, covered/uncovered modules, prioritized suggestions"
+      parameters:
+        - name: "project_root"
+          type: "string"
+          required: true
+          description: "Path to repo root (absolute or relative)"
+        - name: "depth"
+          type: "string"
+          required: false
+          description: "Scan depth: module (default) or full (includes workflows + tasks)"
+        - name: "include_suggestions"
+          type: "boolean"
+          required: false
+          description: "Include prioritized recommendations (default: true)"
+      returns: "JSON coverage report with percentage, covered/uncovered modules, suggestions"
+      test: "tests/unit/test_coverage.py"
+
+    - name: "ivd_propose_inversions"
+      description: "Scaffold inversion opportunities for a problem (Principle 8: Innovation through Inversion)"
+      parameters:
+        - name: "problem_description"
+          type: "string"
+          required: true
+          description: "What problem are we solving?"
+        - name: "domain_context"
+          type: "string"
+          required: false
+          description: "Optional domain (e.g., data_export, auth)"
+      returns: "JSON with dominant belief, 3+ proposed inversions with rationale and status"
+      test: "tests/unit/test_inversions.py"
+
+    - name: "ivd_teach_concept"
+      description: "Create structured educational artifact explaining a concept the user needs before IVD flow"
+      parameters:
+        - name: "concept"
+          type: "string"
+          required: true
+          description: "Concept to explain (e.g., 'ETL', 'Saga pattern', 'CDC')"
+        - name: "user_context"
+          type: "string"
+          required: false
+          description: "Optional context about user's situation"
+      returns: "YAML educational artifact with explanation, examples, verification questions"
+      test: "tests/unit/test_learning.py"
+
+    - name: "ivd_search"
+      description: "Semantic search across IVD knowledge base — returns relevant chunks with sources"
+      parameters:
+        - name: "query"
+          type: "string"
+          required: true
+          description: "Natural language question about IVD framework"
+        - name: "top_k"
+          type: "number"
+          required: false
+          description: "Number of results to return (default: 5)"
+      returns: "JSON array of matching chunks with content, source file, similarity score"
+      test: "tests/unit/test_search.py"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  - name: "embeddings_committed"
+    requirement: "brain/ directory and all its contents MUST be committed to git"
+    test: "git ls-files brain/ | wc -l > 0"
+    consequence_if_violated: |
+      ivd_search breaks on fresh clone. Users need an OpenAI API key just to
+      query. Multi-device workflow breaks. This is the core design decision.
+
+  - name: "zero_setup_query"
+    requirement: "All 15 tools must work after clone + pip install (no API key for querying)"
+    test: "Clone repo, pip install, run ivd_get_context — returns valid response"
+    consequence_if_violated: |
+      Adoption barrier. Users who just want to use IVD tools shouldn't need
+      an OpenAI account or API key.
+
+  - name: "self_contained"
+    requirement: "Zero imports from external projects (no third-party project namespaces, no external repos)"
+    test: "All imports resolve to stdlib, pip packages, or mcp_server/ itself"
+    consequence_if_violated: |
+      Module becomes coupled to another project. Breaks independent deployment.
+
+  - name: "embedding_content_scope"
+    requirement: |
+      Public: embeddings include framework docs, recipes, templates only.
+      Embeddings must exclude: mcp_server/, dirs starting with _ or ., .venv/, .git/, deploy/, temp/.
+      The SKIP_DIRS set in brain.py is the authoritative exclusion list.
+    test: "Run embed.py with --dry-run, verify included/excluded directories"
+    consequence_if_violated: |
+      Including mcp_server code pollutes semantic search with implementation details.
+
+  - name: "transport_dual"
+    requirement: "Server must support both stdio (local) and SSE (remote) transports"
+    test: "python -m mcp_server --help shows transport options"
+    consequence_if_violated: |
+      stdio is required for Cursor local integration.
+      SSE is required for DigitalOcean remote deployment.
+
+  - name: "auth_gated_remote"
+    requirement: "SSE transport requires API key authentication; stdio does not"
+    test: "SSE request without key returns 401; stdio works without key"
+    consequence_if_violated: |
+      Remote server is open to the public. Local development is blocked by auth.
+
+  - name: "deploy_via_script_only"
+    requirement: |
+      Production deployments should use a deployment script that:
+      1. Validates all required env vars are present in the DO app spec
+      2. Runs tests (gate — must pass before push)
+      3. Pushes to main (triggers DO auto-deploy via deploy_on_push)
+      4. Waits for and verifies the deployment
+      NEVER deploy via raw git push without validation.
+    test: "check_env_vars blocks deploy if vars missing"
+    consequence_if_violated: |
+      Deploying without env var validation risks a missing var (like
+      OPENAI_API_KEY) causing the server to crash at boot or tools to
+      silently fail at runtime.
+
+  - name: "env_vars_validated"
+    requirement: |
+      All required production env vars are declared in mcp_server/env_check.py.
+      When adding a new env var dependency:
+        1. Add to env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
+        2. Add to your deployment environment spec (DO app spec or equivalent)
+        3. Add to .env and .env.example
+        4. Update mcp_server_intent.yaml deployment section
+      The server refuses to start if any required var is missing.
+      deploy.sh refuses to deploy if any required var is missing from DO spec.
+    test: "tests/unit/test_env_check.py (TestAppYamlSync verifies sync between env_check.py and app.yaml)"
+    consequence_if_violated: |
+      Tools fail silently in production. Server appears healthy but specific
+      tools break at runtime. Exact bug that happened with ivd_search when
+      OPENAI_API_KEY was missing from the DO app spec.
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Embeddings are generated on demand, not versioned in git"
+
+  reasoning: |
+    Embeddings are gitignored and generated locally or at deploy time.
+    
+    1. No private content in public repo
+       Embedding JSON files contain raw text chunks from source documents.
+       Versioning them would leak private content (book, research) into
+       the public repo's git history.
+    
+    2. 14 of 15 tools work without embeddings
+       Only ivd_search requires embeddings. Users can clone and use IVD
+       immediately. Generating embeddings is optional (~$0.01, under a minute).
+    
+    3. Build-time generation on deploy
+       DigitalOcean App Platform generates embeddings at build time via
+       embed.py. No pre-built artifacts needed in the repo.
+    
+    4. Regeneration is explicit
+       Embeddings are regenerated via devops/embed.sh only when content
+       changes. This is a deliberate act, not an automatic process.
+    
+    Trade-offs accepted:
+    - Slightly larger repo size (embeddings add ~few MB) — acceptable
+    - Embeddings can drift from content if not regenerated — mitigated by
+      devops/embed.sh workflow and this intent documenting the process
+    - Binary .npy files don't diff well in git — acceptable; we version them
+      for availability, not for line-by-line review
+
+  evidence: "Validated through local Cursor MCP integration testing"
+  date: "2026-02-07"
+  stakeholder: "Leo Celis"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "Gitignore embeddings, generate on first use"
+    rejected_because: |
+      - Requires OpenAI API key for every user, even to just query
+      - First-use latency (must generate before first search)
+      - No multi-device portability without regeneration
+      - Breaks the clone-to-working principle
+    when_it_works: |
+      Large-scale embedding stores (millions of vectors) where committed
+      storage is impractical. Not applicable to IVD's focused content.
+
+  - name: "Separate embeddings repository"
+    rejected_because: |
+      - Two repos to manage adds overhead
+      - Embeddings drift from content if not synced
+      - Complicates the clone workflow
+    when_it_works: |
+      When the embedding store is shared across multiple projects or when
+      embeddings are generated by a CI pipeline and published as artifacts.
+
+  - name: "Runtime embedding generation (no pre-built brain)"
+    rejected_because: |
+      - Every tool invocation that needs search would require API key
+      - Latency on every search query (generate → query)
+      - Costs accumulate per query instead of per content change
+    when_it_works: |
+      Applications where content changes frequently (e.g., live documentation)
+      and stale embeddings are unacceptable.
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Embeddings drift from content (content updated, embeddings not regenerated) — ivd_search returns stale or missing results"
+    action: |
+      - After content changes, run devops/embed.sh to regenerate
+      - Review diff of brain/ files before committing
+      - This intent documents the process as a constraint
+    monitor: "Compare last embed.sh run date vs last content commit date"
+    severity: "medium"
+
+  - condition: "Brain directory grows too large for git — repo clone becomes slow"
+    action: |
+      - Monitor brain/ size (currently ~few MB, acceptable)
+      - If it exceeds 50MB, consider git-lfs for .npy files
+      - IVD content is ~100 files, unlikely to produce large embeddings
+    monitor: "du -sh mcp_server/brain/ after each regeneration"
+    severity: "low"
+
+  - condition: "OpenAI embedding model deprecated or changed — existing embeddings incompatible with new model"
+    action: |
+      - Model is configured in knowledge/config.py (currently text-embedding-3-small)
+      - Full regeneration via devops/embed.sh handles model changes
+      - Pin model version in config to prevent silent changes
+    monitor: "OpenAI API changelog"
+    severity: "low"
+
+  - condition: "API key leaked in committed .env — unauthorized API usage"
+    action: |
+      - .env is gitignored (verified in .gitignore)
+      - .env.example contains placeholder values only
+      - devops scripts load .env at runtime, never commit it
+    monitor: "git log -- .env should return nothing"
+    severity: "high"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "mcp_server/"
+  version: 2
+  tests: "mcp_server/tests/ (123 unit, e2e, smoke — includes env validation and devops tests)"
+  documentation: "mcp_server/.env.example"
+
+  # Component map (file paths verifiable via ls)
+  components:
+    - file: "server.py"
+      purpose: "MCP protocol server — stdio (local) and SSE (remote) transports"
+    - file: "registry.py"
+      purpose: "Tool registration and dispatch — maps tool names to handlers"
+    - file: "auth.py"
+      purpose: "API key authentication for remote (SSE) deployment"
+    - dir: "tools/"
+      purpose: "15 tool implementations (one concern per file)"
+      files:
+        - "context.py      — ivd_get_context"
+        - "recipes.py      — ivd_load_recipe, ivd_list_recipes"
+        - "templates.py    — ivd_load_template"
+        - "validate.py     — ivd_validate"
+        - "scaffold.py     — ivd_init, ivd_scaffold, ivd_find_artifacts, ivd_check_placement"
+        - "discover.py     — ivd_list_features, ivd_discover_goal"
+        - "inversions.py   — ivd_propose_inversions"
+        - "learning.py     — ivd_teach_concept"
+        - "search.py       — ivd_search"
+    - dir: "knowledge/"
+      purpose: "Embedding engine — generation, storage, retrieval, chunking"
+      files:
+        - "brain.py     — Storage, retrieval, directory scanning"
+        - "embedder.py  — OpenAI embedding generation + similarity search"
+        - "processor.py — Text extraction and chunking"
+        - "config.py    — Model, dimensions, chunk size config"
+    - dir: "brain/ivd/"
+      purpose: "Committed embeddings (.npy vectors + .json metadata/chunks)"
+    - file: "env_check.py"
+      purpose: "Single source of truth for required environment variables — validated at boot and pre-deploy"
+    - dir: "devops/"
+      purpose: "Operational tooling for deployment, logging, key management, and embedding generation"
+      files:
+        - "setup.sh   — Environment setup: creates Python 3.11+ venv and installs all dependencies"
+        - "deploy.sh  — DigitalOcean App Platform deployment and management (create, update, status)"
+        - "logs.sh    — Production log streaming with auto-reconnect, filtering, and analytics"
+        - "keys.sh    — API key generation and management with user prefixes"
+        - "embed.sh   — Embedding generation wrapper (activates venv, loads .env, runs embed.py)"
+        - "embed.py   — Scans repo, chunks content, generates embeddings into brain/ivd/"
+        - "search.sh  — Local embedding query wrapper (activates venv, runs search.py)"
+        - "search.py  — CLI to query committed embeddings locally without API key"
+        - "test.sh    — Test runner wrapper (activates venv, runs pytest with coverage)"
+
+  # ── Production Deployment ─────────────────────────────────────────────
+  # Required environment variables for remote (SSE/StreamableHTTP) transport.
+  # Canonical list lives in mcp_server/env_check.py — keep these in sync.
+  #
+  # When adding a new env var dependency:
+  #   1. Add to mcp_server/env_check.py (REQUIRED_ENV_VARS_REMOTE or _ALL)
+  #   2. Add to your deployment environment spec (DO app spec or equivalent)
+  #   3. Add to .env and .env.example
+  #   4. Update this section
+  #
+  # deploy.sh gates on this list — deploy is blocked if any var is missing
+  # from the DO app spec. server.py validates at boot — server refuses to
+  # start if any var is missing from the environment.
+  deployment:
+    platform: "DigitalOcean App Platform (see deploy/README.md)"
+    required_env_vars:
+      - var: "IVD_API_KEYS"
+        purpose: "API key auth for remote MCP clients (comma-separated)"
+        used_by: ["auth.py"]
+        managed_by: "devops/keys.sh"
+
+      - var: "OPENAI_API_KEY"
+        purpose: "OpenAI API key for ivd_search embedding generation at runtime"
+        used_by: ["tools/search.py", "knowledge/embedder.py"]
+        managed_by: "DO dashboard or doctl"
+
+      - var: "REDIS_URL"
+        purpose: "Redis connection URL for StreamableHTTP session resumability"
+        used_by: ["event_store.py", "redis_utils.py"]
+        managed_by: "DO dashboard or deployment spec"
+
+    validation_chain:
+      - "mcp_server/env_check.py declares required vars (source of truth)"
+      - "deploy.sh check_env_vars() gates deploy if any var missing from DO spec"
+      - "wsgi.py calls check_and_warn() at boot — exits if any var missing"
+      - "Unit tests in tests/unit/test_env_check.py prevent regressions"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  smoke_tests:
+    - name: "tools_respond"
+      description: "All 15 tools return valid responses via stdio"
+      command: "python -m mcp_server (stdio mode, send tool calls)"
+      validates_constraint: "transport_dual"
+
+    - name: "search_works_after_clone"
+      description: "ivd_search returns results without OpenAI API key set"
+      command: "unset OPENAI_API_KEY && python mcp_server/devops/search.py 'What are the 8 principles?'"
+      validates_constraint: "zero_setup_query, embeddings_committed"
+
+    - name: "no_external_imports"
+      description: "Zero external project namespace imports"
+      command: "All imports in mcp_server/ resolve to stdlib or declared pip dependencies (expect no project-specific namespaces)"
+      validates_constraint: "self_contained"
+
+    - name: "brain_committed"
+      description: "brain/ files are tracked by git"
+      command: "git ls-files mcp_server/brain/ | wc -l (expect > 0)"
+      validates_constraint: "embeddings_committed"
+
+  embedding_regeneration:
+    when: "After any content change to framework docs, recipes, templates, research, or book"
+    how: "cd ivd && mcp_server/devops/embed.sh"
+    verify: "mcp_server/devops/search.sh 'test query' — confirm results include new content"
+    commit: "git add mcp_server/brain/ && git commit"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: 2.2
+    date: "2026-02-09"
+    change: "Evaluated authorship and evaluation sections — neither applies to MCP server"
+    reason: |
+      Authorship: The MCP server does not originate intent — it exposes tools that
+      AI agents call. Intent authorship is a concern for the calling agent, not the
+      service. The MCP server is always human-directed (the default, no section needed).
+      Evaluation: The MCP server does not run iterative workflows. It responds to
+      individual tool calls. Quality is verified via constraints and tests (standard
+      verification), not a continuous improvement loop. No evaluation section added.
+      Both are valid "when NOT to use" examples for these experimental sections.
+  - version: 2.1
+    date: "2026-02-09"
+    change: "Evaluated roles section — does not apply to MCP server"
+    reason: |
+      The new experimental roles section documents behavioral modes for AI agents
+      that switch roles (e.g., implementer, reviewer, architect). The MCP server is
+      a service (scope.type: service), not an agent — it exposes tools but does not
+      switch behavioral modes. This is a valid "when NOT to use" example for the
+      roles section. No roles section added.
+
+  - version: 2
+    date: "2026-02-09"
+    change: "Added interface section — all 15 tools documented with parameters, types, and test paths"
+    reason: |
+      Dogfood the new IVD optional section: interface. The MCP server is the canonical
+      example of a module that exposes a callable tool surface. Documenting all 15 tools
+      with typed parameters and test paths makes the interface verifiable (Principle 2)
+      and implementation-independent (Principle 7).
+    evidence: "All 15 tool signatures match MCP tool descriptors and implementation"
+
+  - version: 1
+    date: "2026-02-07"
+    change: "Initial module intent for MCP server"
+    reason: |
+      Document the design decision to commit embeddings, the 15-tool architecture,
+      dual-transport strategy, and self-contained deployment model. Captures the
+      rationale for why brain/ is version-controlled (clone-to-working, multi-device,
+      no API key to query).
+    evidence: "Working local Cursor MCP integration with committed embeddings"

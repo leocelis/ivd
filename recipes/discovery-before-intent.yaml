@@ -1,0 +1,94 @@
+# ==============================================================================
+# IVD Recipe: Discovery Before Intent
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-02-04
+# Category: workflow_patterns
+# Principle: 6 (AI as Understanding Partner) - extension "Discovery before intent"
+# ==============================================================================
+
+recipe:
+  name: "Discovery Before Intent"
+  version: "1.0"
+  status: "experimental"  # Not yet validated in production; see canonization_process
+  category: "workflow_patterns"
+  created: "2026-02-04"
+  author: "IVD Framework"
+
+  description: |
+    When the user doesn't know what to ask or lacks domain knowledge to give
+    clear instructions, run discovery before the standard "describe → AI writes
+    intent" flow. The AI proposes candidate goals, patterns (recipes), or
+    options with short tradeoffs; the user selects or refines; then the same
+    IVD flow applies. This is an optional step 0 under Principle 6 (AI as
+    Understanding Partner), not a new principle.
+
+  applies_to:
+    - "User says 'I'm not sure what we need' or 'I don't know what to ask'"
+    - "New domain or unfamiliar codebase"
+    - "Exploring what's possible before committing to a direction"
+    - "Onboarding: new team member needs to see options before describing"
+
+  when_to_use:
+    - "User cannot yet articulate a clear goal"
+    - "Problem space is unfamiliar (new product area, new tech)"
+    - "User wants to see 2–3 candidate directions before choosing"
+    - "Existing codebase: user wants to avoid duplicating or to extend existing features"
+
+  when_NOT_to_use:
+    - "User already has a clear description of what they want (go straight to intent writing)"
+    - "Trivial or well-defined task (e.g. fix typo, add unit test)"
+    - "Fully specified requirement from stakeholder (no discovery needed)"
+
+# ------------------------------------------------------------------------------
+# STEPS (workflow pattern, not intent template)
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  steps:
+    - step: 1
+      name: "Detect need for discovery"
+      description: "User expresses uncertainty, or context is new domain / new codebase"
+      signals:
+        - "User: 'I'm not sure what we need'"
+        - "User: 'What are the options?'"
+        - "Vague hint only (e.g. 'something for compliance')"
+
+    - step: 2
+      name: "Gather options"
+      description: "Use IVD tools to propose candidate directions"
+      actions:
+        - "ivd_list_recipes — list available patterns (classifier, workflow, infra, etc.)"
+        - "ivd_list_features (if project_root set) — what already exists in repo"
+        - "ivd_discover_goal (domain_or_context, user_hint) — get 2–3 candidate goals with tradeoffs"
+        - "Optionally: ivd_propose_inversions(problem_description) for design alternatives (Principle 8)"
+
+    - step: 3
+      name: "Present and choose"
+      description: "AI summarizes 2–3 options in one line each with short tradeoff; user picks or refines"
+      output: "A chosen direction (e.g. 'Lead scoring classifier using agent-classifier recipe')"
+
+    - step: 4
+      name: "Proceed to intent flow"
+      description: "Standard IVD: user describes (now with a direction) → AI writes intent → review → implement → verify"
+      reference: "framework.md Principle 6 workflow"
+
+best_practices:
+  - "Keep discovery lightweight: 2–3 options, one-line tradeoff each"
+  - "Don't write full intent in discovery; only choose direction"
+  - "If user refines ('that one but for X not Y'), one more round is enough then go to intent"
+
+common_pitfalls:
+  - "Running discovery when user already knows what they want (wastes time)"
+  - "Proposing too many options (overwhelms; keep to 2–3)"
+  - "Skipping discovery when user is clearly stuck (then they guess, many turns)"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  principle: "Principle 6: AI as Understanding Partner"
+  extension: "Discovery before intent (ivd_system_intent.yaml principle_6_ai_partner.extensions)"
+  framework_section: "framework.md → When the User Cannot Yet Describe: Discovery Before Intent"
+  implementation_guide: "framework.md → Step 0b (optional): Discovery When You're Not Sure What to Build"

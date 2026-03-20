@@ -1,0 +1,1052 @@
+# lead_qualification_workflow_intent.yaml
+# Complete workflow-level intent example
+# Demonstrates how to document a multi-step business process
+
+# Reference parent system intent to inherit project context
+parent_intent: "../system_intent.yaml"
+
+# Reference the workflow orchestration recipe
+recipe: "workflow-orchestration"
+recipe_version: "1.0"
+
+# ==============================================================================
+# SCOPE: Workflow-level intent
+# ==============================================================================
+
+scope:
+  level: "workflow"
+  type: "process"
+  granularity: "coarse"
+
+# ==============================================================================
+# METADATA: Optional - for feature inventory (large projects)
+# ==============================================================================
+metadata:
+  feature_id: "lead_qualification"
+  category: "sales"
+  tags: ["leads", "crm", "qualification"]
+  status: "implemented"
+  introduced_version: "1.0.0"
+
+# ==============================================================================
+# INTENT: What should this workflow accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Lead qualification workflow from intake to CRM sync"
+  goal: |
+    Process incoming leads through validation, enrichment, scoring, and qualification
+    steps to deliver high-quality leads to sales team in CRM. Filter out unqualified
+    leads early to maximize sales efficiency.
+  success_metric: |
+    - Workflow completion rate >= 98%
+    - End-to-end latency p95 < 3 seconds
+    - Qualified lead precision >= 85% (sales agrees lead is qualified)
+    - Qualified lead recall >= 70% (don't miss good leads)
+    - AI agent can understand workflow without reading code
+  stakeholders:
+    - "VP Sales (Jane Smith) - needs high-quality leads"
+    - "Marketing Ops Team - maintains workflow"
+    - "Sales Reps - consume qualified leads"
+
+# ==============================================================================
+# WORKFLOW: Multi-step process
+# ==============================================================================
+
+workflow:
+  summary: |
+    End-to-end lead qualification process that transforms raw lead data
+    into qualified leads synced to Salesforce CRM
+  
+  trigger: "POST /api/v1/leads (from website form, paid ads, events)"
+  
+  steps:
+    # --------------------------------------------------------------------------
+    # Step 1: Receive and Validate Lead
+    # --------------------------------------------------------------------------
+    - step: 1
+      name: "Receive and validate lead"
+      file: "api/endpoints/leads.py"
+      function: "create_lead()"
+      class: "LeadsAPI"
+      description: |
+        API endpoint receives raw lead data from external sources (website forms,
+        paid advertising, events). Validates required fields, normalizes data format,
+        checks for duplicates, and persists to database.
+      
+      input: |
+        POST /api/v1/leads
+        {
+          "email": "user@company.com",
+          "first_name": "John",
+          "last_name": "Doe",
+          "company": "Acme Corp",
+          "source": "website_form",
+          "metadata": {...}
+        }
+      
+      output: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "status": "pending_enrichment",
+          "created_at": "2026-01-24T10:00:00Z"
+        }
+      
+      business_logic: |
+        - Validate required fields (email, company)
+        - Normalize email (lowercase, trim)
+        - Check for duplicate (by email + company)
+        - If duplicate: update existing record
+        - If new: create new lead record
+        - Set initial status: "pending_enrichment"
+        - Emit event: "lead.created"
+      
+      performance: "p95 < 100ms (synchronous API call)"
+      
+      validation_rules:
+        - "email must be valid format"
+        - "company name must be non-empty"
+        - "source must be from allowed list"
+      
+      error_cases:
+        - "Invalid email → Return 400 with validation error"
+        - "Missing required fields → Return 400 with details"
+        - "Database error → Return 500, log error"
+    
+    # --------------------------------------------------------------------------
+    # Step 2: Enrich Lead Data
+    # --------------------------------------------------------------------------
+    - step: 2
+      name: "Enrich lead with external data"
+      file: "jobs/enrich_lead_job.py"
+      function: "enrich_lead_task()"
+      class: "EnrichLeadJob"
+      description: |
+        Background job enriches lead data by calling external APIs (Clearbit, LinkedIn,
+        ZoomInfo) to gather company size, industry, revenue, employee count, and
+        decision-maker information. Runs asynchronously after step 1 completes.
+      
+      input: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "email": "user@company.com",
+          "company": "Acme Corp"
+        }
+      
+      output: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "enriched_data": {
+            "company_size": "100-500",
+            "industry": "SaaS",
+            "revenue": "$10M-$50M",
+            "employee_count": 250,
+            "technologies": ["Salesforce", "HubSpot"],
+            "decision_maker_title": "VP of Sales"
+          },
+          "enrichment_confidence": 0.85,
+          "status": "enriched"
+        }
+      
+      business_logic: |
+        - Call Clearbit API for company data
+        - Call LinkedIn API for employee data
+        - Call ZoomInfo for decision-maker info
+        - Merge data from multiple sources
+        - Handle missing data gracefully (partial enrichment OK)
+        - Calculate enrichment confidence score
+        - Update lead record with enriched data
+        - Set status: "enriched"
+        - Emit event: "lead.enriched"
+      
+      performance: "p95 < 2 seconds (includes external API calls)"
+      
+      depends_on: [1]
+      
+      external_dependencies:
+        - service: "Clearbit API"
+          timeout: "1s"
+          fallback: "Use cached data or skip"
+        - service: "LinkedIn API"
+          timeout: "1s"
+          fallback: "Use cached data or skip"
+    
+    # --------------------------------------------------------------------------
+    # Step 3: Score Lead
+    # --------------------------------------------------------------------------
+    - step: 3
+      name: "Calculate lead score"
+      file: "agent/lead_qualifier/scoring.py"
+      function: "calculate_lead_score()"
+      class: "LeadScorer"
+      description: |
+        ML model inference to predict lead conversion probability. Uses enriched
+        data (company size, industry, revenue, etc.) plus behavioral signals
+        (page views, downloads) to generate 0.0-1.0 score.
+      
+      input: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "enriched_data": {...},
+          "behavioral_signals": {
+            "page_views": 15,
+            "whitepaper_downloads": 2,
+            "demo_requests": 1
+          }
+        }
+      
+      output: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "score": 0.87,
+          "score_breakdown": {
+            "company_fit": 0.90,
+            "engagement": 0.85,
+            "intent_signals": 0.82
+          },
+          "confidence": 0.92,
+          "status": "scored"
+        }
+      
+      business_logic: |
+        - Load ML model (XGBoost trained on historical conversions)
+        - Extract features from enriched data
+        - Extract features from behavioral signals
+        - Run model inference
+        - Generate score (0.0-1.0, higher = better)
+        - Break down score by category (company_fit, engagement, intent)
+        - Calculate confidence interval
+        - Update lead record with score
+        - Set status: "scored"
+        - Emit event: "lead.scored"
+      
+      performance: "p95 < 200ms (ML inference)"
+      
+      depends_on: [2]
+      
+      model_details:
+        - algorithm: "XGBoost"
+        - training_data: "Last 12 months conversions (10K+ leads)"
+        - features: "50 features (company + behavioral)"
+        - accuracy: "AUC = 0.88 on test set"
+    
+    # --------------------------------------------------------------------------
+    # Step 4: Qualify Lead (Threshold Decision)
+    # --------------------------------------------------------------------------
+    - step: 4
+      name: "Qualify lead decision"
+      file: "agent/lead_qualifier/agent.py"
+      function: "qualify_lead()"
+      class: "LeadQualifierAgent"
+      description: |
+        Decision step that applies business rules to determine if lead is
+        qualified for sales follow-up. Uses score from step 3 plus additional
+        qualification criteria (company size, industry match, etc.).
+      
+      input: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "score": 0.87,
+          "enriched_data": {...}
+        }
+      
+      output: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "qualified": true,
+          "qualification_reason": "High score (0.87) + target company size + SaaS industry",
+          "assigned_to": "sales_rep_3",
+          "priority": "high",
+          "status": "qualified"
+        }
+      
+      business_logic: |
+        Qualification criteria (ALL must pass):
+        1. Score >= 0.70 (minimum threshold)
+        2. Company size >= 50 employees (no small businesses)
+        3. Industry in target list (SaaS, FinTech, Healthcare)
+        4. Not in exclusion list (competitors, students)
+        
+        Priority assignment:
+        - High priority: score >= 0.85
+        - Medium priority: score 0.75-0.84
+        - Low priority: score 0.70-0.74
+        
+        If qualified:
+        - Set status: "qualified"
+        - Assign to sales rep (round-robin)
+        - Emit event: "lead.qualified"
+        
+        If NOT qualified:
+        - Set status: "disqualified"
+        - Store disqualification reason
+        - Emit event: "lead.disqualified"
+      
+      performance: "p95 < 10ms (rule-based logic)"
+      
+      depends_on: [3]
+      
+      decision_thresholds:
+        - score_threshold: 0.70
+          rationale: "Validated with sales team, balances precision/recall"
+        - min_company_size: 50
+          rationale: "Small companies don't fit ICP"
+    
+    # --------------------------------------------------------------------------
+    # Step 5: Sync to CRM
+    # --------------------------------------------------------------------------
+    - step: 5
+      name: "Sync qualified lead to Salesforce"
+      file: "integrations/salesforce/sync.py"
+      function: "sync_lead_to_crm()"
+      class: "SalesforceIntegration"
+      description: |
+        Final step syncs qualified leads to Salesforce CRM. Creates new Lead
+        record in Salesforce with all enriched data, score, and assignment.
+        Only runs for qualified leads (step 4 must return qualified=true).
+      
+      input: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "qualified": true,
+          "enriched_data": {...},
+          "score": 0.87,
+          "assigned_to": "sales_rep_3"
+        }
+      
+      output: |
+        {
+          "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+          "salesforce_lead_id": "00Q5g000001234567",
+          "synced_at": "2026-01-24T10:00:03Z",
+          "status": "synced_to_crm"
+        }
+      
+      business_logic: |
+        - Map internal lead fields to Salesforce Lead schema
+        - Create new Lead record in Salesforce
+        - Set Lead Owner = assigned sales rep
+        - Set Lead Source = original source (website, ads, etc.)
+        - Set Custom Fields (score, priority, enrichment data)
+        - Handle API rate limits (retry if throttled)
+        - Update internal lead record with Salesforce ID
+        - Set status: "synced_to_crm"
+        - Emit event: "lead.synced_to_crm"
+      
+      performance: "p95 < 500ms (Salesforce API call)"
+      
+      depends_on: [4]
+      
+      conditional_execution: "Only runs if step 4 returns qualified=true"
+      
+      external_dependencies:
+        - service: "Salesforce API"
+          timeout: "2s"
+          rate_limit: "100 requests/10 seconds"
+          fallback: "Queue for retry (background job)"
+  
+  # ----------------------------------------------------------------------------
+  # Data Flow Summary
+  # ----------------------------------------------------------------------------
+  
+  data_flow:
+    - "Raw lead (email, company) → Step 1 → Validated lead (database record)"
+    - "Validated lead → Step 2 → Enriched lead (company size, industry, revenue)"
+    - "Enriched lead → Step 3 → Scored lead (0.0-1.0 conversion probability)"
+    - "Scored lead → Step 4 → Qualified lead (true/false decision)"
+    - "Qualified lead → Step 5 → CRM record (Salesforce Lead)"
+    - "Overall: Raw data → Validated → Enriched → Scored → Qualified → Synced"
+  
+  data_transformations:
+    - step: 1
+      transform: "Raw form data → Normalized database record"
+    - step: 2
+      transform: "Basic data → Enriched with 20+ fields from external APIs"
+    - step: 3
+      transform: "Feature vector → ML score (0.0-1.0)"
+    - step: 4
+      transform: "Score + rules → Binary decision (qualified/disqualified)"
+    - step: 5
+      transform: "Internal lead object → Salesforce Lead schema"
+  
+  # ----------------------------------------------------------------------------
+  # Error Handling
+  # ----------------------------------------------------------------------------
+  
+  error_handling:
+    - step: 1
+      failure_mode: "Invalid input data (missing email or company)"
+      action: "Return 400 Bad Request with validation errors"
+      fallback: "None - fail fast on invalid input"
+      recovery: "Client must fix input and retry"
+      monitoring: "Track 4xx error rate (should be < 5%)"
+      
+    - step: 1
+      failure_mode: "Database connection error"
+      action: "Return 500 Internal Server Error"
+      fallback: "None - fail fast"
+      recovery: "Auto-retry from client (idempotent)"
+      monitoring: "Alert on database errors (PagerDuty)"
+      
+    - step: 2
+      failure_mode: "External API unavailable (Clearbit, LinkedIn timeout)"
+      action: "Log error, proceed with partial enrichment"
+      fallback: "Use cached data if available, otherwise skip that source"
+      recovery: "Continue workflow with degraded data (mark enrichment_confidence as low)"
+      monitoring: "Track enrichment success rate (alert if < 80%)"
+      
+    - step: 2
+      failure_mode: "All enrichment sources fail"
+      action: "Mark enrichment_confidence = 0.0, continue workflow"
+      fallback: "Use default values for missing fields"
+      recovery: "Scoring step handles missing data (lower score but doesn't fail)"
+      monitoring: "Alert if enrichment completely fails (rare)"
+      
+    - step: 3
+      failure_mode: "ML model unavailable or inference error"
+      action: "Log error, fall back to rule-based scoring"
+      fallback: "Use simplified scoring (company size + industry match → score)"
+      recovery: "Continue with fallback score (mark confidence as 'fallback')"
+      monitoring: "Alert on model failures (should be 0%)"
+      
+    - step: 4
+      failure_mode: "Business rule evaluation error (should not happen)"
+      action: "Log error, mark lead as 'needs_manual_review'"
+      fallback: "Don't disqualify by default (conservative approach)"
+      recovery: "Manual review by sales ops"
+      monitoring: "Alert immediately (indicates code bug)"
+      
+    - step: 5
+      failure_mode: "Salesforce API error (timeout, rate limit, auth failure)"
+      action: "Log error, queue lead for retry"
+      fallback: "Store lead in retry queue (background job retries every 5 minutes)"
+      recovery: "Exponential backoff retry (3 attempts)"
+      monitoring: "Track Salesforce sync success rate (alert if < 95%)"
+      
+    - step: 5
+      failure_mode: "Salesforce API rate limit exceeded"
+      action: "Respect rate limit, queue for delayed retry"
+      fallback: "Wait and retry (intelligent backoff based on rate limit window)"
+      recovery: "Retry after rate limit window expires"
+      monitoring: "Track rate limit hits (optimize if frequent)"
+  
+  # ----------------------------------------------------------------------------
+  # Orchestration
+  # ----------------------------------------------------------------------------
+  
+  orchestration:
+    type: "sequential"
+    coordinator: "workflows/lead_qualification_coordinator.py"
+    description: |
+      Orchestration strategy: SEQUENTIAL
+      
+      Why sequential:
+      - Strong data dependencies (each step needs output from previous)
+      - Steps must complete in order (can't score before enriching)
+      - Failure isolation (if step N fails, stop before step N+1)
+      
+      Coordinator responsibilities:
+      - Step 1: Synchronous (API endpoint waits for database write)
+      - Steps 2-5: Asynchronous (background jobs triggered by events)
+      - Event-driven: Each step emits event that triggers next step
+      - State tracking: Redis stores workflow state (current step, status)
+      - Error handling: Retry logic per step (not global retry)
+      - Monitoring: Emit metrics at each step transition
+      
+      Workflow states:
+      - "pending_enrichment" (after step 1)
+      - "enriching" (during step 2)
+      - "enriched" (after step 2)
+      - "scoring" (during step 3)
+      - "scored" (after step 3)
+      - "qualifying" (during step 4)
+      - "qualified" or "disqualified" (after step 4)
+      - "syncing_to_crm" (during step 5, only if qualified)
+      - "synced_to_crm" (after step 5, final state)
+      - "error" (if unrecoverable error)
+      - "needs_manual_review" (if business logic error)
+      
+      Event flow:
+      - lead.created → triggers step 2 (enrich)
+      - lead.enriched → triggers step 3 (score)
+      - lead.scored → triggers step 4 (qualify)
+      - lead.qualified → triggers step 5 (sync to CRM)
+      - lead.disqualified → workflow ends (no CRM sync)
+  
+  # ----------------------------------------------------------------------------
+  # Performance
+  # ----------------------------------------------------------------------------
+  
+  performance:
+    end_to_end_latency: "p95 < 3 seconds (steps 1-5 for qualified leads)"
+    
+    per_step_latency:
+      - step: 1
+        target: "p95 < 100ms"
+        current: "p95 = 85ms"
+      - step: 2
+        target: "p95 < 2s"
+        current: "p95 = 1.8s"
+      - step: 3
+        target: "p95 < 200ms"
+        current: "p95 = 150ms"
+      - step: 4
+        target: "p95 < 10ms"
+        current: "p95 = 5ms"
+      - step: 5
+        target: "p95 < 500ms"
+        current: "p95 = 400ms"
+    
+    throughput: ">= 100 leads/minute"
+    current_throughput: "~120 leads/minute (peak)"
+    
+    bottleneck_steps:
+      - step: 2
+        reason: "External API calls (Clearbit, LinkedIn)"
+        mitigation: "Added caching, implemented parallel API calls"
+      - step: 5
+        reason: "Salesforce API rate limits"
+        mitigation: "Batch syncing when possible, intelligent backoff"
+  
+  # ----------------------------------------------------------------------------
+  # Monitoring
+  # ----------------------------------------------------------------------------
+  
+  monitoring:
+    - metric: "workflow_completion_rate"
+      target: ">= 98%"
+      current: "99.2%"
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      alert: "< 95% completion rate → PagerDuty"
+      
+    - metric: "workflow_duration_p95"
+      target: "< 3 seconds"
+      current: "2.7 seconds"
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      alert_threshold: "> 5 seconds → Slack #engineering"
+      
+    - metric: "step_2_enrichment_success_rate"
+      target: ">= 90%"
+      current: "94%"
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      alert: "< 80% → Slack #integrations"
+      
+    - metric: "step_5_salesforce_sync_rate"
+      target: ">= 98%"
+      current: "99.5%"
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      alert: "< 95% → PagerDuty"
+      
+    - metric: "qualified_lead_rate"
+      target: "20-30% of total leads"
+      current: "25%"
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      alert: "< 10% or > 50% → Manual review (indicates model drift)"
+
+# ==============================================================================
+# FIELD MAPPING (Optional - for Step 5: Salesforce Sync)
+# ==============================================================================
+# This section documents the data mapping from internal DB to Salesforce CRM.
+# See: recipes/data-field-mapping.yaml for complete pattern
+
+field_mapping:
+  summary: "Map qualified leads from internal database to Salesforce Lead object"
+  
+  sources:
+    - system: "internal_db"
+      type: "database"
+      location: "leads table"
+      access: "postgres://app@db.internal:5432/production"
+      schema_reference: "db/schema/leads.sql"
+  
+  targets:
+    - system: "salesforce"
+      type: "api"
+      location: "Lead object via REST API"
+      access: "SALESFORCE_API_KEY env var"
+      schema_reference: "https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_lead.htm"
+  
+  mappings:
+    - source_field: "internal_db.leads.email"
+      target_field: "salesforce.Lead.Email"
+      transformation: "none"
+      data_type: "string → string"
+      required: true
+      validation: "valid email format"
+      example:
+        source: "john.doe@acme.com"
+        target: "john.doe@acme.com"
+    
+    - source_field: "internal_db.leads.company_name"
+      target_field: "salesforce.Lead.Company"
+      transformation: "none"
+      data_type: "string → string"
+      required: true
+      validation: "length >= 1"
+      example:
+        source: "Acme Corp"
+        target: "Acme Corp"
+    
+    - source_field: "internal_db.leads.score"
+      target_field: "salesforce.Lead.Lead_Score__c"
+      transformation: "round(score * 100)"
+      data_type: "float → integer"
+      required: true
+      validation: "range 0-100"
+      example:
+        source: 0.87
+        target: 87
+      notes: "Salesforce custom field expects integer 0-100; internal score is 0.0-1.0"
+    
+    - source_field: "internal_db.leads.industry"
+      target_field: "salesforce.Lead.Industry"
+      transformation: "map to Salesforce picklist values"
+      data_type: "string → enum"
+      required: false
+      default_value: "Other"
+      validation: "must be in Salesforce Industry picklist"
+      example:
+        source: "software"
+        target: "Technology"
+      notes: "Internal taxonomy differs from Salesforce; mapping logic in integrations/salesforce/field_mappings.py"
+    
+    - source_field: "internal_db.leads.company_size"
+      target_field: "salesforce.Lead.NumberOfEmployees"
+      transformation: "extract numeric midpoint from range"
+      data_type: "string → integer"
+      required: false
+      example:
+        source: "50-100"
+        target: 75
+      notes: "Internal: ranges like '50-100'; Salesforce: single integer"
+    
+    - source_field: "internal_db.leads.qualified_at"
+      target_field: "salesforce.Lead.Qualified_Date__c"
+      transformation: "format as ISO 8601"
+      data_type: "timestamp → string"
+      required: true
+      validation: "ISO 8601 format"
+      example:
+        source: "2026-01-24T10:00:00Z"
+        target: "2026-01-24T10:00:00.000+0000"
+  
+  business_rules:
+    - rule: "Only sync qualified leads (qualified = true)"
+      applies_to: "all mappings"
+      rationale: "Sales team only wants qualified leads in Salesforce"
+    
+    - rule: "Round score to integer for Salesforce compatibility"
+      applies_to: "score mapping"
+      rationale: "Salesforce custom field is integer type; internal score is float 0.0-1.0"
+  
+  transformations:
+    - name: "Score normalization"
+      input_fields: ["internal_db.leads.score"]
+      output_field: "salesforce.Lead.Lead_Score__c"
+      logic: "round(score * 100)"
+      example: "0.87 → 87"
+    
+    - name: "Industry taxonomy mapping"
+      input_fields: ["internal_db.leads.industry"]
+      output_field: "salesforce.Lead.Industry"
+      logic: |
+        if industry == 'software': return 'Technology'
+        elif industry == 'finance': return 'Banking'
+        elif industry == 'healthcare': return 'Healthcare'
+        else: return 'Other'
+      example: "'software' → 'Technology'"
+    
+    - name: "Company size extraction"
+      input_fields: ["internal_db.leads.company_size"]
+      output_field: "salesforce.Lead.NumberOfEmployees"
+      logic: "extract midpoint from range string (e.g., '50-100' → 75)"
+      example: "'50-100' → 75"
+  
+  verification:
+    schema_validation:
+      - check: "Salesforce Lead object has all required fields"
+        test: "tests/integrations/test_salesforce_schema.py::test_required_fields"
+        frequency: "on deploy"
+      
+      - check: "All source fields exist in internal DB schema"
+        test: "tests/test_db_schema.py::test_leads_table_schema"
+        frequency: "on deploy"
+    
+    sample_validation:
+      - description: "Compare 10 random synced leads: DB vs Salesforce"
+        test: "tests/integrations/test_sync_accuracy.py::test_sample_leads_match"
+        sample_path: "tests/fixtures/sample_qualified_leads.json"
+      
+      - description: "Verify transformations on sample data"
+        test: "tests/integrations/test_transformations.py::test_all_transformations"
+        sample_path: "tests/fixtures/transformation_samples.csv"
+    
+    data_quality:
+      - metric: "completeness"
+        target: ">= 95% of synced leads have all required fields populated"
+        monitor: "dashboards/salesforce_sync_quality.json"
+      
+      - metric: "accuracy"
+        target: "100% of scores in range 0-100"
+        monitor: "alert on Salesforce validation errors"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  - name: "workflow_completion_rate"
+    requirement: "successful completion >= 98%"
+    test: "tests/test_lead_qualification_workflow.py::test_completion_rate"
+    consequence_if_violated: |
+      - Lost leads (revenue impact)
+      - Sales team doesn't get qualified leads
+      - Poor customer experience (no follow-up)
+    current_value: "99.2%"
+    
+  - name: "end_to_end_latency"
+    requirement: "p95 latency < 3 seconds for qualified leads"
+    test: "tests/test_lead_qualification_workflow.py::test_latency"
+    consequence_if_violated: |
+      - Delayed lead follow-up (reduced conversion)
+      - Poor user experience (if synchronous)
+      - SLA breach
+    current_value: "p95 = 2.7s"
+    
+  - name: "qualified_lead_precision"
+    requirement: ">= 85% (sales team agrees lead is qualified)"
+    test: "tests/test_lead_qualification_workflow.py::test_precision"
+    consequence_if_violated: |
+      - Sales team wastes time on bad leads
+      - Lost trust in qualification system
+      - Manual re-qualification needed
+    current_value: "87%"
+    validation: "Monthly survey with sales team"
+    
+  - name: "qualified_lead_recall"
+    requirement: ">= 70% (don't miss good leads)"
+    test: "tests/test_lead_qualification_workflow.py::test_recall"
+    consequence_if_violated: |
+      - Lost revenue (good leads not followed up)
+      - Insufficient pipeline volume
+      - Sales team misses quota
+    current_value: "72%"
+    validation: "A/B test against manual qualification"
+    
+  - name: "step_idempotency"
+    requirement: "each step can be retried safely without side effects"
+    test: "tests/test_lead_qualification_workflow.py::test_idempotency"
+    consequence_if_violated: |
+      - Duplicate leads in CRM
+      - Multiple API calls (cost)
+      - Data corruption
+    current_value: "All steps idempotent"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "5-step sequential workflow for lead qualification"
+  reasoning: |
+    Why this workflow design:
+    
+    1. Step sequencing:
+       - Must validate before enriching (no point enriching invalid data)
+       - Must enrich before scoring (ML model needs rich features)
+       - Must score before qualifying (need objective score for decision)
+       - Must qualify before syncing (only sync qualified leads to CRM)
+    
+    2. Technology choices:
+       - Celery background jobs for steps 2-5 (long-running, async)
+       - Redis for workflow state tracking (fast, reliable)
+       - PostgreSQL for lead data persistence (ACID guarantees)
+       - XGBoost for scoring model (best accuracy in experiments)
+       - Salesforce API for CRM sync (required by business)
+    
+    3. Error handling strategy:
+       - Fail fast on invalid input (step 1)
+       - Graceful degradation on external API failures (step 2)
+       - Fallback to rule-based if ML fails (step 3)
+       - Conservative qualification (don't disqualify on errors, step 4)
+       - Retry queue for CRM sync failures (step 5)
+    
+    4. Performance targets:
+       - 3s end-to-end: Balances speed vs accuracy (enrichment takes time)
+       - 98% completion: High bar ensures reliability
+       - 85% precision: Sales team requirement (validated with them)
+       - 70% recall: Balance between pipeline volume and quality
+    
+    Trade-offs accepted:
+    - Sequential vs parallel: Could parallelize step 2 enrichment sources, but adds complexity
+    - Synchronous vs asynchronous: Step 1 is sync (immediate response), rest async (better UX)
+    - Accuracy vs speed: Could skip enrichment for faster workflow, but lower accuracy
+    - Complexity vs maintainability: 5 steps is manageable, more would be too complex
+    
+    Business context:
+    - Requested by VP Sales (Jane Smith) in Q4 2025
+    - Problem: Too many unqualified leads wasting sales time
+    - Goal: Filter pipeline to high-quality leads only
+    - Success criteria: Sales team closes 2x more deals per rep
+  
+  evidence: |
+    - playground/lead_qualification_analysis_2025-12-01.ipynb (threshold analysis)
+    - playground/model_comparison_2025-12-05.ipynb (XGBoost vs alternatives)
+    - docs/meetings/sales_team_feedback_2025-12-10.md (precision/recall targets)
+  
+  date: "2026-01-15"
+  stakeholder: "VP Sales (Jane Smith)"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "manual_qualification"
+    description: "Sales reps manually qualify all leads"
+    rejected_because: |
+      - Too slow (5-10 minutes per lead)
+      - Inconsistent (different reps use different criteria)
+      - Doesn't scale (100+ leads/day = 8+ hours/day of qualification)
+      - Poor use of sales rep time (should focus on selling)
+    when_it_works: "< 10 leads/day, highly complex qualification criteria"
+    experiment: "Pilot with 5 sales reps for 1 month (Dec 2025)"
+    date_tested: "2025-12-01"
+    results: "Too slow, reps complained, qualification inconsistent"
+  
+  - name: "rule_based_only"
+    description: "Use business rules only (no ML scoring)"
+    rejected_because: |
+      - Lower accuracy (75% precision vs 85% with ML)
+      - Misses subtle patterns (ML captures nuances)
+      - Can't adapt to changing lead quality over time
+    when_it_works: "Very clear qualification criteria, no ambiguity"
+    experiment: "A/B test for 2 weeks (Jan 2026)"
+    date_tested: "2026-01-05"
+    results: "ML scoring improved precision by 10 percentage points"
+  
+  - name: "fully_automated_outreach"
+    description: "Automatically contact all qualified leads (no human)"
+    rejected_because: |
+      - Sales team wants to personalize outreach
+      - Risk of spamming (if model makes errors)
+      - Regulatory concerns (GDPR, CAN-SPAM)
+    when_it_works: "Very high-volume transactional sales"
+    experiment: "Not tested (too risky)"
+    date_tested: "N/A"
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "External enrichment APIs become unreliable (>20% failure rate)"
+    impact: "Lower scoring accuracy, more false negatives"
+    action: |
+      - Switch to backup enrichment providers
+      - Increase reliance on behavioral signals
+      - Lower qualification threshold temporarily
+    monitor: "dashboards/enrichment_reliability.json"
+    severity: "high"
+    mitigation: "Multi-provider strategy, cache enrichment data"
+    
+  - condition: "ML model drift (precision drops below 80%)"
+    impact: "Sales team gets more bad leads, loses trust"
+    action: |
+      - Retrain model with recent data
+      - Temporarily increase qualification threshold
+      - Fall back to rule-based qualification
+    monitor: "dashboards/model_performance.json (weekly validation)"
+    severity: "high"
+    mitigation: "Monthly model retraining, shadow deployment for validation"
+    
+  - condition: "Salesforce API changes break integration"
+    impact: "Qualified leads not synced to CRM, sales team doesn't get leads"
+    action: |
+      - Emergency fix to integration code
+      - Use Salesforce bulk API as temporary workaround
+      - Manual CSV export as last resort
+    monitor: "logs/salesforce_integration_errors.log"
+    severity: "critical"
+    mitigation: "API version pinning, comprehensive integration tests"
+    
+  - condition: "Workflow latency exceeds 10 seconds (p95)"
+    impact: "Poor user experience, potential timeouts"
+    action: |
+      - Investigate bottleneck (usually step 2 enrichment)
+      - Add more aggressive caching
+      - Parallelize external API calls
+    monitor: "dashboards/workflow_latency.json"
+    severity: "medium"
+    mitigation: "Performance monitoring, auto-scaling workers"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "workflows/lead_qualification_coordinator.py"
+  entry_point: "POST /api/v1/leads (LeadsAPI.create_lead)"
+  
+  steps_mapping:
+    - step: 1
+      file: "api/endpoints/leads.py"
+      function: "create_lead()"
+      class: "LeadsAPI"
+      tests: "tests/api/test_leads_endpoint.py"
+      
+    - step: 2
+      file: "jobs/enrich_lead_job.py"
+      function: "enrich_lead_task()"
+      class: "EnrichLeadJob"
+      tests: "tests/jobs/test_enrich_lead_job.py"
+      
+    - step: 3
+      file: "agent/lead_qualifier/scoring.py"
+      function: "calculate_lead_score()"
+      class: "LeadScorer"
+      tests: "tests/agent/test_lead_scoring.py"
+      
+    - step: 4
+      file: "agent/lead_qualifier/agent.py"
+      function: "qualify_lead()"
+      class: "LeadQualifierAgent"
+      tests: "tests/agent/test_lead_qualification.py"
+      
+    - step: 5
+      file: "integrations/salesforce/sync.py"
+      function: "sync_lead_to_crm()"
+      class: "SalesforceIntegration"
+      tests: "tests/integrations/test_salesforce_sync.py"
+  
+  version: 2
+  previous_versions:
+    - version: 1
+      date: "2025-12-01"
+      changes: "Initial implementation (4 steps, no enrichment)"
+      deprecated: "2026-01-15"
+      reason: "Added enrichment step for better accuracy"
+  
+  tests: "tests/workflows/test_lead_qualification_workflow_*.py"
+  documentation: "docs/workflows/lead_qualification.md"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  integration_tests:
+    - name: "end_to_end_happy_path"
+      description: "Complete workflow from API call to CRM sync"
+      input: |
+        POST /api/v1/leads
+        {"email": "john@acme.com", "company": "Acme Corp"}
+      expected_output: |
+        - Lead created in database
+        - Enriched with company data
+        - Scored >= 0.70
+        - Qualified = true
+        - Synced to Salesforce
+        - Salesforce Lead ID returned
+      validates_constraint: "workflow_completion_rate"
+      runtime: "~3 seconds"
+      
+    - name: "step_2_enrichment_failure_recovery"
+      description: "Workflow continues with partial enrichment"
+      input: "Valid lead data"
+      mock: "Clearbit API returns 503 (unavailable)"
+      expected_output: |
+        - Step 2 uses cached data or defaults
+        - enrichment_confidence = 0.5 (low)
+        - Workflow continues to step 3
+        - Scoring uses available data
+        - Workflow completes (may or may not qualify)
+      validates_constraint: "error_resilience"
+      
+    - name: "disqualified_lead_no_crm_sync"
+      description: "Disqualified leads don't sync to CRM"
+      input: |
+        {"email": "student@university.edu", "company": "University"}
+      expected_output: |
+        - Steps 1-4 complete successfully
+        - Step 4 returns qualified = false (student domain)
+        - Step 5 does NOT execute
+        - Final status = "disqualified"
+        - No Salesforce record created
+      validates_constraint: "workflow_completion_rate"
+  
+  performance_tests:
+    - name: "end_to_end_latency_p95"
+      description: "Workflow completes within 3 seconds"
+      input: "100 concurrent lead submissions"
+      expected: "p95 < 3 seconds"
+      validates_constraint: "end_to_end_latency"
+      
+    - name: "throughput_under_load"
+      description: "Workflow handles 100+ leads/minute"
+      input: "150 leads/minute for 5 minutes"
+      expected: "All workflows complete, no failures"
+      validates_constraint: "throughput"
+  
+  accuracy_validation:
+    - name: "qualification_precision_validation"
+      description: "Sales team agrees with qualification decisions"
+      methodology: |
+        - Sample 100 qualified leads/month
+        - Sales reps review and mark as "agree" or "disagree"
+        - Calculate precision = agrees / total
+      expected: ">= 85% agreement"
+      validates_constraint: "qualified_lead_precision"
+      frequency: "Monthly"
+      
+    - name: "qualification_recall_validation"
+      description: "Catch good leads (don't miss opportunities)"
+      methodology: |
+        - Sample 50 disqualified leads/month
+        - Sales ops reviews manually
+        - Check for false negatives (should have qualified)
+        - Calculate recall = true_positives / (true_positives + false_negatives)
+      expected: ">= 70% recall"
+      validates_constraint: "qualified_lead_recall"
+      frequency: "Monthly"
+  
+  monitoring_verification:
+    - name: "dashboard_completeness"
+      description: "Dashboard shows all critical metrics"
+      verification: |
+        - Workflow completion rate (per step and overall)
+        - Latency (per step and end-to-end)
+        - Error rates (per step)
+        - Qualification rate (% of leads qualified)
+        - CRM sync success rate
+      dashboard: "dashboards/lead_qualification_dashboard.json"
+      
+    - name: "alerting_validation"
+      description: "Alerts fire when thresholds breached"
+      verification: |
+        - Manually trigger failures
+        - Verify PagerDuty alerts fire
+        - Verify Slack notifications sent
+        - Verify dashboard shows anomalies
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: 2
+    date: "2026-01-15"
+    change: "Added step 2 (enrichment) for better scoring accuracy"
+    reason: |
+      - Scoring accuracy improved from 80% → 87%
+      - Sales team requested more context on leads
+      - External data helps with prioritization
+    evidence: "playground/enrichment_impact_analysis_2026-01-10.ipynb"
+    stakeholder: "VP Sales (Jane Smith)"
+    
+  - version: 1
+    date: "2025-12-01"
+    change: "Initial implementation (4 steps, no enrichment)"
+    reason: "MVP to replace manual qualification process"
+    evidence: "docs/meetings/lead_qualification_kickoff_2025-11-15.md"
+    stakeholder: "VP Sales (Jane Smith)"

@@ -1,0 +1,405 @@
+# ==============================================================================
+# IVD Recipe: AI Classifier Agent Pattern
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-01-23
+# Category: agent_patterns
+# ==============================================================================
+
+recipe:
+  name: "AI Classifier Agent Pattern"
+  version: "1.0"
+  category: "agent_patterns"
+  created: "2026-01-23"
+  author: "Leo Celis"
+  
+  description: |
+    Standard pattern for building AI agents that classify inputs into categories
+    using LLM-based understanding with quality validation. This pattern is 
+    reusable across different classification domains (leads, support tickets, 
+    content, facts, etc.) and provides a structured approach to maintaining 
+    classification quality over time.
+    
+    Key characteristics:
+    - Uses LLM for context understanding (not keyword matching)
+    - Includes validation layer for quality assurance
+    - Monitors performance metrics continuously
+    - Handles edge cases and failure modes
+  
+  applies_to:
+    - "Categorizing items that require context understanding"
+    - "Classification where quality thresholds are critical"
+    - "Multi-class or multi-label classification problems"
+    - "Domain-specific classification (leads, tickets, content, facts)"
+  
+  when_to_use:
+    - "Classification requires understanding context, not just keywords"
+    - "Quality/accuracy requirements are high (typically >= 80%)"
+    - "Input data is unstructured or semi-structured text"
+    - "Categories may evolve based on business needs"
+    - "Explainability of classification decisions is important"
+  
+  when_NOT_to_use:
+    - "Simple rule-based classification is sufficient (< 10 rules)"
+    - "Real-time latency requirement < 100ms (LLM calls add latency)"
+    - "No quality/accuracy requirements (any answer is acceptable)"
+    - "Classification is purely numeric/quantitative"
+    - "Training data exists and traditional ML would work better"
+
+# ------------------------------------------------------------------------------
+# TEMPLATE SECTIONS
+# ------------------------------------------------------------------------------
+
+intent_template:
+  summary: "[Domain] classifier agent for [use case]"
+  goal: "Classify [items] into [categories] for [stakeholder] to [purpose]"
+  success_metric: "[Metric name (accuracy/precision/recall)] >= [target]%"
+  stakeholders:
+    - "[Primary stakeholder role]"
+    - "[Secondary stakeholder role]"
+
+constraints_template:
+  - name: "classification_accuracy"
+    requirement: "accuracy >= [0.80-0.95 typical]"
+    typical_values: "0.80 minimum, 0.90 good, 0.95+ excellent"
+    test: "tests/test_[module]_accuracy.py::test_classification_accuracy"
+    consequence_if_violated: "[Stakeholder] receives incorrect classifications, leading to [business impact]"
+    
+  - name: "response_time"
+    requirement: "p95 latency < [1-3s typical for LLM-based]"
+    typical_values: "1s excellent, 2s good, 3s acceptable"
+    test: "tests/test_[module]_performance.py::test_latency"
+    consequence_if_violated: "User experience degraded, [downstream process] delayed"
+    
+  - name: "cost_per_classification"
+    requirement: "average cost < $[0.01-0.10 typical]"
+    typical_values: "Depends on LLM model and prompt complexity"
+    test: "tests/test_[module]_cost.py::test_cost_tracking"
+    consequence_if_violated: "Operational costs exceed budget"
+
+rationale_template:
+  decision: "Use LLM-based classification with [specific approach: single prompt / chain of thought / ensemble]"
+  reasoning: |
+    - LLM provides context understanding beyond keyword matching
+    - Validation layer ensures quality before output
+    - [Domain-specific reasoning about why this approach fits]
+    - Accepted trade-off: Higher cost/latency for better accuracy
+  evidence: "playground/[domain]_classification_analysis_[date].ipynb"
+  stakeholder: "[Role] ([Name])"
+  date: "[YYYY-MM-DD]"
+
+alternatives_template:
+  - name: "rule_based_classification"
+    typical_rejection_reason: "Too brittle, requires constant maintenance as categories evolve"
+    when_it_works: "< 10 clear rules, categories stable, no context understanding needed"
+    
+  - name: "traditional_ml_classifier"
+    typical_rejection_reason: "Insufficient labeled training data or overfitting on small dataset"
+    when_it_works: "Large labeled dataset available (>10K examples), categories well-defined"
+    
+  - name: "keyword_matching"
+    typical_rejection_reason: "Fails on edge cases, doesn't understand context or nuance"
+    when_it_works: "Very simple categories with obvious keywords, low accuracy acceptable"
+    
+  - name: "manual_human_classification"
+    typical_rejection_reason: "Doesn't scale, slow, expensive, inconsistent across humans"
+    when_it_works: "Very low volume (< 10/day), high cost acceptable, ultimate accuracy needed"
+
+risks_template:
+  - condition: "If accuracy drops below [threshold - 0.05]"
+    impact: "high"
+    action: "Alert team, review recent classifications, investigate model/prompt drift"
+    monitor: "CloudWatch/Datadog dashboard - [dashboard_name]"
+    severity: "high"
+    
+  - condition: "If latency exceeds [threshold * 2]"
+    impact: "medium"
+    action: "Check LLM service health, consider fallback to cached results"
+    monitor: "APM latency metrics"
+    severity: "medium"
+    
+  - condition: "If cost per classification > [budget * 1.5]"
+    impact: "medium"
+    action: "Review prompt efficiency, consider cheaper model for simple cases"
+    monitor: "Cost tracking dashboard"
+    severity: "medium"
+    
+  - condition: "If categories evolve significantly"
+    impact: "medium"
+    action: "Retrain/update prompts, validate on new category examples"
+    monitor: "Category distribution tracking"
+    severity: "medium"
+
+# ------------------------------------------------------------------------------
+# IMPLEMENTATION PATTERN
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  directory_structure: |
+    agent/[classifier_name]/
+    ├── agent.py                      # Main classifier agent (inherits BaseAgent)
+    ├── {agent}_intent.yaml           # Intent artifact (uses this recipe, e.g. classifier_intent.yaml)
+    ├── classifier.py                 # Core classification logic
+    ├── validator.py                  # Output validation logic
+    ├── prompts.py                    # LLM prompts (or use prompt/[name]_prompts.py)
+    ├── utils.py                      # Helper functions
+    └── tests/
+        ├── test_accuracy.py          # Accuracy validation tests
+        ├── test_performance.py       # Latency and throughput tests
+        ├── test_cost.py              # Cost tracking tests
+        └── test_edge_cases.py        # Edge case handling tests
+  
+  code_structure: |
+    # agent.py
+    class ClassifierAgent(BaseAgent):
+        def __init__(self, config):
+            super().__init__(config)
+            self.classifier = Classifier(config)
+            self.validator = Validator(config)
+            
+        async def process(self, input_data):
+            # 1. Validate input
+            if not self._validate_input(input_data):
+                return error_response
+                
+            # 2. Prepare context for LLM
+            context = self._prepare_context(input_data)
+            
+            # 3. Call LLM for classification
+            classification = await self.classifier.classify(context)
+            
+            # 4. Validate output
+            if not self.validator.is_valid(classification):
+                # Handle invalid classification
+                classification = self._handle_invalid(classification)
+            
+            # 5. Track metrics
+            self._track_metrics(classification)
+            
+            # 6. Return result
+            return classification_response
+  
+  key_files:
+    - file: "agent.py"
+      purpose: "Main agent class, orchestrates classification workflow"
+      key_functions:
+        - name: "process"
+          purpose: "Main entry point for classification requests"
+        - name: "_prepare_context"
+          purpose: "Prepare input for LLM (formatting, context building)"
+        - name: "_track_metrics"
+          purpose: "Log classification metrics for monitoring"
+          
+    - file: "classifier.py"
+      purpose: "Core classification logic using LLM"
+      key_functions:
+        - name: "classify"
+          purpose: "Call LLM and parse classification result"
+        - name: "_build_prompt"
+          purpose: "Construct prompt from context and examples"
+          
+    - file: "validator.py"
+      purpose: "Validate classification output quality"
+      key_functions:
+        - name: "is_valid"
+          purpose: "Check if classification meets quality criteria"
+        - name: "validate_category"
+          purpose: "Ensure category is in allowed set"
+          
+  dependencies:
+    - "openai or anthropic (LLM provider SDK)"
+    - "pydantic (for structured output validation)"
+    - "prometheus_client (for metrics tracking)"
+
+# ------------------------------------------------------------------------------
+# VERIFICATION PATTERN
+# ------------------------------------------------------------------------------
+
+verification_pattern:
+  continuous_checks:
+    - check: "Classification accuracy"
+      frequency: "daily"
+      command: "pytest tests/test_accuracy.py::test_classification_accuracy"
+      threshold: ">= [constraint from intent]"
+      
+    - check: "Response latency (p95)"
+      frequency: "per_request"
+      command: "Monitor APM metrics"
+      threshold: "< [constraint from intent]"
+      
+    - check: "Cost per classification"
+      frequency: "daily"
+      command: "Review cost tracking dashboard"
+      threshold: "< [constraint from intent]"
+      
+    - check: "Error rate"
+      frequency: "hourly"
+      command: "Monitor error logs and metrics"
+      threshold: "< 5%"
+      
+  milestone_checks:
+    - milestone: "Weekly accuracy review"
+      validation: "Review classification accuracy on production data"
+      frequency: "weekly"
+      
+    - milestone: "Monthly performance review"
+      validation: "Analyze latency trends, cost trends, accuracy trends"
+      frequency: "monthly"
+      
+    - milestone: "Quarterly model evaluation"
+      validation: "Compare current approach against alternatives, consider improvements"
+      frequency: "quarterly"
+      
+  monitoring_setup:
+    - metric: "classification_accuracy"
+      dashboard: "Grafana/CloudWatch - [Agent Name] Classification Dashboard"
+      alert_threshold: "< [constraint - 0.05]"
+      
+    - metric: "classification_latency_p95"
+      dashboard: "APM Dashboard"
+      alert_threshold: "> [constraint * 1.5]"
+      
+    - metric: "classification_cost_per_request"
+      dashboard: "Cost Tracking Dashboard"
+      alert_threshold: "> [budget * 1.5]"
+      
+    - metric: "classification_error_rate"
+      dashboard: "Error Monitoring Dashboard"
+      alert_threshold: "> 5%"
+
+# ------------------------------------------------------------------------------
+# EXAMPLES
+# ------------------------------------------------------------------------------
+
+examples:
+  - name: "Content Validation Agent"
+    location: "agent/content_validator/"
+    domain: "Content / Knowledge Validation"
+    customization: |
+      - Added source citation requirements
+      - Multi-category validation (accuracy, canonicity, completeness)
+      - Integration with domain-specific knowledge bases
+    outcome: "90%+ accuracy on domain content fact checking"
+    link_to_intent: "agent/content_validator/content_validator_intent.yaml"
+    
+  - name: "Lead Scoring Classifier"
+    location: "agent/lead_scorer/"
+    domain: "CRM / Sales"
+    customization: |
+      - Binary classification (qualified / not qualified)
+      - Integration with CRM enrichment data
+      - Real-time scoring on lead creation
+    outcome: "85% precision, 70% recall, 15% sales conversion"
+    link_to_intent: "agent/lead_scorer/lead_scorer_intent.yaml"
+    
+  - name: "Support Ticket Router"
+    location: "agent/ticket_router/"
+    domain: "Customer Support"
+    customization: |
+      - Multi-class classification (department routing)
+      - Urgency detection as secondary classification
+      - Integration with ticketing system
+    outcome: "88% routing accuracy, 40% reduction in mis-routed tickets"
+    link_to_intent: "agent/ticket_router/ticket_router_intent.yaml"
+
+# ------------------------------------------------------------------------------
+# BEST PRACTICES
+# ------------------------------------------------------------------------------
+
+best_practices:
+  - practice: "Use few-shot examples in prompts"
+    why: "Improves classification accuracy by showing LLM what good classifications look like"
+    example: "Include 3-5 example classifications in prompt context"
+    
+  - practice: "Validate output structure before using"
+    why: "LLMs occasionally return malformed output, validation prevents downstream errors"
+    example: "Use Pydantic models to validate classification response structure"
+    
+  - practice: "Track metrics on every classification"
+    why: "Enables monitoring of drift and performance degradation"
+    example: "Log classification, confidence, latency, cost to metrics system"
+    
+  - practice: "Implement confidence thresholds"
+    why: "Low confidence classifications should be handled differently (manual review, fallback)"
+    example: "If confidence < 0.70, flag for manual review"
+    
+  - practice: "Cache frequently classified inputs"
+    why: "Reduces cost and latency for repeated inputs"
+    example: "Cache classification results with TTL based on category stability"
+    
+  - practice: "Use cheaper models for simple cases"
+    why: "Not all classifications need most powerful (expensive) model"
+    example: "Use GPT-3.5 for clear cases, GPT-4 only for ambiguous cases"
+
+common_pitfalls:
+  - pitfall: "Prompt is too vague or generic"
+    symptom: "Classifications are inconsistent or don't match expectations"
+    fix: "Add specific examples, constraints, and category definitions to prompt"
+    
+  - pitfall: "No validation of LLM output"
+    symptom: "Agent crashes or returns invalid data to downstream systems"
+    fix: "Implement strict output validation using schemas (Pydantic, JSON Schema)"
+    
+  - pitfall: "Not monitoring accuracy over time"
+    symptom: "Classification quality degrades silently, stakeholders complain"
+    fix: "Set up automated accuracy tracking with alerts on degradation"
+    
+  - pitfall: "Treating all classifications equally"
+    symptom: "High-value/high-risk classifications get same treatment as low-value ones"
+    fix: "Implement confidence thresholds and different handling paths"
+    
+  - pitfall: "No cost tracking"
+    symptom: "Monthly LLM bills surprise you"
+    fix: "Track cost per classification, set budgets, optimize prompts"
+
+# ------------------------------------------------------------------------------
+# COST & PERFORMANCE
+# ------------------------------------------------------------------------------
+
+typical_costs:
+  development_time: "2-5 days (with recipe: 1-2 days)"
+  infrastructure_cost: "$50-500/month (depends on volume and model)"
+  maintenance_effort: "2-4 hours/month (monitoring, prompt updates)"
+
+typical_performance:
+  latency: "500ms-3s (depends on LLM model and prompt complexity)"
+  throughput: "10-50 classifications/second (with concurrent requests)"
+  accuracy: "80-95% (depends on problem complexity and prompt quality)"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  documentation:
+    - "docs/agents/README.md - Agent architecture overview"
+    - "agent/base_agent.py - Base agent class documentation"
+    
+  research:
+    - "Few-Shot Learning with LLMs (OpenAI Best Practices 2024)"
+    - "Prompt Engineering Guide (Anthropic 2024)"
+    - "LLM Classification Benchmarks (Various papers)"
+    
+  tools:
+    - name: "OpenAI SDK"
+      purpose: "LLM API integration"
+      link: "https://github.com/openai/openai-python"
+      
+    - name: "LangChain"
+      purpose: "LLM application framework (optional, adds overhead)"
+      link: "https://github.com/langchain-ai/langchain"
+      
+    - name: "Pydantic"
+      purpose: "Output validation and structured data"
+      link: "https://docs.pydantic.dev/"
+
+# ------------------------------------------------------------------------------
+# CHANGELOG
+# ------------------------------------------------------------------------------
+
+changelog:
+  - version: "1.0"
+    date: "2026-01-23"
+    change: "Initial recipe creation based on content_validator, lead_scorer patterns"
+    reason: "Pattern used successfully in 3+ agents, ready to template"
+    evidence: "agent/content_validator/, agent/lead_scorer/ implementations"

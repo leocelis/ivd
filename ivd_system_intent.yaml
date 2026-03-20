@@ -1,0 +1,2024 @@
+# ==============================================================================
+# IVD Framework: Master Intent Artifact
+# ==============================================================================
+# This is the canonical reference for extending the IVD framework itself.
+# All additions to IVD must align with this intent.
+#
+# Version: 2.4
+# Created: 2026-01-24
+# Updated: 2026-02-09 (constraint-segmented implementation: mitigating compliance degradation during generation)
+# Status: Canonical
+# ==============================================================================
+
+scope:
+  level: "system"
+  type: "framework"
+  granularity: "coarse"
+
+# ==============================================================================
+# INTENT: What should the IVD framework accomplish?
+# ==============================================================================
+
+intent:
+  summary: "Intent-Verified Development: The framework for the AI Agents era—where AI writes intent, implements against it, and verifies. Eliminates many-turns and hallucinations."
+  
+  goal: |
+    Provide a complete methodology for human-AI collaboration where:
+    
+    1. The AI writes structured intent artifacts (not the human writing prose)
+    2. The AI implements against the intent artifacts
+    3. The AI verifies its code against executable constraints
+    4. Many-turns and hallucinations are eliminated at the source
+    
+    This is NOT traditional PM → Developer documentation (PRDs, user stories).
+    This is the framework for the AI Agents era where AI builds, writes, and verifies.
+    
+    Without this distinction, intent artifacts are just another prose artifact
+    that AI reads and guesses at. With IVD, AI writes, verifies, and self-corrects.
+    
+    For large projects: optional metadata on intents (feature_id, category, tags,
+    status) plus a feature-list tool enables derived feature inventory and
+    duplicate prevention—no separate inventory file; inventory is generated from
+    intent artifacts.
+  
+  success_metric: |
+    - 85-95% knowledge capture (vs 10-15% traditional) — projected, pending validation
+    - 40% faster onboarding (8-12 days vs 14-21 days) — projected, pending validation
+    - 80-90% reduction in AI agent context needed — projected, pending validation
+    - Intent artifacts survive rewrites, team changes, technology shifts
+    - Zero tolerance for violations of core principles
+
+  # EVIDENCE HONESTY NOTE (Mar 2, 2026):
+  # The numeric metrics above are PROJECTIONS based on the author's experience
+  # building with IVD on real-world multi-agent systems, content platforms,
+  # and personal productivity tools. They have NOT been independently measured
+  # or validated by external teams. No controlled benchmarks exist yet.
+  #
+  # Present these as observed patterns from real work, NOT as proven benchmarks.
+  # "In my experience" > "studies show."
+  # The principles are sound. The metrics need external validation.
+  
+  stakeholders:
+    - "Developers and engineers working with AI agents (Cursor, Copilot, Claude, GPT)"
+    - "AI agents that write, implement, and verify code"
+    - "Technical leads managing AI-assisted development"
+    - "Anyone tired of many turns and hallucinations when working with AI"
+    - "Teams adopting AI-driven development workflows"
+
+# ==============================================================================
+# PRINCIPLES: The 8 Core Principles (Immutable)
+# ==============================================================================
+# These principles define IVD. Any addition that violates these is rejected.
+# Principles are hierarchical: Principle 1 is most fundamental.
+
+principles:
+  cognitive_foundation: |
+    IVD works because of how LLMs process information at the architecture level.
+    LLMs have two knowledge systems:
+    - Parametric knowledge: training weights — frozen, generalized, fills gaps with averaged patterns (~30% reliance)
+    - Contextual knowledge: the prompt/context window — specific, current, controllable (~70% reliance)
+    Source: 9-LLM study (2024) — consistent 70/30 split regardless of context size.
+    
+    When given vague prose, the contextual channel is underloaded; the model fills gaps from
+    parametric memory. That gap-filling IS hallucination. Structured intent artifacts saturate
+    the contextual channel with specific, verifiable, near-zero-entropy information.
+    
+    The lost-in-the-middle effect (2024): accuracy degrades for information in the middle of long
+    contexts — effective window can be 99% smaller than advertised. This is why the verification
+    protocol mandates re-reading intent from disk before every verification step.
+    
+    References: Huang et al. ICLR 2024 (self-correction limits); 9-LLM contextual/parametric
+    study (2024); lost-in-the-middle (GPT-4, Claude 3, 2024); proactive interference (2025).
+    Full treatment: framework.md "Why This Works: The Cognitive Architecture of LLMs"
+    
+    The strategic implication: every company has unique knowledge — business rules,
+    architecture decisions, compliance requirements, domain expertise — that does not
+    exist in any LLM's parametric channel. It never will. This knowledge is inherently
+    contextual: it can only enter through the context window. Generic AI tools (Copilot
+    without project context, Zapier, Notion AI) feed generic context, so the parametric
+    channel fills company-specific gaps with averaged patterns. IVD is the framework for
+    structuring company-specific knowledge so that the contextual channel is loaded with
+    YOUR ground truth. The competitive advantage is not AI capability — that is
+    commoditized. The advantage is structured, verifiable, company-specific knowledge.
+    Companies that structure it get AI that works with their reality. Companies that
+    don't get AI that guesses.
+    
+    The most valuable form of company-specific knowledge is process knowledge:
+    decision points, escalation criteria, approval chains, compliance gates. Generic
+    tools offer generic workflows; organizational recipe libraries encode your company's
+    actual processes so AI agents execute YOUR workflows, not averaged approximations.
+    
+    This kills the enterprise software buy-vs-customize tradeoff. Software was either
+    too rigid (off-the-shelf tools) or too configurable (enterprise platforms requiring
+    specialist armies). Both force injecting company knowledge after the fact. When
+    knowledge is structured in intent artifacts, the configuration layer collapses into
+    the contextual knowledge layer. Software is born custom. The consultant/admin model dies.
+
+  hierarchy:
+    - level: 1
+      name: "Intent is Primary"
+      immutable: true
+      
+    - level: 2
+      name: "Understanding Must Be Executable"
+      immutable: true
+      
+    - level: 3
+      name: "Bidirectional Synchronization"
+      immutable: true
+      
+    - level: 4
+      name: "Continuous Verification"
+      immutable: true
+      
+    - level: 5
+      name: "Layered Understanding"
+      immutable: true
+      
+    - level: 6
+      name: "AI as Understanding Partner"
+      immutable: true
+      
+    - level: 7
+      name: "Understanding Survives Implementation"
+      immutable: true
+      
+    - level: 8
+      name: "Innovation through Inversion"
+      immutable: true
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 1: Intent is Primary
+  # --------------------------------------------------------------------------
+  
+  principle_1_intent_is_primary:
+    statement: "Intent is the primary artifact. Code and documentation are derived."
+    
+    definition: |
+      Intent describes WHAT the system should accomplish and WHY.
+      Implementation (code) describes HOW it's currently done.
+      Documentation (prose) explains the implementation.
+      
+      Intent → Implementation + Documentation
+      
+      NOT: Code → Documentation
+      NOT: Documentation → Code
+    
+    sub_principles:
+      - name: "Intent survives implementation"
+        rule: "Intent artifact must remain valid when implementation changes"
+        example: "Rewriting Python → Go doesn't change what the system should do"
+        
+      - name: "Intent is technology-agnostic"
+        rule: "Intent describes behavior, not technology choices"
+        example: "Intent says 'qualify leads', not 'use XGBoost model'"
+        
+      - name: "Intent is version-controlled"
+        rule: "Intent artifacts live in version control alongside code"
+        example: "intent.yaml in same directory as implementation"
+    
+    validation:
+      - check: "Intent artifact exists before implementation"
+        test: "Intent file created_date <= implementation first_commit_date"
+        
+      - check: "Intent remains valid after implementation changes"
+        test: "Intent constraints still pass after code refactor"
+        
+      - check: "Intent is technology-agnostic"
+        test: "Intent doesn't mention specific libraries, languages, or tools"
+    
+    violations_to_reject:
+      - "Intent added after code as documentation"
+      - "Intent describes HOW instead of WHAT/WHY"
+      - "Intent tightly coupled to specific technology"
+      - "Intent lives in separate docs repo, not with code"
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 2: Understanding Must Be Executable
+  # --------------------------------------------------------------------------
+  
+  principle_2_understanding_executable:
+    statement: "Prose can be wrong silently. Executable understanding fails loudly."
+    
+    definition: |
+      Every claim in intent must be verifiable through executable tests.
+      Constraints must link to test files.
+      Performance targets must be measurable.
+      Evidence must be reproducible.
+    
+    sub_principles:
+      - name: "Constraints are executable"
+        rule: "Every constraint links to an executable test"
+        example: "constraint: precision >= 0.85, test: tests/test_precision.py"
+        
+      - name: "Evidence is reproducible"
+        rule: "Evidence links to notebooks, experiments, or data that can be re-run"
+        example: "evidence: playground/threshold_analysis_2026-01.ipynb"
+        
+      - name: "Metrics are measurable"
+        rule: "Success metrics link to dashboards or monitoring"
+        example: "success_metric: 98% uptime, monitor: dashboards/uptime.json"
+    
+    validation:
+      - check: "All constraints have test paths"
+        test: "Every constraint has 'test: path/to/test.py::test_name'"
+        
+      - check: "All evidence files exist"
+        test: "All referenced playground/*.ipynb files exist in repo"
+        
+      - check: "All metrics have monitoring"
+        test: "All success_metrics reference dashboards or alerts"
+    
+    violations_to_reject:
+      - "Constraint without test path"
+      - "Evidence link to non-existent file"
+      - "Metric without measurement mechanism"
+      - "Prose claims without verification"
+      - "High-entropy constraint without decomposition into measurable proxies (e.g., 'write well', 'be creative', 'sound natural')"
+      - "Constraint set not checked for satisfiability conflicts"
+      - "Critical constraints listed first when position bias would cause them to be deprioritized"
+
+    constraint_quality:
+      summary: |
+        Constraints exist on a spectrum of interpretive entropy. IVD targets the LOWEST
+        ACHIEVABLE entropy for every artifact type — near-zero for technical artifacts,
+        low-qualitative (decomposed with measurable proxies) for creative/narrative artifacts.
+        High-entropy constraints ("write well", "be creative") are always rejected regardless
+        of artifact type. Research: CMU 2025 underspecification study; UltraBench 2025;
+        CS4 2024; DETAIL 2024.
+
+      entropy_spectrum:
+        near_zero:
+          description: "Binary, measurable, testable — model cannot guess"
+          example: "precision >= 0.85, test: tests/test_precision.py"
+          artifact_types: ["code", "APIs", "data pipelines"]
+
+        low_qualitative:
+          description: "Qualitative but decomposed into measurable proxies — model can evaluate"
+          example: "tone: melancholic, no resolution in final paragraph, no crying"
+          artifact_types: ["creative writing", "documentation", "marketing copy", "books"]
+          requirement: "Must include human-review checklist or measurable proxy as test"
+
+        high_entropy:
+          description: "Pure prose — model fills with parametric averages — REJECTED by IVD"
+          example: "'write well', 'be creative', 'sound professional'"
+          artifact_types: ["any"]
+          action: "Decompose into low-qualitative or near-zero constraints before proceeding"
+
+      satisfiability:
+        summary: |
+          LLMs exceed 70% on individual constraints but fail at simultaneous satisfaction.
+          UltraBench 2025: position bias causes models to prioritize later-listed constraints,
+          silently violating earlier ones. CMU 2025: conflicting constraints produce 20%+
+          accuracy drops even when all constraints are individually explicit.
+        rules:
+          - "Check all constraints for internal conflicts before writing implementation"
+          - "Declare priority ordering when conflict is possible but not certain"
+          - "List most critical constraints LAST to counter position bias"
+          - "Add constraint_satisfiability block to intent when 3+ constraints exist and artifact is non-trivial"
+          - "Resolve conflicts at intent stage; empirical refinement handles what survives into implementation"
+
+      homogenization_prevention:
+        summary: |
+          Underspecified prompts produce averaged, generic output — not wrong but
+          indistinguishable from all other LLM outputs. Research: 'We're Different,
+          We're the Same' (2025) — LLM outputs are significantly more similar to each
+          other than human outputs are to each other, even across models from different
+          organizations. Homogenization is the creative failure mode;
+          hallucination is the factual failure mode. IVD addresses both.
+        rules:
+          - "For creative/narrative artifacts, add at minimum: voice/tone constraint, structure constraint, distinctiveness note"
+          - "Distinctiveness note: describe what makes this output NOT the parametric average (reference material, unique angle, explicit style prohibition)"
+          - "Evaluation section (optional) should include diversity/distinctiveness metric for creative artifacts"
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 3: Bidirectional Synchronization
+  # --------------------------------------------------------------------------
+  
+  principle_3_bidirectional_sync:
+    statement: "Changes flow in any direction: Intent → Code → Docs → Intent, with verification."
+    
+    definition: |
+      Changes can originate from:
+      - Intent (declare new requirement → update code/docs)
+      - Code (refactor implementation → update intent/docs)
+      - Docs (clarify explanation → verify intent/code)
+      
+      All changes trigger verification to prevent drift.
+    
+    sub_principles:
+      - name: "Intent changes propagate"
+        rule: "Changing intent requires updating code and documentation"
+        example: "Raising precision threshold → update code + tests + docs"
+        
+      - name: "Code changes verify against intent"
+        rule: "Code changes must verify constraints still hold"
+        example: "Refactoring → run constraint tests → pass or update intent"
+        
+      - name: "Documentation changes validate"
+        rule: "Doc changes validated against intent and code"
+        example: "Updated README → verify matches intent goals"
+    
+    validation:
+      - check: "Code changes trigger constraint tests"
+        test: "CI runs constraint tests on every PR"
+        
+      - check: "Intent changes have implementation plan"
+        test: "Intent changelog links to PR implementing change"
+        
+      - check: "Documentation aligns with intent"
+        test: "Docs describe behavior matching intent goals"
+    
+    violations_to_reject:
+      - "Code change without running constraint tests"
+      - "Intent change without updating code"
+      - "Documentation contradicting intent"
+      - "Silent drift between intent and implementation"
+
+    extensions:
+      - name: "Empirical refinement during implementation"
+        status: "canonical"
+        description: |
+          Bidirectional sync handles code drift (code changed, update intent). But there
+          is a second, equally important direction: reality contradicts the intent's
+          assumptions. During implementation, empirical evidence often reveals that the
+          intent was written from research/documentation that doesn't match actual behavior
+          (API returns different format, model accuracy differs from benchmarks, latency
+          exceeds documented limits).
+
+          This is new contextual knowledge the intent didn't have at write time. Continuing
+          to implement against a stale assumption is the same failure mode as prose-driven
+          development: the contextual channel contains wrong information, and the model fills
+          gaps between assumptions and reality using parametric knowledge.
+
+          The Empirical Refinement Protocol:
+          1. STOP — do not continue implementing against a stale assumption
+          2. RECORD — document what the intent assumed vs. what was observed
+          3. UPDATE — revise the intent artifact on disk (fix constraint, adjust threshold,
+             add new constraint for discovered edge case, update rationale with evidence)
+          4. ENRICH — if discovery reveals a knowledge gap, pull more contextual knowledge.
+             Not all sources are equal. Source hierarchy for code failures (ranked by signal):
+             (a) Actual error message/stack trace (empirical, specific, current)
+             (b) GitHub issues and PRs matching the error (maintainer-confirmed, version-specific)
+             (c) Library changelogs/release notes (what changed between versions)
+             (d) Official documentation (authoritative but may lag implementation)
+             (e) Model's parametric knowledge (lowest signal — already failed)
+             The 2-attempt trigger rule: if the same error persists after two implementation
+             attempts without new external data, STOP and ENRICH before attempting again.
+             Repeated iteration without enrichment is drawing from the same parametric well —
+             each attempt is a variation of the same wrong pattern.
+          5. CONTINUE — re-read the updated intent (Verification Protocol Step 1) and
+             continue implementing from the corrected version
+
+          If discovery changes scope significantly, flag for human review before continuing.
+        recipe: "recipes/agent-rules-ivd.yaml"
+        framework_section: "framework.md → Principle 3 → Empirical Refinement"
+        supports_principles:
+          - "Principle 1: Intent is Primary (intent must reflect reality, not stale assumptions)"
+          - "Principle 3: Bidirectional Synchronization (reality → intent is a sync direction)"
+          - "Principle 4: Continuous Verification (updated intent must be re-verified)"
+        cognitive_rationale: |
+          The intent artifact is the contextual knowledge spine. When it contains assumptions
+          instead of empirical facts, the model fills gaps between those assumptions and
+          reality using parametric knowledge — the exact gap-filling that causes hallucinations.
+          Empirical refinement replaces assumptions with observed behavior, strengthening the
+          contextual channel at the point where it was weakest. The source hierarchy exists
+          because not all contextual knowledge is equal: a GitHub issue with a confirmed fix
+          is higher signal than documentation that may not cover the edge case, which is higher
+          signal than parametric recall that already proved insufficient. The 2-attempt trigger
+          operationalizes this: two failed attempts establish that the parametric channel does
+          not have the answer; further attempts without new external data are wasted turns.
+        relationship_to_stress_test: |
+          The stress test (P6 Step 4) anticipates gaps before implementation.
+          Empirical refinement discovers gaps during implementation.
+          Together they close the loop: anticipation + discovery.
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 4: Continuous Verification
+  # --------------------------------------------------------------------------
+  
+  principle_4_continuous_verification:
+    statement: "Verify alignment at every commit, every PR, every deploy."
+    
+    definition: |
+      Verification is not a one-time activity.
+      Every code change verifies intent constraints.
+      Every deploy validates metrics.
+      Every sprint reviews intent accuracy.
+    
+    sub_principles:
+      - name: "Automated verification"
+        rule: "CI/CD pipeline runs constraint tests automatically"
+        example: "GitHub Actions runs constraint tests on every PR"
+        
+      - name: "Manual review cadence"
+        rule: "Regular reviews of intent accuracy"
+        example: "Monthly: Review intent artifacts with stakeholders"
+        
+      - name: "Drift detection"
+        rule: "System detects when code/intent diverge"
+        example: "Alert if code changes but intent unchanged for 6 months"
+    
+    validation:
+      - check: "CI runs constraint tests"
+        test: ".github/workflows/*.yml includes constraint test steps"
+        
+      - check: "Review cadence documented"
+        test: "Intent includes review frequency in verification section"
+        
+      - check: "Drift monitoring exists"
+        test: "System tracks last intent update vs code changes"
+    
+    violations_to_reject:
+      - "No automated constraint tests in CI"
+      - "No review cadence defined"
+      - "No mechanism to detect drift"
+      - "Verification only at initial implementation"
+
+    extensions:
+      - name: "Intent coverage assessment"
+        status: "canonical"
+        description: |
+          For existing (brownfield) projects, intent coverage assessment
+          (ivd_assess_coverage) scans project structure, compares against existing
+          intent artifacts, and produces a structured coverage report. The AI agent
+          interprets the report and recommends where to add intent artifacts,
+          making verification gaps visible.
+        tool: "ivd_assess_coverage"
+        framework_section: "framework.md → Intent Coverage Assessment"
+        supports_principles:
+          - "Principle 1: Intent is Primary (identifies modules missing primary artifact)"
+          - "Principle 4: Continuous Verification (makes verification gaps visible)"
+          - "Principle 6: AI as Understanding Partner (tool provides data, agent interprets)"
+        use_cases:
+          - "Brownfield adoption: after ivd init, assess where intent exists"
+          - "Periodic check-in: re-run to track coverage progress"
+          - "Onboarding: new team members see which modules have intent docs"
+        evidence:
+          - "Brownfield projects lacked a structured way to see which modules have intent. Coverage assessment fills that gap."
+          - "No existing-project section for discovering and prioritizing modules in brownfield adoption."
+
+      - name: "Post-implementation verification protocol"
+        status: "canonical"
+        description: |
+          Prescribes the concrete 4-step audit that AI agents must execute after
+          any implementation derived from an intent artifact:
+          1. Re-read the literal intent from disk (not from memory)
+          2. Diff each change against each constraint (satisfy / violate / not-affect)
+          3. Check every constraint.test path (exists? passes? if manual, note it)
+          4. Report structured results: PASS / FAIL / NEEDS_REVIEW per constraint
+          Without this protocol, Principle 4 is aspirational — it says "verify" but
+          doesn't prescribe what "verify" means at the agent level.
+        recipe: "recipes/agent-rules-ivd.yaml"
+        framework_section: "framework.md → Principle 4 → Post-Implementation Verification Protocol"
+        supports_principles:
+          - "Principle 4: Continuous Verification (makes verification concrete and prescribed)"
+          - "Principle 2: Understanding Must Be Executable (protocol depends on test fields existing)"
+          - "Principle 6: AI as Understanding Partner (defines what 'AI verifies' means in the P6 workflow)"
+        use_cases:
+          - "AI agent implements from intent artifact and must verify before declaring done"
+          - "Team wants to enforce verification discipline at the agent level"
+          - "Post-implementation bugs trace back to unverified constraints"
+        integration_surface: |
+          Agent instruction files (.cursorrules, .clinerules, Copilot system prompts)
+          are the runtime enforcement point. The recipe provides the IVD rules block
+          to embed in these files. ivd_init suggests adding this block when it detects
+          an agent instruction file during project scanning.
+
+      - name: "Constraint-segmented implementation"
+        status: "canonical"
+        description: |
+          For intents with 3+ constraints, implementation must be structured in
+          segments aligned with constraint groups rather than executed in a single
+          pass. The protocol:
+          1. GROUP constraints into functional segments after the stress test
+          2. IMPLEMENT one segment
+          3. RE-READ the intent constraints for that segment from disk
+             (not from memory — forces attention reset; counters lost-in-the-middle)
+          4. VERIFY the segment satisfies its constraints before proceeding
+          5. Repeat steps 2–4 for each segment
+          6. CROSS-CUT: run the full Post-Implementation Verification Protocol as
+             a final sweep for inter-constraint gaps
+
+          When segmented implementation was used, the Post-Implementation Verification
+          Protocol functions as a cross-cutting sweep, not the primary per-constraint
+          check. Its value shifts to catching inter-constraint violations.
+        research_citations:
+          - "read-acknowledge-violate pattern (anthropics/claude-code GitHub #26848, #6120, #32290, #742 — 2025)"
+          - "lost-in-the-middle >30% attention degradation at middle positions (Liu et al. 2023, Stanford NLP)"
+          - "constraint compliance orthogonal to task completion (MOSAIC 2025)"
+          - "68% accuracy at high constraint density with nonlinear degradation (IFScale 2025)"
+          - "task completion vs. full compliance as distinct capabilities (CodeIF 2025)"
+        recipe: "recipes/agent-rules-ivd.yaml → IVD Rule 1"
+        framework_section: "framework.md → Principle 6 → Step 5: Constraint-Segmented Implementation"
+        supports_principles:
+          - "Principle 2: Understanding Must Be Executable (constraints must be verifiable per segment)"
+          - "Principle 4: Continuous Verification (re-reading per segment is micro-verification)"
+          - "Principle 6: AI as Understanding Partner (prescribes how the AI implements, not just that it does)"
+        use_cases:
+          - "AI agent implements complex module with 5+ constraints and must not miss any"
+          - "Post-implementation audits consistently reveal missed requirements — this breaks that cycle"
+          - "Team wants to enforce compliance discipline during generation, not just after"
+        threshold: "3+ constraints. Below 3, single-pass with verification is acceptable."
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 5: Layered Understanding
+  # --------------------------------------------------------------------------
+  
+  principle_5_layered_understanding:
+    statement: "Understanding has layers: Intent → Constraints → Rationale → Alternatives → Risks."
+    
+    definition: |
+      Each layer answers different questions:
+      - Intent: What should this do? (Goal)
+      - Constraints: What must hold true? (Requirements)
+      - Rationale: Why this approach? (Decisions)
+      - Alternatives: Why NOT other approaches? (Context)
+      - Risks: What could go wrong? (Monitoring)
+      
+      All layers are verifiable, not just prose.
+    
+    sub_principles:
+      - name: "Intent layer"
+        rule: "Declares what system should accomplish"
+        required_fields: ["summary", "goal", "success_metric"]
+        
+      - name: "Constraints layer"
+        rule: "Declares what must hold true"
+        required_fields: ["name", "requirement", "test", "consequence_if_violated"]
+        
+      - name: "Rationale layer"
+        rule: "Explains why this approach was chosen"
+        required_fields: ["decision", "reasoning", "evidence", "date", "stakeholder"]
+        
+      - name: "Alternatives layer"
+        rule: "Documents why other approaches were rejected"
+        required_fields: ["name", "rejected_because", "when_it_works"]
+        
+      - name: "Risks layer"
+        rule: "Documents what could go wrong and how to monitor"
+        required_fields: ["condition", "action", "monitor", "severity"]
+    
+    validation:
+      - check: "All required layers present"
+        test: "Intent artifact has intent, constraints, rationale, alternatives, risks"
+        
+      - check: "Each layer has required fields"
+        test: "Constraints have name, requirement, test, consequence"
+        
+      - check: "Evidence links exist"
+        test: "Rationale evidence field links to existing file"
+    
+    violations_to_reject:
+      - "Missing required layer"
+      - "Layer missing required fields"
+      - "Rationale without evidence"
+      - "Alternative without rejection reason"
+      - "Risk without monitoring strategy"
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 6: AI as Understanding Partner
+  # --------------------------------------------------------------------------
+  
+  principle_6_ai_partner:
+    statement: "AI writes the intent, implements against it, and verifies—not just syncs."
+    
+    definition: |
+      This is the key principle for the AI Agents era.
+      
+      AI is not just an executor that reads intent and implements.
+      AI WRITES the intent artifact, following the IVD framework.
+      AI implements against the intent it wrote.
+      AI verifies its code against executable constraints.
+      AI catches its own hallucinations through verification.
+      
+      The workflow (single agent):
+      1. Human describes what they want (natural language)
+      2. AI writes structured intent artifact (YAML with constraints and tests)
+      3. Human reviews intent: "Is this what I meant?"
+      4. AI stress-tests intent: adversarial completeness check
+         (constraint gaps, implementation decisions not addressed, implicit assumptions,
+          constraint satisfiability)
+      5. AI implements using constraint-segmented approach:
+         - For 3+ constraints: GROUP by functional area → IMPLEMENT segment →
+           RE-READ constraints from disk → VERIFY segment → next segment
+         - For 1–2 constraints: single-pass acceptable
+         Research basis: read-acknowledge-violate pattern (anthropics/claude-code
+         GitHub #26848); lost-in-the-middle >30% degradation (Liu et al. 2023);
+         constraint compliance orthogonal to task completion (MOSAIC 2025);
+         68% accuracy at high constraint density (IFScale 2025)
+      6. AI verifies (full cross-cutting sweep): "Does every constraint pass?"
+      
+      The workflow (multi-agent systems):
+      1. Human describes what they want (natural language)
+      2. Coordinator AI writes coordinator-level intent (routing + synthesis)
+      3. For each specialist agent, coordinator writes agent-level intent
+      4. Human reviews intents: "Is this what I meant?"
+      5. Each agent stress-tests its intent (adversarial completeness check,
+         incl. constraint satisfiability)
+      6. Each agent implements using constraint-segmented approach
+         (GROUP→IMPLEMENT→RE-READ→VERIFY protocol, same as single-agent)
+      7. Each agent verifies its output (segment-level + final cross-cut sweep)
+      8. Coordinator synthesizes and verifies combined result
+      
+      The key: Intent exists at EVERY delegation point. The coordinator doesn't 
+      just route—it writes intent for each agent it routes to.
+      
+      Why this matters:
+      - Clarification happens at the intent stage, before code exists
+      - Turns drop from many to one (or zero)
+      - Hallucinations are caught at the source (test fails)
+      - The AI self-corrects before the human even reviews
+      - In multi-agent: coordination errors are prevented through structured intent
+      
+      Without this: AI reads prose (PRD, user story, prompt), guesses, builds wrong.
+      With this: AI writes structured intent, verifies, builds right.
+      
+      When the user lacks the technical knowledge to understand concepts, patterns,
+      or technologies: the AI provides teaching before intent. The AI creates
+      structured educational artifacts explaining what the user needs to know; the
+      user reviews, asks questions, confirms understanding; then the flow continues.
+      
+      When the user cannot yet describe what they want (lacks goal clarity, doesn't
+      know what to ask): the AI supports discovery before intent. The AI proposes
+      candidate goals, patterns (recipes), or directions with short tradeoffs; the
+      user picks or refines; then the standard flow applies.
+      
+      Teaching (Step 0a) and Discovery (Step 0b) are optional steps under Principle 6,
+      not new principles. Both address bottlenecks before "describe → AI writes intent."
+    
+    sub_principles:
+      - name: "AI writes the intent"
+        rule: "AI produces structured intent artifact from human description"
+        example: "Human: 'Add CSV export for admins' → AI writes intent.yaml with constraints, tests"
+        
+      - name: "AI stress-tests intent before implementing"
+        rule: "After human review, AI adversarially probes its own intent for completeness before implementing"
+        example: "AI checks: 'What edge case isn't covered? What will implementation force that intent doesn't address? What am I assuming?' → finds missing error-path constraint → adds it → then implements"
+        dimensions:
+          - "Constraint completeness: what input breaks this? What boundary isn't covered?"
+          - "Implementation anticipation: what decisions will code force that intent doesn't address?"
+          - "Assumption challenge: what implicit assumptions about environment, data, or dependencies?"
+          - "Constraint satisfiability: do any two constraints conflict? Can all be satisfied simultaneously? Are critical constraints listed last to counter position bias? (Research: UltraBench 2025 — 70%+ on individual constraints, failure on simultaneous satisfaction; position bias is systematic)"
+        when_to_skip: "Trivial changes where intent is a single constraint with obvious implementation"
+
+      - name: "AI implements against intent"
+        rule: "AI reads intent it wrote and implements against constraints"
+        example: "AI reads constraint 'admin_only' → implements auth check → runs test"
+        
+      - name: "AI verifies its own work"
+        rule: "AI runs constraint tests after implementing, catches hallucinations"
+        example: "AI implements wrong columns → test fails → AI fixes before shipping"
+        
+      - name: "AI reduces turns"
+        rule: "Clarification at intent stage eliminates back-and-forth on code"
+        example: "Human reviews intent once, AI implements correctly first time"
+        
+      - name: "AI teaches when the user lacks knowledge"
+        rule: "When user can't understand intent/concepts, AI provides structured teaching (educational artifacts) before proceeding"
+        example: "User needs ETL but doesn't know what it is → AI creates educational artifact explaining ETL, tradeoffs, verification → user understands → then intent flow"
+        when_to_use: "User lacks technical knowledge to understand domain/patterns/tech, not just goal uncertainty"
+        
+      - name: "Linguistic mirroring signals alignment"
+        rule: "When AI echoes key terms from human's description, it signals understanding before formal verification"
+        example: |
+          Human: "admin compliance CSV export with ISO dates"
+          AI: "I'll write the intent for the admin compliance CSV export with ISO 8601 dates..."
+          → AI echoed "admin", "compliance", "CSV export", "ISO dates" = early alignment signal
+          
+          Human: "admin compliance CSV export with ISO dates"
+          AI: "I'll create a data dump feature..."
+          → AI did NOT echo key terms = misalignment, clarify before proceeding
+        validation: "Review AI's first response for presence of user's key terminology"
+        when_to_use: "Before formal constraint verification; lightweight check during intent writing"
+    
+    validation:
+      - check: "Intent is AI-parseable"
+        test: "YAML validates against schema"
+        
+      - check: "File paths are verifiable"
+        test: "All referenced file paths exist in repository"
+        
+      - check: "Type information is present"
+        test: "Interface section includes types for inputs/outputs"
+    
+    violations_to_reject:
+      - "Unstructured prose (AI can't parse)"
+      - "Missing file paths (AI can't verify)"
+      - "Missing type information (AI can't validate)"
+      - "Ambiguous references (AI can't resolve)"
+    
+    extensions:
+      - name: "Multi-agent intent propagation"
+        description: |
+          In multi-agent systems, Principle 6 extends to every delegation point:
+          Human → Coordinator Intent → Agent-level Intents
+          
+          The coordinator doesn't just route—it writes structured intent for each 
+          specialist agent it delegates to. This prevents "coordination errors" 
+          where the coordinator routes correctly but passes wrong parameters.
+        recipe: "recipes/coordinator-intent-propagation.yaml"
+      
+      - name: "Teaching before intent"
+        status: "canonical"  # Critical bottleneck: lack of technical knowledge blocks IVD flow
+        description: |
+          When the user lacks technical knowledge to understand concepts, patterns,
+          or technologies needed for the task, provide structured teaching before
+          the standard "describe → AI writes intent" flow. The AI creates educational
+          artifacts (YAML with verification questions) explaining the concept, why it
+          matters, key tradeoffs; the user reviews, asks clarifying questions, confirms
+          understanding; then the IVD flow continues (discovery if needed → describe →
+          intent → implement). This addresses the critical bottleneck: users can't
+          review intent if they don't understand the concepts it references.
+        recipe: "recipes/teaching-before-intent.yaml"
+        use_cases:
+          - "User needs ETL but doesn't know what ETL is"
+          - "Reverse engineering: AI writes intent using 'Saga pattern' but user can't review without explanation"
+          - "Onboarding: new team member sees unfamiliar concepts in intent"
+      
+      - name: "Discovery before intent"
+        status: "experimental"  # Requires production validation before canonical
+        description: |
+          When the user doesn't know what to ask or lacks goal clarity (not
+          knowledge gap), run discovery before the standard "describe → AI writes
+          intent" flow. The AI proposes candidate goals, patterns (recipes), or
+          options with tradeoffs; the user selects or refines; then the same IVD
+          flow applies. Note: if user lacks technical knowledge (doesn't understand
+          the terms), use Teaching before intent first.
+        recipe: "recipes/discovery-before-intent.yaml"
+        promotion_criteria:
+          - "Tested in 2+ production projects"
+          - "500+ line comprehensive example added"
+          - "Discovery quality metric defined and validated"
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 7: Understanding Survives Implementation
+  # --------------------------------------------------------------------------
+  
+  principle_7_understanding_survives:
+    statement: "Implementation changes. Languages change. Intent persists."
+    
+    definition: |
+      Intent artifacts document WHY and WHAT, not HOW.
+      When you rewrite Python → Go, intent transfers.
+      When you replace ML model, intent constraints remain.
+      When team changes, understanding persists.
+    
+    sub_principles:
+      - name: "Intent documents behavior, not implementation"
+        rule: "Intent describes what system does, not how it does it"
+        example: "Intent: 'Qualify leads with 85% precision' (not 'Use XGBoost')"
+        
+      - name: "Constraints are technology-agnostic"
+        rule: "Constraints can be verified in any implementation"
+        example: "Constraint: precision >= 0.85 (testable in Python, Go, etc.)"
+        
+      - name: "Rationale explains context"
+        rule: "Rationale captures why, so future implementers understand"
+        example: "Why threshold 0.70? Sales team validated, not arbitrary"
+    
+    validation:
+      - check: "Intent doesn't mention specific technologies"
+        test: "Intent section has no library/framework references"
+        
+      - check: "Constraints are implementation-independent"
+        test: "Constraints describe behavior, not implementation details"
+        
+      - check: "Rationale explains decisions"
+        test: "Rationale answers 'why' for major decisions"
+    
+    violations_to_reject:
+      - "Intent tightly coupled to specific library"
+      - "Constraint tests implementation detail, not behavior"
+      - "Rationale missing for major decisions"
+      - "No explanation of why this approach"
+
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 8: Innovation through Inversion
+  # --------------------------------------------------------------------------
+  
+  principle_8_innovation_through_inversion:
+    statement: "Innovation comes from inverting dominant beliefs—state the default, invert it, evaluate, implement."
+    
+    definition: |
+      LLM knowledge + inversion = innovation. The conventional or "obvious" way to
+      solve a problem is often a dominant belief. By explicitly stating the default
+      and inverting it (considering the opposite approach), we surface non-obvious
+      solutions that can be verified and captured in intent.
+      
+      The 4-step method:
+      1. State the Default: What is the conventional or dominant way to solve this?
+      2. Invert: What would the opposite approach look like?
+      3. Evaluate: Is the inversion promising? (pros, cons, feasibility)
+      4. Implement: If chosen, capture in intent and verify.
+      
+      Intent artifacts can document inversion_opportunities: the problem, dominant
+      belief(s), and proposed inversions with rationale and status (chosen | rejected | deferred).
+      This makes the innovation process explicit, transparent, and verifiable.
+    
+    sub_principles:
+      - name: "State the Default"
+        rule: "Explicitly name the conventional or dominant approach to the problem"
+        example: "Default: load entire CSV into memory, then parse"
+        
+      - name: "Invert"
+        rule: "Consider the opposite approach—what if we did the reverse?"
+        example: "Inversion: stream rows, never load file into memory"
+        
+      - name: "Evaluate"
+        rule: "Assess inversions for promise: pros, cons, feasibility, alignment with constraints"
+        example: "Streaming: better for large files; trade-off: no random access"
+        
+      - name: "Implement"
+        rule: "If inversion is chosen, capture in intent (inversion_opportunities) and verify"
+        example: "Document in intent; constraints verify streaming behavior"
+    
+    validation:
+      - check: "Inversion opportunities are optional but structured when present"
+        test: "If inversion_opportunities exists, it has problem, dominant_belief, proposed_inversions"
+        
+      - check: "Chosen inversions are reflected in intent and constraints"
+        test: "Intent and constraints align with chosen inversion (no contradiction)"
+    
+    violations_to_reject:
+      - "Inversion documented but intent contradicts chosen approach"
+      - "Dominant belief stated without evaluation of inversion"
+    
+    when_to_apply:
+      use_when:
+        - "Designing: new or major intent (feature, module, redesign)"
+        - "Problem has a conventional or 'obvious' approach (e.g. load-then-parse, server-does-work)"
+        - "Stakes matter: performance, scale, security, or maintainability"
+        - "You want intent to document why the default was rejected or inverted"
+      skip_when:
+        - "Small change: bug fix, config, typo, simple refactor"
+        - "No clear default approach (e.g. purely custom business rule)"
+        - "Obvious solution is good enough; not optimizing for alternatives"
+
+# ==============================================================================
+# RULES: Framework Extension Rules
+# ==============================================================================
+# Rules for adding new concepts to IVD (e.g., new intent levels, new sections)
+
+rules:
+  # --------------------------------------------------------------------------
+  # RULE 1: New Intent Levels
+  # --------------------------------------------------------------------------
+  
+  adding_intent_levels:
+    rule: "New intent levels must fill a real gap, not add bureaucracy"
+    
+    criteria:
+      - name: "Gap exists"
+        requirement: "Must solve a real documentation problem"
+        example: "Workflow level added because no way to document multi-step processes"
+        validation: "Demonstrate 5+ real-world cases that need this level"
+        
+      - name: "No overlap"
+        requirement: "Must not overlap with existing levels"
+        example: "Workflow doesn't overlap with module or task levels"
+        validation: "Show clear boundaries between new and existing levels"
+        
+      - name: "Clear use cases"
+        requirement: "Must have obvious when-to-use criteria"
+        example: "Workflow: 3+ steps across files, AI needs process understanding"
+        validation: "Document clear decision tree for level selection"
+    
+    process:
+      - step: 1
+        action: "Identify gap in current levels"
+        deliverable: "Written explanation of problem current levels don't solve"
+        
+      - step: 2
+        action: "Design new level schema"
+        deliverable: "YAML schema with required/optional sections"
+        
+      - step: 3
+        action: "Create comprehensive example"
+        deliverable: "500+ line realistic example (like workflow-lead-qualification-example.yaml)"
+        
+      - step: 4
+        action: "Create recipe pattern"
+        deliverable: "Recipe template for new level (like workflow-orchestration.yaml)"
+        
+      - step: 5
+        action: "Update all core docs"
+        deliverable: "framework.md, README.md, cookbook.md, intent_levels_guide.md"
+        
+      - step: 6
+        action: "Validate no violations"
+        deliverable: "Verify alignment with all 8 principles"
+    
+    violations_to_reject:
+      - "New level overlaps with existing level"
+      - "New level adds bureaucracy without clear benefit"
+      - "New level has unclear when-to-use criteria"
+      - "New level not validated with real-world examples"
+
+  # --------------------------------------------------------------------------
+  # RULE 2: New Intent Sections
+  # --------------------------------------------------------------------------
+  
+  adding_intent_sections:
+    rule: "New sections must serve verification or understanding, not just documentation"
+    
+    criteria:
+      - name: "Serves purpose"
+        requirement: "Must enable verification or improve understanding"
+        example: "workflow.error_handling enables AI to understand failure modes"
+        validation: "Explain how section improves verification or AI understanding"
+        
+      - name: "Structured data"
+        requirement: "Must be structured YAML, not prose"
+        example: "workflow.steps is array of structured steps, not paragraph"
+        validation: "Define clear schema for new section"
+        
+      - name: "Verifiable content"
+        requirement: "Content must be verifiable by AI or tests"
+        example: "workflow.steps[].file can be verified to exist"
+        validation: "Show how content can be automatically verified"
+    
+    process:
+      - step: 1
+        action: "Define section purpose"
+        deliverable: "What problem does this section solve?"
+        
+      - step: 2
+        action: "Design section schema"
+        deliverable: "YAML structure with required fields"
+        
+      - step: 3
+        action: "Add to template"
+        deliverable: "Update templates/intent.yaml with new section"
+        
+      - step: 4
+        action: "Add to example"
+        deliverable: "Fill in new section in relevant examples"
+        
+      - step: 5
+        action: "Document in guide"
+        deliverable: "Explain when/how to use new section"
+    
+    violations_to_reject:
+      - "Section is unstructured prose"
+      - "Section content not verifiable"
+      - "Section doesn't improve understanding or verification"
+      - "Section duplicates existing section"
+    
+    approved_optional_sections:
+      - name: "field_mapping"
+        purpose: "Document field mappings, data sources, and transformations for integrations and ETL"
+        when_to_use: "Workflow or module intents that involve data movement between systems (API integrations, ETL, sync, reporting)"
+        supports_principles: ["Principle 2: Understanding Must Be Executable (schema validation, sample checks)", "Principle 5: Layered Understanding (sources, transformations, business rules)"]
+        recipe: "recipes/data-field-mapping.yaml"
+        added: "2026-01-26"
+      
+      - name: "project_context"
+        purpose: "Capture project-wide conventions, architecture, tools, libraries, and key paths ('map to the stars') for existing projects"
+        when_to_use: "System-level intents in existing/brownfield projects with established conventions, architecture, and structure. Created by ivd_init tool."
+        when_not_to_use: "Workflow/module/task intents (use parent_intent instead); greenfield projects with no existing conventions"
+        supports_principles: [
+          "Principle 1: Intent is Primary (project conventions become referenceable intent)",
+          "Principle 5: Layered Understanding (conventions, architecture, tools, paths as structured layers)",
+          "Principle 7: Understanding Survives Implementation (conventions persist as new code is added)"
+        ]
+        structure: |
+          code_rules: [{path, description}]            # .cursorrules, lint configs
+          architecture: [{path, description, principle}] # ARCHITECTURE.md, ADRs, design principles
+          tools_scripts: [{path, description}]         # Key scripts, CLIs, utilities
+          libraries_reuse: [{library, when_to_use}]    # Internal shared libraries
+          key_paths:                                   # "Map to the stars"
+            entrypoints: [{path, description}]         # API main, worker entry
+            modules: [{path, description}]             # agent/, entity/, integrations/
+            workflows: [{path, description}]           # workflows/
+            docs: [{path, description}]                # docs/, runbooks/
+            tests: [{path, description}]               # tests/
+          existing_docs: [{path, description}]         # README, API.md, CONTRIBUTING
+        benefits: [
+          "Child intents reuse project conventions (no duplication)",
+          "New intents reference architecture principles (consistency)",
+          "AI agents navigate via key_paths map (no getting lost)",
+          "New code reuses existing tools/scripts/libraries"
+        ]
+        added: "2026-02-04"
+      
+      - name: "parent_intent"
+        purpose: "Reference parent system intent from child intents (workflow/module/task)"
+        when_to_use: "All child intents in projects with system-level intent"
+        supports_principles: [
+          "Principle 5: Layered Understanding (hierarchy: system → workflow → module → task)",
+          "Principle 7: Understanding Survives Implementation (child inherits conventions from parent)"
+        ]
+        structure: "parent_intent: '../../system_intent.yaml'  # Relative path to parent"
+        benefits: [
+          "Child intents inherit project context from parent",
+          "AI agents load conventions when creating/modifying child intents",
+          "Consistency across all intents in a project"
+        ]
+        added: "2026-02-04"
+
+      - name: "interface"
+        purpose: "Document the callable tool surface of a module that exposes tools, commands, or endpoints (agents, MCP servers, APIs, CLIs)"
+        when_to_use: "Module-level intents where scope.type is agent, service, api, or the module exposes tools/commands to external consumers"
+        when_not_to_use: "Internal modules with no external interface; pure data processing; modules where the interface is a single function (use task-level intent instead)"
+        supports_principles: [
+          "Principle 1: Intent is Primary (tool surface is part of the intent, not just in code)",
+          "Principle 2: Understanding Must Be Executable (each tool has a test path; parameter types verifiable against implementation)",
+          "Principle 5: Layered Understanding (interface is a distinct layer — what can consumers call? — separate from what the module does and how)",
+          "Principle 7: Understanding Survives Implementation (rewrite Python to TypeScript; interface section still describes the same tools)"
+        ]
+        structure: |
+          interface:
+            type: "mcp" | "agent" | "api" | "cli" | "service"
+            routing:                           # Optional — for agents consumed by a coordinator
+              description: "One-line: what the coordinator tells the LLM about this agent"
+              keywords: ["keyword1", "keyword2"]
+              consumed_by: "path/to/coordinator"
+            tools:
+              - name: "tool_name"
+                description: "One-line: what this tool does"
+                parameters:
+                  - name: "param_name"
+                    type: "string"           # string | number | boolean | object | array
+                    required: true
+                    description: "What this parameter is for"
+                returns: "What the tool returns (type or description)"
+                test: "tests/test_tool.py::test_tool_name"
+        benefits: [
+          "Tool surface is verifiable (Principle 2): parameter types and tests catch drift",
+          "AI agents can read the interface to understand what the module exposes without reading implementation code",
+          "Interface survives rewrites: change language or framework, intent still describes the same tools",
+          "Complements task-level intents: interface is the aggregate view; critical tools can still get individual task-level intents",
+          "Routing surface is verifiable: routing.description can be cross-checked against actual tools to detect stale routing"
+        ]
+        recipe: "recipes/agent-capability-propagation.yaml (bottom-up routing surface updates when tools change)"
+        added: "2026-02-09"
+
+      - name: "roles"
+        status: "experimental"
+        purpose: "Document the behavioral modes of an AI agent that switches roles depending on context (e.g., implementer, reviewer, architect, teacher)"
+        when_to_use: "Module-level intents where scope.type is agent and the agent has 2+ distinct behavioral modes with different constraints, tool subsets, or verification criteria"
+        when_not_to_use: "Agents with a single mode; trivial differences (just tone/prompt, no constraint changes); multi-agent systems where each role is a separate agent (use coordinator recipe instead)"
+        supports_principles: [
+          "Principle 1: Intent is Primary (behavioral profiles are part of what the agent should do, not just in code or prompts)",
+          "Principle 2: Understanding Must Be Executable (each role has constraints and a verification test path)",
+          "Principle 5: Layered Understanding (roles are a distinct layer — in what contexts does this agent behave differently?)",
+          "Principle 7: Understanding Survives Implementation (rewrite the agent; roles still describe the same behavioral modes)"
+        ]
+        relationship_to_interface: "Complements interface: interface = WHAT the agent can do (tools); roles = HOW the agent behaves in different contexts (constraints, tool subsets). A role may restrict which interface tools are available."
+        structure: |
+          roles:
+            default: "implementer"
+            switching:
+              mechanism: "user_directed"     # user_directed | context_inferred | explicit_command
+              description: "How the agent transitions between roles"
+            definitions:
+              - name: "role_name"
+                description: "One-line: what this role does"
+                when: "Context or trigger that activates this role"
+                constraints:
+                  - "Behavioral guardrail specific to this role"
+                tools: ["tool_name"]         # subset of interface.tools, or "all"
+                verification: "tests/test_role_name.py"
+        benefits: [
+          "Role behaviors are verifiable (Principle 2): per-role constraints and tests catch behavioral drift",
+          "AI agents can read roles to understand context-dependent behavior without reading implementation code or prompts",
+          "Roles survive rewrites: change framework or language; roles still describe the same behavioral modes",
+          "Complements interface: interface defines capabilities; roles define how capabilities are used in context",
+          "Coordinators can read roles to understand an agent's behavioral modes for routing decisions"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production agents",
+          "500+ line comprehensive example added",
+          "Role constraint verification validated in real project"
+        ]
+        added: "2026-02-09"
+
+      - name: "authorship"
+        status: "experimental"
+        purpose: "Declare who originates intent (human, AI-proposed, AI-autonomous) and what oversight is required — formalizing the trust boundary for intent creation"
+        when_to_use: "Any intent artifact where AI may originate, modify, or extend intent without a direct human request — autonomous agents, self-improving workflows, agent-designed processes"
+        when_not_to_use: "Standard IVD workflow where human describes and AI writes (the default model); intents that are always human-originated"
+        supports_principles: [
+          "Principle 1: Intent is Primary (authorship metadata is part of the intent — who can create/change it is as important as what it says)",
+          "Principle 2: Understanding Must Be Executable (oversight rules are verifiable — test that AI cannot modify fields it lacks authority over)",
+          "Principle 4: Continuous Verification (authorship boundaries are continuously enforced, not just at creation time)",
+          "Principle 6: AI as Understanding Partner (formalizes the spectrum from partner to co-creator to autonomous operator)"
+        ]
+        relationship_to_roles: "Complements roles: roles define HOW an agent behaves; authorship defines WHAT authority that agent has over intent itself. An agent in 'architect' role may have authority to create new intents; in 'implementer' role it may only modify implementation sections."
+        structure: |
+          authorship:
+            origin: "human_directed"       # human_directed | ai_proposed | ai_autonomous
+            human_oversight: "review_required"  # review_required | audit_trail | escalation_only
+            ai_authority:
+              can_create: false            # can the AI create new intents without human request?
+              can_modify: ["implementation", "verification"]  # which sections AI can modify
+              requires_approval: ["intent.goal", "intent.success_metric", "constraints"]  # fields needing human sign-off
+            escalation: "When AI confidence < threshold or change impacts other intents"
+        benefits: [
+          "Trust boundaries are explicit: developers and teams know what the AI can and cannot change",
+          "Oversight model is verifiable (Principle 2): test that AI respects declared authority",
+          "Enables safe autonomy: AI can operate independently within declared boundaries",
+          "Scales from human-directed (current IVD) to AI-autonomous (future IVD) without breaking the framework",
+          "Coordinators can read authorship to understand an agent's authority level for delegation decisions"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production workflows with AI-proposed or AI-autonomous origin",
+          "Oversight enforcement validated (AI correctly blocked from modifying unauthorized fields)",
+          "Escalation mechanism validated in real project"
+        ]
+        added: "2026-02-09"
+
+      - name: "evaluation"
+        status: "experimental"
+        purpose: "Formalize the continuous improvement loop: evaluate output quality → identify weakness → propose adjustment → verify adjustment doesn't violate constraints → apply. Extends verification from pass/fail to continuous quality improvement."
+        when_to_use: "Workflow-level or module-level intents where output quality should improve over iterations — autonomous workflows, self-improving agents, production systems with quality feedback loops"
+        when_not_to_use: "One-shot implementations with no iteration cycle; task-level intents (too granular); when standard verification (constraints + tests) is sufficient"
+        supports_principles: [
+          "Principle 2: Understanding Must Be Executable (evaluation criteria are testable — not aspirational quality goals)",
+          "Principle 3: Bidirectional Sync (evaluation results flow back to update implementation, and may update intent if authorized by authorship section)",
+          "Principle 4: Continuous Verification (evaluation IS continuous verification extended — not just 'does it pass' but 'how good is it and how can it improve')",
+          "Principle 7: Understanding Survives Implementation (evaluation criteria describe quality goals, not implementation details — survive rewrites)"
+        ]
+        relationship_to_authorship: "Depends on authorship: the evaluation loop's adjustment.authority must respect the authorship section's ai_authority. If authorship says AI can only modify implementation, the evaluation loop cannot modify constraints."
+        relationship_to_constraints: "Extends constraints: constraints are binary (pass/fail); evaluation criteria are continuous (quality score). Evaluation NEVER relaxes constraints — it improves quality within constraint boundaries."
+        structure: |
+          evaluation:
+            criteria:
+              - metric: "output_quality_score"
+                target: ">= 0.85"
+                source: "automated | human_review | hybrid"
+              - metric: "constraint_pass_rate"
+                target: "100%"
+                source: "ivd_validate"
+            adjustment:
+              authority: "ai_proposed"      # human_only | ai_proposed | ai_autonomous
+              scope: ["implementation", "workflow_steps"]  # what CAN be adjusted
+              protected: ["intent.goal", "constraints"]    # what CANNOT be adjusted
+            cycle:
+              trigger: "on_completion"      # on_completion | on_failure | scheduled | continuous
+              max_iterations: 3
+              stop_when: "All criteria met or max_iterations reached"
+              escalate_when: "Cannot meet criteria after max_iterations"
+        benefits: [
+          "Quality improvement is formalized: not ad-hoc 'make it better' but structured evaluate → adjust → re-verify",
+          "Guardrails are built in: protected fields cannot be modified by the evaluation loop",
+          "Iteration is bounded: max_iterations prevents infinite loops",
+          "Escalation is explicit: when the loop can't improve enough, humans are notified",
+          "Compatible with authorship: adjustment authority respects intent authorship boundaries"
+        ]
+        promotion_criteria: [
+          "Tested in 2+ production workflows with measurable quality improvement",
+          "Protected field enforcement validated (evaluation loop correctly blocked from modifying constraints)",
+          "Escalation mechanism triggered and handled in real project"
+        ]
+        added: "2026-02-09"
+
+  # --------------------------------------------------------------------------
+  # RULE 3: New Recipe Patterns
+  # --------------------------------------------------------------------------
+  
+  adding_recipes:
+    rule: "New recipes must capture reusable patterns, not one-off solutions"
+    
+    criteria:
+      - name: "Pattern is reusable"
+        requirement: "Must apply to 5+ different implementations"
+        example: "agent-classifier applies to fact checkers, lead scorers, content classifiers"
+        validation: "List 5 real-world cases where pattern applies"
+        
+      - name: "Pattern is proven"
+        requirement: "Must be validated in production"
+        example: "workflow-orchestration based on real lead qualification workflow"
+        validation: "Reference production implementation"
+        
+      - name: "Pattern includes best practices"
+        requirement: "Must encode lessons learned"
+        example: "Background job recipe includes idempotency, retry strategies"
+        validation: "Document what makes this approach best practice"
+    
+    process:
+      - step: 1
+        action: "Identify reusable pattern"
+        deliverable: "Pattern description + 5 use cases"
+        
+      - step: 2
+        action: "Create recipe YAML"
+        deliverable: "recipes/{category}-{name}.yaml"
+        
+      - step: 3
+        action: "Fill in all template sections"
+        deliverable: "intent_template, constraints_template, rationale_template, etc."
+        
+      - step: 4
+        action: "Add real-world examples"
+        deliverable: "examples section with 2-3 concrete cases"
+        
+      - step: 5
+        action: "Update recipes README"
+        deliverable: "Add recipe to catalog"
+    
+    violations_to_reject:
+      - "Recipe is project-specific, not reusable"
+      - "Recipe not validated in production"
+      - "Recipe missing template sections"
+      - "Recipe has no real-world examples"
+
+  # --------------------------------------------------------------------------
+  # RULE 4: Documentation Standards
+  # --------------------------------------------------------------------------
+  
+  documentation_standards:
+    rule: "All IVD documentation must follow consistent style and structure"
+    
+    criteria:
+      - name: "No timeline references"
+        requirement: "NEVER use time estimates (days, weeks, months)"
+        example: "BAD: 'Medium scope (days/weeks)' → GOOD: 'Medium scope (feature-level)'"
+        validation: "Grep for timeline words, verify none found"
+        
+      - name: "No summary documents"
+        requirement: "No temp, summary, or release note files in package"
+        example: "BAD: SUMMARY.md, TEMP.yaml → Delete these"
+        validation: "Only canonical docs in package (README, framework, cookbook, etc.)"
+        
+      - name: "Evidence-based claims"
+        requirement: "All claims link to evidence"
+        example: "GOOD: evidence: 'playground/analysis_2026-01.ipynb'"
+        validation: "All rationale sections have evidence field with valid path"
+        
+      - name: "Verification-first"
+        requirement: "Document how to verify, not just what to do"
+        example: "Constraint includes test path, not just requirement"
+        validation: "All constraints have test field"
+    
+    violations_to_reject:
+      - "Timeline references (violates workspace rule)"
+      - "Summary/temp files in package"
+      - "Claims without evidence"
+      - "Constraints without test paths"
+
+# ==============================================================================
+# VALIDATION: How to validate IVD framework changes
+# ==============================================================================
+
+validation:
+  # --------------------------------------------------------------------------
+  # Level 1: Principle Alignment
+  # --------------------------------------------------------------------------
+  
+  principle_alignment:
+    description: "Verify new addition aligns with all 8 principles"
+    
+    checklist:
+      - principle: "Intent is Primary"
+        checks:
+          - "Intent artifact exists before implementation"
+          - "Intent is technology-agnostic"
+          - "Intent survives implementation changes"
+        
+      - principle: "Understanding Must Be Executable"
+        checks:
+          - "All constraints have test paths"
+          - "All evidence is reproducible"
+          - "All metrics are measurable"
+        
+      - principle: "Bidirectional Synchronization"
+        checks:
+          - "Changes can flow in any direction"
+          - "Verification prevents drift"
+        
+      - principle: "Continuous Verification"
+        checks:
+          - "Automated tests in CI"
+          - "Review cadence defined"
+          - "Drift detection mechanism"
+        
+      - principle: "Layered Understanding"
+        checks:
+          - "All 5 layers present (intent, constraints, rationale, alternatives, risks)"
+          - "Each layer has required fields"
+        
+      - principle: "AI as Understanding Partner"
+        checks:
+          - "Content is AI-parseable (structured YAML)"
+          - "File paths are verifiable"
+          - "Type information present"
+        
+      - principle: "Understanding Survives Implementation"
+        checks:
+          - "Intent doesn't mention specific technologies"
+          - "Constraints are implementation-independent"
+          - "Rationale explains why"
+    
+    rejection_criteria:
+      - "Violates any of the 8 principles"
+      - "Fails any principle checklist item"
+      - "Cannot demonstrate alignment"
+
+  # --------------------------------------------------------------------------
+  # Level 2: Structural Integrity
+  # --------------------------------------------------------------------------
+  
+  structural_integrity:
+    description: "Verify package structure remains clean and consistent"
+    
+    checks:
+      - name: "No duplicate files"
+        validation: "Check for old/new versions of same file"
+        test: "find . -name '*old*' -o -name '*new*' -o -name '*backup*'"
+        
+      - name: "No summary/temp files"
+        validation: "No SUMMARY, TEMP, or RELEASE_NOTES files"
+        test: "find . -name '*SUMMARY*' -o -name '*TEMP*' -o -name '*RELEASE*'"
+        
+      - name: "Naming conventions"
+        validation: "Files follow lowercase-hyphen or CAPS-guide pattern"
+        test: "Check file naming consistency"
+        
+      - name: "Directory structure"
+        validation: "Files in correct directories (recipes/, templates/, etc.)"
+        test: "Verify directory organization"
+    
+    rejection_criteria:
+      - "Duplicate files exist"
+      - "Summary/temp files in package"
+      - "Inconsistent file naming"
+      - "Files in wrong directories"
+
+  # --------------------------------------------------------------------------
+  # Level 3: Verification Coverage
+  # --------------------------------------------------------------------------
+  
+  verification_coverage:
+    description: "Verify all claims are verifiable"
+    
+    checks:
+      - name: "Constraints have tests"
+        validation: "Every constraint has test field with valid path"
+        test: "grep 'test:' *.yaml | verify paths exist"
+        
+      - name: "Evidence exists"
+        validation: "All evidence links point to existing files"
+        test: "Check all playground/*.ipynb references exist"
+        
+      - name: "Metrics have monitoring"
+        validation: "All success metrics reference dashboards/alerts"
+        test: "Verify monitoring configuration exists"
+    
+    rejection_criteria:
+      - "Constraint without test path"
+      - "Evidence link to non-existent file"
+      - "Metric without monitoring"
+
+  # --------------------------------------------------------------------------
+  # Level 4: Real-World Validation
+  # --------------------------------------------------------------------------
+  
+  real_world_validation:
+    description: "Verify addition solves real problems with real examples"
+    
+    checks:
+      - name: "Real-world examples"
+        validation: "At least 1 complete 500+ line example"
+        example: "workflow-lead-qualification-example.yaml (892 lines)"
+        
+      - name: "Multiple use cases"
+        validation: "Pattern applies to 3+ different scenarios"
+        example: "workflow applies to lead qualification, ETL, article generation"
+        
+      - name: "Production validation"
+        validation: "Based on actual production implementation"
+        example: "Lead qualification workflow runs in production"
+    
+    rejection_criteria:
+      - "No comprehensive example"
+      - "Only 1-2 use cases (not reusable enough)"
+      - "Not validated in production"
+
+# ==============================================================================
+# IVD-CANON: What makes something canonical IVD?
+# ==============================================================================
+
+ivd_canon:
+  definition: |
+    IVD-canon refers to concepts, patterns, and practices that are officially
+    part of the IVD framework. To be canon, an addition must:
+    
+    1. Align with all 8 principles
+    2. Pass all validation levels
+    3. Be documented in core framework docs
+    4. Include comprehensive examples
+    5. Be validated in real-world usage
+
+  # --------------------------------------------------------------------------
+  # Canon Status Levels
+  # --------------------------------------------------------------------------
+  
+  status_levels:
+    - level: "Canonical"
+      description: "Official part of IVD framework"
+      requirements:
+        - "Documented in framework.md"
+        - "Included in templates/intent.yaml"
+        - "Has comprehensive example (500+ lines)"
+        - "Has recipe pattern (if applicable)"
+        - "Validated in production"
+        - "Passes all validation checks"
+      examples:
+        - "System, Workflow, Module, Task levels"
+        - "Intent, Constraints, Rationale, Alternatives, Risks sections"
+        - "workflow-orchestration recipe"
+      
+    - level: "Experimental"
+      description: "Being validated, not yet canon"
+      requirements:
+        - "Has proposal document"
+        - "Has proof-of-concept example"
+        - "Being tested in 1+ projects"
+        - "Marked as 'Experimental' in docs"
+      examples:
+        - "New intent level being pilot tested"
+        - "New recipe pattern in development"
+      
+    - level: "Deprecated"
+      description: "Was canon, now being phased out"
+      requirements:
+        - "Marked as 'Deprecated' in docs"
+        - "Migration guide provided"
+        - "Removal timeline documented"
+      examples:
+        - "Old nested recipe structure (replaced by flat)"
+        - "Old CAPS naming (replaced by lowercase-hyphen)"
+
+  # --------------------------------------------------------------------------
+  # Canonization Process
+  # --------------------------------------------------------------------------
+  
+  canonization_process:
+    steps:
+      - step: 1
+        name: "Proposal"
+        deliverable: "Written proposal explaining gap and solution"
+        validation: "Reviewed by framework maintainer"
+        
+      - step: 2
+        name: "Proof of Concept"
+        deliverable: "Working example in real project"
+        validation: "Demonstrates value in production"
+        
+      - step: 3
+        name: "Documentation"
+        deliverable: "Complete template, example, recipe (if applicable)"
+        validation: "Meets all documentation standards"
+        
+      - step: 4
+        name: "Validation"
+        deliverable: "Pass all 4 validation levels"
+        validation: "Principle alignment, structural integrity, verification coverage, real-world"
+        
+      - step: 5
+        name: "Integration"
+        deliverable: "Updated framework.md, README.md, cookbook.md"
+        validation: "All core docs reflect new addition"
+        
+      - step: 6
+        name: "Canonical Status"
+        deliverable: "Marked as canonical in documentation"
+        validation: "Ready for production use"
+
+  # --------------------------------------------------------------------------
+  # Canon Maintenance
+  # --------------------------------------------------------------------------
+  
+  canon_maintenance:
+    review_cadence:
+      - frequency: "Quarterly"
+        activity: "Review experimental additions, promote or remove"
+        
+      - frequency: "Annually"
+        activity: "Review canonical patterns, deprecate outdated ones"
+    
+    deprecation_criteria:
+      - "Better pattern emerges"
+      - "Pattern not widely adopted"
+      - "Pattern violates principles in practice"
+      - "Pattern adds bureaucracy without value"
+    
+    evolution_principles:
+      - "Add sparingly (high bar for canonization)"
+      - "Deprecate gracefully (migration guides)"
+      - "Never break principles (principles are immutable)"
+      - "Always validate (real-world usage required)"
+
+# ==============================================================================
+# CONSTRAINTS: What must always be true
+# ==============================================================================
+
+constraints:
+  - name: "principle_immutability"
+    requirement: "The 8 core principles are immutable"
+    test: "Manual review: Do changes preserve all 8 principles?"
+    consequence_if_violated: |
+      IVD loses its identity. Framework becomes arbitrary collection of practices.
+      Reject any change that violates principles.
+  
+  - name: "verification_coverage"
+    requirement: "Every constraint has a test path"
+    test: "Automated: grep all intent.yaml files for 'test:' field"
+    consequence_if_violated: |
+      Understanding becomes unverifiable prose. Drift becomes undetectable.
+      Reject any intent artifact without test paths.
+  
+  - name: "evidence_existence"
+    requirement: "All evidence links point to existing files"
+    test: "Automated: Verify all playground/*.ipynb files exist"
+    consequence_if_violated: |
+      Claims become unsubstantiated. Rationale becomes arbitrary.
+      Reject any rationale without valid evidence.
+  
+  - name: "no_timeline_references"
+    requirement: "Zero timeline references in documentation"
+    test: "Automated: grep -i 'days|weeks|months|timeline' returns nothing"
+    consequence_if_violated: |
+      Violates workspace rule. Creates pressure for time estimates.
+      Reject any documentation with timeline references.
+  
+  - name: "structural_cleanliness"
+    requirement: "No summary, temp, or release note files in package"
+    test: "Automated: find . -name '*SUMMARY*' -o -name '*TEMP*' returns nothing"
+    consequence_if_violated: |
+      Package becomes cluttered. Unclear what's canonical.
+      Delete any non-canonical files before release.
+  
+  - name: "real_world_validation"
+    requirement: "All canonical patterns validated in production"
+    test: "Manual review: Verify production usage documented"
+    consequence_if_violated: |
+      Patterns become theoretical. Framework loses credibility.
+      Reject any pattern without production validation.
+
+# ==============================================================================
+# RATIONALE: Why these rules?
+# ==============================================================================
+
+rationale:
+  decision: "Strict rules for IVD framework evolution"
+  
+  reasoning: |
+    Why strict rules?
+    
+    1. Preserve core principles
+       - The 8 principles define IVD
+       - Without them, IVD becomes arbitrary
+       - Immutability ensures consistency
+    
+    2. Prevent bureaucracy creep
+       - Easy to add, hard to remove
+       - High bar for additions prevents bloat
+       - Each addition must justify its value
+    
+    3. Maintain verification
+       - IVD's power is in verifiable understanding
+       - Unverifiable additions weaken framework
+       - Every constraint must be testable
+    
+    4. Enable AI agents
+       - Structured YAML enables AI parsing
+       - File/function references enable AI verification
+       - Unstructured prose makes AI ineffective
+    
+    5. Ensure portability
+       - Clean package structure enables copy-paste
+       - No temp/summary files ensures clarity
+       - Consistent naming aids discovery
+    
+    6. Validate real-world value
+       - Production validation ensures patterns work
+       - Theoretical patterns don't help practitioners
+       - Real examples demonstrate value
+    
+    Trade-offs accepted:
+    - Slower evolution (high bar) vs fast iteration (risk of bloat)
+    - Strict rules (consistency) vs flexibility (risk of chaos)
+    - Production validation (proven) vs experimental (unproven)
+    
+    We chose: Slow, strict, proven > fast, flexible, experimental
+    
+    Why? Because IVD is about durable understanding. Better to evolve slowly
+    with confidence than quickly with chaos.
+  
+  evidence: |
+    - IVD v1.0 → v1.1: Added recipes (validated in agent patterns)
+    - IVD v1.1 → v1.2: Added workflow level (validated in lead qualification)
+    - Each addition took days of design, documentation, validation
+    - Result: Clean, consistent, production-ready framework
+  
+  date: "2026-01-24"
+  stakeholder: "IVD Framework Maintainer"
+
+# ==============================================================================
+# ALTERNATIVES: Why NOT other approaches?
+# ==============================================================================
+
+alternatives:
+  - name: "Looser guidelines"
+    description: "Flexible guidelines instead of strict rules"
+    rejected_because: |
+      - Guidelines become suggestions
+      - Framework consistency erodes over time
+      - No clear criteria for accepting/rejecting additions
+      - Eventually becomes grab-bag of patterns
+    when_it_works: |
+      Early stages of framework development, before patterns are proven.
+      Once patterns are validated, strict rules maintain quality.
+  
+  - name: "Community-driven evolution"
+    description: "Accept all community contributions"
+    rejected_because: |
+      - Quality varies widely
+      - No validation of real-world value
+      - Framework becomes bloated
+      - Core principles get diluted
+    when_it_works: |
+      Open-source projects prioritizing quantity over quality.
+      IVD prioritizes quality and consistency.
+  
+  - name: "Minimal documentation"
+    description: "Templates only, no comprehensive guides"
+    rejected_because: |
+      - Users don't understand when/how to use patterns
+      - Patterns get misapplied
+      - Framework value not obvious
+      - Adoption barriers increase
+    when_it_works: |
+      Frameworks for expert users who already understand concepts.
+      IVD targets all developers and AI agents.
+
+# ==============================================================================
+# RISKS: What could go wrong?
+# ==============================================================================
+
+risks:
+  - condition: "Rules too strict, evolution too slow"
+    impact: "Framework doesn't adapt to new needs"
+    action: |
+      - Quarterly review of experimental additions
+      - Fast-track canonization for clear wins
+      - Document rejected proposals to avoid repeat suggestions
+    monitor: "Track time from proposal to canonical (target: < 6 months for clear wins)"
+    severity: "medium"
+  
+  - condition: "Principles interpreted inconsistently"
+    impact: "Framework loses coherence"
+    action: |
+      - This master intent is canonical reference
+      - All additions must explicitly reference principles
+      - Validation checklist ensures consistency
+    monitor: "Review all additions against principle checklist"
+    severity: "high"
+  
+  - condition: "Examples become outdated"
+    impact: "Examples no longer reflect best practices"
+    action: |
+      - Annual review of all examples
+      - Update examples when patterns evolve
+      - Deprecate outdated examples with migration guide
+    monitor: "Track example last_updated dates"
+    severity: "medium"
+  
+  - condition: "Bureaucracy creep"
+    impact: "IVD becomes too heavy, adoption drops"
+    action: |
+      - Regular review: Does this add value?
+      - Remove unused patterns
+      - Keep defaults simple, advanced patterns optional
+    monitor: "Track which patterns are actually used in production"
+    severity: "high"
+
+# ==============================================================================
+# IMPLEMENTATION: Where is this enforced?
+# ==============================================================================
+
+implementation:
+  current: "/"
+  
+  enforcement_mechanisms:
+    - mechanism: "This system intent file"
+      file: "ivd_system_intent.yaml"
+      purpose: "Canonical reference for all additions"
+      
+    - mechanism: "Validation checklist"
+      location: "Used during framework changes"
+      purpose: "Ensure alignment with principles and rules"
+      
+    - mechanism: "Example quality bar"
+      standard: "500+ line comprehensive examples"
+      purpose: "Ensure patterns are fully documented"
+      
+    - mechanism: "Production validation requirement"
+      standard: "Must be validated in real project"
+      purpose: "Ensure patterns are practical, not theoretical"
+  
+  version: 2.4
+  
+  review_cadence:
+    - frequency: "Quarterly"
+      activity: "Review experimental additions"
+    - frequency: "Annually"
+      activity: "Review canonical patterns, update examples"
+
+# ==============================================================================
+# VERIFICATION: How to verify this intent is being followed
+# ==============================================================================
+
+verification:
+  principle_checks:
+    - check: "All intent artifacts have constraint tests"
+      test: "Automated: grep 'test:' templates/*.yaml examples/*.yaml"
+      validates_principle: "Understanding Must Be Executable"
+      
+    - check: "No timeline references in docs"
+      test: "Automated: grep -i 'days|weeks|months' *.md templates/*.md"
+      validates_principle: "Workspace rule compliance"
+      
+    - check: "All evidence files exist"
+      test: "Automated: Check all playground/*.ipynb references"
+      validates_principle: "Understanding Must Be Executable"
+  
+  structural_checks:
+    - check: "No duplicate files"
+      test: "Manual: Review file list for duplicates"
+      validates: "Structural integrity"
+      
+    - check: "No summary/temp files"
+      test: "Automated: find . -name '*SUMMARY*' -o -name '*TEMP*'"
+      validates: "Structural cleanliness"
+      
+    - check: "Consistent naming"
+      test: "Manual: Review file naming conventions"
+      validates: "Structural integrity"
+  
+  quality_checks:
+    - check: "Comprehensive examples exist"
+      test: "Manual: Verify examples are 500+ lines with all sections"
+      validates: "Real-world validation"
+      
+    - check: "Recipes have use cases"
+      test: "Manual: Verify recipes list 3+ use cases"
+      validates: "Pattern reusability"
+      
+    - check: "Production validation documented"
+      test: "Manual: Verify production usage referenced"
+      validates: "Real-world validation"
+
+# ==============================================================================
+# BOOK & DISTRIBUTION: The IVD Book
+# ==============================================================================
+# The primary distribution vehicle for IVD is long-form content.
+# The framework lives in code; the content carries the ideas to the world.
+
+book_and_distribution:
+  goal: |
+    Distribute IVD methodology through long-form content. Target audience:
+    developers, tech leads, and CTOs working with AI agents.
+
+  thesis: |
+    AI writes code now. The bottleneck moved from implementation to intent.
+    IVD is the framework that makes AI collaboration reliable by making
+    intent executable and verifiable.
+
+  honesty_note: |
+    The IVD success metrics in this intent (85-95% knowledge capture, 40%
+    faster onboarding, etc.) are projections — NOT independently validated
+    benchmarks. Present as observed patterns from real work, not as proven
+    statistics.
+
+  status: "In progress"
+  date: "2026-03-03"
+
+# ==============================================================================
+# CHANGELOG: Evolution of IVD framework rules
+# ==============================================================================
+
+changelog:
+  - version: 2.4
+    date: "2026-02-09"
+    change: "Added Constraint-Segmented Implementation as canonical P4 extension; updated P6 single and multi-agent workflows; added research-backed threshold rule (3+ constraints)"
+    reason: |
+      Post-implementation audits consistently reveal missed requirements even when the AI
+      explicitly reviewed the intent. Root cause is structural: LLMs exhibit a read-acknowledge-
+      violate pattern (anthropics/claude-code GitHub #26848+), attention degradation at middle
+      positions during generation (Liu et al. 2023 lost-in-the-middle >30%), and constraint
+      compliance as a capability orthogonal to task completion (MOSAIC 2025). Single-pass
+      implementation against a 5-constraint intent is architecturally likely to miss constraints —
+      not a model quality problem, a context mechanics problem. Constraint-segmented implementation
+      converts one long attention span into multiple short ones, each starting with fresh constraint
+      attention from re-reading. This is the same cognitive mechanism as the Post-Implementation
+      Verification Protocol (re-read from disk), applied during generation instead of after.
+    evidence: "See DECISIONS.md FDR-014. Research: Liu et al. 2023, MOSAIC 2025, IFScale 2025, CodeIF 2025, GitHub anthropics/claude-code issues."
+    files_changed:
+      - "ivd_system_intent.yaml (this file) — P6 workflows updated, P4 extension added"
+      - "framework.md — Step 5: Constraint-Segmented Implementation added to P6 section"
+      - "recipes/agent-rules-ivd.yaml — Rule 1 IMPLEMENT step expanded, new common_failure"
+      - "mcp_server/tools/context.py — P6 description updated"
+      - "DECISIONS.md — FDR-014 added"
+
+  - version: 2.3
+    date: "2026-02-09"
+    change: "Expanded ENRICH step with contextual knowledge source hierarchy, GitHub as named channel, and 2-attempt trigger rule"
+    reason: |
+      Empirical observation: when code doesn't work, searching GitHub for the error surfaces
+      confirmed fixes and replaces 5–10 correction turns. The ENRICH step listed generic sources
+      (API docs, model cards, benchmarks) but didn't name GitHub issues/PRs — the highest-signal
+      channel for code failures. Additionally, no trigger heuristic existed for when to ENRICH:
+      agents iterated indefinitely using parametric variations of the same wrong pattern.
+      Added: (1) Source hierarchy ranked by signal quality, (2) GitHub issues/PRs as explicitly
+      named channel with rationale, (3) 2-attempt trigger rule — if same error persists after
+      two attempts without new external data, ENRICH is mandatory.
+    evidence: "Empirical validation in production: GitHub search replacing multi-turn correction cycles. See DECISIONS.md FDR-013."
+
+  - version: 2.2
+    date: "2026-02-09"
+    change: "Added constraint quality framework: interpretive entropy spectrum, constraint satisfiability, homogenization as named failure mode"
+    reason: |
+      Three research-backed gaps identified through empirical study of LLM behavior on constrained tasks:
+      (1) ENTROPY SPECTRUM: IVD's constraint model assumed all constraints were binary/near-zero-entropy
+          (e.g., p95 < 200ms). Research (CMU 2025 underspecification study, CS4 2024) shows constraints
+          exist on a spectrum; creative and narrative artifacts require low-qualitative constraints with
+          measurable proxies — not prose. High-entropy constraints ("write well") trigger parametric averaging.
+      (2) CONSTRAINT SATISFIABILITY: UltraBench 2025 shows models exceed 70% on individual constraints but
+          fail at simultaneous satisfaction. Position bias (earlier constraints violated when later ones
+          dominate) is systematic. IVD had no guidance on conflict detection, priority ordering, or
+          position-aware constraint list ordering.
+      (3) HOMOGENIZATION: LLM outputs on underspecified prompts are not just wrong — they are
+          statistically averaged ('We're Different, We're the Same', 2025: LLM outputs are more
+          similar to each other than human outputs are to each other, even cross-model). For code,
+          this is largely harmless. For creative/narrative artifacts, homogenization is the primary
+          failure mode. IVD only named hallucination; homogenization is now a first-class failure mode.
+      Added: constraint_quality block under P2; fourth stress test dimension under P6; vocabulary
+      updated in cognitive foundation (framework.md); DECISIONS.md FDR-010, FDR-011, FDR-012.
+    evidence: |
+      - CMU 2025: 'What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts'
+        (underspecified prompts 2x regression rate, 41.1% correct inference, 20%+ accuracy drops)
+      - UltraBench 2025: >70% individual constraint accuracy, failure at simultaneous satisfaction,
+        position bias systematic across models
+      - 'We're Different, We're the Same' (arXiv 2501.19361, 2025): LLM creative outputs cross-model
+        more similar to each other than human outputs to each other
+      - CS4 2024: constraint specificity measurably improves creative output quality, reduces parametric averaging
+      - DETAIL 2024: increased prompt specificity improves accuracy, especially procedural tasks
+
+  - version: 2.1
+    date: "2026-02-09"
+    change: "Added empirical refinement as canonical extension under Principle 3"
+    reason: |
+      Gap identified: when implementation reveals that the intent's assumptions are wrong
+      (API returns different format, model accuracy differs from benchmarks, latency exceeds
+      documented limits), no protocol existed for updating the intent with empirical evidence
+      before continuing. This is distinct from code drift (P3 already covers code → intent sync)
+      and from the stress test (P6 catches gaps before implementation). Empirical refinement
+      catches gaps that only running the code reveals. Added:
+      (1) Empirical Refinement Protocol (5-step: stop, record, update, enrich, continue) as
+          P3 canonical extension in ivd_system_intent.yaml
+      (2) framework.md new section under Principle 3
+      (3) Agent Rule 5 in recipes/agent-rules-ivd.yaml
+      (4) Private content intents updated to include empirical refinement
+      (5) DECISIONS.md FDR-009
+
+  - version: 2.0
+    date: "2026-02-09"
+    change: "Added cognitive_foundation to principles section — parametric vs. contextual knowledge systems"
+    reason: |
+      Research finding: LLMs allocate ~70% reliance on contextual knowledge and ~30% on parametric
+      (training weights). Prose underloads the contextual channel, triggering parametric gap-filling
+      = hallucination. Structured intent artifacts saturate the contextual channel with near-zero-entropy
+      information. The lost-in-the-middle effect explains why verification protocol Step 1 (re-read
+      from disk) is cognitively necessary, not optional. This is the theoretical foundation for why
+      IVD works — previously unexplained at this level. Sources: 9-LLM study (2024), Huang et al.
+      ICLR 2024, lost-in-the-middle (GPT-4/Claude 3, 2024), proactive interference (2025).
+      Applied across: framework.md and related private content intents.
+      Implementation.version also updated to 2.0.
+  - version: 1.9
+    date: "2026-02-09"
+    change: "Added intent stress test as step 4 in P6 workflow"
+    reason: |
+      Gap identified: intent written and approved, but implementation reveals gaps not
+      covered by any constraint. Also: adversarial stress-testing of intent before
+      implementation reveals flaws cheaper than implementation does. Root cause: the P6
+      workflow went directly from human review to implementation — no step to check
+      whether the intent itself is complete. Added:
+      (1) Step 4 in single-agent workflow: AI stress-tests intent (adversarial completeness)
+      (2) Step 5 in multi-agent workflow: each agent stress-tests its intent
+      (3) New sub-principle: "AI stress-tests intent before implementing"
+      (4) Three stress-test dimensions: constraint completeness, implementation anticipation,
+          assumption challenge
+      (5) framework.md updated with full stress test description and when-to-skip guidance
+
+  - version: 1.8
+    date: "2026-02-09"
+    change: "Added post-implementation verification protocol and agent rules integration surface"
+    reason: |
+      Gap identified by developer: AI agent implemented from intent artifact but skipped
+      verification step. Constraints existed with test paths but agent never checked them.
+      Root cause: Principle 4 says "verify continuously" but doesn't prescribe what verification
+      means at the agent level. Agent instruction files (.cursorrules) are the runtime enforcement
+      point but IVD didn't acknowledge them. Added:
+      (1) Post-implementation verification protocol as Principle 4 extension (4-step audit)
+      (2) Agent rules recipe (recipes/agent-rules-ivd.yaml) with concrete rules blocks
+      (3) Agent instruction files recognized as IVD integration surface
+      (4) ivd_init updated to suggest adding IVD rules when .cursorrules detected
+      (5) framework.md updated with protocol description and agent rules guide
+
+  - version: 1.7
+    date: "2026-02-09"
+    change: "Added interface.routing sub-field and agent-capability-propagation recipe"
+    reason: |
+      Gap identified: framework had top-down intent propagation (coordinator → agents via
+      coordinator-intent-propagation recipe) but no pattern for bottom-up capability propagation
+      (agent changes → coordinator routing surface). The routing surface — description strings
+      the coordinator LLM reads to make routing decisions — was unverifiable. Added:
+      (1) Optional routing sub-field in interface section (description, keywords, consumed_by)
+      (2) New recipe: agent-capability-propagation.yaml (bottom-up propagation steps + verification)
+      (3) Routing Surface concept documented in framework.md (Principle 6 Multi-Agent section)
+      Extends existing interface section (no new top-level optional section).
+
+  - version: 1.6
+    date: "2026-02-09"
+    change: "Added experimental authorship and evaluation optional sections"
+    reason: |
+      Two gaps identified in IVD's coverage of autonomous agent workflows:
+      (1) Authorship: IVD assumed human-originated intent but AI agents increasingly
+          originate intent (designing workflows, proposing structures). Authorship
+          formalizes who can create/modify intent and what oversight is required.
+      (2) Evaluation: IVD had binary verification (pass/fail constraints) but no
+          formalized improvement loop. Evaluation extends verification to continuous
+          quality improvement: evaluate → adjust → re-verify, with bounded iterations
+          and escalation. Together they enable safe autonomy for AI agents.
+  - version: 1.5
+    date: "2026-02-09"
+    change: "Added experimental roles optional section for AI agents with context-dependent behavior"
+    reason: |
+      AI agents that switch behavioral modes (implementer, reviewer, architect, teacher)
+      had no IVD-canonical way to declare those profiles in intent. Without roles in intent,
+      behavioral differences live only in code or prompts — violating P1 (Intent is Primary).
+      Roles complement interface (WHAT vs HOW): interface defines tool capabilities; roles
+      define how the agent uses those capabilities in different contexts. Status: Experimental
+      — pending production validation in 2+ agents before promotion to Canonical.
+    evidence: "Principle-by-principle gap analysis; real-world pattern: Cursor IDE modes (agent, plan, debug, ask)"
+
+  - version: 1.4
+    date: "2026-02-09"
+    change: "Added intent coverage assessment (ivd_assess_coverage tool + framework docs)"
+    reason: |
+      Brownfield projects lacked a structured way to see which modules have
+      intent artifacts and which don't. Coverage assessment fills the gap
+      Brownfield projects lacked a structured way to see which modules have
+      intent artifacts and which don't. Coverage assessment fills the gap.
+      Principle 4 extension: makes verification gaps visible. Framework section:
+      framework.md § Intent Coverage Assessment documents the capability.
+    evidence: "Brownfield adoption research; framework.md § Intent Coverage Assessment"
+
+  - version: 1.3
+    date: "2026-01-26"
+    change: "AI Agents era positioning: AI writes intent, implements, verifies"
+    reason: |
+      - IVD is NOT for traditional PM → Developer workflows
+      - IVD is the framework for the AI Agents era
+      - Key insight: The AI writes the intent (not the human)
+      - Key value: Eliminates many-turns and hallucinations
+      - Without this distinction, IVD is just another PRD or user story
+      - Updated: summary, goal, stakeholders, Principle 6, all core docs
+    evidence: "Validated through IVD book Chapters 1 and 2"
+    
+  - version: 1.3
+    date: "2026-01-26"
+    change: "Added optional field_mapping section and data-field-mapping recipe"
+    reason: |
+      - Field mappings were undocumented or only in prose, causing bugs and slow onboarding
+      - Gap in framework: no structured way to document data sources, targets, and transformations
+      - Integrations, ETL, and data sync are common use cases that benefit from explicit mapping
+      - Makes data contracts verifiable (schema checks, sample validation) per Principle 2
+    evidence: "Use case analysis (API integrations, ETL, data sync); framework gap review"
+  
+  - version: 1.2
+    date: "2026-01-24"
+    change: "Added workflow-level intent + master framework intent"
+    reason: |
+      - Workflow level filled gap for multi-step process documentation
+      - Master intent needed to codify rules for future framework evolution
+      - Strict rules prevent chaos as framework grows
+    evidence: "IVD v1.2 workflow additions validated with lead qualification example"
+  
+  - version: 1.1
+    date: "2026-01-23"
+    change: "Added recipes + task-level intents"
+    reason: |
+      - Recipes enable reusable patterns
+      - Task-level enables function-level documentation
+    evidence: "IVD v1.1 task-level additions"
+  
+  - version: 1.0
+    date: "2026-01-23"
+    change: "Initial IVD framework with 8 principles"
+    reason: "Foundation for intent-verified development"
+    evidence: "framework.md, cookbook.md"

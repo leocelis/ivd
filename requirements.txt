@@ -1,0 +1,26 @@
+# IVD MCP Server Dependencies
+# Root-level file for DigitalOcean App Platform auto-detection
+
+# MCP protocol
+mcp==1.23.0
+
+# HTTP server (must be compatible with mcp version above)
+starlette==0.49.1
+sse-starlette==3.0.2
+uvicorn==0.35.0
+
+# Redis for MCP event storage (session resumability)
+redis>=5.0.0
+
+# Embeddings (query-time: numpy loads .npy files)
+numpy>=1.26.0
+
+# YAML parsing
+pyyaml>=6.0
+
+# Logging
+termcolor>=2.4.0
+
+# Embedding generation (only needed for devops/embed.py, not for serving)
+openai>=1.12.0
+tiktoken>=0.6.0

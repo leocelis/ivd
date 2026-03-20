@@ -1,0 +1,27 @@
+# ── Private & generated content ───────────────────────────────────────────────
+_private/
+mcp_server/brain/
+temp/
+
+# ── Environment & runtime ────────────────────────────────────────────────────
+.env
+*.pyc
+__pycache__/
+.venv/
+venv/
+.pytest_cache/
+mcp_server/logs/*.log
+mcp_server/logs/*.log.*
+
+# ── OS & IDE ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+.obsidian/
+
+# ── Safety (scrubbing artifacts) ─────────────────────────────────────────────
+gitleaks-report.json
+secrets.txt

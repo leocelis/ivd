@@ -1,0 +1,28 @@
+# IVD MCP Server Dependencies
+
+# MCP protocol
+mcp==1.23.0
+
+# HTTP server (must be compatible with mcp version above)
+starlette==0.49.1
+sse-starlette==3.0.2
+uvicorn==0.35.0
+
+# Redis for MCP event storage (session resumability)
+redis>=5.0.0
+
+# Embeddings
+numpy>=1.26.0
+openai>=1.12.0
+tiktoken>=0.6.0
+
+# YAML parsing
+pyyaml>=6.0
+
+# Logging
+termcolor>=2.4.0
+
+# Testing (dev only)
+pytest>=8.0.0
+pytest-anyio>=0.0.0
+httpx>=0.27.0

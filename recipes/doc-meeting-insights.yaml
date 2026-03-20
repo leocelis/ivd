@@ -1,0 +1,350 @@
+recipe:
+  name: "Meeting Insights Extraction for Knowledge Base"
+  category: "documentation_patterns"
+  version: "1.2"
+  created: "2026-01-23"
+  updated: "2026-01-26"
+  author: "Leo Celis / AI Assistant"
+  
+  master_intent_alignment:
+    supports_intent: "ivd_system_intent.yaml"
+    supports_phase: "Continuous knowledge capture and pattern extraction"
+    contributes_to: "Building executable understanding through systematic meeting processing and insight extraction"
+    validates_constraint: "conceptual_focus (100% project-agnostic patterns), completeness (all meetings processed)"
+  
+  applies_to: "Extracting generalizable insights from meeting transcripts/notes to build knowledge bases"
+  
+  description: |
+    Systematic pattern for extracting generalizable principles, patterns, and 
+    insights from meeting notes/transcripts and incorporating them into a 
+    living knowledge base document. Emphasizes conceptual understanding over 
+    implementation details, making it suitable for book writing or training material.
+    
+    This recipe codifies a repeatable process for extracting reusable
+    methodology from real-world practice sessions, supporting the creation
+    of evidence-based technical documentation and training material.
+  
+  when_to_use:
+    - "Building knowledge base from recurring meetings or training sessions"
+    - "Creating living documentation that evolves with new learnings"
+    - "Extracting patterns from practice to inform methodology"
+    - "Developing training materials or books from real-world experience"
+    - "Need to synthesize insights across multiple sessions"
+  
+  when_NOT_to_use:
+    - "Meeting notes are purely tactical/operational (no generalizable insights)"
+    - "One-time meetings with no recurring patterns"
+    - "Verbatim transcription is the goal (not synthesis)"
+    - "No need for cross-meeting pattern recognition"
+    - "Documentation is for specific project only (not generalizable)"
+
+intent_template:
+  summary: "Extract generalizable insights from [meeting series] to build [knowledge base type]"
+  goal: "Systematically review [N] meetings and extract patterns/principles for [target audience]"
+  success_metric: "All meetings processed with [X]% concept coverage, [Y] total concepts extracted"
+  stakeholders:
+    - "Knowledge base maintainer/author"
+    - "Future readers/learners from the knowledge base"
+
+constraints_template:
+  - name: "conceptual_focus"
+    requirement: "Extract principles and patterns, not implementation details or code"
+    current: "Checking each extraction for code examples or project-specific references"
+    target: "100% of extracted concepts are project-agnostic and conceptual"
+    test_method: "Manual review for code snippets or project names in extracted text"
+    consequence_if_violated: "Knowledge base becomes implementation guide instead of conceptual framework"
+  
+  - name: "completeness"
+    requirement: "No valuable insights left behind - multiple review passes"
+    current: "Iterative review process with 'review again' cycles"
+    target: "Diminishing returns on each pass (< 5% new concepts found)"
+    test_method: "Track concepts found per review pass"
+    consequence_if_violated: "Valuable insights missing from knowledge base"
+  
+  - name: "generalizability"
+    requirement: "Insights must be applicable beyond original context"
+    current: "Converting specific examples to general principles"
+    target: "Each concept applicable to multiple projects/contexts"
+    test_method: "Can concept be applied to different domain/project?"
+    consequence_if_violated: "Knowledge base too narrow, limited reusability"
+
+rationale_template:
+  decision: "Use iterative extraction with multiple passes and meeting index tracking"
+  reasoning: |
+    - Single-pass extraction misses nuanced insights
+    - Meeting index prevents duplicate processing
+    - Version-controlled knowledge base shows evolution
+    - Conceptual focus enables future book publication
+    - Systematic approach ensures no meetings skipped
+  evidence: 
+    - "Multiple meetings processed with iterative 'review again' pattern"
+    - "Multiple passes consistently found additional concepts"
+    - "Meeting index tracks processing status and concept counts"
+
+alternatives_template:
+  - name: "single_pass_extraction"
+    rejected_because: "Consistently missed 20-40% of valuable insights requiring 're-review' requests"
+    date_considered: "2025-12-31"
+    experiment: "Initial meetings processed once, user requested multiple re-reviews"
+    conclusion: "Multiple passes essential for completeness"
+  
+  - name: "automated_extraction_only"
+    rejected_because: "AI without human guidance tends to over-include tactical details, under-include strategic patterns"
+    date_considered: "2025-12-31"
+    experiment: "Early meetings had mix of tactical and strategic insights"
+    conclusion: "Human-guided extraction with conceptual focus requirement needed"
+  
+  - name: "chronological_only_no_index"
+    rejected_because: "Lost track of which meetings processed, risked duplicates or gaps"
+    date_considered: "2026-01-10"
+    experiment: "User requested meeting index to track status"
+    conclusion: "Meeting index essential for systematic processing"
+
+risks_template:
+  - name: "concept_drift"
+    condition: "If extracted concepts include code/implementation details"
+    action: "Review and refactor to conceptual principles"
+    monitor: "Check for code blocks, specific tool names, project references"
+    threshold: "Any code examples or project-specific details"
+    severity: "high"
+    mitigation: "Maintain 'conceptual focus' constraint, regular audits"
+  
+  - name: "project_specificity_leak"
+    condition: "If extracted insights contain project names, locations, companies, people, or specific tech"
+    action: "IMMEDIATELY refactor to generic placeholders and patterns"
+    monitor: "Grep for known project terms (company names, states, specific tools)"
+    threshold: "ZERO project-specific references allowed"
+    severity: "critical"
+    mitigation: "Run quality gate test: 'Can this apply to different domain?' before finalizing"
+  
+  - name: "extraction_fatigue"
+    condition: "If diminishing returns plateau before meeting all extraction criteria"
+    action: "Take break, return with fresh perspective, or declare complete"
+    monitor: "Track concepts found per pass"
+    threshold: "< 2 new concepts found in full review pass"
+    severity: "medium"
+    mitigation: "Set realistic completeness targets, use meeting index to track progress"
+  
+  - name: "scope_creep"
+    condition: "If knowledge base grows beyond maintainable size"
+    action: "Split into multiple focused documents, create taxonomy"
+    monitor: "Document length, time to find specific concepts"
+    threshold: "> 10,000 lines or > 300 concepts"
+    severity: "medium"
+    mitigation: "Consider splitting by theme/category when growth becomes unwieldy"
+
+implementation_pattern:
+  structure: |
+    [project]/_private/
+    ├── meetings.md                          # Raw meeting transcripts/notes
+    ├── [KNOWLEDGE_BASE].md                  # Extracted insights (living document)
+    ├── meetings_index.md                    # Processing tracker
+    └── [INTENT].yaml                        # This intent artifact
+  
+  workflow: |
+    Step 0: Check for this recipe
+        ↓
+    Step 1: Create meeting index (if not exists)
+        - List all meetings with dates, line numbers, titles
+        - Track processing status per meeting
+        - Track concept count per meeting
+        ↓
+    Step 2: Initial extraction pass
+        - Read meeting notes thoroughly
+        - Extract generalizable principles (not tactical details)
+        - Cross-check against existing knowledge base
+        - Add only NEW concepts (avoid duplication)
+        ↓
+    Step 3: Conceptual refactoring (CRITICAL STEP)
+        - Remove ALL code examples with specific table/field names
+        - Convert ALL project-specific references to generic placeholders
+        - Replace: project names → generic labels (Source A, System B)
+        - Replace: specific locations → [region_code], [location]
+        - Replace: specific table names → target_table, source_table
+        - Replace: specific field names → entity_name, custom_field, status_field
+        - Replace: people names → generic roles (team member, manager, stakeholder)
+        - Test every insight: "Could this apply to different domain?" If no, refactor more.
+        ↓
+    Step 4: Update meeting index
+        - Mark meeting as processed
+        - List key concepts extracted
+        - Update total counts
+        ↓
+    Step 5: Iterative review passes
+        - User requests "review again" if intuition says more exists
+        - Deeper pass on same meeting
+        - Update index with additional concepts found
+        ↓
+    Step 6: Version increment
+        - Update knowledge base version number
+        - Update "last updated" date
+        - Commit changes
+  
+  extraction_principles:
+    - "Conceptual over implementation: Extract patterns, not code"
+    - "Generalizable over specific: Principle applicable broadly"
+    - "Project-agnostic only: Remove ALL project names, companies, states, people, specific tools"
+    - "Pattern over instance: One pattern from multiple examples"
+    - "Why over how: Reasoning and principles, not steps"
+    - "Deduplication: Check existing KB before adding"
+    - "Progressive depth: Multiple passes reveal deeper insights"
+  
+  quality_gates:
+    - "No code examples in extracted concepts (only generic patterns)"
+    - "ZERO project references: no project names, companies, locations, people, or specific technologies"
+    - "All examples must be generic placeholders (e.g., 'Source A', '[region_code]', 'target_table')"
+    - "Each concept has clear title and explanation"
+    - "Concepts are cross-referenced if related"
+    - "Meeting index updated with processing status"
+    - "Test: Can this insight apply to a completely different domain/project? If no, refactor."
+
+verification_pattern:
+  continuous_checks:
+    - "Meeting index shows all meetings processed"
+    - "Each meeting has concept count listed"
+    - "Knowledge base version incremented"
+    - "No code blocks with specific names (only generic patterns allowed)"
+    - "ZERO project-specific references (grep test passes)"
+    - "All examples use generic placeholders ([placeholder], Source A, target_table)"
+    - "Test: Show insight to someone unfamiliar with project - do they understand without context?"
+  
+  milestone_checks:
+    - "After every 5 meetings: Review extraction consistency"
+    - "After all meetings: Full knowledge base review for coherence"
+    - "Quarterly: Refactor for clarity and organization"
+  
+  completion_criteria:
+    - "All meetings marked as processed in index"
+    - "Diminishing returns on review passes (< 5% new per pass)"
+    - "Knowledge base coherent and well-organized"
+    - "User satisfaction: 'No more to extract'"
+
+examples:
+  - name: "Development Guide from Training Sessions"
+    location: "[project]/_private/"
+    domain: "Software Development / AI Integration"
+    meetings_processed: "20+"
+    concepts_extracted: "~150+"
+    customization: |
+      - Focused on AI development patterns
+      - Evolved through multiple versions over time
+      - Maintains conceptual focus for publication
+      - Eventually evolved into a reusable methodology
+    lessons_learned:
+      - "Multiple review passes essential (user requested 're-review' frequently)"
+      - "Meeting index critical for tracking progress"
+      - "Conceptual focus requires constant vigilance (code creeps in)"
+      - "Project-agnostic refactoring is NON-NEGOTIABLE (user will request review if project refs remain)"
+      - "Version control shows evolution of understanding"
+      - "Iterative extraction reveals deeper patterns over time"
+      - "Pattern proved so valuable it became the methodology itself"
+      - "Generic examples (Source A, [region_code]) preserve pattern while removing specifics"
+
+references:
+  - "ivd_system_intent.yaml - System intent for IVD framework"
+  - "recipe-spec.md - Recipe specification"
+  - "Pattern: Literate Programming (Donald Knuth) - Inspiration for documentation approach"
+
+alignment_to_ivd_framework:
+  goal_supported: |
+    "Make understanding executable, verifiable, and durable by extracting 
+    generalizable patterns from real-world practice through systematic meeting processing"
+  
+  how_it_helps:
+    - "Enables systematic knowledge capture from practice"
+    - "Ensures conceptual focus maintains pattern generalizability"
+    - "Maintains evidence trail through meeting index and version control"
+    - "Provides repeatable workflow for continuous learning extraction"
+    - "Prevents concept drift into implementation details"
+  
+  ivd_principles_applied:
+    - principle: "1. Intent is Primary"
+      application: "Templates require documenting extraction intent before execution"
+      
+    - principle: "2. Understanding Must Be Executable"
+      application: "Quality gates and verification checks are concrete and testable"
+      
+    - principle: "3. Bidirectional Synchronization"
+      application: "Multiple review passes ensure alignment between meetings and extracted patterns"
+      
+    - principle: "4. Continuous Verification"
+      application: "Each meeting tracked in index, concepts verified for generalizability"
+      
+    - principle: "5. Layered Understanding"
+      application: "Constraints → Rationale → Alternatives → Risks structure maintained"
+      
+    - principle: "6. AI as Understanding Partner"
+      application: "Human-guided extraction with AI assistance, not automated extraction"
+      
+    - principle: "7. Understanding Survives Implementation"
+      application: "Conceptual focus ensures patterns outlive specific project implementations"
+  
+  constraints_validated:
+    - name: "conceptual_focus"
+      requirement: "100% project-agnostic patterns"
+      recipe_contribution: "Quality gates check for code/project-specific terminology"
+      
+    - name: "completeness"
+      requirement: "All meetings processed with diminishing returns < 5%"
+      recipe_contribution: "Meeting index tracks status, iterative passes ensure completeness"
+      
+    - name: "generalizability"
+      requirement: "Patterns applicable across multiple domains/projects"
+      recipe_contribution: "Test method asks 'Can this be applied to different domain?'"
+
+meta:
+  recipe_evolution:
+    - version: "1.0"
+      date: "2026-01-23"
+      change: "Initial recipe based on multiple meetings processed"
+      evidence: "Meeting index shows systematic processing of all sessions"
+    
+    - version: "1.1"
+      date: "2026-01-26"
+      change: "Fixed broken references, aligned with IVD principles, processed additional meetings"
+      evidence: "Source materials and outputs validated"
+    
+    - version: "1.2"
+      date: "2026-01-26"
+      change: "Added explicit project-agnostic requirement, enhanced quality gates and refactoring guidance"
+      evidence: "Extraction required review and cleanup of project-specific references"
+      additions:
+        - "New extraction principle: 'Project-agnostic only: Remove ALL project names, companies, states, people, specific tools'"
+        - "New risk: 'project_specificity_leak' with CRITICAL severity"
+        - "Enhanced Step 3 with explicit refactoring examples (Source A, [region_code], target_table)"
+        - "Added quality gate test: 'Can this insight apply to a completely different domain?'"
+        - "Enhanced lessons_learned with generic placeholder examples"
+  
+  known_variations:
+    - variation: "Technical deep-dives"
+      difference: "May need more implementation detail"
+      when_to_use: "Creating technical reference, not conceptual book"
+      
+    - variation: "Research papers"
+      difference: "May need citation tracking and academic rigor"
+      when_to_use: "Academic publication instead of practitioner book"
+      
+    - variation: "Workshop series"
+      difference: "May need exercise extraction and hands-on patterns"
+      when_to_use: "Training curriculum development"
+  
+  future_enhancements:
+    - enhancement: "Automated concept clustering by theme"
+      rationale: "Help identify themes across meetings for better organization"
+      estimated_value: "medium"
+      
+    - enhancement: "Automated duplicate detection"
+      rationale: "Prevent re-extracting same concept from multiple mentions"
+      estimated_value: "high"
+      
+    - enhancement: "Cross-reference graph generation"
+      rationale: "Visualize concept relationships and dependencies"
+      estimated_value: "low"
+  
+  ivd_compliance:
+    - "✅ Recipe references system intent (ivd_system_intent.yaml)"
+    - "✅ Recipe aligns with master intent goals and constraints"
+    - "✅ Recipe supports specific phases of master intent"
+    - "✅ Recipe includes all required IVD recipe spec sections"
+    - "✅ Recipe includes meta section with evolution tracking"
+    - "✅ Recipe is itself an IVD-compliant artifact"

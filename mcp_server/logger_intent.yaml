@@ -1,0 +1,447 @@
+# ==============================================================================
+# IVD Intent: MCP Server Structured Logging
+# ==============================================================================
+# Co-located with mcp_server/ (IVD canon: intent alongside implementation)
+#
+# Recipe: infra-structured-logging v1.0
+# Parent: mcp_server_intent.yaml
+# ==============================================================================
+
+parent_intent: "mcp_server_intent.yaml"
+recipe: "infra-structured-logging"
+recipe_version: "1.0"
+
+scope:
+  level: "module"
+  type: "infrastructure"
+  granularity: "coarse"
+
+metadata:
+  feature_id: "mcp_logging"
+  category: "observability"
+  tags: ["logging", "structured-logging", "analytics", "tool-tracking", "rotating-files"]
+  status: "implemented"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Production-grade logging for IVD MCP server using Python logging stdlib — colored console output, rotating log files, rich tool call detail, and third-party forwarding readiness"
+
+  goal: |
+    Replace ad-hoc print(colored(...)) calls in registry.py, auth.py, and
+    server.py with Python's logging standard library so the IVD maintainer
+    can answer:
+
+    1. Which tools are being used? (tool name, frequency)
+    2. Who is using them? (partial API key for identification)
+    3. Where are they calling from? (origin IP address)
+    4. What did they send? (partial payload)
+    5. What did they get back? (partial response)
+    6. What's failing? (error rate by tool, tracebacks)
+    7. How fast are tools responding? (latency by tool)
+
+    Logs are written to:
+    - Console (stdout) — colored and human-readable, always
+    - Rotating log files — JSON-structured, retained up to 1 year, auto-deleted
+
+    The architecture must be prepared for future third-party log forwarding
+    (Datadog, Papertrail, ELK, PostHog) by using Python logging's handler
+    system, so adding a new destination is just adding a handler — no code
+    changes to the log callsites.
+
+  success_metric: |
+    - Every tool call emits a rich log record with all dimensions
+    - Console output is colored and human-readable
+    - Log files rotate automatically and are deletable after configurable retention
+    - Adding a third-party log sink requires only adding a handler, zero callsite changes
+    - Zero secrets in log output (API keys show partial, never full)
+    - Logging never crashes or slows a tool call
+
+  stakeholders:
+    - "IVD framework maintainer (usage and error visibility)"
+    - "Framework users (benefit from faster bug diagnosis via log files)"
+
+# ==============================================================================
+# CONSTRAINTS
+# ==============================================================================
+
+constraints:
+  # --- Python logging stdlib ---
+  - name: "use_python_logging"
+    requirement: |
+      Use Python's logging standard library (logging module) as the foundation.
+      Create logger via logging.getLogger("ivd_mcp"). Attach multiple handlers
+      (console + file). Use logging.Formatter for console, JSON formatter for files.
+      Reference: https://docs.python.org/3/howto/logging.html
+    test: "tests/test_logging.py::test_uses_stdlib_logging"
+    consequence_if_violated: "Custom logging code is harder to extend, test, and integrate with third-party tools"
+
+  # --- Console output ---
+  - name: "console_colored_pretty"
+    requirement: |
+      Console handler (StreamHandler to stdout) outputs colored, human-readable
+      log lines. Format includes: timestamp, level (colored), event type, tool
+      name, duration, status, and key context. Colors by level:
+      DEBUG=dim, INFO=cyan, WARNING=yellow, ERROR=red, CRITICAL=red+bold.
+    test: "tests/test_logging.py::test_console_colored_output"
+    consequence_if_violated: "Console output is hard to scan during development and monitoring"
+
+  # --- Rotating log files ---
+  - name: "rotating_log_files"
+    requirement: |
+      File handler uses logging.handlers.TimedRotatingFileHandler with:
+      - Rotation: daily (when='midnight')
+      - Retention: configurable via LOG_RETENTION_DAYS env var (default: 365)
+      - Location: configurable via LOG_DIR env var (default: mcp_server/logs/)
+      - Format: JSON (one valid JSON object per line)
+      - Old files beyond retention period are automatically deleted
+      Reference: https://docs.python.org/3/library/logging.handlers.html#timedrotatingfilehandler
+    test: "tests/test_logging.py::test_rotating_file_handler"
+    consequence_if_violated: "Logs accumulate indefinitely or are lost on restart"
+
+  # --- Rich dimensions ---
+  - name: "rich_tool_call_dimensions"
+    requirement: |
+      Every tool_call log record includes:
+        event: "tool_call"
+        ts: ISO 8601 UTC timestamp
+        tool: tool name (e.g. "ivd_search")
+        duration_ms: integer (wall-clock milliseconds)
+        status: "ok" | "error"
+        key_id: partial API key (first 8 chars + "...") for identification, or "stdio"
+        origin_ip: client IP address from request headers (X-Forwarded-For or remote_addr), or "local" for stdio
+        payload_preview: first 200 chars of the input arguments (JSON-serialized)
+        response_preview: first 200 chars of the response (truncated)
+        error: error message if status == "error" (truncated to 500 chars)
+    test: "tests/test_logging.py::test_rich_dimensions"
+    consequence_if_violated: "Can't diagnose issues or understand usage patterns"
+
+  # --- Auth event dimensions ---
+  - name: "rich_auth_dimensions"
+    requirement: |
+      Every auth log record includes:
+        event: "auth"
+        ts: ISO 8601 UTC timestamp
+        status: "ok" | "error" | "disabled"
+        key_id: partial API key (first 8 chars + "..."), or "none"
+        origin_ip: client IP address
+        error: reason if rejected (e.g. "missing_header", "invalid_key")
+    test: "tests/test_logging.py::test_auth_dimensions"
+    consequence_if_violated: "Can't detect unauthorized access attempts or abuse"
+
+  # --- Security ---
+  - name: "no_secrets"
+    requirement: |
+      Never log full API keys, Bearer tokens, or OPENAI_API_KEY.
+      API keys show only first 8 characters followed by "..." for identification.
+      Payload/response previews must redact any field containing "key", "token",
+      "secret", "password", or "authorization" (case-insensitive).
+    test: "tests/test_logging.py::test_no_secrets_in_logs"
+    consequence_if_violated: "Security breach via log files or console"
+
+  # --- Resilience ---
+  - name: "fire_and_forget"
+    requirement: "Logging failure never raises, never slows tool execution. Handler errors are swallowed."
+    test: "tests/test_logging.py::test_logging_never_crashes"
+    consequence_if_violated: "Logging bug takes down MCP server in production"
+
+  # --- Third-party readiness ---
+  - name: "handler_extensible"
+    requirement: |
+      The logging setup uses Python logging's handler architecture so that
+      adding a third-party destination (Datadog, Papertrail, ELK, Sentry,
+      PostHog) requires only:
+      1. Creating or importing a handler
+      2. Attaching it to the "ivd_mcp" logger
+      No changes to log callsites (registry.py, auth.py, server.py).
+      This is a natural property of Python's logging module when used correctly.
+    test: "tests/test_logging.py::test_add_handler_no_callsite_change"
+    consequence_if_violated: "Every new log destination requires touching every callsite"
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Python logging stdlib with multiple handlers (colored console + rotating JSON files)"
+
+  reasoning: |
+    Why Python logging stdlib?
+    - Official, battle-tested, zero pip dependencies
+    - Handler architecture: attach console, file, and future sinks to one logger
+    - Formatters: different format per handler (pretty for console, JSON for files)
+    - Filters: fine-grained control without changing callsites
+    - TimedRotatingFileHandler: built-in daily rotation with backupCount
+    - Industry standard: every third-party log sink has a Python logging handler
+    - Reference: https://docs.python.org/3/howto/logging.html
+
+    Why rotating files instead of stdout-only?
+    - DO log retention is only ~7 days — files give longer history
+    - Files are greppable, downloadable, and parseable offline
+    - TimedRotatingFileHandler auto-rotates daily, auto-deletes old files
+    - Log directory can be mounted as persistent volume on DO if needed
+
+    Why colored console output?
+    - Monitoring in real-time (doctl apps logs or local terminal) needs readability
+    - Color by level makes errors instantly visible (red) vs info (cyan)
+    - Pretty format for humans (console), JSON format for machines (files)
+
+    Why partial key instead of hash?
+    - First 8 chars of the key are directly identifiable ("which user is this?")
+    - Hash requires a lookup table to identify users — friction in practice
+    - 8-char prefix is not enough to reconstruct the full key (32+ chars)
+
+    Why partial payload and response?
+    - Full payloads can be huge (recipes are 400+ lines) — truncate to 200 chars
+    - Enough context to diagnose "what was the query?" without log bloat
+    - Redact sensitive fields before truncation
+
+  evidence: |
+    - Python logging HOWTO: https://docs.python.org/3/howto/logging.html
+    - Python logging cookbook: https://docs.python.org/3/howto/logging-cookbook.html
+    - Python logging.handlers: https://docs.python.org/3/library/logging.handlers.html
+    - TimedRotatingFileHandler: backupCount controls retention, when='midnight' for daily
+    - OpenTelemetry MCP semantic conventions: https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/
+
+  date: "2026-02-08"
+  stakeholder: "Leo Celis"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "keep_print_colored"
+    rejected_because: "Can't parse, can't aggregate, can't write to files, can't forward to third parties"
+    when_it_works: "Throwaway scripts that never need monitoring"
+
+  - name: "stdout_only_json"
+    rejected_because: "DO retains only ~7 days; no local history; not friendly to monitor in real-time"
+    when_it_works: "Short-lived containers where platform handles all log retention"
+
+  - name: "structlog_library"
+    rejected_because: "Adds pip dependency; Python stdlib logging already provides handlers, formatters, filters"
+    when_it_works: "Teams already using structlog across their stack; want processor chains"
+
+  - name: "custom_json_to_file"
+    rejected_because: "Reinvents rotation, retention, handler architecture that stdlib already provides"
+    when_it_works: "Never — Python logging stdlib already does this"
+
+  - name: "database_backed_logging"
+    rejected_because: "Overkill; adds managed DB cost; rotating files are sufficient for most deployments"
+    when_it_works: "Need complex queries (joins, aggregations) across log data"
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Log files consume too much disk on DO App Platform"
+    action: "Set LOG_RETENTION_DAYS=90 or lower; DO apps have limited disk; monitor usage"
+    monitor: "du -sh mcp_server/logs/ periodically"
+    severity: "medium"
+
+  - condition: "DO App Platform ephemeral storage loses log files on redeploy"
+    action: |
+      Accept this trade-off. If retention across deploys is needed:
+      1. Mount a DO Volume (persistent block storage) to LOG_DIR
+      2. Or add a third-party handler (Papertrail, Datadog) for remote retention
+    monitor: "Check if logs survive deploys; if not, evaluate volume mount"
+    severity: "medium"
+
+  - condition: "Partial API key (8 chars) is enough to identify user patterns but not to impersonate"
+    action: "Acceptable trade-off: 8 chars from 32+ char key is not reconstructable"
+    monitor: "Review if users are comfortable with partial key logging"
+    severity: "low"
+
+  - condition: "Payload/response previews leak sensitive user data"
+    action: "Redact fields matching key/token/secret/password patterns before preview"
+    monitor: "Review log samples for accidental PII exposure"
+    severity: "medium"
+
+  - condition: "Logging overhead on latency-sensitive tools like ivd_search"
+    action: "Profile; logging stdlib is fast (microseconds per record); file I/O is buffered"
+    monitor: "Compare p99 latency before/after logging implementation"
+    severity: "low"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "mcp_server/"
+  version: 1
+  tests: "mcp_server/tests/unit/test_logging.py (to be written)"
+
+  components:
+    - file: "logger.py"
+      purpose: |
+        Logging setup module:
+        - Create "ivd_mcp" logger via logging.getLogger("ivd_mcp")
+        - Attach StreamHandler (console, colored formatter)
+        - Attach TimedRotatingFileHandler (daily rotation, JSON formatter, backupCount from LOG_RETENTION_DAYS)
+        - Provide helper: log_tool_call(tool, duration_ms, status, key_id, origin_ip, payload_preview, response_preview, error)
+        - Provide helper: log_auth_event(status, key_id, origin_ip, error)
+        - Provide helper: redact_sensitive(data) for payload/response sanitization
+        - Provide helper: extract_key_id(api_key) → first 8 chars + "..."
+        - Provide helper: extract_origin_ip(request) → IP from X-Forwarded-For or remote_addr
+      status: "implemented"
+
+  integration_points:
+    - file: "registry.py"
+      function: "call_tool()"
+      change: |
+        Replaced print(colored(...)) with log_tool_call() at completion.
+        Passes tool name, elapsed ms, status, key_id (from request context),
+        origin_ip, truncated payload, truncated response.
+      status: "implemented"
+
+    - file: "auth.py"
+      function: "validate_api_key()"
+      change: |
+        Replaced print(colored(...)) with log_auth_event() for each outcome:
+        success, invalid key, missing header, auth disabled.
+        Includes key_id and origin_ip from request.
+      status: "implemented"
+
+    - file: "server.py"
+      function: "health_endpoint()"
+      change: "Added log_health_check() calls"
+      status: "implemented"
+
+  configuration:
+    env_vars:
+      - name: "LOG_DIR"
+        default: "mcp_server/logs/"
+        description: "Directory for rotating log files"
+
+      - name: "LOG_RETENTION_DAYS"
+        default: "365"
+        description: "Number of daily log files to retain (backupCount for TimedRotatingFileHandler)"
+
+      - name: "LOG_LEVEL"
+        default: "INFO"
+        description: "Minimum log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+
+  event_types:
+    - event: "tool_call"
+      level: "INFO"
+      emitted_by: "registry.py::call_tool()"
+      dimensions:
+        - "tool (string): tool name"
+        - "duration_ms (int): wall-clock milliseconds"
+        - "status (string): 'ok' | 'error'"
+        - "key_id (string): first 8 chars of API key + '...' or 'stdio'"
+        - "origin_ip (string): client IP or 'local'"
+        - "payload_preview (string): first 200 chars of input args"
+        - "response_preview (string): first 200 chars of response"
+        - "error (string): error message if status='error', truncated to 500 chars"
+
+    - event: "auth"
+      level: "INFO (success/disabled), WARNING (failure)"
+      emitted_by: "auth.py::validate_api_key()"
+      dimensions:
+        - "status (string): 'ok' | 'error' | 'disabled'"
+        - "key_id (string): first 8 chars + '...' or 'none'"
+        - "origin_ip (string): client IP"
+        - "error (string): rejection reason"
+
+    - event: "health_check"
+      level: "DEBUG"
+      emitted_by: "server.py::health_endpoint()"
+      dimensions:
+        - "status (string): 'ok'"
+        - "tools_count (int): number of registered tools"
+
+  log_file_schema:
+    format: "JSON lines (one JSON object per line)"
+    example: |
+      {"ts":"2026-02-08T14:30:00.123Z","level":"INFO","event":"tool_call","tool":"ivd_search","duration_ms":670,"status":"ok","key_id":"abc12345...","origin_ip":"45.123.45.67","payload_preview":"{\"query\": \"What are the eight principles?\", \"top_k\": 3}","response_preview":"**Result 1** (similarity: 0.57) Source: `chapter.md`..."}
+      {"ts":"2026-02-08T14:30:01.000Z","level":"WARNING","event":"auth","status":"error","key_id":"badkey12...","origin_ip":"192.168.1.1","error":"invalid_key"}
+
+  console_format:
+    example: |
+      2026-02-08 14:30:00 [INFO]  tool_call  ivd_search  670ms  ok  key=abc12345...  ip=45.123.45.67
+      2026-02-08 14:30:01 [WARN]  auth       error       1ms    invalid_key  ip=192.168.1.1
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  test_cases:
+    - name: "uses_stdlib_logger"
+      description: "Verify logger is created via logging.getLogger('ivd_mcp')"
+      validates_constraint: "use_python_logging"
+
+    - name: "console_has_colors"
+      description: "Capture console output, verify ANSI color codes present for INFO/ERROR"
+      validates_constraint: "console_colored_pretty"
+
+    - name: "file_handler_rotates"
+      description: "Verify TimedRotatingFileHandler is attached with when='midnight' and backupCount"
+      validates_constraint: "rotating_log_files"
+
+    - name: "tool_call_has_all_fields"
+      description: "Call a tool, capture log record, verify all required dimensions present"
+      validates_constraint: "rich_tool_call_dimensions"
+
+    - name: "auth_event_has_all_fields"
+      description: "Trigger auth check, capture log record, verify all required dimensions"
+      validates_constraint: "rich_auth_dimensions"
+
+    - name: "no_full_keys_in_output"
+      description: "Log with a known API key, grep output for full key — expect 0 matches"
+      validates_constraint: "no_secrets"
+
+    - name: "logging_exception_is_silent"
+      description: "Force formatter to fail; verify tool call still returns successfully"
+      validates_constraint: "fire_and_forget"
+
+    - name: "add_handler_without_callsite_change"
+      description: "Attach a MemoryHandler to the logger; verify it receives records without modifying registry.py"
+      validates_constraint: "handler_extensible"
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: 1
+    date: "2026-02-08"
+    change: "Implemented structured logging with Python logging stdlib"
+    reason: |
+      Created logger.py with:
+      - ColoredConsoleFormatter (ANSI colors, human-readable)
+      - JSONFileFormatter (JSON lines for machine parsing)
+      - TimedRotatingFileHandler (daily rotation, 365-day retention by default)
+      - log_tool_call(), log_auth_event(), log_health_check() helpers
+      - extract_key_id() and extract_origin_ip() for context extraction
+      - redact_sensitive() for payload/response sanitization
+      
+      Updated integration points:
+      - registry.py: call_tool() now logs all tool executions
+      - auth.py: validate_api_key() now logs all auth attempts
+      - server.py: health_check() now logs health pings
+      
+      Created mcp_server/logs/ directory with .gitkeep and .gitignore rules.
+    evidence: "logger.py, registry.py, auth.py, server.py diffs"
+  
+  - version: 0
+    date: "2026-02-08"
+    change: "Intent rewritten with expanded requirements"
+    reason: |
+      v0 initial intent was stdout-only with json.dumps(). Updated to:
+      - Use Python logging stdlib (handlers, formatters, filters)
+      - Colored console output (human-friendly monitoring)
+      - Rotating log files (TimedRotatingFileHandler, daily, configurable retention)
+      - Rich dimensions: origin IP, partial API key, payload/response previews
+      - Third-party handler readiness (add handler, not change callsites)
+      Driven by requirement to have production-grade, monitorable, extensible logging.
+    evidence: |
+      - Python logging HOWTO: https://docs.python.org/3/howto/logging.html
+      - Python logging.handlers: https://docs.python.org/3/library/logging.handlers.html
+      - TimedRotatingFileHandler: daily rotation with backupCount
+      - OpenTelemetry MCP semantic conventions

@@ -1,0 +1,311 @@
+# ==============================================================================
+# IVD Recipe: Self-Evaluating Workflow Pattern (Experimental)
+# ==============================================================================
+# Pattern for workflows that measure output quality, adjust within declared
+# boundaries, and re-verify — extending IVD verification from pass/fail to
+# continuous improvement.
+#
+# Status: Experimental
+# Version: 1.0
+# Created: 2026-02-09
+# ==============================================================================
+
+recipe:
+  name: "Self-Evaluating Workflow Pattern"
+  version: "1.0"
+  category: "workflow_patterns"
+  status: "experimental"
+  created: "2026-02-09"
+
+  description: |
+    Pattern for workflows that run repeatedly and should improve over iterations.
+    Combines the evaluation section (continuous quality measurement) with the
+    authorship section (who has authority to adjust) to create a safe, bounded
+    improvement loop.
+
+    The core loop:
+    1. Execute workflow
+    2. Evaluate output against quality criteria
+    3. If criteria not met: propose adjustment (within declared scope)
+    4. Verify adjustment doesn't violate constraints
+    5. Apply adjustment and re-execute
+    6. Repeat until criteria met, max_iterations reached, or escalation triggered
+
+    This is distinct from standard IVD verification:
+    - Verification = "does the output pass constraints?"   (binary: yes/no)
+    - Evaluation   = "how good is the output? improve it." (continuous, bounded)
+
+  problem_solved: |
+    Workflows that run repeatedly often need quality improvement, but:
+    - Improvement is ad-hoc ("make it better" with no structure)
+    - No guardrails on what the improvement loop can change
+    - No stopping condition (infinite iteration risk)
+    - No escalation when the loop can't improve enough
+    - No separation between what the AI can adjust vs. what needs human approval
+
+  applies_to:
+    - "ETL/data pipelines that should improve data quality over runs"
+    - "AI classification workflows targeting precision/recall improvements"
+    - "Content generation pipelines with quality scoring"
+    - "Autonomous agent workflows that optimize their own process"
+    - "Any repeatable workflow with measurable quality metrics"
+
+  when_to_use:
+    - "Workflow runs repeatedly and output quality is measurable"
+    - "Quality should improve over iterations, not just pass/fail"
+    - "Clear metrics exist (precision, latency, completeness, etc.)"
+    - "Adjustment scope can be bounded (not everything is changeable)"
+    - "Escalation path exists when automated improvement isn't enough"
+
+  when_NOT_to_use:
+    - "One-shot workflows with no iteration (just use constraints)"
+    - "No measurable quality metrics (can't evaluate what you can't measure)"
+    - "All changes require human approval (use standard verification instead)"
+    - "Task-level intents (too granular for an improvement loop)"
+
+# ==============================================================================
+# TEMPLATE SECTIONS
+# ==============================================================================
+
+intent_template:
+  summary: "[Workflow name] with self-evaluation for [quality goal]"
+  goal: "Execute [process], measure [metrics], and improve within [boundaries] over [max] iterations"
+  success_metric: "Quality criteria met within max_iterations; no constraint violations; escalation rate < [threshold]"
+  stakeholders:
+    - "[Primary consumer of workflow output]"
+    - "[Human escalation point]"
+
+authorship_template:
+  origin: "ai_proposed"
+  human_oversight: "review_required"
+  ai_authority:
+    can_create: false
+    can_modify: ["implementation", "workflow_steps", "verification"]
+    requires_approval: ["intent.goal", "intent.success_metric", "constraints"]
+  escalation: "When adjustment impacts constraints or quality cannot improve after max_iterations"
+
+evaluation_template:
+  criteria:
+    - metric: "[primary_quality_metric]"
+      target: ">= [target_value]"
+      source: "automated"
+    - metric: "[secondary_metric]"
+      target: "[target_condition]"
+      source: "automated"
+    - metric: "constraint_pass_rate"
+      target: "100%"
+      source: "ivd_validate"
+
+  adjustment:
+    authority: "ai_proposed"
+    scope:
+      - "[what CAN be changed — e.g., model parameters, workflow steps, thresholds]"
+    protected:
+      - "intent.goal"
+      - "intent.success_metric"
+      - "constraints"
+      - "[other fields that must not change]"
+
+  cycle:
+    trigger: "on_completion"
+    max_iterations: 3
+    stop_when: "All criteria met or max_iterations reached"
+    escalate_when: "Cannot meet criteria after max_iterations"
+
+constraints_template:
+  - name: "evaluation_bounded"
+    requirement: "Evaluation loop must terminate within max_iterations"
+    test: "tests/test_evaluation.py::test_max_iterations_enforced"
+    consequence_if_violated: "Infinite improvement loop — wasted compute, no convergence"
+
+  - name: "protected_fields_enforced"
+    requirement: "Evaluation loop cannot modify protected fields (constraints, goal, success_metric)"
+    test: "tests/test_evaluation.py::test_protected_fields"
+    consequence_if_violated: "Goal drift — the system optimizes for the wrong thing"
+
+  - name: "constraints_never_relaxed"
+    requirement: "Evaluation adjustments must not relax existing constraints"
+    test: "tests/test_evaluation.py::test_constraints_preserved"
+    consequence_if_violated: "Quality floor drops — output passes lower bar, not original requirement"
+
+  - name: "escalation_triggered"
+    requirement: "When max_iterations reached without meeting criteria, human is notified"
+    test: "tests/test_evaluation.py::test_escalation"
+    consequence_if_violated: "Silent failure — system can't improve but no one knows"
+
+rationale_template:
+  decision: "[Why self-evaluation over manual improvement; why these criteria; why this adjustment scope]"
+  reasoning: |
+    Self-evaluation was chosen because:
+    - [Workflow runs frequently enough to benefit from automated improvement]
+    - [Quality metrics are measurable and automatable]
+    - [Adjustment scope is well-defined — not everything needs to change]
+    - [Human escalation provides safety net for cases beyond automated improvement]
+  evidence: "[Link to quality data, baseline measurements, or pilot results]"
+  date: "[YYYY-MM-DD]"
+  stakeholder: "[Who approved the evaluation criteria and adjustment scope]"
+
+risks_template:
+  - condition: "Evaluation loop optimizes for metrics but degrades unmeasured quality"
+    action: "Add qualitative human review as secondary criteria source (source: hybrid)"
+    monitor: "Periodic human spot-checks of output quality"
+    severity: "high"
+
+  - condition: "Max iterations too low — system escalates too often"
+    action: "Analyze escalation frequency; increase max_iterations if escalations are resolvable"
+    monitor: "Escalation rate per workflow run"
+    severity: "medium"
+
+  - condition: "Adjustment scope too narrow — system can't make meaningful improvements"
+    action: "Review protected fields; expand scope if safe"
+    monitor: "Quality delta per iteration (if delta ≈ 0, scope may be too narrow)"
+    severity: "medium"
+
+# ==============================================================================
+# REAL-WORLD EXAMPLES
+# ==============================================================================
+
+examples:
+  - name: "Lead Scoring Pipeline"
+    description: "Classification workflow that improves precision over iterations"
+    evaluation:
+      criteria:
+        - metric: "classification_precision"
+          target: ">= 0.90"
+          source: "automated"
+        - metric: "classification_recall"
+          target: ">= 0.80"
+          source: "automated"
+        - metric: "inference_latency"
+          target: "p95 < 500ms"
+          source: "automated"
+      adjustment:
+        authority: "ai_autonomous"
+        scope: ["model_parameters", "feature_weights", "threshold"]
+        protected: ["intent.goal", "constraints", "training_data_source"]
+      cycle:
+        trigger: "on_completion"
+        max_iterations: 5
+        stop_when: "precision >= 0.90 AND recall >= 0.80"
+        escalate_when: "Cannot reach targets after 5 iterations"
+
+  - name: "ETL Data Quality Pipeline"
+    description: "Data pipeline that improves completeness and accuracy per run"
+    evaluation:
+      criteria:
+        - metric: "data_completeness"
+          target: ">= 99%"
+          source: "automated"
+        - metric: "field_accuracy"
+          target: ">= 95%"
+          source: "hybrid"
+        - metric: "processing_time"
+          target: "< 30 minutes"
+          source: "automated"
+      adjustment:
+        authority: "ai_proposed"
+        scope: ["parsing_rules", "validation_thresholds", "retry_logic"]
+        protected: ["intent.goal", "constraints", "source_schema", "target_schema"]
+      cycle:
+        trigger: "on_failure"
+        max_iterations: 3
+        stop_when: "completeness >= 99% AND accuracy >= 95%"
+        escalate_when: "Data source schema changed or accuracy < 90% after 3 iterations"
+
+# ==============================================================================
+# IMPLEMENTATION GUIDANCE
+# ==============================================================================
+
+implementation_pattern:
+  directory_structure: |
+    workflow/{workflow_name}/
+    ├── {workflow_name}_intent.yaml      # Workflow intent (with evaluation + authorship)
+    ├── pipeline.py                      # Workflow implementation
+    ├── evaluator.py                     # Quality measurement logic
+    ├── adjuster.py                      # Adjustment logic (within declared scope)
+    ├── intents/                         # Task-level intents (if needed)
+    │   └── {step}_intent.yaml
+    └── tests/
+        ├── test_evaluation.py           # Evaluation loop tests
+        ├── test_protected_fields.py     # Protected field enforcement
+        └── test_escalation.py           # Escalation mechanism tests
+
+  key_implementation_decisions:
+    - decision: "How to measure quality automatically"
+      options:
+        - "Ground truth comparison (if labeled data exists)"
+        - "Heuristic scoring (rule-based quality check)"
+        - "LLM-as-judge (AI evaluates output quality)"
+      recommendation: "Ground truth when available; heuristic for known patterns; LLM-as-judge as last resort (introduces its own hallucination risk)"
+
+    - decision: "How to enforce protected fields"
+      options:
+        - "Pre-adjustment validation (check before applying)"
+        - "Immutable snapshot (freeze protected fields at start)"
+        - "Post-adjustment diff (compare before/after, reject if protected changed)"
+      recommendation: "Immutable snapshot — freeze at loop start, compare after each iteration"
+
+# ==============================================================================
+# BEST PRACTICES
+# ==============================================================================
+
+best_practices:
+  - "Start with max_iterations: 3 — increase only with evidence that more iterations help"
+  - "Protected fields should include everything in the intent section and all constraints"
+  - "Use 'ai_proposed' authority first; promote to 'ai_autonomous' only after validation"
+  - "Log every adjustment with before/after metrics for auditability"
+  - "Include at least one human-reviewable criteria (source: hybrid) for complex outputs"
+  - "Evaluation criteria should be stricter than constraints — constraints are the floor, evaluation targets the ceiling"
+
+common_pitfalls:
+  - pitfall: "Evaluating metrics the system can game"
+    solution: "Include diverse metrics that are hard to optimize simultaneously; add human spot-checks"
+  - pitfall: "Too many protected fields — system can't adjust anything meaningful"
+    solution: "Protect intent and constraints; allow implementation and process changes"
+  - pitfall: "No escalation — system silently fails to improve"
+    solution: "Always define escalate_when; test that escalation actually triggers notification"
+  - pitfall: "Evaluation criteria conflict with constraints"
+    solution: "Evaluation targets must be above constraint thresholds, never below"
+
+# ==============================================================================
+# VERIFICATION GUIDANCE
+# ==============================================================================
+
+verification_pattern:
+  evaluation_loop_tests: |
+    For each self-evaluating workflow, write tests that verify:
+    1. Evaluation loop terminates within max_iterations
+    2. Protected fields are not modified by any adjustment
+    3. Constraints are not relaxed by any adjustment
+    4. Escalation triggers when criteria not met after max_iterations
+    5. Quality metrics improve or stay stable (never regress) per iteration
+
+  example_test: |
+    def test_evaluation_respects_protected_fields():
+        workflow = create_workflow()
+        original_goal = workflow.intent["goal"]
+        original_constraints = workflow.intent["constraints"]
+        workflow.run_evaluation_loop()
+        assert workflow.intent["goal"] == original_goal
+        assert workflow.intent["constraints"] == original_constraints
+
+    def test_evaluation_terminates():
+        workflow = create_workflow(max_iterations=3)
+        result = workflow.run_evaluation_loop()
+        assert result.iterations_run <= 3
+
+    def test_escalation_triggers():
+        workflow = create_workflow(max_iterations=1)
+        workflow.set_unreachable_target("precision >= 1.0")
+        result = workflow.run_evaluation_loop()
+        assert result.escalated is True
+
+# ==============================================================================
+# CHANGELOG
+# ==============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-09"
+    change: "Initial recipe for self-evaluating workflow pattern"
+    reason: "Workflows with measurable quality needed a structured improvement loop beyond binary verification"

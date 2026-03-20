@@ -1,0 +1,469 @@
+# ==============================================================================
+# IVD Recipe: Workflow Orchestration Pattern
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-01-24
+# Category: workflow_patterns
+# ==============================================================================
+
+recipe:
+  name: "Workflow Orchestration Pattern"
+  version: "1.0"
+  category: "workflow_patterns"
+  created: "2026-01-24"
+  author: "Leo Celis"
+  
+  description: |
+    Standard pattern for documenting complex multi-step workflows that span multiple
+    modules, functions, or services. This pattern captures the end-to-end process flow,
+    making it easy for AI agents and developers to understand the complete workflow
+    without reading all documentation or all code.
+    
+    Key characteristics:
+    - Documents sequence of operations across multiple components
+    - Maps each step to specific files and functions
+    - Captures business logic at each step
+    - Defines error handling and fallback strategies
+    - Shows data transformations through the pipeline
+    - Provides AI-friendly quick reference
+    
+    Use this pattern when:
+    - Workflow spans 3+ distinct steps/modules
+    - Multiple files/functions collaborate to complete a process
+    - Business logic flows through several transformations
+    - AI agents need quick workflow understanding
+    - Onboarding requires workflow comprehension
+  
+  applies_to:
+    - "Multi-step business processes (order processing, lead qualification, etc.)"
+    - "Data pipelines with multiple transformation stages"
+    - "Agent coordination workflows (multiple agents collaborating)"
+    - "ETL workflows (extract, transform, load)"
+    - "Content generation workflows (research → draft → review → publish)"
+    - "API orchestration (calling multiple services in sequence)"
+  
+  when_to_use:
+    - "Process has 3+ distinct steps that span multiple files/modules"
+    - "Understanding requires reading multiple module docs or code files"
+    - "AI agents frequently ask 'how does this workflow work?'"
+    - "New developers take hours to understand the full process"
+    - "Process involves multiple services/agents/functions"
+    - "Business stakeholders need to understand technical flow"
+  
+  when_NOT_to_use:
+    - "Simple 1-2 step processes (use module-level or task-level intent)"
+    - "Single function with no external dependencies"
+    - "Process is already self-explanatory from code"
+    - "Workflow is trivial (< 3 steps with obvious flow)"
+
+  placement:
+    recommended: "workflows/{workflow_name}_intent.yaml (discoverability)"
+    alternative: "{coordinator_dir}/{workflow_name}_intent.yaml when workflow is tightly coupled to a single orchestrator and not referenced independently (co-location with coordinator)"
+    reference: "framework.md Workflow-Level Intents"
+
+# ------------------------------------------------------------------------------
+# TEMPLATE SECTIONS
+# ------------------------------------------------------------------------------
+
+intent_template:
+  summary: "[Domain] workflow for [purpose]"
+  goal: "Process [input] through [N steps] to produce [output] for [stakeholder]"
+  success_metric: |
+    - Workflow completion rate >= [95-99]%
+    - End-to-end latency p95 < [target]
+    - AI agent can understand workflow from intent file alone
+  stakeholders:
+    - "[Business stakeholder who owns the process]"
+    - "[Technical team maintaining the workflow]"
+    - "[End users or systems consuming workflow output]"
+
+workflow_template:
+  summary: "End-to-end [domain] process from [start] to [finish]"
+  trigger: "[What initiates: API call | scheduled job | event | manual]"
+  
+  steps:
+    - step: 1
+      name: "[Verb] [noun] (e.g., Validate lead data)"
+      file: "path/to/module.py"
+      function: "function_name()"
+      class: "ClassName"  # Optional
+      description: |
+        What this step does in business terms:
+        - Input validation
+        - Data normalization
+        - Initial checks
+      input: "What data enters this step (type and source)"
+      output: "What data exits this step (type and shape)"
+      business_logic: |
+        Key rules and decisions:
+        - Required fields must be present
+        - Email format validation
+        - Duplicate detection
+      performance: "p95 < 100ms"  # Optional
+      
+    - step: 2
+      name: "[Next action]"
+      file: "path/to/another_module.py"
+      function: "enrich_data()"
+      description: "Enrich data with external sources"
+      input: "Validated data from step 1"
+      output: "Enriched data with additional fields"
+      business_logic: |
+        - Call external APIs (Clearbit, LinkedIn, etc.)
+        - Merge external data with existing data
+        - Handle missing data gracefully
+      depends_on: [1]  # Explicit dependency
+      performance: "p95 < 500ms"
+      
+    - step: 3
+      name: "[Next action]"
+      file: "path/to/agent.py"
+      function: "process_with_agent()"
+      description: "AI agent processes and classifies"
+      input: "Enriched data from step 2"
+      output: "Classification result with confidence score"
+      business_logic: |
+        - ML model inference
+        - Threshold-based decision (>= 0.70 = qualified)
+        - Confidence scoring
+      depends_on: [2]
+      performance: "p95 < 2s"
+      
+    - step: 4
+      name: "[Final action]"
+      file: "path/to/integration.py"
+      function: "sync_to_external_system()"
+      description: "Sync results to external system"
+      input: "Classification from step 3"
+      output: "External system record ID"
+      business_logic: |
+        - Map to external schema
+        - Create or update record
+        - Handle API rate limits
+      depends_on: [3]
+      performance: "p95 < 1s"
+  
+  data_flow:
+    - "Raw input → Step 1 (validation) → Validated data"
+    - "Validated data → Step 2 (enrichment) → Enriched data"
+    - "Enriched data → Step 3 (classification) → Classification result"
+    - "Classification → Step 4 (sync) → External record"
+    - "Overall: Input → Validated → Enriched → Classified → Synced"
+  
+  error_handling:
+    - step: 1
+      failure_mode: "Invalid input data (missing fields, wrong format)"
+      action: "Return error to caller with validation details"
+      fallback: "None - fail fast on invalid input"
+      
+    - step: 2
+      failure_mode: "External API unavailable or timeout"
+      action: "Retry with exponential backoff (3 attempts)"
+      fallback: "Use cached data or partial enrichment"
+      
+    - step: 3
+      failure_mode: "AI model unavailable or inference error"
+      action: "Log error and attempt fallback model"
+      fallback: "Use rule-based classification"
+      
+    - step: 4
+      failure_mode: "External system API error"
+      action: "Queue for retry (background job)"
+      fallback: "Store locally and retry later"
+  
+  orchestration:
+    type: "sequential"  # or "parallel" or "mixed"
+    coordinator: "path/to/coordinator.py or orchestrator.py"
+    description: |
+      Orchestration strategy:
+      - Sequential: Steps 1-4 run in order (each waits for previous)
+      - Parallel: Steps that can run simultaneously (e.g., multiple enrichment APIs)
+      - Mixed: Some sequential (data dependencies), some parallel (independent)
+      
+      Coordinator responsibilities:
+      - Manage step execution order
+      - Handle errors and retries
+      - Track workflow state
+      - Emit events for monitoring
+  
+  performance:
+    end_to_end_latency: "p95 < [target based on SLA]"
+    typical_values: "Simple workflows: < 1s, Complex workflows: < 10s"
+    throughput: ">= [N] workflows/minute"
+    bottleneck_steps: ["List steps that are slowest or most resource-intensive"]
+  
+  monitoring:
+    - metric: "workflow_completion_rate"
+      target: ">= 95%"
+      dashboard: "dashboards/[workflow_name]_dashboard.json"
+      alert: "< 90% completion rate"
+      
+    - metric: "workflow_duration"
+      target: "p95 < [target]"
+      dashboard: "dashboards/[workflow_name]_dashboard.json"
+      alert_threshold: "p95 > [critical_threshold]"
+      
+    - metric: "step_failure_rate"
+      target: "< 5% per step"
+      dashboard: "dashboards/[workflow_name]_dashboard.json"
+      alert: "> 10% failure at any step"
+
+constraints_template:
+  - name: "workflow_completion_rate"
+    requirement: "successful completion >= [95-99]%"
+    typical_values: "95% minimum, 98% good, 99%+ excellent"
+    test: "tests/test_[workflow_name]_integration.py::test_end_to_end"
+    consequence_if_violated: "[Business impact - e.g., lost revenue, poor UX]"
+    
+  - name: "end_to_end_latency"
+    requirement: "p95 latency < [target based on SLA]"
+    typical_values: "Sync workflows: < 1s, Async workflows: < 10s"
+    test: "tests/test_[workflow_name]_performance.py::test_latency"
+    consequence_if_violated: "User experience degraded, SLA breach"
+    
+  - name: "step_idempotency"
+    requirement: "each step can be retried safely without side effects"
+    typical_values: "All steps must be idempotent"
+    test: "tests/test_[workflow_name]_reliability.py::test_step_idempotency"
+    consequence_if_violated: "Duplicate operations, data corruption"
+    
+  - name: "error_resilience"
+    requirement: "workflow handles all documented failure modes gracefully"
+    typical_values: "Graceful degradation, no silent failures"
+    test: "tests/test_[workflow_name]_error_handling.py::test_all_failure_modes"
+    consequence_if_violated: "Silent failures, data loss, stuck workflows"
+
+rationale_template:
+  decision: "Implement [workflow name] with [N-step] orchestrated process"
+  reasoning: |
+    Why this workflow design:
+    - Step sequencing: [Why this order? What dependencies?]
+    - Technology choices: [Why these tools/frameworks?]
+    - Error handling strategy: [Why these fallbacks?]
+    - Performance targets: [Why these SLAs?]
+    
+    Trade-offs accepted:
+    - Sequential vs parallel: [Decision and rationale]
+    - Synchronous vs asynchronous: [Decision and rationale]
+    - Complexity vs simplicity: [Where we added complexity and why]
+    
+    Business context:
+    - Who requested this workflow
+    - What problem it solves
+    - What alternatives were considered
+  evidence: "playground/[workflow_name]_design_[date].md or .ipynb"
+  stakeholder: "[Role] ([Name])"
+  date: "[YYYY-MM-DD]"
+
+alternatives_template:
+  - name: "monolithic_approach"
+    description: "Single function handles entire workflow"
+    rejected_because: |
+      - Harder to maintain (all logic in one place)
+      - Harder to test (can't test steps independently)
+      - Harder to scale (can't parallelize steps)
+      - Harder to monitor (can't see where failures occur)
+    when_it_works: "Very simple 2-step workflows with no error handling needs"
+    
+  - name: "event_driven_approach"
+    description: "Each step emits event, next step consumes event"
+    rejected_because: |
+      - Added complexity (event bus infrastructure)
+      - Harder to debug (distributed tracing needed)
+      - Overkill for synchronous workflows
+    when_it_works: |
+      - High-throughput async workflows
+      - Workflows with fan-out/fan-in patterns
+      - Microservices architecture
+    
+  - name: "workflow_engine"
+    description: "Use Airflow, Temporal, or similar"
+    rejected_because: |
+      - Infrastructure overhead not justified
+      - Workflow simple enough for code-based orchestration
+      - Team not familiar with workflow engines
+    when_it_works: |
+      - Complex workflows with many branches
+      - Workflows with human approval steps
+      - Workflows requiring visual debugging
+
+risks_template:
+  - condition: "Step [N] becomes bottleneck (takes > [threshold])"
+    impact: "Entire workflow slows down"
+    action: "Add caching, optimize query, or parallelize"
+    monitor: "dashboards/[workflow_name]_performance.json (step [N] duration)"
+    severity: "high"
+    
+  - condition: "External dependency unavailable (step [N])"
+    impact: "Workflow fails or uses degraded fallback"
+    action: "Implement circuit breaker, use cached data"
+    monitor: "logs/[workflow_name]_errors.log (external API failures)"
+    severity: "high"
+    
+  - condition: "Workflow stuck in progress (not completing)"
+    impact: "Resources leaked, monitoring confused"
+    action: "Implement timeout and cleanup"
+    monitor: "dashboards/[workflow_name]_stuck.json"
+    severity: "medium"
+
+implementation_template:
+  current: "path/to/workflow_coordinator.py or orchestrator.py"
+  entry_point: "function or endpoint that triggers workflow"
+  steps_mapping:
+    - step: 1
+      file: "path/to/module1.py"
+      function: "function1()"
+    - step: 2
+      file: "path/to/module2.py"
+      function: "function2()"
+  version: 1
+  tests: "tests/test_[workflow_name]_*.py"
+  documentation: "docs/workflows/[workflow_name].md"
+
+verification_template:
+  integration_tests:
+    - name: "end_to_end_happy_path"
+      description: "Complete workflow executes successfully"
+      input: "Valid input matching production scenarios"
+      expected_output: "Successful completion with expected final state"
+      validates_constraint: "workflow_completion_rate"
+      
+    - name: "step_N_failure_recovery"
+      description: "Workflow recovers from step N failure"
+      input: "Valid input"
+      mock: "Step N fails with [error]"
+      expected_output: "Workflow uses fallback and completes"
+      validates_constraint: "error_resilience"
+  
+  performance_tests:
+    - name: "end_to_end_latency"
+      description: "Workflow completes within SLA"
+      input: "Production-like load"
+      expected: "p95 < [target]"
+      validates_constraint: "end_to_end_latency"
+  
+  monitoring_verification:
+    - name: "all_metrics_captured"
+      description: "Dashboard shows all workflow metrics"
+      verification: "Manual check of dashboard completeness"
+
+# ------------------------------------------------------------------------------
+# REAL-WORLD EXAMPLES
+# ------------------------------------------------------------------------------
+
+examples:
+  - name: "Lead Qualification Workflow"
+    description: |
+      5-step workflow: Receive lead → Enrich data → Score lead → 
+      Qualify decision → Sync to CRM
+    
+    files:
+      - "api/endpoints/leads.py (step 1: receive)"
+      - "jobs/enrich_lead_job.py (step 2: enrich)"
+      - "agent/lead_qualifier/scoring.py (step 3: score)"
+      - "agent/lead_qualifier/agent.py (step 4: qualify)"
+      - "integrations/salesforce/sync.py (step 5: sync)"
+    
+    key_characteristics:
+      - Sequential execution (each step depends on previous)
+      - External dependencies (Clearbit API, Salesforce API)
+      - ML inference (scoring step)
+      - Error handling (retry strategies, fallbacks)
+      - Monitoring (completion rate, latency per step)
+  
+  - name: "Article Generation Workflow"
+    description: |
+      7-step workflow: Trigger → Plan → Research → Generate → 
+      Fact-check → Generate images → Publish
+    
+    files:
+      - "api/slack/commands.py (step 1: trigger)"
+      - "agent/creative/agent.py (steps 2, 4: plan, generate)"
+      - "libs/google/search_intelligence.py (step 3: research)"
+      - "agent/fact_checker/utils.py (step 5: fact-check)"
+      - "job/creative/generate_article_images_job.py (step 6: images)"
+      - "integrations/wordpress/publish.py (step 7: publish)"
+    
+    key_characteristics:
+      - Mixed orchestration (mostly sequential, images in background)
+      - Multiple AI agents (creative agent, fact checker)
+      - Long-running steps (image generation takes 5-10 minutes)
+      - Quality checks (fact-checking before publish)
+  
+  - name: "ETL Data Pipeline Workflow"
+    description: |
+      4-step workflow: Extract → Transform → Validate → Load
+    
+    files:
+      - "jobs/extract_data_job.py (step 1: extract)"
+      - "jobs/transform_data_job.py (step 2: transform)"
+      - "jobs/validate_data_job.py (step 3: validate)"
+      - "jobs/load_data_job.py (step 4: load)"
+    
+    key_characteristics:
+      - Batch processing (large datasets)
+      - Data validation between steps
+      - Rollback capability (if validation fails)
+      - Scheduled execution (daily or hourly)
+
+# ------------------------------------------------------------------------------
+# USAGE GUIDE
+# ------------------------------------------------------------------------------
+
+usage_guide:
+  when_to_create_workflow_intent: |
+    Create a workflow-level intent when:
+    1. Process spans 3+ files or modules
+    2. AI agents ask "how does this work end-to-end?"
+    3. Onboarding requires understanding the full flow
+    4. Business stakeholders need technical workflow understanding
+    5. Workflow has multiple error paths or fallbacks
+    
+    DON'T create workflow intent for:
+    1. Simple 1-2 step processes (use module-level)
+    2. Single-function operations (use task-level)
+    3. Self-explanatory code flows
+  
+  how_to_use_this_recipe: |
+    Step 1: Copy intent.yaml template
+    Step 2: Set scope.level = "workflow"
+    Step 3: Fill in workflow section with steps
+    Step 4: Map each step to file/function
+    Step 5: Document data flow and error handling
+    Step 6: Add constraints and monitoring
+    
+    Result: Single YAML file that explains entire workflow
+  
+  ai_agent_benefits: |
+    With workflow intent, AI agents can:
+    - Understand end-to-end process from one file
+    - Know which files/functions to examine for specific steps
+    - See error handling without reading all code
+    - Get business context for technical decisions
+    - Quickly answer "how does X workflow work?"
+    
+    Cost reduction:
+    - Before: Read 5-10 files to understand workflow
+    - After: Read 1 workflow intent file
+    - Savings: 80-90% reduction in context needed
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  - name: "IVD Framework"
+    link: "../framework.md"
+    description: "Core IVD principles and intent artifacts"
+  
+  - name: "Intent Levels Guide"
+    link: "../templates/intent_levels_guide.md"
+    description: "When to use system/workflow/module/task levels"
+  
+  - name: "Agent Classifier Recipe"
+    link: "./agent-classifier.yaml"
+    description: "Pattern for AI classification agents (often part of workflows)"
+  
+  - name: "Background Job Recipe"
+    link: "./infra-background-job.yaml"
+    description: "Pattern for async jobs (often workflow steps)"
