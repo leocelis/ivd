@@ -1,1 +1,1 @@
-web: python wsgi.py --port 8080
+web: python deploy/wsgi.py --port 8080

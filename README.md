@@ -38,12 +38,12 @@ You: "Still not right..."                You:  "Done. First try."
 
 **Works locally. No API key required. Under 5 minutes.**
 
-### 1. Clone and install
+### 1. Clone and setup
 
 ```bash
 git clone https://github.com/leocelis/ivd.git
 cd ivd
-pip install -r requirements.txt
+./mcp_server/devops/setup.sh    # creates .venv, installs all deps
 ```
 
 ### 2. Add to your IDE
@@ -212,6 +212,45 @@ export OPENAI_API_KEY=your-key
 ./mcp_server/devops/embed.sh --force  # regenerate all
 ./mcp_server/devops/embed.sh --dry-run # preview what gets embedded
 ```
+
+---
+
+## Hosted Server
+
+A hosted IVD MCP server is available for users who prefer not to run it locally.
+
+**Request access:** [leo@leocelis.com](mailto:leo@leocelis.com)
+
+Once you have an API key, connect via SSE:
+
+**Cursor** (Settings → Features → MCP):
+
+```json
+{
+  "servers": {
+    "ivd-remote": {
+      "type": "sse",
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": { "Authorization": "Bearer your-api-key" }
+    }
+  }
+}
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "ivd-remote": {
+      "url": "https://mcp.ivdframework.dev/sse",
+      "headers": { "Authorization": "Bearer your-api-key" }
+    }
+  }
+}
+```
+
+All 15 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
 ---
 
