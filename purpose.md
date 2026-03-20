@@ -300,7 +300,7 @@ We discovered the AI industry is converging on similar patterns:
 
 IVD isn't an isolated idea—it's aligned with where the AI collaboration space is heading.
 
-**The research conclusion (see `research/agent_knowledge_standards.md`):**
+**The research conclusion:**
 
 > "The industry trend is clear: structured, versioned, programmatically accessible knowledge artifacts are becoming the standard for human-AI collaboration."
 
@@ -568,8 +568,6 @@ That's why it exists.
 - **`cookbook.md`** - Practical implementation guide (start here!)
 - **`framework.md`** - Complete IVD specification
 - **`ivd_system_intent.yaml`** - Master intent (rules for extending IVD)
-- **`research/agent_knowledge_standards.md`** - Industry research and validation
-- **`research/ivd_implementation_roadmap.md`** - Building blocks for IVD tooling
 
 ---
 

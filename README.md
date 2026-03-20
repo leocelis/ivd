@@ -1,26 +1,23 @@
 <p align="center">
-  <strong>Intent-Verified Development</strong>
+  <strong>Intent-Verified Development (IVD)</strong><br>
+  <em>A framework where AI writes the intent, implements against it, and verifies — so hallucinations are caught and turns drop to one.</em>
 </p>
 
 <p align="center">
-  <em>The Framework for the AI Agents Era</em>
-</p>
-
-<p align="center">
-  <a href="https://mcp.ivdframework.dev/health"><img src="https://img.shields.io/badge/MCP_Server-live-brightgreen?style=flat-square" alt="MCP Server"></a>
+  <a href="https://github.com/leocelis/ivd/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-2.4-blue?style=flat-square" alt="Version"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/tests-211_passed-brightgreen?style=flat-square" alt="Tests"></a>
-  <a href="https://github.com/leocelis/ivd/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
 </p>
 
 ---
 
-**Documentation**: [framework.md](framework.md) | **Cookbook**: [cookbook.md](cookbook.md) | **Cheatsheet**: [cheatsheet.md](cheatsheet.md) | **MCP Server**: [mcp.ivdframework.dev](https://mcp.ivdframework.dev/health)
+## The Problem
 
----
+AI agents hallucinate not because they're bad — but because you're feeding the wrong knowledge system.
 
-IVD is a methodology where **the AI writes the intent, implements against it, and verifies** — eliminating many-turn correction cycles and hallucinations at the source.
+LLMs rely ~70% on **contextual knowledge** (the prompt) and ~30% on **parametric knowledge** (training data). When you give vague prose — a PRD, a user story, a chat message — the context channel is underloaded. The model fills the gaps from training. Those gaps are the hallucinations.
 
 ```
 Without IVD                              With IVD
@@ -28,190 +25,124 @@ Without IVD                              With IVD
 You: "Add CSV export"                    You: "Add CSV export for compliance"
 AI:  [builds with wrong columns]         AI:  [writes intent.yaml with constraints]
 You: "No, these columns, ISO dates"      You:  "Yes, that's what I meant"
-AI:  [rewrites, still wrong]             AI:  [implements, runs tests, verifies]
+AI:  [rewrites, still wrong]             AI:  [implements, verifies against constraints]
 You: "Still not right..."                You:  "Done. First try."
-[Many turns. Many hallucinations.]       [One turn. Zero hallucinations.]
+  Many turns. Many hallucinations.         One turn. Zero hallucinations.
 ```
 
-## Why IVD?
+**IVD saturates the contextual channel** with structured, verifiable intent — so the model has nothing to guess.
 
-LLMs rely ~70% on contextual knowledge (the prompt) and ~30% on parametric knowledge (training). Prose underloads the contextual channel — the model fills gaps from training, and those gaps are hallucinations. **IVD saturates the contextual channel** with structured, verifiable intent — so the model has nothing to guess.
+---
 
-| | Traditional | IVD |
-|---|---|---|
-| **Who writes** | Human writes requirements | AI writes structured intent |
-| **Format** | Prose (ambiguous) | YAML with constraints and tests |
-| **Verification** | Manual review | AI verifies against executable constraints |
-| **Result** | AI guesses, many turns | AI verifies, one turn |
+## Quick Start
+
+**Works locally. No API key required. Under 5 minutes.**
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/leocelis/ivd.git
+cd ivd
+pip install -r requirements.txt
+```
+
+### 2. Add to your IDE
+
+**Cursor** (Settings → Features → MCP):
+
+```json
+{
+  "servers": {
+    "ivd": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+**VS Code / GitHub Copilot** (`.vscode/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "ivd": {
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "ivd": {
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": "/path/to/ivd"
+    }
+  }
+}
+```
+
+### 3. Use it
+
+Ask your AI agent to use IVD tools. For example:
+
+- *"Use ivd_get_context to learn about the IVD framework"*
+- *"Use ivd_scaffold to create an intent for my user authentication module"*
+- *"Use ivd_search to find how IVD handles verification"*
+
+That's it. The MCP server uses **pre-built embeddings** shipped in the repo — semantic search works immediately with zero configuration.
+
+---
 
 ## How It Works
 
 ```
 1. You describe      →  what you want (natural language)
-2. AI writes         →  structured intent artifact (YAML with constraints, tests)
+2. AI writes         →  structured intent artifact (YAML with constraints and tests)
 3. You review        →  "Is this what I meant?" (clarification before code)
-4. AI stress-tests   →  edge cases, gaps, assumptions, constraint conflicts?
-5. AI implements     →  constraint-segmented (3+ constraints: segment → re-read → verify → next)
+4. AI stress-tests   →  edge cases, gaps, assumptions, constraint conflicts
+5. AI implements     →  constraint-segmented (group → implement → re-read → verify → next)
 6. AI verifies       →  full sweep: does every constraint pass?
 ```
 
-## Quick Start
+The key insight: clarification happens at the **intent stage**, not after code. The AI writes a verifiable contract, you approve it, then implementation is mechanical — and self-verifying.
 
-### Copy to Your Project
+---
 
-```bash
-# Copy the full framework
-cp -r ivd/ /your-project/docs/
+## MCP Tools
 
-# Or just the essentials
-cp -r ivd/{README.md,framework.md,cookbook.md,recipes,templates} /target/
-```
-
-### Initialize an Existing Project
-
-```bash
-# 1. Scans your project and generates a system intent
-ivd init --project-root /path/to/your/project
-
-# 2. Assess coverage: see which modules need intents (prioritized)
-ivd_assess_coverage(project_root="/path/to/your/project")
-
-# 3. Create intents for high-priority uncovered modules
-# 4. Expand gradually; re-assess periodically
-```
-
-### Create Your First Intent
-
-```bash
-# 1. Copy the template
-cp templates/intent.yaml my-module/my_module_intent.yaml
-
-# 2. Set the scope
-# scope:
-#   level: "module"        # system | workflow | module | task
-#   type: "feature"        # product | process | feature | function
-
-# 3. Fill in the intent — or let the AI write it for you
-```
-
-## MCP Server
-
-IVD ships with a **Model Context Protocol (MCP) server** that gives any AI agent direct access to the framework — 15 tools for searching, validating, scaffolding, assessing coverage, and discovering IVD artifacts.
-
-**Supported Clients**: Cursor, GitHub Copilot (VS Code), Claude Desktop, and any MCP-compatible tool.
-
-### Cursor
-
-Add to your MCP configuration file (Cursor → Settings → Features → MCP):
-
-**Remote (recommended)**
-
-```json
-{
-  "servers": {
-    "ivd": {
-      "type": "sse",
-      "url": "https://mcp.ivdframework.dev/sse",
-      "headers": {
-        "Authorization": "Bearer <your-api-key>"
-      }
-    }
-  }
-}
-```
-
-> **Important**: Use `"type": "sse"`, not `"type": "http"`. The IVD MCP server uses the SSE transport protocol. Using `"http"` will cause Cursor to attempt the Streamable HTTP protocol, which will fail.
-
-**Local (for development)**
-
-```json
-{
-  "servers": {
-    "ivd-local": {
-      "type": "stdio",
-      "command": "python",
-      "args": ["-m", "mcp_server.server", "--transport", "stdio"],
-      "cwd": "/path/to/ivd"
-    }
-  }
-}
-```
-
-### GitHub Copilot (VS Code)
-
-Add to your VS Code MCP settings or `mcp.json`:
-
-**Remote**
-
-```json
-{
-  "mcpServers": {
-    "ivd": {
-      "url": "https://mcp.ivdframework.dev/sse",
-      "headers": {
-        "Authorization": "Bearer <your-api-key>"
-      }
-    }
-  }
-}
-```
-
-**Local**
-
-```json
-{
-  "mcpServers": {
-    "ivd-local": {
-      "command": "python",
-      "args": ["-m", "mcp_server.server", "--transport", "stdio"],
-      "cwd": "/path/to/ivd"
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or equivalent on your OS:
-
-```json
-{
-  "mcpServers": {
-    "ivd": {
-      "url": "https://mcp.ivdframework.dev/sse",
-      "headers": {
-        "Authorization": "Bearer <your-api-key>"
-      }
-    }
-  }
-}
-```
-
-**Note**: Replace `<your-api-key>` with your IVD API key. Request one by opening an issue or starting a discussion on this repository.
-
-### Available Tools
+15 tools available to any MCP-compatible AI agent:
 
 | Tool | What it does |
 |------|-------------|
 | `ivd_get_context` | Load framework principles, cookbook, or cheatsheet |
-| `ivd_search` | Semantic search across all IVD knowledge (embeddings) |
+| `ivd_search` | Semantic search across all IVD knowledge |
 | `ivd_validate` | Validate an intent artifact against IVD rules |
 | `ivd_scaffold` | Generate a new intent artifact from a template |
-| `ivd_init` | Initialize IVD in an existing project (system intent) |
-| `ivd_assess_coverage` | Scan a project and report intent coverage (prioritized) |
+| `ivd_init` | Initialize IVD in an existing project |
+| `ivd_assess_coverage` | Scan a project and report intent coverage |
 | `ivd_load_recipe` | Load a specific recipe pattern |
 | `ivd_list_recipes` | Browse all available recipes |
-| `ivd_load_template` | Load an intent template |
+| `ivd_load_template` | Load an intent or recipe template |
 | `ivd_find_artifacts` | Discover intent artifacts in a project |
 | `ivd_check_placement` | Verify artifact naming and placement |
 | `ivd_list_features` | Derive feature inventory from intent metadata |
-| `ivd_propose_inversions` | Generate inversion opportunities (Principle 8) |
+| `ivd_propose_inversions` | Generate inversion opportunities |
 | `ivd_discover_goal` | Help users who don't know what to ask |
 | `ivd_teach_concept` | Explain concepts before writing intent |
 
-## The Eight Principles
+---
 
-IVD is built on eight immutable principles:
+## The Eight Principles
 
 | # | Principle | Core Idea |
 |---|-----------|-----------|
@@ -220,139 +151,99 @@ IVD is built on eight immutable principles:
 | 3 | **Bidirectional Synchronization** | Changes flow in any direction with verification. |
 | 4 | **Continuous Verification** | Verify alignment at every commit, every change. |
 | 5 | **Layered Understanding** | Intent, Constraints, Rationale, Alternatives, Risks. |
-| 6 | **AI as Understanding Partner** | AI writes the intent, implements, verifies. Not just executes. |
+| 6 | **AI as Understanding Partner** | AI writes, implements, verifies. Not just executes. |
 | 7 | **Understanding Survives Implementation** | Rewrites, team changes, tech shifts — intent persists. |
 | 8 | **Innovation through Inversion** | State the default, invert it, evaluate, implement. |
 
+Deep dive: [purpose.md](purpose.md) · [framework.md](framework.md) · [cheatsheet.md](cheatsheet.md)
+
+---
+
 ## Recipes
 
-Reusable patterns that encode proven solutions:
+13 reusable patterns that encode proven solutions:
 
 | Recipe | Pattern |
 |--------|---------|
-| [agent-rules-ivd](recipes/agent-rules-ivd.yaml) | **IVD agent rules** — embed in `.cursorrules`, Copilot, or any agent instruction file |
+| [agent-rules-ivd](recipes/agent-rules-ivd.yaml) | Embed IVD verification in `.cursorrules` or any agent config |
 | [workflow-orchestration](recipes/workflow-orchestration.yaml) | Multi-step process orchestration |
 | [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |
-| [agent-role-based](recipes/agent-role-based.yaml) | Context-dependent agent behavior (roles) |
+| [agent-role-based](recipes/agent-role-based.yaml) | Context-dependent agent behavior |
 | [agent-capability-propagation](recipes/agent-capability-propagation.yaml) | Propagate agent capabilities to coordinator routing |
-| [infra-background-job](recipes/infra-background-job.yaml) | Background job processing |
-| [data-field-mapping](recipes/data-field-mapping.yaml) | Data source/target field mapping |
-| [infra-structured-logging](recipes/infra-structured-logging.yaml) | Structured JSON logging for services |
-| [self-evaluating-workflow](recipes/self-evaluating-workflow.yaml) | Continuous improvement loop for AI workflows |
 | [coordinator-intent-propagation](recipes/coordinator-intent-propagation.yaml) | Multi-agent intent delegation |
-| [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teaching concepts before intent |
+| [self-evaluating-workflow](recipes/self-evaluating-workflow.yaml) | Continuous improvement loops |
+| [data-field-mapping](recipes/data-field-mapping.yaml) | Data source/target field mapping |
+| [infra-background-job](recipes/infra-background-job.yaml) | Background job processing |
+| [infra-structured-logging](recipes/infra-structured-logging.yaml) | Structured JSON logging |
+| [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teach concepts before writing intent |
 | [discovery-before-intent](recipes/discovery-before-intent.yaml) | Goal discovery before intent |
-| [doc-meeting-insights](recipes/doc-meeting-insights.yaml) | Documentation extraction |
+| [doc-meeting-insights](recipes/doc-meeting-insights.yaml) | Documentation extraction from meetings |
 
-## Intent Levels
+---
 
-IVD supports four levels of granularity:
+## Configuration
 
-```
-SYSTEM       →  Entire system or product
-  ↓
-WORKFLOW     →  Multi-step process across modules
-  ↓
-MODULE       →  Feature, agent, or component
-  ↓
-TASK         →  Function, method, or API endpoint
+IVD works out of the box with zero configuration. Optional settings for advanced use:
+
+```bash
+cp .env.example .env
 ```
 
-| Level | Location | Example |
-|-------|----------|---------|
-| System | Root: `system_intent.yaml` | `system_intent.yaml` |
-| Workflow | `workflows/{name}_intent.yaml` | `workflows/lead_qualification_intent.yaml` |
-| Module | `{module}/{module}_intent.yaml` | `agent/marketing/marketing_intent.yaml` |
-| Task | `{module}/intents/{task}_intent.yaml` | `agent/marketing/intents/gen_article_intent.yaml` |
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `OPENAI_API_KEY` | No | Regenerate embeddings with your own key |
+| `REDIS_URL` | No | Session storage for remote server deployment |
+| `IVD_API_KEYS` | No | Auth for remote server deployment |
 
-## Project Structure
+Pre-built embeddings ship in the repo (~200 chunks). Semantic search works immediately. To regenerate:
 
+```bash
+export OPENAI_API_KEY=your-key
+python mcp_server/devops/embed.py
 ```
-ivd/
-├── README.md                           # This file
-├── purpose.md                          # Why IVD exists (vision)
-├── framework.md                        # Complete specification
-├── cookbook.md                          # Practical guide with examples
-├── cheatsheet.md                       # Quick reference
-├── recipe-spec.md                      # Recipe specification
-├── ivd_system_intent.yaml              # System intent (rules for extending IVD)
-│
-├── recipes/                            # Reusable pattern templates
-│   ├── workflow-orchestration.yaml
-│   ├── agent-classifier.yaml
-│   ├── infra-background-job.yaml
-│   └── ...
-│
-├── templates/                          # Blank templates
-│   ├── intent.yaml                     # Intent artifact template
-│   ├── recipe.yaml                     # Recipe template
-│   └── examples/                       # Complete worked examples
-│
-├── research/                           # Research and validation
-│
-├── mcp_server/                         # MCP server (15 tools)
-│   ├── server.py                       # Stdio + SSE transports
-│   ├── tools/                          # Tool implementations
-│   ├── knowledge/                      # Embedding engine
-│   ├── brain/ivd/                      # Pre-built embeddings
-│   ├── tests/                          # Unit, E2E, smoke tests
-│   └── devops/                         # Deploy, embed, test scripts
-│
-└── book/                               # IVD book (coming soon)
-```
+
+---
 
 ## Documentation
 
 | Document | Purpose |
 |----------|---------|
-| [purpose.md](purpose.md) | Why IVD exists — vision, philosophy, breakthrough insight |
-| [framework.md](framework.md) | Complete IVD specification — principles, rules, validation |
+| [purpose.md](purpose.md) | Why IVD exists — the cognitive case, two knowledge systems |
+| [framework.md](framework.md) | Complete specification — principles, rules, validation |
 | [cookbook.md](cookbook.md) | Practical guide — step-by-step with real examples |
 | [cheatsheet.md](cheatsheet.md) | Quick reference — one-page summary |
-| [recipe-spec.md](recipe-spec.md) | How to create and maintain recipes |
-| [templates/intent_levels_guide.md](templates/intent_levels_guide.md) | When to use system vs workflow vs module vs task |
-
-## Development
-
-### Run Tests
-
-```bash
-./mcp_server/devops/test.sh              # All tests (unit + e2e)
-./mcp_server/devops/test.sh --unit       # Unit tests only
-./mcp_server/devops/test.sh --e2e        # E2E tests only
-./mcp_server/devops/test.sh --smoke      # Smoke tests (live server)
-```
-
-### Generate Embeddings
-
-```bash
-./mcp_server/devops/embed.sh             # Regenerate all embeddings
-./mcp_server/devops/search.sh "query"    # Query embeddings locally
-```
-
-### Deploy
-
-```bash
-./mcp_server/devops/deploy.sh            # Full deploy (embed + test + push + verify)
-./mcp_server/devops/deploy.sh --status   # Check deployment status
-./mcp_server/devops/deploy.sh --health   # Health check
-./mcp_server/devops/deploy.sh --smoke    # Post-deploy smoke tests
-```
-
-## Portability
-
-IVD is **zero-dependency** — just Markdown and YAML files. Copy it to any project:
-
-```bash
-cp -r ivd/{README.md,framework.md,cookbook.md,recipes,templates} /your-project/docs/
-```
-
-No build step. No package manager. No runtime. Works everywhere.
-
-## The Methodology in One Sentence
-
-> **AI writes the intent, implements against it, verifies — so hallucinations are caught and turns drop to one.**
 
 ---
 
-**Created by** Leo Celis | **Version** 2.4 | **License** MIT
+## Development
+
+```bash
+# Run tests
+./mcp_server/devops/test.sh              # All tests (unit + e2e)
+./mcp_server/devops/test.sh --unit       # Unit only
+./mcp_server/devops/test.sh --e2e        # E2E only
+
+# Search embeddings locally
+./mcp_server/devops/search.sh "query"
+
+# Regenerate embeddings (requires OPENAI_API_KEY)
+./mcp_server/devops/embed.sh
+```
+
+---
+
+## The Book
+
+A comprehensive book on Intent-Verified Development — the cognitive foundations, case studies, and the full methodology — is coming soon.
+
+---
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## License
+
+[MIT](LICENSE) · Created by [Leo Celis](https://github.com/leocelis)
