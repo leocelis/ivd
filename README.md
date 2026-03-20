@@ -8,7 +8,7 @@
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-2.4-blue?style=flat-square" alt="Version"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/tests-211_passed-brightgreen?style=flat-square" alt="Tests"></a>
+  <a href="https://github.com/leocelis/ivd/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/leocelis/ivd/ci.yml?branch=main&style=flat-square&label=tests" alt="Tests"></a>
 </p>
 
 ---

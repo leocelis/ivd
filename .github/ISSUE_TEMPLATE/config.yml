@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "\U0001F914 Ask a Question"
+    url: https://github.com/leocelis/ivd/discussions/new?category=q-a
+    about: Ask about IVD usage, intent design, or best practices in GitHub Discussions

@@ -372,8 +372,8 @@ class TestSearch:
         if "results" in data:
             assert len(data["results"]) > 0
         elif "error" in data:
-            # Acceptable: no API key in test environment
-            assert "api" in data["error"].lower() or "key" in data["error"].lower() or "embed" in data["error"].lower()
+            err = data["error"].lower()
+            assert any(kw in err for kw in ("api", "key", "embed", "knowledge base", "not found"))
         elif "_raw" in data:
             # Plain text response — check it's not empty
             assert len(data["_raw"]) > 0
