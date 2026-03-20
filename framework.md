@@ -834,11 +834,11 @@ The "intent alongside implementation" principle applies universally:
 
 **Books:**
 ```
-book/
+my-book/
 ├── book_system_intent.yaml        # Intent for entire book
 └── manuscript/
-    └── part-1-foundations/
-        └── chapter-01-alignment-crisis/
+    └── part-1/
+        └── chapter-01/
             ├── intent.yaml         # Intent for this chapter
             └── chapter.md          # Implementation (manuscript)
 ```
@@ -846,8 +846,8 @@ book/
 **Research:**
 ```
 research/
-├── best_selling_programming_books_intent.yaml  # Intent
-└── best_selling_programming_books.md          # Implementation (findings)
+├── topic_analysis_intent.yaml  # Intent
+└── topic_analysis.md           # Implementation (findings)
 ```
 
 **Architecture:**
