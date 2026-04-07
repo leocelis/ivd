@@ -234,6 +234,21 @@ def create_app() -> Starlette:
 
         return SSEHandledResponse()
 
+    async def handle_sse_or_streamable(request: Request) -> Response:
+        """Route /sse by HTTP method.
+
+        - GET: legacy SSE (Cursor) — long-lived EventSource to ``/messages`` for POST.
+        - POST / DELETE: same as ``/mcp`` (Streamable HTTP). Some clients (e.g. VS Code
+          MCP) are configured with ``url`` ending in ``/sse`` but send Streamable HTTP
+          POST there; those used to get **405** because only GET was allowed.
+
+        Prefer ``https://host/mcp`` for Streamable HTTP; ``/sse`` POST exists for
+        backward compatibility with misconfigured URLs.
+        """
+        if request.method == "GET":
+            return await handle_sse(request)
+        return await handle_streamable_http(request)
+
     async def handle_sse(request: Request) -> Response:
         """
         [LEGACY] SSE endpoint for Cursor clients.
@@ -301,8 +316,9 @@ def create_app() -> Starlette:
             Route("/health", health_check, methods=["GET"]),
             # StreamableHTTP (recommended — for VS Code Copilot + future Cursor)
             Route("/mcp", handle_streamable_http, methods=["GET", "POST", "DELETE"]),
-            # Legacy SSE (for current Cursor clients)
-            Route("/sse", handle_sse, methods=["GET"]),
+            # Legacy SSE: GET only opens EventSource; POST/DELETE mirror /mcp for clients
+            # that mistakenly set url to .../sse while using Streamable HTTP.
+            Route("/sse", handle_sse_or_streamable, methods=["GET", "POST", "DELETE"]),
             Route("/messages", handle_messages, methods=["POST"]),
         ],
         middleware=[Middleware(ProxyBufferMiddleware)],

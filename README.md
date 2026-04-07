@@ -221,7 +221,29 @@ A hosted IVD MCP server is available for users who prefer not to run it locally.
 
 **Request access:** [leo@leocelis.com](mailto:leo@leocelis.com)
 
-Once you have an API key, connect via SSE:
+Once you have an API key, use the URL that matches your client:
+
+| Client | URL | Notes |
+|--------|-----|--------|
+| **VS Code / GitHub Copilot** | `https://mcp.ivdframework.dev/mcp` | Streamable HTTP — **do not** use `/sse` here unless your client only offers one URL field; `/mcp` is canonical. |
+| **Cursor** (`type: "sse"`) | `https://mcp.ivdframework.dev/sse` | Legacy SSE (GET EventSource + `POST /messages`). |
+| **Claude Desktop** | `https://mcp.ivdframework.dev/sse` | Same SSE transport as above. |
+
+`POST` to `/sse` is also accepted (alias for Streamable HTTP) for clients that misconfigure the base URL; **`/mcp` is still recommended** for Copilot.
+
+**VS Code / GitHub Copilot** (`.vscode/mcp.json` — remote URL must end with `/mcp`):
+
+```json
+{
+  "mcpServers": {
+    "ivd-remote": {
+      "type": "sse",
+      "url": "https://mcp.ivdframework.dev/mcp",
+      "headers": { "Authorization": "Bearer your-api-key" }
+    }
+  }
+}
+```
 
 **Cursor** (Settings → Features → MCP):
 
