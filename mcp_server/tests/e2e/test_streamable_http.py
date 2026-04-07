@@ -129,15 +129,20 @@ class TestLegacySSEEndpoints:
     """Tests for backward compatibility with legacy SSE endpoints."""
 
     def test_sse_endpoint_still_exists(self, http_client):
-        """Legacy /sse endpoint should still be accessible.
+        """POST /sse is an alias for Streamable HTTP (same as POST /mcp).
 
-        Note: We test via POST (not GET) because GET on /sse opens a
-        long-lived SSE streaming connection that blocks the synchronous
-        test client.  A 405 Method Not Allowed proves the route exists
-        (404 would mean it was removed).
+        Legacy clients use GET /sse for EventSource; VS Code may POST to /sse.
         """
         response = http_client.post("/sse", json={})
         assert response.status_code != 404
+        assert response.status_code != 405
+
+    def test_sse_post_matches_mcp_behavior(self, http_client):
+        """POST /sse must not return 405 — VS Code MCP sends Streamable HTTP here."""
+        r_mcp = http_client.post("/mcp", json={})
+        r_sse = http_client.post("/sse", json={})
+        assert r_sse.status_code != 405
+        assert r_mcp.status_code != 405
 
     def test_messages_endpoint_still_exists(self, http_client):
         """Legacy /messages endpoint should still be accessible."""
