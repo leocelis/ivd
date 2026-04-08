@@ -140,6 +140,32 @@ class TestRedisEventStore:
         mock_redis.aclose.assert_called_once()
 
 
+    @pytest.mark.anyio
+    async def test_store_event_handles_none_message(self, mock_redis):
+        """store_event must handle message=None (priming event from MCP library).
+
+        The MCP StreamableHTTP manager calls store_event(stream_id, None) at the
+        start of every SSE stream to confirm the connection. If store_event crashes
+        on None, the SSE writer fails and clients receive MCP error -32001 timeout.
+        """
+        from mcp_server.event_store import RedisEventStore
+
+        mock_redis.incr = AsyncMock(return_value=1)
+        # zadd must NOT be called for priming events
+        mock_redis.zadd = AsyncMock()
+        mock_redis.expire = AsyncMock()
+
+        store = RedisEventStore(redis_url="redis://localhost:6379", key_prefix="test")
+
+        event_id = await store.store_event("stream-123", None)
+
+        # Should return a valid event ID
+        assert event_id == "stream-123:1"
+        # Should NOT attempt to serialize or store None
+        mock_redis.zadd.assert_not_called()
+        mock_redis.expire.assert_not_called()
+
+
 class TestEventStoreIntegration:
     """Integration-style tests (still mocked but closer to real usage)."""
 

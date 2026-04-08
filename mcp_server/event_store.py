@@ -40,11 +40,13 @@ class RedisEventStore(EventStore):
     async def store_event(self, stream_id: str, message: JSONRPCMessage) -> str:
         """
         Store an event and return its unique event ID.
-        
+
         Args:
             stream_id: Unique identifier for the MCP session stream
-            message: JSON-RPC message to persist
-            
+            message: JSON-RPC message to persist. May be None for priming events
+                     (the MCP library sends a priming event with message=None at
+                     the start of every SSE stream to confirm the connection).
+
         Returns:
             Event ID in format "stream_id:counter" for resumability tracking
         """
@@ -54,6 +56,13 @@ class RedisEventStore(EventStore):
         # Atomic increment for monotonic event IDs
         counter = await self._redis.incr(counter_key)
         event_id = f"{stream_id}:{counter}"
+
+        # Priming events (message=None) confirm the SSE stream is open.
+        # They have no payload to store; return the event ID so the MCP library
+        # can track them for resumability without crashing.
+        if message is None:
+            logger.debug("Stored priming event %s for stream %s", event_id, stream_id)
+            return event_id
 
         # Serialize and store in sorted set (score = counter for ordering)
         event_data = message.model_dump_json(by_alias=True, exclude_none=True)
