@@ -344,6 +344,25 @@
       margin-bottom: 10px;
     }
 
+    .client-block { margin-top: 18px; }
+    .client-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .client-label .client-path {
+      color: var(--muted);
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 10px;
+    }
+
     /* ── PRINCIPLES ── */
     .principles-grid {
       display: grid;
@@ -561,7 +580,15 @@
     <p class="section-label">// mcp server</p>
     <h2>15 tools for your AI agent</h2>
     <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">
-      IVD ships as a Model Context Protocol server. Works with Cursor, Claude, VS Code, and any MCP-compatible IDE.
+      IVD ships as a <strong style="color:var(--text);font-weight:500">Model Context Protocol server</strong> —
+      the open standard adopted by every major AI coding client. Works with
+      <strong style="color:var(--text);font-weight:500">Cursor</strong>,
+      <strong style="color:var(--text);font-weight:500">Claude Desktop</strong>,
+      <strong style="color:var(--text);font-weight:500">Claude Code</strong>,
+      <strong style="color:var(--text);font-weight:500">VS Code + GitHub Copilot</strong>,
+      <strong style="color:var(--text);font-weight:500">Windsurf</strong>,
+      <strong style="color:var(--text);font-weight:500">Zed</strong>,
+      and any other MCP-compatible agent. No vendor lock-in.
       14 of 15 tools work with zero configuration — no API key, no setup beyond <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">pip install</code>.
     </p>
 
@@ -599,9 +626,11 @@
     </div>
 
     <div class="hosted-note">
-      <strong>Hosted server available.</strong> Prefer not to run it locally?
-      A hosted MCP server runs at <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>.
-      Request access: <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
+      <strong>Hosted server available.</strong> Skip the install — point any MCP client at
+      <a href="https://mcp.ivdframework.dev/mcp">mcp.ivdframework.dev/mcp</a>
+      (Streamable HTTP) or
+      <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
+      (legacy SSE). Request an API key: <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
     </div>
   </div>
 </section>
@@ -622,9 +651,49 @@
     </div>
 
     <div class="qs-step">
-      <h3>// 2. Add to Cursor</h3>
-      <p>Settings → Features → MCP → add server:</p>
-      <div class="code-block">
+      <h3>// 2. Connect your AI client</h3>
+      <p>Pick your client — same server, same tools, same YAML intents.</p>
+
+      <div class="client-block">
+        <div class="client-label">Cursor <span class="client-path">~/.cursor/mcp.json</span></div>
+        <div class="code-block">
+<span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
+      <span class="c-key">"args"</span><span class="c-punc">:</span>    <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>     <span class="c-str">"/path/to/ivd"</span>
+    <span class="c-punc">}</span>
+  <span class="c-punc">}</span>
+<span class="c-punc">}</span>
+        </div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">Claude Desktop <span class="client-path">~/Library/Application Support/Claude/claude_desktop_config.json</span></div>
+        <div class="code-block">
+<span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
+      <span class="c-key">"args"</span><span class="c-punc">:</span>    <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>     <span class="c-str">"/path/to/ivd"</span>
+    <span class="c-punc">}</span>
+  <span class="c-punc">}</span>
+<span class="c-punc">}</span>
+        </div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">Claude Code <span class="client-path">one-liner</span></div>
+        <div class="code-block">
+<span class="c-cmd">claude mcp add ivd python -m mcp_server.server --cwd /path/to/ivd</span>
+        </div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">VS Code + GitHub Copilot <span class="client-path">.vscode/mcp.json</span></div>
+        <div class="code-block">
 <span class="c-punc">{</span>
   <span class="c-key">"servers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
     <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
@@ -635,6 +704,24 @@
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span>
+        </div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">Windsurf, Zed, Continue, and other MCP clients</div>
+        <p>Any client that speaks the Model Context Protocol can connect. Point it at
+        <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">python -m mcp_server.server</code>
+        from <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">/path/to/ivd</code>,
+        or use the hosted server below.</p>
+      </div>
+
+      <div class="hosted-note" style="margin-top:24px;">
+        <strong>No install?</strong> Use the hosted server at
+        <a href="https://mcp.ivdframework.dev/mcp">mcp.ivdframework.dev/mcp</a>
+        (Streamable HTTP, for VS Code / Copilot / Claude Code / any modern MCP client) or
+        <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
+        (legacy SSE, for Cursor / Claude Desktop). Request an API key:
+        <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
       </div>
     </div>
 
