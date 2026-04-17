@@ -316,18 +316,56 @@
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 6px;
+      padding: 0;
+      margin: 16px 0;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block code {
+      display: block;
       padding: 20px 24px;
       font-family: var(--mono);
       font-size: 12px;
       line-height: 1.9;
-      margin: 16px 0;
-      overflow-x: auto;
+      white-space: pre;
+      color: var(--muted);
     }
-    .code-block .c-cmd  { color: var(--text); }
-    .code-block .c-cmt  { color: #4b5563; }
-    .code-block .c-str  { color: #86efac; }
-    .code-block .c-key  { color: #7dd3fc; }
-    .code-block .c-acc  { color: var(--accent); }
+    .code-block code .c-cmd  { color: var(--text); }
+    .code-block code .c-cmt  { color: #4b5563; }
+    .code-block code .c-str  { color: #86efac; }
+    .code-block code .c-key  { color: #7dd3fc; }
+    .code-block code .c-acc  { color: var(--accent); }
+    .code-block code .c-punc { color: var(--muted); }
+
+    /* ── COPY BUTTON ── */
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+      user-select: none;
+      white-space: normal;
+    }
+    .code-block:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green);
+      opacity: 1;
+    }
 
     .qs-step {
       margin-bottom: 32px;
@@ -643,11 +681,9 @@
 
     <div class="qs-step">
       <h3>// 1. Clone and setup</h3>
-      <div class="code-block">
-<span class="c-cmd">git clone https://github.com/leocelis/ivd.git</span>
+      <div class="code-block"><code><span class="c-cmd">git clone https://github.com/leocelis/ivd.git</span>
 <span class="c-cmd">cd ivd</span>
-<span class="c-cmd">./mcp_server/devops/setup.sh</span>  <span class="c-cmt"># creates .venv, installs deps</span>
-      </div>
+<span class="c-cmd">./mcp_server/devops/setup.sh</span>  <span class="c-cmt"># creates .venv, installs deps</span></code></div>
     </div>
 
     <div class="qs-step">
@@ -656,60 +692,52 @@
 
       <div class="client-block">
         <div class="client-label">Cursor <span class="client-path">~/.cursor/mcp.json</span></div>
-        <div class="code-block">
-<span class="c-punc">{</span>
-  <span class="c-key">"mcpServers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
-    <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
       <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
-      <span class="c-key">"args"</span><span class="c-punc">:</span>    <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>     <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
-<span class="c-punc">}</span>
-        </div>
+<span class="c-punc">}</span></code></div>
       </div>
 
       <div class="client-block">
         <div class="client-label">Claude Desktop <span class="client-path">~/Library/Application Support/Claude/claude_desktop_config.json</span></div>
-        <div class="code-block">
-<span class="c-punc">{</span>
-  <span class="c-key">"mcpServers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
-    <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
       <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
-      <span class="c-key">"args"</span><span class="c-punc">:</span>    <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>     <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
-<span class="c-punc">}</span>
-        </div>
+<span class="c-punc">}</span></code></div>
       </div>
 
       <div class="client-block">
         <div class="client-label">Claude Code <span class="client-path">one-liner</span></div>
-        <div class="code-block">
-<span class="c-cmd">claude mcp add ivd python -m mcp_server.server --cwd /path/to/ivd</span>
-        </div>
+        <div class="code-block"><code><span class="c-cmd">claude mcp add ivd python -m mcp_server.server --cwd /path/to/ivd</span></code></div>
       </div>
 
       <div class="client-block">
         <div class="client-label">VS Code + GitHub Copilot <span class="client-path">.vscode/mcp.json</span></div>
-        <div class="code-block">
-<span class="c-punc">{</span>
-  <span class="c-key">"servers"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
-    <span class="c-key">"ivd"</span><span class="c-punc">:</span> <span class="c-punc">{</span>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"servers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
       <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"stdio"</span><span class="c-punc">,</span>
       <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
-      <span class="c-key">"args"</span><span class="c-punc">:</span>    <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>     <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
-<span class="c-punc">}</span>
-        </div>
+<span class="c-punc">}</span></code></div>
       </div>
 
       <div class="client-block">
         <div class="client-label">Windsurf, Zed, Continue, and other MCP clients</div>
-        <p>Any client that speaks the Model Context Protocol can connect. Point it at
+        <p>Any client that speaks MCP can connect. Point it at
         <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">python -m mcp_server.server</code>
         from <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">/path/to/ivd</code>,
         or use the hosted server below.</p>
@@ -718,9 +746,9 @@
       <div class="hosted-note" style="margin-top:24px;">
         <strong>No install?</strong> Use the hosted server at
         <a href="https://mcp.ivdframework.dev/mcp">mcp.ivdframework.dev/mcp</a>
-        (Streamable HTTP, for VS Code / Copilot / Claude Code / any modern MCP client) or
+        (Streamable HTTP — VS Code / Copilot / Claude Code) or
         <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
-        (legacy SSE, for Cursor / Claude Desktop). Request an API key:
+        (legacy SSE — Cursor / Claude Desktop). Request an API key:
         <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
       </div>
     </div>
@@ -728,9 +756,7 @@
     <div class="qs-step">
       <h3>// 3. Use it</h3>
       <p>Ask your agent:</p>
-      <div class="code-block">
-<span class="c-str">"Use ivd_get_context to learn IVD, then scaffold an intent for [your feature]"</span>
-      </div>
+      <div class="code-block"><code><span class="c-str">"Use ivd_get_context to learn IVD, then scaffold an intent for [your feature]"</span></code></div>
     </div>
 
     <div class="btn-row">
@@ -802,5 +828,25 @@
   </div>
 </footer>
 
+<script>
+  document.querySelectorAll('.code-block').forEach(block => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.addEventListener('click', () => {
+      const codeEl = block.querySelector('code');
+      const text = (codeEl ? codeEl.innerText : block.innerText).trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.classList.remove('copied');
+        }, 1800);
+      });
+    });
+    block.appendChild(btn);
+  });
+</script>
 </body>
 </html>
