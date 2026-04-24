@@ -7,9 +7,8 @@ Tier 1 callers pass raw text; the inferrer derives a CanonContract from it.
 Tier 2 callers pass a CanonContract directly. The renderer always operates on
 a CanonContract; the audit always operates on a rendered CanonDocument.
 
-Reference: CANON_TECH_SPEC.md v0.6 §5 (Contract schema), §6 (CanonDocument
-schema), §6.1 (AuditReport schema). This module is the dataclass projection
-of those schemas.
+Reference: canon_layer.md §Contract schema, §CanonDocument schema, §AuditReport schema.
+This module is the dataclass projection of those schemas.
 """
 
 from __future__ import annotations
@@ -149,7 +148,7 @@ class RFinding:
 
 @dataclasses.dataclass
 class AuditReport:
-    """The verdict on a CanonDocument — see CANON_TECH_SPEC.md v0.6 §6.1."""
+    """The verdict on a CanonDocument — see canon_layer.md §Audit."""
 
     findings: List[RFinding] = dataclasses.field(default_factory=list)
     overall: str = "pass"  # "pass" | "fail" | "safety_fail" | "partial"
@@ -182,7 +181,7 @@ class AuditReport:
 
 @dataclasses.dataclass
 class AuditDiff:
-    """Diff between two AuditReports — see CANON_TECH_SPEC.md v0.6 §6.2."""
+    """Diff between two AuditReports — see canon_layer.md §Audit diff."""
 
     before_hash: str
     after_hash: str

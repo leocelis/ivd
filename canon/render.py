@@ -6,7 +6,7 @@ Narrative renderer — Contract → CanonDocument.
 Deterministic. No LLM call. The renderer is the *single* place where Canon
 turns structured intent into human-facing prose.
 
-Reference: CANON_TECH_SPEC.md v0.6 §5.3 (renderer rules), §6 (CanonDocument).
+Reference: canon_layer.md §Renderer (Contract → CanonDocument), §CanonDocument schema.
 """
 
 from __future__ import annotations

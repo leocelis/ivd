@@ -8,7 +8,7 @@ empty (the audit will then mark the corresponding R-invariant as "partial"
 rather than "pass"). The audit verdict is what the caller acts on; the
 inferrer is intentionally not "smart."
 
-Reference: CANON_TECH_SPEC.md v0.6 §5.2 (Tier 1 inference rules).
+Reference: canon_layer.md §Tier 1 inference (deterministic contract derivation).
 """
 
 from __future__ import annotations
