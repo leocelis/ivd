@@ -4,9 +4,14 @@
 # This is the canonical reference for extending the IVD framework itself.
 # All additions to IVD must align with this intent.
 #
-# Version: 2.4
+# Version: 3.1
 # Created: 2026-01-24
-# Updated: 2026-02-09 (constraint-segmented implementation: mitigating compliance degradation during generation)
+# Updated: 2026-04-23 (Canon — Human Translation Layer bundled as Phase 0 surface;
+#                       4 canon_* MCP tools hosted inside this server with zero
+#                       client config edit; canon-rules recipe distributed as the
+#                       canonical Phase 0a rules block; ivd_init reports per-file
+#                       agent_rules_status: {ivd, canon}.)
+# Updated: 2026-03-21 (Judgment phase added as 4th IVD phase; Principle 9 — Judgment Compounds)
 # Status: Canonical
 # ==============================================================================
 
@@ -20,21 +25,31 @@ scope:
 # ==============================================================================
 
 intent:
-  summary: "Intent-Verified Development: The framework for the AI Agents era—where AI writes intent, implements against it, and verifies. Eliminates many-turns and hallucinations."
+  summary: "Intent-Verified Development: The 4-phase framework for the AI Agents era — Intent, Implementation, Verification, and Judgment. Where AI writes intent, implements, verifies, and compounds judgment from real-world corrections."
   
   goal: |
-    Provide a complete methodology for human-AI collaboration where:
+    Provide a complete methodology for human-AI collaboration across four phases:
     
-    1. The AI writes structured intent artifacts (not the human writing prose)
-    2. The AI implements against the intent artifacts
-    3. The AI verifies its code against executable constraints
-    4. Many-turns and hallucinations are eliminated at the source
+    1. INTENT — The AI writes structured intent artifacts (not the human writing prose)
+    2. IMPLEMENTATION — The AI implements against the intent artifacts
+    3. VERIFICATION — The AI verifies its code against executable constraints
+    4. JUDGMENT (v3.0+) — Corrections from real-world use are captured, codified,
+       distilled into patterns, and fed back as context — turning "what we
+       learned the hard way" into structured organizational memory the next
+       intent is written against. (Activated per-project via .judgment/ folder.)
+    
+    Together: many-turns and hallucinations are eliminated at the source (Phases
+    1-3); judgment compounds across runs and projects (Phase 4).
     
     This is NOT traditional PM → Developer documentation (PRDs, user stories).
-    This is the framework for the AI Agents era where AI builds, writes, and verifies.
+    This is the framework for the AI Agents era where AI builds, writes,
+    verifies, and learns from its own corrections.
     
-    Without this distinction, intent artifacts are just another prose artifact
-    that AI reads and guesses at. With IVD, AI writes, verifies, and self-corrects.
+    Without phases 1-3, intent artifacts are just another prose artifact that AI
+    reads and guesses at. Without phase 4, every project starts judgment from
+    zero — model parity erodes any moat the first three phases built. The four
+    phases together are how organizations build judgment that does not
+    commoditize when the model layer commoditizes.
     
     For large projects: optional metadata on intents (feature_id, category, tags,
     status) plus a feature-list tool enables derived feature inventory and
@@ -66,10 +81,12 @@ intent:
     - "Teams adopting AI-driven development workflows"
 
 # ==============================================================================
-# PRINCIPLES: The 8 Core Principles (Immutable)
+# PRINCIPLES: The 9 Core Principles (Immutable)
 # ==============================================================================
 # These principles define IVD. Any addition that violates these is rejected.
 # Principles are hierarchical: Principle 1 is most fundamental.
+# Principle 9 (Judgment Compounds) was added in v3.0 as the foundation for the
+# Judgment phase; principles 1–8 are unchanged from v2.x.
 
 principles:
   cognitive_foundation: |
@@ -146,6 +163,11 @@ principles:
     - level: 8
       name: "Innovation through Inversion"
       immutable: true
+
+    - level: 9
+      name: "Judgment Compounds"
+      immutable: true
+      added_in: "3.0"
 
   # --------------------------------------------------------------------------
   # PRINCIPLE 1: Intent is Primary
@@ -855,6 +877,140 @@ principles:
         - "No clear default approach (e.g. purely custom business rule)"
         - "Obvious solution is good enough; not optimizing for alternatives"
 
+  # --------------------------------------------------------------------------
+  # PRINCIPLE 9: Judgment Compounds  (added in v3.0)
+  # --------------------------------------------------------------------------
+
+  principle_9_judgment_compounds:
+    statement: "Corrections from real-world use, when captured, codified, and structured into patterns, are the most valuable form of contextual knowledge a system has — and the only knowledge that does not commoditize when the model layer commoditizes."
+    
+    definition: |
+      Principles 1-8 cover the cost of getting intent right the first time —
+      hallucinations, drift, missed constraints, premature defaults. They do
+      not cover what happens when the intent itself was wrong: when the
+      verification passed, the system shipped, and reality answered back
+      "this is not what we wanted."
+      
+      That answer-back is the most expensive signal in the system. Historically
+      it has been thrown away — captured (if at all) as anecdote, retro notes,
+      or scattered prompt edits. Principle 9 mandates that it be captured as a
+      first-class artifact (the ledger entry), structured (codify), clustered
+      (patterns), distilled (recommendations), and fed back into the agent's
+      context (injection). The whole loop is the Judgment phase, IVD's 4th phase.
+      
+      Why "compounds": each captured correction increases the value of the next
+      run. Without structure, corrections decay (stored in someone's head, lost
+      when they leave). With structure, they accumulate — and accumulated
+      organizational judgment is precisely the moat that survives model
+      commoditization. Principles 1-8 build defensible first drafts; Principle
+      9 is what makes the hundredth draft compound.
+    
+    sub_principles:
+      - name: "Corrections are the highest-signal training data the system will ever see"
+        rule: "Every correction in a domain you have expert depth in must be capturable in <= 30 seconds"
+        example: "ivd_judgment_capture takes raw_correction + domain + 3 metadata fields"
+        
+      - name: "Codify must be structured but optional-on-the-spot"
+        rule: "Capture is cheap; codify is deliberate. The 5 codified fields are required for state 'codified', not for state 'raw'."
+        example: "expected_result, detected_via, diagnosed_cause, proposed_fix, fix_action_type"
+        
+      - name: "Patterns, not entries, are the unit of injection"
+        rule: "Single corrections are injected sparingly (last 3-5 in domain); patterns of 3+ entries dominate"
+        example: "Inject the pattern once with member count, not all 12 members individually"
+        
+      - name: "Hypotheses stay hypotheses until corroborated"
+        rule: "Comparison-pair diagnostic_hypotheses are 'plausible' until 2+ independent pairs reach the same diagnosed_cause"
+        example: "What Works injection layer only surfaces 'corroborated' hypotheses"
+        
+      - name: "Expert intuition is weighted, not equal"
+        rule: "leo_domain_depth weights pattern confidence: expert 1.0, practitioner 0.7, adjacent 0.4, novice 0.2"
+        example: "AI reviewer (Erik) corrections enter as source: runtime; not weighted by leo_domain_depth"
+        
+      - name: "Patterns age; freshness is enforced"
+        rule: "Patterns past 3x half_life_days are 'expired' — not injected, not promotable to recommendations"
+        example: "claude-3 prompting patterns expire when project moves to claude-4"
+        
+      - name: "Tools that produce patterns are net-negative"
+        rule: "Tracks originated_from_tool on every member; tools with net_pattern_delta > 0 are flagged"
+        example: "If 80% of pattern members originated from recipe X, X is a deprecation candidate"
+        
+      - name: "you are the only mandatory human gate"
+        rule: "Capture, codify, detect, draft can all happen without you. Apply requires your approval."
+        example: "Approved | modified | rejected — rejected recommendations are kept for audit"
+    
+    validation:
+      - check: "All ledger entries reference a domain with a baseline"
+        test: "ivd_judgment_capture refuses unknown domains"
+        
+      - check: "All entries claiming state 'codified' have non-empty 5 codified fields"
+        test: "validator (artifact_type='ledger_entry') rejects missing fields"
+        
+      - check: "Patterns require >= 3 members with the same diagnosed_cause"
+        test: "ivd_judgment_detect_patterns enforces minimum cluster size"
+        
+      - check: "Recommendations cite >= 3 member ledger entries and have a rollback_plan"
+        test: "validator on recommendation document"
+        
+      - check: "What Works injection only surfaces 'corroborated' comparison-pair hypotheses"
+        test: "ivd_judgment_inject_context filters by injection_status"
+    
+    violations_to_reject:
+      - "Capturing a correction without a domain (no baseline reference)"
+      - "Promoting a single comparison pair to canonical 'what works' guidance"
+      - "Recommendations without rollback_plan or fewer than 3 cited members"
+      - "Injecting expired patterns into agent context"
+      - "Treating AI reviewer corrections as you-weighted expert signals"
+      - "Bypassing you approval on apply step"
+    
+    relationship_to_other_principles:
+      builds_on:
+        - "P1 (Intent is Primary): codified corrections feed back into intent_revision"
+        - "P2 (Executable understanding): every codified field is structured, not prose"
+        - "P3 (Bidirectional sync): apply step propagates fixes to intent + recipes + prompts"
+        - "P4 (Continuous verification): pattern re-emergence flags failed fixes"
+        - "P5 (Layered understanding): baseline → entry → pattern → recommendation is a layer stack"
+        - "P6 (AI as partner): codify returns a prompt, not a final answer; agent fills it"
+        - "P7 (Survives implementation): patterns survive model upgrades when freshness allows"
+        - "P8 (Inversion): domain_reassessment is principled inversion of the domain itself"
+    
+    activation:
+      mechanism: ".judgment/ folder at project root"
+      rationale: |
+        Most projects don't need a Judgment phase on day one. Forcing it
+        everywhere would dilute IVD's first 8 principles. The .judgment/
+        folder is an opt-in: tools detect it; absent it, all 9
+        ivd_judgment_* tools return "judgment phase not initialized."
+      bootstrap: "ivd_judgment_init(project_root, domains=[...])"
+      server_opt_out: |
+        Set IVD_JUDGMENT_TOOLS_ENABLED=false to disable every judgment
+        tool at the server level (the 9 tools remain registered but
+        return enabled=false payloads). Mirrors Canon's
+        IVD_CANON_TOOLS_ENABLED knob.
+
+    engine_package:
+      location: "ivd/judgment/"
+      submodules: ["schema.py", "store.py", "freshness.py", "detect.py", "inject.py", "validate.py"]
+      typed_artifacts:
+        - "LedgerEntry, CodifiedFields, Classification, PatternMembership, ChangelogEntry"
+        - "ComparisonPair, Baseline, Pattern, Recommendation, InjectionResult"
+      hashing:
+        rationale: |
+          Pattern.detection_hash and InjectionResult.injection_hash are
+          deterministic SHA-256 over canonical fields, stamped with
+          engine_version. Borrowed from Canon's AuditReport.hash() pattern.
+          Enables diffability across runs (same Pattern → same hash, even
+          if cosmetic fields like 'updated' or 'status' change).
+      mirror_of: "ivd/canon/ — same engine-package + thin-MCP-facade pattern"
+
+    canonical_documentation:
+      framework_doc: "ivd/judgment_layer.md"
+      templates: ["templates/baseline.yaml", "templates/ledger-entry.yaml", "templates/comparison-pair.yaml", "templates/pattern.yaml"]
+      recipes: ["recipes/capture-correction.yaml", "recipes/comparison-pair.yaml", "recipes/distill-pattern.yaml"]
+      engine_package: "ivd/judgment/ (vendored engine; new in v3.1)"
+      tools: ["mcp_server/tools/judgment.py (9 tools — thin facade over ivd/judgment/)"]
+      tests: ["mcp_server/tests/unit/test_judgment.py (53 tests across 11 classes)"]
+      decision_records: ["DECISIONS.md ADR-015 (bundling), ADR-016 (v3.0 bump)"]
+
 # ==============================================================================
 # RULES: Framework Extension Rules
 # ==============================================================================
@@ -907,7 +1063,7 @@ rules:
         
       - step: 6
         action: "Validate no violations"
-        deliverable: "Verify alignment with all 8 principles"
+        deliverable: "Verify alignment with all 9 principles (Principle 9 only applies if the level interacts with the Judgment phase)"
     
     violations_to_reject:
       - "New level overlaps with existing level"
@@ -1268,7 +1424,7 @@ validation:
   # --------------------------------------------------------------------------
   
   principle_alignment:
-    description: "Verify new addition aligns with all 8 principles"
+    description: "Verify new addition aligns with all 9 principles. Principles 1–8 always apply. Principle 9 (Judgment Compounds) applies whenever the addition touches Judgment-phase artifacts, tools, or recipes (i.e. anything under `.judgment/`, `mcp_server/tools/judgment.py`, judgment templates/recipes, or canonization step 4.5)."
     
     checklist:
       - principle: "Intent is Primary"
@@ -1310,11 +1466,21 @@ validation:
           - "Intent doesn't mention specific technologies"
           - "Constraints are implementation-independent"
           - "Rationale explains why"
-    
+
+      - principle: "Judgment Compounds (only when addition touches the Judgment phase)"
+        applies_when: "Addition introduces or modifies anything under `.judgment/`, judgment-phase tools/templates/recipes, or canonization step 4.5"
+        checks:
+          - "Addition does not bypass the .judgment/ activation gate (no Judgment behavior leaks into the default 3-phase path)"
+          - "If the addition produces or consumes ledger entries, patterns, comparison_pairs, or baselines, it uses the canonical templates (ivd/templates/{ledger-entry,comparison-pair,pattern,baseline}-template.yaml)"
+          - "Addition respects pattern_freshness rules (expired patterns not injected, not promoted)"
+          - "Addition records `originated_from_tool` provenance where applicable"
+          - "If the addition recommends new capabilities, it uses build|buy|hire|partner sub-types"
+
     rejection_criteria:
-      - "Violates any of the 8 principles"
+      - "Violates any of the 9 principles"
       - "Fails any principle checklist item"
       - "Cannot demonstrate alignment"
+      - "Couples Principle 9 behavior into the default 3-phase path (must remain opt-in via .judgment/)"
 
   # --------------------------------------------------------------------------
   # Level 2: Structural Integrity
@@ -1396,6 +1562,50 @@ validation:
       - "Only 1-2 use cases (not reusable enough)"
       - "Not validated in production"
 
+  # --------------------------------------------------------------------------
+  # Level 5: Judgment Signal Coverage  (added in v3.0)
+  # --------------------------------------------------------------------------
+  # Applies ONLY when the project has activated the Judgment phase
+  # (.judgment/ folder exists). Validates that the Judgment artifacts the
+  # framework requires are well-formed and coherent.
+
+  judgment:
+    description: "Verify Judgment-phase artifacts are well-formed (only enforced when .judgment/ exists)."
+    applies_when: "<project_root>/.judgment/ exists"
+
+    checks:
+      - name: "Every domain referenced by ledger entries has a baseline"
+        validation: "All ledger_entry.domain values resolve to a baselines/<domain>.yaml"
+        test: "ivd_validate (artifact_type='ledger_entry')"
+
+      - name: "Every codified entry has all 5 codified fields"
+        validation: "expected_result, detected_via, diagnosed_cause, proposed_fix, fix_action_type non-empty"
+        test: "ivd_validate (artifact_type='ledger_entry') with state == 'codified'"
+
+      - name: "comparison_pair entries list >= 1 competing_hypothesis"
+        validation: "Forces Rung-1 discipline on diagnostic hypotheses"
+        test: "ivd_validate (artifact_type='comparison_pair')"
+
+      - name: "Patterns require >= 3 members with the same diagnosed_cause"
+        validation: "Pattern detector enforces minimum cluster size"
+        test: "ivd_validate (artifact_type='pattern')"
+
+      - name: "Recommendations have rollback_plan and >= 3 cited members"
+        validation: "Recommendation document validator"
+        test: "ivd_validate (artifact_type='recommendation')"
+
+      - name: "Patterns past 3x half_life_days are flagged 'expired' and excluded from injection"
+        validation: "Freshness computation honors per-pattern or per-baseline half_life_days"
+        test: "ivd_judgment_inject_context excludes expired patterns"
+
+    rejection_criteria:
+      - "Ledger entry references unknown domain"
+      - "State 'codified' with empty codified field"
+      - "comparison_pair without competing_hypothesis"
+      - "Pattern with < 3 members"
+      - "Recommendation without rollback_plan or with < 3 cited members"
+      - "Expired pattern surfaced in injection output"
+
 # ==============================================================================
 # IVD-CANON: What makes something canonical IVD?
 # ==============================================================================
@@ -1405,11 +1615,172 @@ ivd_canon:
     IVD-canon refers to concepts, patterns, and practices that are officially
     part of the IVD framework. To be canon, an addition must:
     
-    1. Align with all 8 principles
-    2. Pass all validation levels
+    1. Align with all 9 principles (1-8 immutable since v1.0; Principle 9 added v3.0)
+    2. Pass all 5 validation levels (Level 5 'judgment' applies only when .judgment/ exists)
     3. Be documented in core framework docs
     4. Include comprehensive examples
     5. Be validated in real-world usage
+
+  artifact_types:
+    description: |
+      The IVD framework recognizes the following artifact types. Each has a
+      canonical template, a validator path in ivd_validate, and (where
+      applicable) a recipe in recipes/. Judgment-phase artifact types are
+      only validated when .judgment/ exists at the project root.
+    types:
+      - name: "intent"
+        scope: "all phases"
+        template: "templates/intent.yaml"
+        validator: "ivd_validate (artifact_type='intent')"
+
+      - name: "recipe"
+        scope: "all phases"
+        template: "templates/recipe.yaml"
+        validator: "ivd_validate (artifact_type='recipe')"
+
+      - name: "workflow"
+        scope: "all phases"
+        template: "templates/intent.yaml (workflow section)"
+        validator: "ivd_validate (artifact_type='workflow')"
+
+      - name: "ledger_entry"
+        scope: "judgment phase"
+        template: "templates/ledger-entry.yaml"
+        validator: "ivd_validate (artifact_type='ledger_entry')"
+        recipe: "recipes/capture-correction.yaml"
+        added_in: "3.0"
+
+      - name: "comparison_pair"
+        scope: "judgment phase"
+        template: "templates/comparison-pair.yaml"
+        validator: "ivd_validate (artifact_type='comparison_pair')"
+        recipe: "recipes/comparison-pair.yaml"
+        added_in: "3.0"
+
+      - name: "pattern"
+        scope: "judgment phase"
+        template: "templates/pattern.yaml"
+        validator: "ivd_validate (artifact_type='pattern')"
+        recipe: "recipes/distill-pattern.yaml"
+        added_in: "3.0"
+
+      - name: "baseline"
+        scope: "judgment phase"
+        template: "templates/baseline.yaml"
+        validator: "ivd_validate (artifact_type='baseline')"
+        added_in: "3.0"
+
+  # --------------------------------------------------------------------------
+  # Canon Layer (added in v3.1) — Human Translation Layer for AI Output
+  # --------------------------------------------------------------------------
+  # Canon is bundled into IVD on the same architectural pattern as the
+  # Judgment phase: own engine, own recipe, own MCP tools — but hosted
+  # inside this MCP server so every existing IVD client picks up the new
+  # tools automatically with zero `mcpServers` config edit.
+  #
+  # Source-of-truth chain for Canon (NOT this file):
+  #   external/canon/CANON_PRD.md            v0.7
+  #   external/canon/CANON_TECH_SPEC.md      v0.6
+  #   external/canon/canon_system_intent.yaml v5
+  #   ivd/recipes/canon-rules.yaml                      v1.0
+  #
+  # This block in the IVD master intent only declares HOW Canon couples to
+  # IVD; it does not duplicate the Canon spec.
+
+  canon_layer:
+    summary: |
+      Canon is IVD's Phase-0 surface layer: it makes any AI agent's reply
+      legible to a human. Canon does NOT replace IVD's intent / impl /
+      verify / judgment phases — it sits in front of the agent's chat
+      output channel and shapes what the human reads. Two layers compose:
+      (a) Phase 0a Rules — a fence-marked markdown block in the agent's
+      instruction file (Cursor / Cline / Claude Code / Copilot / Codex /
+      Windsurf), and (b) Phase 0b MCP Tools — four `canon_*` tools hosted
+      inside this server.
+
+    bundling_rationale: |
+      Same rationale that produced ADR-015 for the Judgment phase, applied
+      to Canon: every IVD user is exactly the user Canon serves; bundling
+      means existing IVD MCP clients get the four canon_* tools on the
+      next IVD release without any config change; unified branding
+      reduces install friction; the IVD_CANON_TOOLS_ENABLED=false env
+      knob is the single opt-out for users who do not want them.
+
+    canonical_documentation:
+      prd: "external/canon/CANON_PRD.md (v0.7)"
+      tech_spec: "external/canon/CANON_TECH_SPEC.md (v0.6)"
+      system_intent: "external/canon/canon_system_intent.yaml (v5)"
+      recipe: "ivd/recipes/canon-rules.yaml (v1.0)"
+
+    interface:
+      - name: "canon_render"
+        scope: "canon phase"
+        handler: "mcp_server/tools/canon.py::canon_render_tool"
+        purpose: "Render any AI text as a CanonDocument (Tier 1 from text, Tier 2 from contract)."
+      - name: "canon_check"
+        scope: "canon phase"
+        handler: "mcp_server/tools/canon.py::canon_check_tool"
+        purpose: "Audit a CanonDocument against R1/R2/R5/R10/R14; reproducible hash for diffability."
+      - name: "canon_diff"
+        scope: "canon phase"
+        handler: "mcp_server/tools/canon.py::canon_diff_tool"
+        purpose: "Diff two AuditReports and report per-R movement (fixed/regressed/unchanged)."
+      - name: "canon_check_rules_installed"
+        scope: "canon phase"
+        handler: "mcp_server/tools/canon.py::canon_check_rules_installed_tool"
+        purpose: |
+          Detect whether the Phase 0a rules block is installed in the
+          project's agent instruction files. NEVER writes to disk. Returns
+          ready-to-paste install_payload entries the agent must offer to
+          the user with explicit permission.
+
+    distribution_invariants:
+      - id: "canon_zero_config_default"
+        rule: |
+          Canon MCP tools MUST appear in tools/list automatically for every
+          existing IVD MCP client on the next IVD release. No new
+          `mcpServers` entry, no per-client config edit. The only
+          Canon-specific config surface is the opt-out env var
+          IVD_CANON_TOOLS_ENABLED=false.
+        rationale: "PRD v0.7 §11.0b; user-stated requirement (the binding constraint that drove the IVD-hosted design)."
+
+      - id: "canon_check_rules_installed_no_writes"
+        rule: |
+          The canon_check_rules_installed tool MUST NOT write to disk. It
+          may emit ready-to-paste install_payload entries; the AGENT must
+          obtain explicit user consent and perform the file edits itself.
+        rationale: |
+          Trust posture: the MCP server detects state, the agent asks
+          permission, the agent writes. Splitting these roles keeps the
+          server a passive observer and pushes consent to the surface
+          (chat) where the user can grant or deny it.
+
+      - id: "canon_ivd_init_reports_canon_status"
+        rule: |
+          ivd_init MUST scan known agent instruction files (.cursorrules,
+          .clinerules, CLAUDE.md, .github/instructions/canon.md,
+          AGENTS.md, .windsurf/rules/canon.md) and report
+          agent_rules_status: { ivd: bool, canon: bool } per file. When
+          either block is missing, ivd_init's next_steps MUST point to
+          the corresponding install path (recipes/agent-rules-ivd.yaml
+          for IVD, canon_check_rules_installed for Canon).
+        rationale: "Closes the discovery loop on first contact. The user installs IVD; ivd_init tells them they can also install Canon — without changing how IVD itself works."
+
+      - id: "canon_recipe_distribution"
+        rule: |
+          The canon Phase 0a rules block MUST ship as a single canonical
+          IVD recipe (ivd/recipes/canon-rules.yaml) loadable by
+          ivd_load_recipe. Per-client adapter views (cursorrules_format,
+          clinerules_format, claude_code_format, copilot_format,
+          codex_format, windsurf_format) live inside that recipe under
+          agent_rules_block; install_targets maps each adapter view to
+          its canonical filename.
+        rationale: "One source of truth for the Canon rules. Six client adapter views derived from it. Detection fence (BEGIN-CANON / END-CANON) is shared across all adapters so canon_check_rules_installed works uniformly."
+
+    composition_with_ivd:
+      - "Canon does not require the Judgment phase. Canon does not require ivd_init. Canon works on bare AI text."
+      - "When IVD's Judgment phase is active, Canon outputs (audit verdicts) MAY be captured as ledger entries (correction_type='canon_violation') so Canon failures compound into the Judgment loop. This is opt-in and not enforced."
+      - "Canon's R1 (Setting Phase) and IVD's first-output discipline are mutually reinforcing; agents instructed by both write more compact and verifiable openings."
 
   # --------------------------------------------------------------------------
   # Canon Status Levels
@@ -1474,9 +1845,20 @@ ivd_canon:
         
       - step: 4
         name: "Validation"
-        deliverable: "Pass all 4 validation levels"
-        validation: "Principle alignment, structural integrity, verification coverage, real-world"
+        deliverable: "Pass all 5 validation levels"
+        validation: "Principle alignment, structural integrity, verification coverage, real-world, judgment (when .judgment/ exists)"
         
+      - step: 4.5
+        name: "Judgment Signal Check"
+        deliverable: "If the addition has shipped to a project with the Judgment phase active, scan the ledger for related patterns or unresolved corrections"
+        validation: |
+          Surface any pattern.yaml or unresolved ledger entries whose domain or
+          tags overlap with the addition under canonization. Patterns of repeat
+          correction in the addition's surface area are evidence the addition is
+          not yet ready for canonical status. This step is a no-op for projects
+          without .judgment/.
+        added_in: "3.0"
+
       - step: 5
         name: "Integration"
         deliverable: "Updated framework.md, README.md, cookbook.md"
@@ -1517,8 +1899,8 @@ ivd_canon:
 
 constraints:
   - name: "principle_immutability"
-    requirement: "The 8 core principles are immutable"
-    test: "Manual review: Do changes preserve all 8 principles?"
+    requirement: "The 9 core principles are immutable (1-8 since v1.0; Principle 9 since v3.0)"
+    test: "Manual review: Do changes preserve all 9 principles?"
     consequence_if_violated: |
       IVD loses its identity. Framework becomes arbitrary collection of practices.
       Reject any change that violates principles.
@@ -1569,7 +1951,7 @@ rationale:
     Why strict rules?
     
     1. Preserve core principles
-       - The 8 principles define IVD
+       - The 9 principles define IVD
        - Without them, IVD becomes arbitrary
        - Immutability ensures consistency
     
@@ -1720,7 +2102,7 @@ implementation:
       standard: "Must be validated in real project"
       purpose: "Ensure patterns are practical, not theoretical"
   
-  version: 2.4
+  version: 3.0
   
   review_cadence:
     - frequency: "Quarterly"
@@ -1802,6 +2184,137 @@ book_and_distribution:
 # ==============================================================================
 
 changelog:
+  - version: 3.1
+    date: "2026-04-23"
+    change: "MINOR — Bundled Canon (Human Translation Layer) into IVD. Added 4 canon_* MCP tools (canon_render, canon_check, canon_diff, canon_check_rules_installed) hosted inside this IVD MCP server, the canon-rules recipe (ivd/recipes/canon-rules.yaml v1.0) as the canonical Phase 0a rules block, and the canon/ engine package (deterministic Tier 1 inference + audit). Augmented ivd_init to report per-file agent_rules_status: { ivd, canon }. Tool count: 23 → 27. Backward compatible: all existing IVD clients pick up the new tools automatically with zero `mcpServers` config edit; opt-out via IVD_CANON_TOOLS_ENABLED=false."
+    reason: |
+      Canon is the human translation layer for AI output: a deterministic,
+      research-grounded set of communication invariants (R1–R14) that turn
+      AI replies into structured, legible, trustworthy output. The
+      canonical Canon spec lives at external/canon/ (PRD v0.7,
+      Tech Spec v0.6, system intent v5).
+
+      Architectural decision: bundle Canon's MCP tools INSIDE the existing
+      IVD MCP server (the same architectural pattern that ADR-015 used for
+      the Judgment phase) rather than ship a separate Canon MCP binary
+      with its own `mcpServers` configuration entry. The binding constraint
+      came directly from the user: "do not add a new entry to the config
+      because that will require all the clients … to update it; we want
+      all the existing clients to pick up the Canon MCP tools
+      automatically." Hosting inside the IVD MCP server satisfies that
+      constraint exactly — every Cursor / Claude Desktop / Claude Code /
+      Cline / Copilot / Windsurf / Zed client that already has IVD wired
+      up will discover canon_render, canon_check, canon_diff, and
+      canon_check_rules_installed on the next IVD release with no config
+      change.
+
+      Phase 0a (the markdown rules block) ships as the IVD recipe
+      canon-rules.yaml so it follows the same distribution machinery as
+      every other IVD recipe (ivd_load_recipe, ivd_list_recipes). The
+      canon_check_rules_installed tool detects whether the fence
+      (`<BEGIN-CANON v1.0>` / `<END-CANON v1.0>`) is installed in any of
+      the project's six known agent instruction files and returns a
+      ready-to-paste payload — but never writes to disk. The agent must
+      obtain explicit user consent before editing instruction files. This
+      split (server detects, agent asks, agent writes) keeps the trust
+      posture clean and prevents silent edits.
+
+      Version decision: v3.1 (not v4.0). Canon is a new SURFACE LAYER, not
+      a new IVD phase: it does not introduce a new immutable principle,
+      does not change the Intent / Implementation / Verification /
+      Judgment phase contract, and is fully backward-compatible. SemVer
+      minor is appropriate.
+    evidence: |
+      - PRD: external/canon/CANON_PRD.md (v0.7)
+      - Tech Spec: external/canon/CANON_TECH_SPEC.md (v0.6 §9B-§9C)
+      - Canon system intent: external/canon/canon_system_intent.yaml (v5)
+      - Smoke test: canon_render → CanonDocument with R1/R2/R5/R10/R14 marks; canon_check → reproducible audit hash; canon_diff → fixed/regressed/unchanged across two reports; canon_check_rules_installed → per-file IVD/Canon block detection on a temp project
+      - User constraint quote: "do not add a new entry to the config because that will require all the clients, like Cursor with the existing IVD MCP config, to update it"
+    files_changed:
+      - "ivd_system_intent.yaml — version → 3.1, canon_layer block added, v3.1 changelog entry"
+      - "canon/__init__.py — NEW (Canon engine package: contract, infer, render, audit)"
+      - "canon/contract.py — NEW (CanonContract, CanonDocument, AuditReport, AuditDiff, Stakes, Tier dataclasses + reproducible hash)"
+      - "canon/infer.py — NEW (Tier 1 deterministic Contract inferrer: R1 setting, R2 confidence cues, R5 action verbs, R10 folk-theory triggers)"
+      - "canon/render.py — NEW (CanonContract → CanonDocument deterministic renderer)"
+      - "canon/audit.py — NEW (R1/R2/R5/R10/R14 audit + R3/R4/R6/R7/R8/R9/R11/R12/R13 stub partials + AuditDiff)"
+      - "mcp_server/tools/canon.py — NEW (4 MCP tool handlers: canon_render, canon_check, canon_diff, canon_check_rules_installed; honors IVD_CANON_TOOLS_ENABLED opt-out)"
+      - "mcp_server/tools/__init__.py — exports for the 4 canon_* tools"
+      - "mcp_server/registry.py — 4 new Tool() entries + handler map (23 → 27)"
+      - "mcp_server/tools/recipes.py — RECIPE_INFO entry for canon-rules"
+      - "mcp_server/tools/scaffold.py — ivd_init now scans 6 canon target files and reports agent_rules_status: { ivd, canon } per file; next_steps surfaces canon_check_rules_installed when the Canon block is missing"
+      - "recipes/canon-rules.yaml — NEW (v1.0 canonical Canon Phase 0a rules block + 6 client adapter views + install_targets + block_markers)"
+      - "README.md — Canon section under MCP Tools, canon-rules row in Recipes, version badge 3.0 → 3.1, header tool count 23 → 27"
+
+  - version: 3.0
+    date: "2026-03-21"
+    change: "MAJOR — Added Judgment phase as IVD's 4th phase. Introduced Principle 9 (Judgment Compounds, immutable). Added validation Level 5 (judgment), canonization step 4.5 (judgment signal check), and 4 new artifact_types (ledger_entry, comparison_pair, pattern, baseline). Bundled the Judgment Feedback Loop framework into IVD as the operational canon."
+    reason: |
+      IVD v2.x covered the failure modes of underspecified intent (hallucination,
+      drift, missed constraints). It did not cover what happens after the system
+      ships and reality answers back: 'this is not what we wanted.' That signal
+      — the most expensive in the system — was historically thrown away or
+      stored as scattered prompt edits and retro notes.
+      
+      The Judgment phase makes correction-capture a first-class IVD activity:
+      capture (cheap) → codify (5 structured fields) → comparison-pair (Pearl
+      Rung-1 alternative to A/B) → pattern detection (3+ entries with shared
+      diagnosed_cause, weighted by your domain depth) → recommendation (with
+      build|buy|hire|partner sub-types when capability_addition) → you approval
+      → apply → context injection (patterns + recent corrections + corroborated
+      What Works hypotheses).
+      
+      Architectural decision (ADR-015): bundle into the existing user-ivd MCP
+      package rather than ship as a separate MCP. Rationale: every IVD user is
+      already exactly the user the Judgment phase serves; auto-pickup beats
+      separate install; unified branding; the .judgment/ folder gate keeps the
+      phase dormant for projects that don't need it.
+      
+      Version decision (ADR-016): bump to v3.0 (not v2.5). The addition of an
+      immutable principle and an entire new phase is a structural change to
+      what IVD is. v2.x users see a fully backward-compatible surface (the
+      Judgment phase is opt-in via .judgment/), but the framework's identity
+      changed: 3 phases became 4. SemVer demands a major bump.
+      
+      The Judgment phase is a structural answer to AI commoditization: model
+      parity is converging, but structured organizational judgment cannot be
+      downloaded — only accumulated. Principle 9 makes the accumulation
+      mechanical.
+    evidence: |
+      - Tech spec: ivd/_private/research/judgment_layer_integration_spec.md (1,400+ lines)
+      - Strategic foundation: ivd/_private/research/the_judgment_layer_thesis.md
+      - Seed ledger entries: ivd/_private/research/seed_ledger_entries/
+      - Decision records: DECISIONS.md ADR-015 (bundling), ADR-016 (v3.0 bump)
+    files_changed:
+      - "ivd_system_intent.yaml — Principle 9 added, validation Level 5, canonization step 4.5, artifact_types, version → 3.0"
+      - "judgment_layer.md — NEW (canonical operational doc for the Judgment phase)"
+      - "framework.md — Judgment phase section + ToC + version bump to v3.0"
+      - "purpose.md — 4-phase paragraph, Principle 9"
+      - "cookbook.md — Closing the Loop with Judgment chapter"
+      - "cheatsheet.md — Judgment quick-reference card"
+      - "README.md — Three (now Four) Phases section"
+      - "DECISIONS.md — ADR-015 (bundling), ADR-016 (v3.0)"
+      - "templates/{baseline,ledger-entry,comparison-pair,pattern}.yaml — NEW"
+      - "recipes/{capture-correction,comparison-pair,distill-pattern}.yaml — NEW"
+      - "recipes/README.md — Judgment Phase Patterns section added"
+      - "mcp_server/tools/judgment.py — thin facade (9 tools; v3.1 refactor delegates substance to ivd/judgment/ engine package)"
+      - "ivd/judgment/ — NEW in v3.1 (engine package: schema, store, freshness, detect, inject, validate)"
+      - "mcp_server/tests/unit/test_judgment.py — NEW in v3.1 (53 tests across 11 classes)"
+      - "mcp_server/tools/__init__.py — exports for 8 new tools"
+      - "mcp_server/registry.py — 8 new Tool entries + handler map (15 → 23)"
+      - "mcp_server/tools/validate.py — handles ledger_entry, comparison_pair, pattern, baseline"
+      - "mcp_server/tools/context.py — surfaces Judgment phase summary when .judgment/ active"
+      - "_private/book/manuscript/part-3-validation/chapter-17-judgment-loop/ — NEW chapter (11 files)"
+      - "_private/book/manuscript/part-1-foundations/chapter-02-ivd-paradigm/ — Judgment phase mention"
+      - "_private/book/manuscript/part-1-foundations/chapter-04-intent-artifacts/ — artifact types updated"
+      - "_private/book/manuscript/part-3-validation/chapter-11-validation-framework/ — Level 5 mention"
+      - "_private/book/manuscript/part-3-validation/chapter-16-meta-analysis/ — judgment compounding section"
+      - "_private/research/cognitive_foundation.md — NEW (research grounding)"
+      - "_private/research/seed_ledger_entries/README.md — NEW (provenance of seed entries)"
+      - "internal/frameworks/Judgment_Feedback_Loop_Framework.md — header redirect to ivd/judgment_layer.md"
+      - "internal/frameworks/Self_Intent_Self_Evaluation_Framework.md — cross-reference note added"
+      - "internal/frameworks/FRAMEWORK_CONSTELLATION.md — JFL row updated"
+      - "internal/frameworks/framework_constellation_intent.yaml — JFL canonical_location updated"
+
   - version: 2.4
     date: "2026-02-09"
     change: "Added Constraint-Segmented Implementation as canonical P4 extension; updated P6 single and multi-agent workflows; added research-backed threshold rule (3+ constraints)"

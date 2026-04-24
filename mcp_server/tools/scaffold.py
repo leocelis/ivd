@@ -3,13 +3,44 @@
 """Tools: ivd_scaffold, ivd_init — create intent artifacts and bootstrap projects."""
 
 import json
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 
 import yaml
 from termcolor import colored
 
 from mcp_server.tools._paths import get_framework_path, project_root
+
+
+# Fence detection (kept in sync with mcp_server/tools/canon.py).
+# `ivd_init` only needs presence/absence per kind to drive its next_steps
+# guidance — the authoritative install payload still comes from
+# `canon_check_rules_installed`. Both BEGIN and END fences must be present
+# to count as "installed" (a dangling BEGIN from a broken paste does not).
+_BEGIN_RE = re.compile(r"<BEGIN-(IVD|CANON)\s+v[\d.]+>", re.IGNORECASE)
+_END_RE = re.compile(r"<END-(IVD|CANON)\s+v[\d.]+>", re.IGNORECASE)
+
+
+def _detect_rule_blocks(file_path: Path) -> Dict[str, bool]:
+    """Return {'ivd': bool, 'canon': bool} for the rule blocks in a file.
+
+    A block counts as present only when both the BEGIN and END fences for
+    the same kind are found. Dangling fences (paste accidents) are ignored.
+    """
+    status = {"ivd": False, "canon": False}
+    if not file_path.exists():
+        return status
+    try:
+        text = file_path.read_text(errors="ignore")
+    except (OSError, PermissionError):
+        return status
+    begins = {m.group(1).lower() for m in _BEGIN_RE.finditer(text)}
+    ends = {m.group(1).lower() for m in _END_RE.finditer(text)}
+    for kind in ("ivd", "canon"):
+        if kind in begins and kind in ends:
+            status[kind] = True
+    return status
 
 LOG = "IVD Tools"
 
@@ -108,12 +139,36 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
     except (OSError, PermissionError):
         pass
 
-    agent_rules_detected = []
+    # Detect agent instruction files AND the IVD/Canon rule blocks inside
+    # them. The full Canon install payload comes from
+    # `canon_check_rules_installed` — this section just surfaces status so
+    # ivd_init's next_steps can recommend it. Implements
+    # canon_ivd_init_reports_canon_status (canon_system_intent.yaml v5).
+    agent_rules_detected: List[str] = []
+    agent_rules_status: Dict[str, Dict[str, bool]] = {}
+    canon_targets = [
+        ".cursorrules",
+        ".clinerules",
+        "CLAUDE.md",
+        ".github/instructions/canon.md",
+        "AGENTS.md",
+        ".windsurf/rules/canon.md",
+    ]
+    legacy_extra = [".aider.conf.yml"]
     if auto_fill:
-        for agent_file in [".cursorrules", ".clinerules", ".aider.conf.yml"]:
-            if (root / agent_file).exists():
+        for agent_file in canon_targets + legacy_extra:
+            target = root / agent_file
+            if target.exists():
                 agent_rules_detected.append(agent_file)
+                if agent_file in canon_targets:
+                    agent_rules_status[agent_file] = _detect_rule_blocks(target)
         scan_summary["agent_instruction_files"] = len(agent_rules_detected)
+        scan_summary["agent_files_with_canon"] = sum(
+            1 for s in agent_rules_status.values() if s.get("canon")
+        )
+        scan_summary["agent_files_with_ivd"] = sum(
+            1 for s in agent_rules_status.values() if s.get("ivd")
+        )
 
     next_steps = [
         "Review and enrich system_intent.yaml",
@@ -121,10 +176,30 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
         "Create intents for 3-5 critical modules (ivd_scaffold)",
     ]
     if agent_rules_detected:
-        next_steps.append(
-            f"Add IVD verification rules to {', '.join(agent_rules_detected)} "
-            "(see recipes/agent-rules-ivd.yaml for the rules block)"
-        )
+        # IVD rules guidance — when at least one detected file is missing the IVD block.
+        ivd_missing = [f for f, s in agent_rules_status.items() if not s.get("ivd")]
+        if ivd_missing:
+            next_steps.append(
+                f"Add IVD verification rules to {', '.join(ivd_missing)} "
+                "(see recipes/agent-rules-ivd.yaml for the rules block)"
+            )
+
+        # Canon rules guidance — same loop, opposite block.
+        canon_missing = [f for f, s in agent_rules_status.items() if not s.get("canon")]
+        if canon_missing:
+            next_steps.append(
+                "Add the Canon — Human Translation Layer rules block to "
+                f"{', '.join(canon_missing)}. Run `canon_check_rules_installed` "
+                "(or load `ivd_load_recipe canon-rules`) to get the per-client "
+                "ready-to-paste payload. The agent must ASK PERMISSION before "
+                "writing — `canon_check_rules_installed` never writes by itself."
+            )
+        elif agent_rules_status:
+            next_steps.append(
+                "Canon rules block detected in all known agent files. "
+                "Canon MCP tools (canon_render / canon_check / canon_diff) are "
+                "available automatically inside this IVD MCP server."
+            )
     if not written_to_disk:
         next_steps.insert(0, "Create system_intent.yaml with the template_content below")
 
@@ -141,6 +216,13 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
     if agent_rules_detected:
         result["agent_rules_detected"] = agent_rules_detected
         result["agent_rules_recipe"] = "recipes/agent-rules-ivd.yaml"
+        result["canon_rules_recipe"] = "recipes/canon-rules.yaml"
+    if agent_rules_status:
+        result["agent_rules_status"] = agent_rules_status
+        result["canon_check_tool"] = (
+            "canon_check_rules_installed — call this for the full per-client "
+            "install payload; it never writes to disk on its own."
+        )
 
     if not root_exists:
         result["remote_note"] = "Project root not accessible on server. Auto-scan skipped."

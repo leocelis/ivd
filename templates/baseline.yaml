@@ -1,0 +1,116 @@
+# {domain_slug}_baseline.yaml
+# Baseline Template — IVD Judgment Phase
+#
+# A baseline declares, per-domain, what "good" looks like and what assumptions
+# the project is operating under. Every ledger entry references a domain;
+# every domain MUST have a baseline before patterns can be promoted to
+# recommendations against it.
+#
+# SCHEMA NOTE: This template matches the runtime schema used by
+# `ivd_judgment_init` (seeder) and `validate_baseline` (validator).
+# Required fields: domain_id, leo_domain_depth, goal_calibration,
+#                  pattern_half_life_policy
+#
+# WORKFLOW:
+#   1. ivd_judgment_init creates one stub baseline per declared domain
+#   2. Fill goal_calibration and risk_hypotheses sections
+#   3. Patterns and recommendations cross-reference this baseline
+#   4. domain_reassessment recommendations may trigger a baseline rewrite
+#
+# PLACEMENT: <project_root>/.judgment/baselines/
+# REFERENCE: ivd/judgment_layer.md § "Step 0 — Baseline & Goal Calibration"
+
+# ----------------------------------------------------------------------------
+# IDENTITY
+# ----------------------------------------------------------------------------
+
+domain_id: ""                        # REQUIRED — short slug; matches domain field on ledger entries
+                                     # e.g. "narrative-pipeline", "lead-qualification"
+created: "{ISO-8601}"
+updated: "{ISO-8601}"
+version: "0.1"
+
+# ----------------------------------------------------------------------------
+# DOMAIN DEPTH
+# ----------------------------------------------------------------------------
+# Records your self-rated depth in this domain. Used to weight ledger entries
+# captured against this domain — see judgment_layer.md § "Expert Intuition Principle."
+
+leo_domain_depth: "expert"           # REQUIRED — expert | practitioner | adjacent | novice
+depth_rationale: ""                  # one-line justification (optional but recommended)
+
+# ----------------------------------------------------------------------------
+# GOAL CALIBRATION
+# ----------------------------------------------------------------------------
+# What does success look like for this domain? Both qualitative AND
+# measurable. Patterns are judged against these goals.
+#
+# WARNING: goal_calibration.measurable is empty by default — the validator
+# will emit a warning (Principle 2: Understanding Must Be Executable).
+
+goal_calibration:                    # REQUIRED
+  qualitative: ""                    # REQUIRED — describe what "good" looks like
+                                     # e.g. "character voices feel distinct across episodes"
+  measurable:                        # recommended — list of dicts: metric / target / source / monitor
+    - metric: ""                     # e.g. "tone_consistency_score"
+      target: ""                     # e.g. ">= 0.85 across 10 sampled episodes"
+      source: ""                     # automated | human_review | hybrid
+      monitor: ""                    # where the metric is tracked
+  out_of_scope:
+    - "{things this domain does NOT try to optimize}"
+
+# ----------------------------------------------------------------------------
+# RISK HYPOTHESES
+# ----------------------------------------------------------------------------
+# What are we worried about? These shape what kinds of corrections we expect
+# to capture. Risk hypotheses themselves can be falsified by the ledger.
+
+risk_hypotheses:
+  - id: "rh-1"
+    hypothesis: ""                   # e.g. "Removing few-shot examples will flatten tone"
+    severity: "medium"               # low | medium | high
+    falsifier: ""                    # what evidence would refute it
+    status: "open"                   # open | corroborated | refuted
+
+# ----------------------------------------------------------------------------
+# PATTERN FRESHNESS POLICY
+# ----------------------------------------------------------------------------
+# How long do patterns in this domain stay relevant?
+#   - Narrative/prompting domains: 30–60 days (model upgrades invalidate patterns fast)
+#   - Data integration / API contracts: 180–365 days
+#   - Business rules: 365+ days
+
+pattern_half_life_policy:            # REQUIRED
+  half_life_days: 90                 # default: 90 days — tune once you have data
+  rationale: ""                      # one-line justification
+
+# ----------------------------------------------------------------------------
+# SCALE AWARENESS
+# ----------------------------------------------------------------------------
+# More data reveals new failure modes. Record current scale so re-baselining
+# is triggered when scale changes by ~10x.
+
+scale_awareness:
+  current_volume: ""                 # e.g. "~100 generations/week"
+  next_threshold: ""                 # e.g. "10x volume OR first external user"
+
+# ----------------------------------------------------------------------------
+# DOMAIN REASSESSMENT TRIGGERS
+# ----------------------------------------------------------------------------
+# Hard signals that this domain itself may be the wrong abstraction —
+# canonical link to EIN kill criteria. See judgment_layer.md § "Step 4
+# — domain_reassessment."
+
+domain_reassessment_triggers:
+  - "{e.g. 'Same diagnosed_cause appears across 3 different domains in 30 days'}"
+  - "{e.g. 'goal_calibration metric stays below target across 4 baseline versions'}"
+  - "{e.g. 'capability_addition recommendations dominate (>60%) for this domain'}"
+
+# ----------------------------------------------------------------------------
+# CHANGELOG
+# ----------------------------------------------------------------------------
+
+changelog:
+  - date: "{ISO-8601}"
+    change: "Initial baseline"
+    reason: ""

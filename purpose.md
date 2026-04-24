@@ -142,9 +142,9 @@ Documentation is primary → Code extracted (tooling killed adoption)
 
 ### Intent-Verified Development (AI Agents Era)
 ```
-AI writes intent → AI implements → AI verifies
+AI writes intent → AI implements → AI verifies → AI compounds judgment
 ```
-*Designed for AI agents. Structured, verifiable, executable.*
+*Designed for AI agents. Structured, verifiable, executable. And — as of v3.0 — the corrections that come back from real-world use are themselves captured, codified, clustered, and fed back as context. The fourth phase (Judgment) is what turns single-run quality into compounding organizational judgment, the only kind of advantage that does not commoditize when the model layer commoditizes.*
 
 ### The Contract Model
 
@@ -571,12 +571,45 @@ That's why it exists.
 
 ---
 
+## The Fourth Phase: Judgment *(added in v3.0)*
+
+The first three phases — Intent, Implementation, Verification — solve
+*"how do we get the first draft right?"* The fourth phase, **Judgment**,
+solves the question that comes after the system ships:
+
+> *Reality answered back. Now what?*
+
+When a domain expert says "this isn't what we wanted," when an audience
+signal flags a regression, when two real runs of the same workflow diverge —
+that answer-back is the most expensive signal a system has, and historically
+it has been thrown away. The Judgment phase makes it a first-class IVD
+artifact:
+
+1. **Capture** the correction in under 30 seconds (raw text + domain + 3 metadata fields)
+2. **Codify** it into 5 structured fields (expected_result, detected_via, diagnosed_cause, proposed_fix, fix_action_type)
+3. **Cluster** into patterns (3+ entries with the same diagnosed_cause, weighted by domain depth)
+4. **Distill** into recommendations (with `build | buy | hire | partner` sub-types when the fix needs new capability)
+5. **Approve** at the human gate (the only mandatory human step)
+6. **Apply, inject** into next runs' context, **resolve** member entries
+
+**Why "compounds":** without structure, corrections decay (lost when someone
+leaves). With structure, they accumulate — and accumulated organizational
+judgment is precisely the moat that survives model commoditization.
+
+**Activation:** opt-in per project via the `.judgment/` folder at the project
+root. Most projects don't need a Judgment phase on day one; forcing it
+everywhere would dilute IVD's first three phases.
+
+Canonical doc: [judgment_layer.md](judgment_layer.md). Principle: 9 (Judgment Compounds, immutable).
+
+---
+
 ## Reference
 
 **Governed by:** `ivd_system_intent.yaml`  
-**Version:** 2.4  
+**Version:** 3.1  
 **Created:** January 24, 2026  
-**Updated:** March 19, 2026  
+**Updated:** March 21, 2026 (Judgment phase added; Principle 9)  
 **Author:** Leo Celis
 
 ---

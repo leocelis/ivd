@@ -6,6 +6,7 @@ Reusable patterns for common development scenarios.
 
 ### Verification & Agent Discipline
 - **agent-rules-ivd.yaml** — IVD verification rules for agent instruction files (`.cursorrules`, `.clinerules`, Copilot system prompts). Embeds the full 6-rule IVD workflow: intent before implementation, post-implementation verification protocol, stress-test step, empirical refinement, constraint quality. **Start here.**
+- **canon-rules.yaml** — Canon (Human Translation Layer) rules block (Phase 0a). Teaches any LLM-driven agent to emit R1 setting phase, R2 confidence markers (`✓ verified` / `~ inferred` / `? assumed`), R5 verification beats on irreversible actions, R10 folk-theory corrections, and R14 bounded identity. One canonical source → six per-client adapter views (Cursor, Cline, Claude Code, Copilot, Codex, Windsurf). Verified programmatically by the `canon_check` MCP tool and detected/installed via `canon_check_rules_installed` (never writes — always asks).
 
 ### Multi-Agent Patterns
 - **coordinator-intent-propagation.yaml** — Multi-agent coordination with intent delegation (coordinator writes intent for each agent it routes to)
@@ -28,6 +29,12 @@ Reusable patterns for common development scenarios.
 ### Data Patterns
 - **data-field-mapping.yaml** — Field mapping and data sources for integrations and ETL
 - **doc-meeting-insights.yaml** — Extract structured insights from meeting transcripts
+
+### Judgment Phase Patterns (IVD v3.0+)
+*Activated when a project has a `.judgment/` folder at its root. See `../judgment_layer.md`.*
+- **capture-correction.yaml** — Capture and codify a single correction into the Judgment ledger
+- **comparison-pair.yaml** — Pair two real runs to derive diagnostic hypotheses (Rung-1 alternative to A/B)
+- **distill-pattern.yaml** — Convert an emergent pattern into a you-approvable recommendation (with optional draft recipe)
 
 ## How to Use
 

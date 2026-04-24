@@ -1,0 +1,124 @@
+# {YYYY-MM-DD}_{short-slug}_comparison_pair.yaml
+# Comparison Pair Template — IVD Judgment Phase
+#
+# Use when two real runs of the same workflow produce noticeably different
+# outputs and you want to derive a *diagnostic* (not causal) hypothesis from
+# observed differences. This is NOT an A/B test — see ivd/judgment_layer.md
+# § "Comparison Pair Analysis: Why Not A/B?"
+#
+# WORKFLOW:
+#   1. ivd_judgment_pair(run_a, run_b) → creates this file in state "raw"
+#   2. ivd_judgment_codify(entry_id)   → returns codify prompt
+#   3. ivd_judgment_save_codified(...) → fills hypothesis fields
+#   4. ivd_judgment_detect_patterns()  → may join a pattern after corroboration
+#
+# A pair starts as a single ledger entry with entry_type: "comparison_pair".
+# This template extends ledger-entry.yaml with the pair-specific fields.
+#
+# PLACEMENT: <project_root>/.judgment/ledger/
+# REFERENCE: ivd/judgment_layer.md § "Step 3 — Pair / Comparison Pair Analysis"
+
+# ----------------------------------------------------------------------------
+# IDENTITY (same as ledger-entry.yaml)
+# ----------------------------------------------------------------------------
+
+id: "{generated-uuid-v4}"
+created: "{ISO-8601-with-timezone}"
+state: "raw"
+
+entry_type: "comparison_pair"
+source: "comparison"
+domain: ""
+agent_class: ""
+model: ""
+system_scope: ""
+leo_domain_depth: "expert"
+originated_from_tool: null
+
+# ----------------------------------------------------------------------------
+# THE TWO RUNS
+# ----------------------------------------------------------------------------
+
+run_a:
+  ref: ""                            # path or URI to the artifact / log
+  observed_outcome: ""               # short qualitative outcome
+  inputs_summary: ""                 # what the run was asked to do
+  context_summary: ""                # any context the model received
+  metadata: {}                       # OPTIONAL — model, prompt_version, recipe_version, timestamp, ...
+
+run_b:
+  ref: ""
+  observed_outcome: ""
+  inputs_summary: ""
+  context_summary: ""
+  metadata: {}
+
+# ----------------------------------------------------------------------------
+# OBSERVED DIFFERENCES
+# ----------------------------------------------------------------------------
+# Plain-language list of things that differ between A and B. List BOTH the
+# inputs/conditions that differed AND the outputs/outcomes that differed.
+
+observed_differences:
+  conditions:
+    - "{e.g. run_b had longer recipe_version 1.3 vs 1.1 in run_a}"
+  outcomes:
+    - "{e.g. run_b dialogue felt flat; run_a had distinct character voice}"
+
+# ----------------------------------------------------------------------------
+# CODIFIED FIELDS — diagnostic hypotheses, NOT causal claims
+# ----------------------------------------------------------------------------
+# Pearl's Ladder of Causation: this lives at Rung 1 (association). Each
+# hypothesis is plausible until corroborated by 2+ similar pairs.
+
+raw_correction: |
+  {free-form description of why this pair was captured}
+
+expected_result: ""                  # what a "good" run looks like for this domain
+detected_via: ""                     # who/what flagged the difference
+
+diagnostic_hypotheses:
+  - hypothesis: ""                   # "Removing the few-shot examples flattened tone"
+    supports_outcome: ""             # which outcome it explains
+    confidence_at_capture: "low"     # low | medium | high
+    competing_hypotheses:
+      - "{alternative explanation that the data does NOT yet rule out}"
+
+# Single best diagnosed cause picked from diagnostic_hypotheses (REQUIRED
+# at codify time). Stays as "hypothesis" until corroborated.
+diagnosed_cause: ""
+
+# proposed_fix follows the same shape as ledger-entry.yaml
+proposed_fix: ""
+fix_action_type: ""                  # prompt_patch | intent_revision | capability_addition | domain_reassessment
+capability_subtype: null
+decision_rationale: ""
+
+# ----------------------------------------------------------------------------
+# CORROBORATION — promotes the hypothesis from plausible → corroborated
+# ----------------------------------------------------------------------------
+
+corroborated_by:
+  - pair_id: ""                      # other comparison_pair entries reaching the same hypothesis
+  - pair_id: ""
+
+# When >= 2 entries corroborate, the JFL "What Works" injector is allowed
+# to surface this as generative guidance — see judgment_layer.md
+# § "Injection Strategy / What Works Layer."
+injection_status: "plausible"        # plausible | corroborated | refuted
+
+# ----------------------------------------------------------------------------
+# PATTERN MEMBERSHIP / RESOLUTION (same as ledger-entry.yaml)
+# ----------------------------------------------------------------------------
+
+pattern_id: null
+freshness_at_last_inject: null
+resolved_at: null
+resolved_by_recommendation_id: null
+resolution_notes: ""
+
+changelog:
+  - timestamp: "{ISO-8601}"
+    from_state: null
+    to_state: "raw"
+    actor: "ivd_judgment_pair"

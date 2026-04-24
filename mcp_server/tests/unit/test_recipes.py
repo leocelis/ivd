@@ -33,6 +33,17 @@ class TestListRecipes:
         names = [r["name"] for r in data["recipes"]]
         assert "agent-classifier" in names
         assert "workflow-orchestration" in names
+        assert "canon-rules" in names, (
+            "canon-rules recipe missing from ivd_list_recipes — "
+            "agents cannot discover the Phase 0a rules block via IVD tooling."
+        )
+
+    def test_canon_rules_recipe_has_description(self):
+        data = json.loads(list_recipes_tool())
+        canon = next((r for r in data["recipes"] if r["name"] == "canon-rules"), None)
+        assert canon is not None
+        assert "Canon" in canon["description"] or "Human Translation" in canon["description"]
+        assert canon.get("complexity") == "low"
 
 
 class TestLoadRecipe:
@@ -55,3 +66,15 @@ class TestLoadRecipe:
         result = load_recipe_tool("workflow-orchestration")
         # YAML content should contain recipe-like sections
         assert "description" in result or "pattern" in result or "recipe" in result
+
+    def test_load_canon_rules_recipe(self):
+        """canon-rules must be loadable and contain the fence markers and install_targets."""
+        result = load_recipe_tool("canon-rules")
+        assert "error" not in result.lower() or "BEGIN-CANON" in result
+        # Fence convention must be present so the detector can find it.
+        assert "<BEGIN-CANON v1.0>" in result
+        assert "<END-CANON v1.0>" in result
+        # Installation targets manifest must be present.
+        assert "install_targets" in result
+        # At least the Cursor adapter must ship.
+        assert "cursorrules_format" in result

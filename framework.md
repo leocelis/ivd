@@ -1,12 +1,13 @@
 # Intent-Verified Development (IVD): The Framework for the AI Agents Era
 
-**Purpose:** AI writes intent, implements against it, verifies—for code, docs, architecture, research, and any AI-produced artifact  
+**Purpose:** AI writes intent, implements against it, verifies, and compounds judgment from real-world corrections—for code, docs, architecture, research, and any AI-produced artifact  
 **Status:** Production Ready  
-**Version:** 2.4  
+**Version:** 3.1  
 **Created:** January 23, 2026  
-**Updated:** March 19, 2026 (Constraint-Segmented Implementation, FDR-014; constraint quality framework; source hierarchy; cognitive foundation)
+**Updated:** April 23, 2026 (Canon — Human Translation Layer added as Phase 0; 4 canon_* MCP tools; canon-rules recipe)  
+**Updated:** March 21, 2026 (Judgment phase added as IVD's 4th phase; Principle 9 — Judgment Compounds; validation Level 5; canonization step 4.5)
 
-> **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 8 principles, 4 validation levels, and 6-step canonization process defined in the system intent.
+> **📋 Framework Evolution Rules:** See `ivd_system_intent.yaml` for the canonical reference on how to extend IVD. All additions to the framework must follow the 9 principles, 5 validation levels, and 6-step canonization process defined in the system intent.
 
 ---
 
@@ -19,10 +20,11 @@
 5. [Intent Coverage Assessment](#intent-coverage-assessment)
 6. [Recipes (NEW in v1.1)](#recipes-reusable-patterns)
 7. [Verification System](#verification-system)
-8. [Implementation Guide](#implementation-guide)
-9. [Real-World Example](#real-world-example)
-10. [Comparison Matrix](#comparison-matrix)
-11. [Extending IVD Framework](#extending-ivd-framework)
+8. [Judgment Phase (NEW in v3.0)](#judgment-phase)
+9. [Implementation Guide](#implementation-guide)
+10. [Real-World Example](#real-world-example)
+11. [Comparison Matrix](#comparison-matrix)
+12. [Extending IVD Framework](#extending-ivd-framework)
 
 ---
 
@@ -634,6 +636,57 @@ Intent artifacts can include an optional **inversion_opportunities** block: prob
 **When to use Principle 8:**
 - **Use** when you are *designing* (new or major intent): the problem has a conventional or "obvious" approach, and you care about performance, scale, security, or maintainability. Apply before locking the design.
 - **Skip** when the change is small (bug fix, config, refactor), when there is no clear default approach, or when the obvious solution is good enough and you are not optimizing for alternatives.
+
+---
+
+### Principle 9: Judgment Compounds *(added in v3.0)*
+
+**Corrections from real-world use, when captured, codified, and structured into patterns, are the most valuable form of contextual knowledge a system has — and the only knowledge that does not commoditize when the model layer commoditizes.**
+
+Principles 1-8 cover the cost of getting intent right the *first* time
+(hallucinations, drift, missed constraints). Principle 9 covers what happens
+*after* the system ships and reality answers back: *"this is not what we
+wanted."* That answer-back is the most expensive signal a system has;
+historically it has been thrown away or stored as scattered prompt edits and
+retro notes.
+
+The Judgment phase (IVD's 4th phase, see [Judgment Phase](#judgment-phase) below) makes the answer-back a first-class IVD activity:
+
+1. **Capture** corrections cheaply (< 30 seconds; raw text + domain + 3 metadata fields)
+2. **Codify** into 5 structured fields (expected_result, detected_via, diagnosed_cause, proposed_fix, fix_action_type)
+3. **Cluster** into patterns (3+ entries with shared `diagnosed_cause`, weighted by your `domain_depth`)
+4. **Distill** into recommendations (with `build | buy | hire | partner` sub-types when the fix is a `capability_addition`)
+5. **Approve** at your gate (the only mandatory human gate)
+6. **Apply**, **inject** into next runs' context, **resolve** member entries
+
+**Why "compounds":** each captured correction increases the value of the
+next run. Without structure, corrections decay (lost when someone leaves).
+With structure, they accumulate — and accumulated organizational judgment
+is precisely the moat that survives model commoditization.
+
+**Activation:** opt-in via the `.judgment/` folder at the project root. All
+9 `ivd_judgment_*` MCP tools are dormant unless the folder exists. (The single
+exception is `ivd_judgment_check_installed`, added in v3.1, which is read-only
+and reports activation state without writing to disk so agents can offer the
+init payload to the user.) A server-level kill switch
+(`IVD_JUDGMENT_TOOLS_ENABLED=false`) lets operators disable the entire phase
+without de-registering the tools — mirrors `IVD_CANON_TOOLS_ENABLED`.
+
+**When to use Principle 9:**
+- **Use** when the project has shipped at least one workflow to a real
+  audience (you, end users, downstream agents) and corrections recur across
+  runs.
+- **Skip** for single-shot scripts, experiments, or projects where
+  corrections will not recur.
+
+**See it work.** A runnable showcase under [`examples/judgment_demo/`](./examples/judgment_demo/) walks the full loop in ~5 seconds (capture × 3 → codify × 3 → detect → inject) and demonstrates the agent generating a completely different test file on the same request after Judgment compounds — adopting the project's local testing conventions (`renderWithProviders`, MSW handlers, `userEvent.setup()`) that **cannot** have come from the LLM's training data. This is the canonical Judgment use case for AI coding agent users: project-specific conventions that no static system-prompt nudge can teach, only repo-derived Patterns can. Offline mode uses outputs literally captured from `gpt-4o-mini` at temperature=0; with an `OPENAI_API_KEY` it makes a real LLM call (~$0.001) and shows the live behavioral diff:
+
+```bash
+python examples/judgment_demo/run_demo.py
+```
+
+Canonical doc: [`judgment_layer.md`](./judgment_layer.md). Decision records:
+`DECISIONS.md` ADR-015 (bundling rationale), ADR-016 (v3.0 bump rationale).
 
 ---
 
@@ -2327,6 +2380,190 @@ Last verified: 2026-01-23 14:30:00 UTC
 
 ---
 
+## Judgment Phase
+
+> **Status:** Canonical (added in v3.0)
+> **Activation:** Dormant unless `<project_root>/.judgment/` exists
+> **Canonical operational doc:** [`judgment_layer.md`](./judgment_layer.md)
+> **Principle:** Principle 9 — Judgment Compounds (immutable)
+
+The first three IVD phases — Intent, Implementation, Verification — answer the
+question *"How do we get the first draft right?"* The Judgment phase answers
+the question that comes *after* the system ships:
+
+> *Reality answered back. Now what?*
+
+That answer-back — the correction from a domain expert, an audience signal, a
+runtime exception, or two real runs that diverged — is the most expensive
+signal a system has, and historically it has been thrown away. The Judgment
+phase makes it a first-class IVD artifact.
+
+### Why a 4th Phase
+
+Principles 1–8 cover the cost of getting intent right the first time
+(hallucinations, drift, missed constraints, premature defaults). They do not
+cover what happens when the intent itself was wrong, the verification passed,
+and the world produced an outcome we didn't want. Without a structured way to
+capture, codify, cluster, and feed back those corrections, every project
+starts judgment from zero — and any moat the first three phases built erodes
+when the model layer commoditizes.
+
+The Judgment phase is the structural answer: model parity is converging, but
+**structured organizational judgment cannot be downloaded**. It can only be
+accumulated. Principle 9 makes the accumulation mechanical.
+
+### The Loop (10 steps)
+
+```
+0. Baseline & Goal Calibration  ──┐
+                                  │
+1. Capture (raw correction)       │  agent + you
+2. Codify (5 structured fields)   │
+3. Pair (optional comparison)     │
+                                  │
+4. Detect Patterns ───────────────┤  detector
+                                  │
+5. Propose Recommendation ────────┤  drafter
+                                  │
+6. Approve (you)  ────────────────┤  GATE  ← only mandatory human gate
+                                  │
+7. Apply Fix                      │  agent
+                                  │
+8. Inject Context (next runs)     │  injector
+                                  │
+9. Resolve / Archive              │  bookkeeper
+                                  ─┘
+```
+
+### Activation: the `.judgment/` folder gate
+
+The Judgment phase is **opt-in per project**. Eight of the nine
+`ivd_judgment_*` MCP tools return a "judgment phase not initialized" error
+unless the project root contains `.judgment/`. The lone exception,
+`ivd_judgment_check_installed` (added in v3.1), is read-only and intentionally
+runnable in any project — its job is to detect the absence of `.judgment/` and
+return the ready-to-call init payload the agent must offer to the user with
+explicit permission, mirroring `canon_check_rules_installed`. The project root
+contains:
+
+```
+<project_root>/.judgment/
+├── baselines/        # one per domain
+├── ledger/           # raw → codified → (paired | pattern-member) → resolved → archived
+├── patterns/         # detected patterns (≥ 3 entries with shared diagnosed_cause)
+├── recommendations/  # drafted + approved recommendations
+└── config.yaml       # injection budget, freshness defaults, weights
+```
+
+Bootstrap with `ivd_judgment_init(project_root, domains=[...])`. Most
+projects do not need a Judgment phase on day one; forcing it everywhere
+would dilute the rest of IVD.
+
+### The 9 Tools
+
+| Tool | Purpose |
+|---|---|
+| `ivd_judgment_init` | Bootstrap `.judgment/` skeleton + per-domain baselines |
+| `ivd_judgment_capture` | Write a raw ledger entry (target: < 30 seconds) |
+| `ivd_judgment_codify` | Return a structured codify prompt for the agent |
+| `ivd_judgment_save_codified` | Persist the agent's filled codify fields |
+| `ivd_judgment_pair` | Capture a comparison_pair entry |
+| `ivd_judgment_detect_patterns` | Scan ledger; create/update patterns |
+| `ivd_judgment_inject_context` | Return prioritized context block for downstream agents |
+| `ivd_judgment_propose_recommendation` | Draft a recommendation against a pattern |
+| `ivd_judgment_check_installed` | Workspace/project activation visibility (read-only; v3.1) |
+
+Total IVD tool surface in v3.1: **28** (15 core + 9 Judgment + 4 Canon).
+Server-level opt-out for the Judgment tools: `IVD_JUDGMENT_TOOLS_ENABLED=false`
+(mirrors Canon's `IVD_CANON_TOOLS_ENABLED`; tools remain registered when
+disabled and return an `enabled=false` payload).
+
+### Comparison Pair Analysis (Rung-1 alternative to A/B)
+
+Most production AI systems cannot run strict A/B tests — creative outputs are
+not repeatable, multi-agent runtimes share state, low-volume domains never
+reach significance. The Judgment phase canonizes **comparison pairs** as the
+Rung-1 (Pearl, *Book of Why*) alternative: capture two real runs as a single
+ledger entry, enumerate observed differences in conditions and outcomes,
+generate diagnostic hypotheses with at least one competing hypothesis, and
+mark the working hypothesis as **plausible** until 2+ independent pairs
+corroborate it.
+
+Only **corroborated** hypotheses graduate to the **What Works** layer of
+context injection — generative guidance ("when X, prefer Y") rather than
+failure-avoidance ("don't do X"). This is intentional: compounding requires
+the system to learn what works, not just what doesn't.
+
+### Capability Addition (`build | buy | hire | partner`)
+
+When `fix_action_type == capability_addition`, recommendations must pick a
+sub-type:
+
+- **build** — capability is core, depth is expert, no reasonable alternative
+- **buy** — mature commoditized solution exists; opportunity cost > license cost
+- **hire** — capability requires durable human judgment, not automation
+- **partner** — capability is adjacent; partner already excels
+
+This is the most strategic output of the loop: it tells you *which tool to
+build next*, with explicit rationale rooted in repeated real-world
+corrections.
+
+### Expert Intuition Principle
+
+Pattern confidence is weighted by `leo_domain_depth` (the practitioner's
+self-rated depth in the domain): **expert 1.0 / practitioner 0.7 / adjacent
+0.4 / novice 0.2**. AI reviewers (e.g. Erik in ADA) are **structural
+conformance checkers**, not quality judges — their corrections enter as
+`source: runtime` and are not weighted by `leo_domain_depth`. This separation
+is what lets the loop amplify weak expert signals into reliable patterns
+without diluting them with structural noise.
+
+### Pattern Freshness
+
+Patterns age. A pattern about claude-3 prompting is stale when the project
+moved to claude-4. Each pattern carries a `half_life_days` (defaults from the
+domain baseline):
+
+| freshness | rule | injectable? |
+|---|---|---|
+| `fresh` | age ≤ half_life | yes |
+| `aging` | half_life < age ≤ 2 × half_life | yes |
+| `stale` | 2 × half_life < age ≤ 3 × half_life | flagged, requires re-validation |
+| `expired` | age > 3 × half_life | **no** |
+
+### Tool-Originated Failure Tracking
+
+If a pattern's members are dominated by entries with the same
+`originated_from_tool`, the tool is flagged in
+`pattern.originated_from_tools` and `net_pattern_delta` increments. A tool
+with positive `net_pattern_delta` is producing more patterns (failures) than
+it eliminates — a candidate for deprecation. This is how the Judgment phase
+keeps the recipe library honest.
+
+### Schema Authority
+
+| Artifact | Template | Recipe |
+|---|---|---|
+| Baseline | `templates/baseline.yaml` | — |
+| Ledger entry | `templates/ledger-entry.yaml` | `recipes/capture-correction.yaml` |
+| Comparison pair | `templates/comparison-pair.yaml` | `recipes/comparison-pair.yaml` |
+| Pattern | `templates/pattern.yaml` | `recipes/distill-pattern.yaml` |
+
+Validator (`ivd_validate`) accepts these `artifact_type` values: `ledger_entry`, `comparison_pair`, `pattern`, `baseline`.
+
+### When to Skip the Judgment Phase
+
+- Single-shot scripts or experiments
+- Greenfield projects without a baseline of "what works"
+- Projects where corrections will not recur (one-off integrations)
+- Projects without a domain expert to capture corrections
+
+For deeper coverage — confidence math, freshness thresholds, the What Works
+layer, the full state machine, and worked examples — see
+[`judgment_layer.md`](./judgment_layer.md).
+
+---
+
 ## Implementation Guide
 
 ### Step 0a: Teaching When You Don't Understand the Domain *(Optional)*
@@ -2949,10 +3186,11 @@ All extensions to IVD must follow the rules defined in `ivd_system_intent.yaml`:
 **Read `ivd_system_intent.yaml` to understand:**
 
 1. **What makes something canonical IVD?**
-   - Must align with all 8 principles
-   - Must pass all 4 validation levels
+   - Must align with all 9 principles (Principle 9 *Judgment Compounds* applies only to the optional 4th phase, opt-in via `<project_root>/.judgment/`)
+   - Must pass all applicable validation levels (Levels 1–4 always; Level 5 *Judgment Signal Coverage* only when the Judgment phase is active)
    - Must have comprehensive examples (500+ lines)
    - Must be validated in production
+   - For additions touching the Judgment phase: pass canonization step 4.5 (Judgment Signal Check)
 
 2. **What's the process for adding something?**
    - Identify gap (5+ real-world cases)
@@ -2963,7 +3201,7 @@ All extensions to IVD must follow the rules defined in `ivd_system_intent.yaml`:
    - Validate against all principles
 
 3. **What will be rejected?**
-   - Violates any of the 8 principles
+   - Violates any of the 9 principles
    - Timeline references in documentation
    - No test paths for constraints
    - No evidence for rationale
@@ -3009,7 +3247,7 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 
 ---
 
-**Version:** 2.4  
+**Version:** 3.1  
 **Status:** Production Ready  
 **Maintained by:** Leo Celis  
-**Key Insight:** The AI writes the intent, implements against it (constraint-segmented for 3+ constraints), verifies—eliminating many-turns and hallucinations.
+**Key Insight:** The AI writes the intent, implements against it (constraint-segmented for 3+ constraints), verifies, and compounds judgment from real-world corrections — eliminating many-turns and hallucinations.

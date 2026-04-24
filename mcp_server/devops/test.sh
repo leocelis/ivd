@@ -6,12 +6,13 @@
 # Activates venv and runs pytest.
 #
 # Usage:
-#   ./mcp_server/devops/test.sh                  # all tests (unit + e2e)
-#   ./mcp_server/devops/test.sh --unit           # unit tests only
-#   ./mcp_server/devops/test.sh --e2e            # e2e tests only
-#   ./mcp_server/devops/test.sh --smoke          # smoke tests (live server)
-#   ./mcp_server/devops/test.sh -v               # verbose output
-#   ./mcp_server/devops/test.sh -k "validate"    # filter by name
+#   ./mcp_server/devops/test.sh                       # all tests (unit + integration + e2e)
+#   ./mcp_server/devops/test.sh --unit                # unit tests only
+#   ./mcp_server/devops/test.sh --integration         # integration tests only (real disk I/O, no mocks)
+#   ./mcp_server/devops/test.sh --e2e                 # e2e tests only
+#   ./mcp_server/devops/test.sh --smoke               # smoke tests (live server)
+#   ./mcp_server/devops/test.sh -v                    # verbose output
+#   ./mcp_server/devops/test.sh -k "validate"         # filter by name
 
 set -euo pipefail
 
@@ -37,6 +38,11 @@ case "${1:-}" in
         echo "Running unit tests..."
         python -m pytest "$TESTS_DIR/unit/" "$@"
         ;;
+    --integration)
+        shift
+        echo "Running integration tests (real disk I/O, no mocks)..."
+        python -m pytest "$TESTS_DIR/integration/" "$@"
+        ;;
     --e2e)
         shift
         echo "Running e2e tests..."
@@ -51,10 +57,11 @@ case "${1:-}" in
         echo "Usage: $0 [command] [pytest args]"
         echo ""
         echo "Commands:"
-        echo "  (default)    All tests (unit + e2e)"
-        echo "  --unit       Unit tests only"
-        echo "  --e2e        E2E tests only"
-        echo "  --smoke      Smoke tests (live server)"
+        echo "  (default)      All tests (unit + integration + e2e)"
+        echo "  --unit         Unit tests only"
+        echo "  --integration  Integration tests only (real disk I/O, no mocks)"
+        echo "  --e2e          E2E tests only"
+        echo "  --smoke        Smoke tests (live server)"
         echo ""
         echo "Pytest args (pass-through):"
         echo "  -v           Verbose output"
@@ -63,7 +70,7 @@ case "${1:-}" in
         echo "  -x          Stop on first failure"
         ;;
     *)
-        echo "Running all tests (unit + e2e)..."
+        echo "Running all tests (unit + integration + e2e)..."
         python -m pytest "$TESTS_DIR" --ignore="$TESTS_DIR/smoke" "$@"
         ;;
 esac

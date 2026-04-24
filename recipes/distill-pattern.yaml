@@ -1,0 +1,234 @@
+# ==============================================================================
+# IVD Recipe: Distill Pattern → Recommendation (Judgment Phase)
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-03-21
+# Category: judgment
+# ==============================================================================
+
+recipe:
+  name: "Distill Pattern → Recommendation"
+  version: "1.0"
+  category: "judgment"
+  created: "2026-03-21"
+  author: "Leo Celis"
+
+  description: |
+    Pattern for converting an emergent Judgment-phase pattern into an
+    actionable, you-approvable recommendation that closes the loop on a
+    class of corrections.
+
+    A pattern emerges automatically when 3+ ledger entries in the same
+    domain share a diagnosed_cause. This recipe walks through:
+      1. Pattern detection
+      2. Recommendation drafting (with optional draft_recipe_yaml when the
+         pattern would be served best by a new reusable recipe)
+      3. you approval (the only manual gate in the loop)
+      4. Application + ledger entry resolution
+      5. Pattern → status: addressed
+
+    The IVD principle: judgment compounds only when patterns become
+    artifacts the system enforces — recipes, intent revisions, capability
+    additions — not just observations in a journal.
+
+  applies_to:
+    - "Recurring corrections (3+) in a single domain"
+    - "Recurring failures attributable to a specific tool (originated_from_tool)"
+    - "Patterns that span multiple domains (candidates for domain_reassessment)"
+
+  when_to_use:
+    - "ivd_judgment_detect_patterns surfaces a pattern with weighted_confidence >= threshold"
+    - "Pattern has freshness in {fresh, aging} (not stale, not expired)"
+    - "Domain has a baseline.yaml (otherwise: add baseline first)"
+
+  when_NOT_to_use:
+    - "Single-occurrence corrections (no pattern yet)"
+    - "Stale or expired patterns (re-validate before acting)"
+    - "Patterns whose members all have leo_domain_depth in {adjacent, novice} without external corroboration"
+
+# ------------------------------------------------------------------------------
+# WORKFLOW
+# ------------------------------------------------------------------------------
+
+workflow_pattern:
+  steps:
+    - step: 1
+      name: "Detect / refresh patterns"
+      tool: "ivd_judgment_detect_patterns"
+      output: "List of patterns with member_count, weighted_confidence, freshness"
+
+    - step: 2
+      name: "Pick a pattern to distill"
+      criteria:
+        - "freshness in {fresh, aging}"
+        - "weighted_confidence >= 0.6 (configurable)"
+        - "fix_action_type majority-agreement among members"
+      output: "Selected pattern_id"
+
+    - step: 3
+      name: "Draft a recommendation"
+      tool: "ivd_judgment_propose_recommendation"
+      inputs:
+        - "pattern_id"
+      output: |
+        Recommendation document with:
+          - recommended_fix
+          - fix_action_type
+          - capability_subtype (if applicable)
+          - rationale (cites member ledger entries)
+          - draft_recipe_yaml (OPTIONAL — when fix would be best served by a new recipe)
+          - blast_radius_estimate
+          - rollback_plan
+
+    - step: 4
+      name: "you approval (manual gate)"
+      action: "you review and either approves, modifies, or rejects"
+      output: "Approval status; rejected recommendations are kept for audit (not deleted)"
+
+    - step: 5
+      name: "Apply the fix"
+      action: |
+        Depending on fix_action_type:
+          - prompt_patch          → edit the relevant prompt(s); bump prompt_version
+          - intent_revision       → update intent.yaml; bump version; re-validate
+          - capability_addition   → execute build|buy|hire|partner sub-workflow
+          - domain_reassessment   → trigger EIN kill-criteria review (see judgment_layer.md)
+        If draft_recipe_yaml present: review, refine, save to ivd/recipes/
+
+    - step: 6
+      name: "Resolve member ledger entries"
+      action: |
+        For each entry in pattern.members:
+          - set state → "resolved"
+          - set resolved_by_recommendation_id
+          - set resolved_at
+
+    - step: 7
+      name: "Mark pattern addressed"
+      action: |
+        - pattern.status → "addressed"
+        - pattern.addressed_by_recommendation_id set
+        - pattern.addressed_at set
+        - If pattern re-emerges later → status → "re-emerged" (signal that the fix didn't hold)
+
+# ------------------------------------------------------------------------------
+# RECOMMENDATION QUALITY BAR
+# ------------------------------------------------------------------------------
+
+recommendation_quality_bar:
+  must_have:
+    - "Cites at least 3 member ledger entries"
+    - "Names a single fix_action_type"
+    - "Has a rollback_plan (even if 'revert the prompt patch')"
+    - "Has a blast_radius_estimate (which intents/recipes/agents this touches)"
+  should_have:
+    - "draft_recipe_yaml when the fix is reusable beyond this domain"
+    - "Refers to baseline.goal_calibration to justify the fix"
+    - "Notes which competing_hypotheses (if any) it explicitly NOT addressing"
+  must_not:
+    - "Bypass you approval (Step 4 is mandatory)"
+    - "Modify intent or recipes silently — every change is logged"
+
+# ------------------------------------------------------------------------------
+# CAPABILITY ADDITION SUB-WORKFLOW
+# ------------------------------------------------------------------------------
+# When fix_action_type == "capability_addition", the recommendation must
+# pick a capability_subtype: build | buy | hire | partner.
+
+capability_subtype_decision_tree:
+  build:
+    when:
+      - "Capability is core to differentiation"
+      - "Domain depth is expert"
+      - "No reasonable buy/partner alternative within blast radius"
+    risks: "Engineering cost; ongoing maintenance"
+  buy:
+    when:
+      - "Mature commoditized solution exists"
+      - "Internal opportunity cost > license cost"
+    risks: "Vendor lock-in; integration tax"
+  hire:
+    when:
+      - "Capability requires durable human judgment, not automation"
+      - "Pattern keeps reappearing because no human has authority to decide"
+    risks: "Hiring lead time; org overhead"
+  partner:
+    when:
+      - "Capability is adjacent, not core; partner already excels"
+    risks: "Coordination cost; misaligned roadmaps"
+
+# ------------------------------------------------------------------------------
+# VERIFICATION PATTERN
+# ------------------------------------------------------------------------------
+
+verification_pattern:
+  continuous_checks:
+    - check: "Every applied recommendation cites >= 3 member ledger entries"
+      frequency: "per_application"
+      command: "validator inspects recommendation document"
+      threshold: "100%"
+
+    - check: "Every applied recommendation has a rollback_plan"
+      frequency: "per_application"
+      command: "validator"
+      threshold: "100%"
+
+    - check: "Re-emergence rate (pattern.status flips addressed → re-emerged)"
+      frequency: "monthly"
+      command: "scan .judgment/patterns/ for status==re-emerged"
+      threshold: "< 15% (else recommendations are too shallow)"
+
+# ------------------------------------------------------------------------------
+# BEST PRACTICES
+# ------------------------------------------------------------------------------
+
+best_practices:
+  - practice: "Prefer intent_revision over prompt_patch when the cause is structural"
+    why: "Prompt patches don't compound — intent revisions do (they update verification too)"
+
+  - practice: "Promote pattern fixes into recipes once the pattern repeats across domains"
+    why: "Recipes are the multiplier — they prevent the same pattern emerging in new projects"
+
+  - practice: "Use draft_recipe_yaml as a starting point, not a final form"
+    why: "The detector knows the pattern; you know the abstraction. Always edit before saving."
+
+  - practice: "Track tool-originated patterns separately"
+    why: "Tools with net_pattern_delta > 0 are net-negative; consider deprecation"
+
+common_pitfalls:
+  - pitfall: "Approving recommendations from stale patterns"
+    symptom: "Fix lands but the underlying assumption already changed (e.g., model upgraded)"
+    fix: "Refuse pattern.freshness in {stale, expired} unless explicitly re-validated"
+
+  - pitfall: "Patching a prompt instead of revising the intent"
+    symptom: "Same pattern re-emerges on a different model or in a different project"
+    fix: "Default to intent_revision when the diagnosed_cause is about expectations, not phrasing"
+
+  - pitfall: "Skipping rollback_plan because 'it's a tiny fix'"
+    symptom: "First regression in production has no defined revert path"
+    fix: "Validator now requires rollback_plan; tiny fixes get tiny rollbacks"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  documentation:
+    - "ivd/judgment_layer.md § Step 4 — Detect Patterns"
+    - "ivd/judgment_layer.md § Step 5 — Propose Recommendation"
+    - "ivd/judgment_layer.md § Capability Addition (build|buy|hire|partner)"
+    - "ivd/templates/pattern.yaml"
+  tools:
+    - name: "ivd_judgment_detect_patterns"
+    - name: "ivd_judgment_propose_recommendation"
+
+# ------------------------------------------------------------------------------
+# CHANGELOG
+# ------------------------------------------------------------------------------
+
+changelog:
+  - version: "1.0"
+    date: "2026-03-21"
+    change: "Initial recipe"
+    reason: "Define the canonical pattern-to-recommendation distillation workflow with you as the approval gate"
+    author: "Leo Celis"

@@ -1,0 +1,198 @@
+# ==============================================================================
+# IVD Recipe: Comparison Pair Analysis (Judgment Phase)
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-03-21
+# Category: judgment
+# ==============================================================================
+
+recipe:
+  name: "Comparison Pair Analysis"
+  version: "1.0"
+  category: "judgment"
+  created: "2026-03-21"
+  author: "Leo Celis"
+
+  description: |
+    Pattern for capturing two real runs of the same workflow as a paired
+    observation, deriving diagnostic (NOT causal) hypotheses from observed
+    differences. This is the IVD-canonical alternative to A/B testing for
+    contexts where holding everything else constant is infeasible — most
+    creative, multi-agent, and low-volume systems.
+
+    Grounding: Pearl's Ladder of Causation. Comparison pairs live at Rung 1
+    (association). A hypothesis becomes "corroborated" — the bar for
+    promotion to the "What Works" injection layer — only when 2+ pairs reach
+    the same diagnosed_cause via independent routes.
+
+    Output: a comparison_pair ledger entry that the pattern detector treats
+    like any other entry, with one exception: corroborated hypotheses can
+    feed the generative "What Works" layer of ivd_judgment_inject_context.
+
+  applies_to:
+    - "Two real episodes / runs / outputs of the same workflow that diverged"
+    - "Creative or generative pipelines where A/B harnesses don't exist"
+    - "Low-volume domains where statistical A/B is impractical"
+    - "Cross-model or cross-recipe-version comparisons"
+
+  when_to_use:
+    - "You have two runs in front of you and one is clearly better than the other"
+    - "You want generative guidance ('do X to get Y'), not just failure avoidance"
+    - "You've initialized .judgment/ AND have a baseline.yaml for the domain"
+
+  when_NOT_to_use:
+    - "You have a real A/B harness — use it (Rung 2 evidence beats Rung 1)"
+    - "Only one run available — use ivd_judgment_capture instead"
+    - "Differences are within normal variance for the domain (capture noise)"
+    - "You're tempted to claim causation from a single pair (don't — corroboration required)"
+
+# ------------------------------------------------------------------------------
+# WORKFLOW
+# ------------------------------------------------------------------------------
+
+workflow_pattern:
+  steps:
+    - step: 1
+      name: "Pair the runs"
+      tool: "ivd_judgment_pair"
+      inputs:
+        - "run_a (ref + observed_outcome + inputs_summary + context_summary)"
+        - "run_b (same shape)"
+        - "domain (must match a baseline.yaml domain)"
+        - "leo_domain_depth"
+      output: "comparison_pair entry in state 'raw' under .judgment/ledger/"
+
+    - step: 2
+      name: "Enumerate observed differences"
+      action: "Agent (or you) lists differences in BOTH inputs/conditions and outcomes"
+      output: "observed_differences.conditions[] and observed_differences.outcomes[]"
+
+    - step: 3
+      name: "Generate diagnostic hypotheses"
+      tool: "ivd_judgment_codify"
+      output: |
+        Codify prompt forces the agent to:
+          - Propose 1-N diagnostic_hypotheses (each with a competing_hypothesis)
+          - Pick a single diagnosed_cause as the working hypothesis
+          - Mark confidence_at_capture honestly (default: low)
+        Saved via ivd_judgment_save_codified.
+
+    - step: 4
+      name: "Wait for corroboration"
+      detail: |
+        Stay at injection_status: "plausible" until 2+ independent pairs
+        reach the same diagnosed_cause. The detector promotes corroborated
+        hypotheses automatically; ivd_judgment_inject_context surfaces them
+        in the "What Works" layer.
+
+    - step: 5
+      name: "Pattern emerges (optional)"
+      tool: "ivd_judgment_detect_patterns"
+      detail: "If 3+ corroborated pairs share a cause, a Pattern is created and a recommendation can be drafted."
+
+# ------------------------------------------------------------------------------
+# RUNG-1 DISCIPLINE
+# ------------------------------------------------------------------------------
+
+rung_1_discipline:
+  rule_1: "Never claim causation from a single pair."
+  rule_2: "Always list at least one competing_hypothesis."
+  rule_3: |
+    The 'plausible → corroborated' promotion requires INDEPENDENT pairs.
+    Two pairs from the same author, same week, same model do not corroborate;
+    they amplify confirmation bias.
+  rule_4: "If a real A/B becomes available, run it. Pair analysis is a fallback, not a substitute."
+
+# ------------------------------------------------------------------------------
+# VERIFICATION PATTERN
+# ------------------------------------------------------------------------------
+
+verification_pattern:
+  continuous_checks:
+    - check: "Every comparison_pair has >= 1 competing_hypothesis listed"
+      frequency: "per_entry"
+      command: "ivd_validate (artifact_type='comparison_pair')"
+      threshold: "100%"
+
+    - check: "Hypotheses promoted to 'corroborated' have >= 2 independent corroborating pairs"
+      frequency: "per_promotion"
+      command: "validator inspects corroborated_by[] and rejects same-author within 24h"
+      threshold: "100%"
+
+    - check: "What-Works injection only references 'corroborated' hypotheses"
+      frequency: "per_injection"
+      command: "ivd_judgment_inject_context filters by injection_status"
+      threshold: "100%"
+
+# ------------------------------------------------------------------------------
+# EXAMPLES
+# ------------------------------------------------------------------------------
+
+examples:
+  - name: "ADA Eye Heartbeat tone regression (proto-JFL)"
+    location: "ivd/_private/research/seed_ledger_entries/ada_eye_heartbeat_JFL.yaml"
+    domain: "narrative-pipeline"
+    customization: |
+      Two episodes generated with same recipe but different few-shot examples.
+      Diagnostic hypothesis: removing few-shot examples flattens character voice.
+      Corroborated by 2 subsequent pairs from different episodes.
+    outcome: "Pattern emerged → recommendation → recipe updated → regression eliminated."
+
+# ------------------------------------------------------------------------------
+# BEST PRACTICES
+# ------------------------------------------------------------------------------
+
+best_practices:
+  - practice: "Capture pairs as you encounter them, don't reconstruct after the fact"
+    why: "context_summary and inputs_summary degrade quickly without primary sources"
+
+  - practice: "Always include metadata (model, prompt_version, recipe_version, timestamp)"
+    why: "Without it, the pattern detector cannot scope the hypothesis correctly"
+
+  - practice: "Mark confidence_at_capture as 'low' by default"
+    why: "It's a hypothesis, not a finding. High confidence requires corroboration."
+
+  - practice: "Refute, don't just corroborate"
+    why: "A pair that contradicts an existing hypothesis is more valuable than one that confirms"
+
+common_pitfalls:
+  - pitfall: "Confusing pair analysis with A/B"
+    symptom: "Acting on a single pair as if it proved causation"
+    fix: "Read judgment_layer.md § 'Comparison Pair Analysis: Why Not A/B?' before publishing recommendations"
+
+  - pitfall: "Skipping competing_hypotheses"
+    symptom: "Confirmation bias — first explanation gets canonized"
+    fix: "Validator now requires >= 1 competing_hypothesis per pair"
+
+  - pitfall: "Pairs from the same author within 24h treated as independent corroboration"
+    symptom: "Echo chamber — hypothesis promoted on weak evidence"
+    fix: "Detector enforces independence rule; reviewer should manually space corroborating pairs"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  documentation:
+    - "ivd/judgment_layer.md § Step 3 — Pair / Comparison Pair Analysis"
+    - "ivd/judgment_layer.md § What Works Layer"
+    - "ivd/templates/comparison-pair.yaml"
+  research:
+    - "Pearl, J. — Ladder of Causation (Book of Why, 2018)"
+  tools:
+    - name: "ivd_judgment_pair"
+    - name: "ivd_judgment_codify"
+    - name: "ivd_judgment_save_codified"
+    - name: "ivd_judgment_detect_patterns"
+    - name: "ivd_judgment_inject_context"
+
+# ------------------------------------------------------------------------------
+# CHANGELOG
+# ------------------------------------------------------------------------------
+
+changelog:
+  - version: "1.0"
+    date: "2026-03-21"
+    change: "Initial recipe"
+    reason: "Establish the IVD-canonical alternative to A/B testing for low-volume creative pipelines"
+    author: "Leo Celis"

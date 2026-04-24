@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 15 tools are registered
+- All 28 tools are registered (15 core + 9 judgment + 4 canon)
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -13,23 +13,25 @@ import json
 
 from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 
+EXPECTED_TOOL_COUNT = 28
+
 
 class TestToolRegistry:
     """Tests for the tool registry."""
 
-    def test_15_tools_registered(self):
+    def test_expected_tool_count_registered(self):
         tools = get_all_tools()
-        assert len(tools) == 15
+        assert len(tools) == EXPECTED_TOOL_COUNT
 
     def test_all_tools_have_names(self):
         tools = get_all_tools()
         names = [t.name for t in tools]
-        assert len(set(names)) == 15  # All unique
+        assert len(set(names)) == EXPECTED_TOOL_COUNT  # All unique
 
     def test_expected_tools_present(self):
         tools = get_all_tools()
         names = {t.name for t in tools}
-        expected = {
+        core = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
@@ -37,7 +39,25 @@ class TestToolRegistry:
             "ivd_propose_inversions", "ivd_discover_goal", "ivd_teach_concept",
             "ivd_search",
         }
-        assert names == expected
+        judgment = {
+            "ivd_judgment_init",
+            "ivd_judgment_capture",
+            "ivd_judgment_codify",
+            "ivd_judgment_save_codified",
+            "ivd_judgment_pair",
+            "ivd_judgment_detect_patterns",
+            "ivd_judgment_inject_context",
+            "ivd_judgment_propose_recommendation",
+            "ivd_judgment_check_installed",
+        }
+        canon = {
+            "canon_render",
+            "canon_check",
+            "canon_diff",
+            "canon_check_rules_installed",
+        }
+        expected = core | judgment | canon
+        assert names == expected, f"missing: {expected - names}; extra: {names - expected}"
 
     def test_all_tools_have_input_schema(self):
         tools = get_all_tools()

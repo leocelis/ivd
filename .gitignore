@@ -25,3 +25,4 @@ Thumbs.db
 # ── Safety (scrubbing artifacts) ─────────────────────────────────────────────
 gitleaks-report.json
 secrets.txt
+canon/validation/results/

@@ -7,11 +7,21 @@ import json
 import yaml
 from termcolor import colored
 
+from judgment import VALIDATORS as JUDGMENT_VALIDATORS
+
 LOG = "IVD Tools"
+
+# IVD v3.0: Judgment phase artifact types (opt-in via `.judgment/`)
+JUDGMENT_ARTIFACT_TYPES = ("baseline", "ledger_entry", "comparison_pair", "pattern")
 
 
 def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") -> str:
-    """Validate an IVD artifact (structure and required section checks)."""
+    """Validate an IVD artifact (structure and required section checks).
+
+    Supported artifact_type values:
+      - intent | recipe | workflow                   (core IVD)
+      - baseline | ledger_entry | comparison_pair | pattern  (Judgment phase, v3.0)
+    """
     print(colored(f"[{LOG}] ivd_validate: type={artifact_type}", "cyan"))
 
     try:
@@ -51,6 +61,46 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             "top_level": ["workflow", "description", "steps", "dependencies", "error_handling"],
         },
     }
+
+    # ------------------------------------------------------------------
+    # Judgment phase artifact types (IVD v3.0)
+    # ------------------------------------------------------------------
+    if artifact_type in JUDGMENT_ARTIFACT_TYPES:
+        validator = JUDGMENT_VALIDATORS[artifact_type]
+        j_errors, j_warnings = validator(artifact)
+        errors.extend(j_errors)
+        warnings.extend(j_warnings)
+        if errors:
+            suggestions.append(
+                "See `ivd/judgment_layer.md` and `ivd/templates/`-judgment templates "
+                "for the canonical schema."
+            )
+        if not errors and not warnings:
+            suggestions.append(
+                "Judgment artifact structure looks good — opt-in is per project via "
+                "the `.judgment/` folder."
+            )
+        valid = len(errors) == 0
+        result = {
+            "valid": valid,
+            "errors": errors,
+            "warnings": warnings,
+            "suggestions": suggestions,
+            "artifact_type": artifact_type,
+            "validation_level": "judgment_structure",
+            "note": (
+                "Judgment-phase validator (IVD v3.0). Validates structure and required "
+                "fields per judgment_layer.md. Activation gate (`.judgment/`) is enforced "
+                "at tool-call time, not at validation time."
+            ),
+        }
+        status = "passed" if valid else "failed"
+        color = "green" if valid else "red"
+        print(colored(
+            f"[{LOG}] Validation {status} ({len(errors)} errors, {len(warnings)} warnings)",
+            color,
+        ))
+        return json.dumps(result, indent=2)
 
     if artifact_type in required_keys:
         reqs = required_keys[artifact_type]
