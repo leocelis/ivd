@@ -115,9 +115,8 @@ def get_context_tool() -> str:
             ],
             "opt_out": "Set IVD_CANON_TOOLS_ENABLED=false on the IVD MCP server to disable all four Canon tools (they remain registered but return a 'disabled' payload). Tool signatures never change mid-major version.",
             "docs": [
-                "limitless/ventures/canon/CANON_PRD.md (v0.7)",
-                "limitless/ventures/canon/CANON_TECH_SPEC.md (v0.6 §9B, §9C)",
-                "limitless/ventures/canon/canon_system_intent.yaml (v5)",
+                "ivd/canon_layer.md (canonical, public)",
+                "ivd/recipes/canon-rules.yaml (Phase 0a rules block)",
             ],
         },
         "available_recipes": recipes,

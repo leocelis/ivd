@@ -227,7 +227,7 @@ Canon makes any AI agent's replies legible to humans. It enforces five communica
 3. The tool reports per-file status of the IVD and Canon rule blocks plus a per-client install payload for any missing block.
 4. The agent **asks you for permission** before writing the rules block to any file.
 
-**The composition lift.** When both layers are active (rules in instruction file + Canon MCP tools available), audit pass rates on R1/R2/R5/R10/R14 are at least 10 percentage points higher than rules alone (NFR-LA5; see [`limitless/ventures/canon/CANON_PRD.md`](https://github.com/leocelis/canon) §11.0a/§11.0b for the source-of-truth definition).
+**The composition lift.** When both layers are active (rules in instruction file + Canon MCP tools available), audit pass rates on R1/R2/R5/R10/R14 are at least 10 percentage points higher than rules alone (NFR-LA5).
 
 **See it work.** The validation suite ships with a runnable showcase that calls a real LLM with and without the Canon rules block and measures what changes. No trust required — run it, read the terminal.
 

@@ -13,8 +13,6 @@ once these classes existed).
 Reference:
   ivd/judgment_layer.md §2 (artifact catalogue), §3 (state machine),
                        §3.4 (Expert Intuition Principle), §3.6 (freshness).
-  ivd/_private/research/judgment_layer_integration_spec.md
-                       §11 (invariants), §12.3 (inject_context payload).
 """
 
 from __future__ import annotations

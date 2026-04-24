@@ -45,8 +45,7 @@ That's it. Five rules. ~150 lines of markdown.
 > are the ones the **rules block** enforces directly in the agent's
 > instruction file; the remaining R-invariants are enforced by the
 > [audit layer](#layer-2--four-mcp-tools) when output passes through
-> `canon_check` or `canon_render`. Source of truth:
-> [`limitless/ventures/canon/CANON_PRD.md`](https://github.com/leocelis/canon).
+> `canon_check` or `canon_render`.
 
 ---
 
@@ -239,7 +238,7 @@ Canon does not replace any other IVD layer. It is the **communication contract o
 
 - **Phase 0a (Canon Rules):** Shipping. Recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Six client adapters in lockstep.
 - **Phase 0b (Canon MCP tools):** Shipping. Hosted inside the IVD MCP server. Zero `mcpServers` config edit. Opt-out: `IVD_CANON_TOOLS_ENABLED=false`.
-- **Phase 0c (Browser extension surface — `Canon Dots`):** Designed, not yet shipped. See `limitless/ventures/canon/CANON_PRD.md` §11.0c.
+- **Phase 0c (Browser extension surface):** Designed, not yet shipped.
 
 Engine source: [`canon/`](canon/). Validation suite: [`canon/validation/`](canon/validation/). Unit tests: [`mcp_server/tests/unit/test_canon.py`](mcp_server/tests/unit/test_canon.py).
 

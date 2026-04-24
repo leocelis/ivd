@@ -10,10 +10,7 @@ Vendored inside the IVD repo at ivd/canon/. Reused across:
   - Phase 2:  Canon SDK (JavaScript/TypeScript and Python) and HTTP API proxy
   - Phase 3:  Enterprise / Canon Protocol Tier 3
 
-Source-of-truth chain:
-  limitless/ventures/canon/CANON_PRD.md            (v0.7)
-  limitless/ventures/canon/CANON_TECH_SPEC.md      (v0.6 §5 engine, §9B MCP host)
-  limitless/ventures/canon/canon_system_intent.yaml (v5)
+Canonical public spec: ivd/canon_layer.md (engine §5, MCP host §9B).
 
 This first cut is deterministic (Tier 1 inference, no LLM call) and stateless;
 LLM-augmented Tier 2 paths arrive in a follow-up that is gated behind

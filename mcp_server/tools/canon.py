@@ -20,9 +20,7 @@ the standard "tool disabled" response (still registered, still discoverable
 in tools/list, but inactive — keeps the per-client tool ABI stable).
 
 Reference:
-  limitless/ventures/canon/CANON_PRD.md           v0.7
-  limitless/ventures/canon/CANON_TECH_SPEC.md     v0.6 §9B, §9C
-  limitless/ventures/canon/canon_system_intent.yaml v5
+  ivd/canon_layer.md                              (canonical, public)
   ivd/recipes/canon-rules.yaml                    v1.0  (Phase 0a rules block)
 """
 

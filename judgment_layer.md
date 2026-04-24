@@ -465,16 +465,13 @@ source of truth.
 - Decision record (why bundle into IVD, why v3.0 bump): `DECISIONS.md` ADR-015, ADR-016
 - Cookbook chapter "Closing the Loop with Judgment": `cookbook.md`
 - Quick reference card: `cheatsheet.md` § Judgment Phase
-- Strategic foundation (private): `_private/research/the_judgment_layer_thesis.md`
-- Book chapter (private): `_private/book/manuscript/part-3-validation/chapter-17-judgment-loop/`
-- Original framework essay (proto-form): `limitless/frameworks/Judgment_Feedback_Loop_Framework.md` *(superseded — header redirect)*
 
 ---
 
 ## Changelog
 
 - **v1.0** (2026-03-21) — Initial canonical version. Promotes the Judgment Feedback Loop
-  framework from `limitless/` to operational IVD canon. Establishes Principle 9, the
+  framework into operational IVD canon. Establishes Principle 9, the
   4th IVD phase, the 8 MCP tools, the 4 templates, the 3 recipes, and the `.judgment/`
   activation gate. See `DECISIONS.md` ADR-015 (bundling) and ADR-016 (v3.0 bump).
 - **v1.1** (IVD v3.1) — Architectural refactor inspired by Canon (v3.1).

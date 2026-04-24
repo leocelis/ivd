@@ -1678,10 +1678,8 @@ ivd_canon:
   # inside this MCP server so every existing IVD client picks up the new
   # tools automatically with zero `mcpServers` config edit.
   #
-  # Source-of-truth chain for Canon (NOT this file):
-  #   limitless/ventures/canon/CANON_PRD.md            v0.7
-  #   limitless/ventures/canon/CANON_TECH_SPEC.md      v0.6
-  #   limitless/ventures/canon/canon_system_intent.yaml v5
+  # Canonical public spec for Canon (NOT this file):
+  #   ivd/canon_layer.md
   #   ivd/recipes/canon-rules.yaml                      v1.0
   #
   # This block in the IVD master intent only declares HOW Canon couples to
@@ -1707,9 +1705,7 @@ ivd_canon:
       knob is the single opt-out for users who do not want them.
 
     canonical_documentation:
-      prd: "limitless/ventures/canon/CANON_PRD.md (v0.7)"
-      tech_spec: "limitless/ventures/canon/CANON_TECH_SPEC.md (v0.6)"
-      system_intent: "limitless/ventures/canon/canon_system_intent.yaml (v5)"
+      public_spec: "ivd/canon_layer.md"
       recipe: "ivd/recipes/canon-rules.yaml (v1.0)"
 
     interface:
@@ -2190,9 +2186,8 @@ changelog:
     reason: |
       Canon is the human translation layer for AI output: a deterministic,
       research-grounded set of communication invariants (R1–R14) that turn
-      AI replies into structured, legible, trustworthy output. The
-      canonical Canon spec lives at limitless/ventures/canon/ (PRD v0.7,
-      Tech Spec v0.6, system intent v5).
+      AI replies into structured, legible, trustworthy output. Canonical
+      public spec: ivd/canon_layer.md.
 
       Architectural decision: bundle Canon's MCP tools INSIDE the existing
       IVD MCP server (the same architectural pattern that ADR-015 used for
@@ -2225,9 +2220,7 @@ changelog:
       Judgment phase contract, and is fully backward-compatible. SemVer
       minor is appropriate.
     evidence: |
-      - PRD: limitless/ventures/canon/CANON_PRD.md (v0.7)
-      - Tech Spec: limitless/ventures/canon/CANON_TECH_SPEC.md (v0.6 §9B-§9C)
-      - Canon system intent: limitless/ventures/canon/canon_system_intent.yaml (v5)
+      - Canonical public spec: ivd/canon_layer.md
       - Smoke test: canon_render → CanonDocument with R1/R2/R5/R10/R14 marks; canon_check → reproducible audit hash; canon_diff → fixed/regressed/unchanged across two reports; canon_check_rules_installed → per-file IVD/Canon block detection on a temp project
       - User constraint quote: "do not add a new entry to the config because that will require all the clients, like Cursor with the existing IVD MCP config, to update it"
     files_changed:
@@ -2280,9 +2273,7 @@ changelog:
       downloaded — only accumulated. Principle 9 makes the accumulation
       mechanical.
     evidence: |
-      - Tech spec: ivd/_private/research/judgment_layer_integration_spec.md (1,400+ lines)
-      - Strategic foundation: ivd/_private/research/the_judgment_layer_thesis.md
-      - Seed ledger entries: ivd/_private/research/seed_ledger_entries/
+      - Canonical public spec: ivd/judgment_layer.md
       - Decision records: DECISIONS.md ADR-015 (bundling), ADR-016 (v3.0 bump)
     files_changed:
       - "ivd_system_intent.yaml — Principle 9 added, validation Level 5, canonization step 4.5, artifact_types, version → 3.0"
@@ -2303,17 +2294,6 @@ changelog:
       - "mcp_server/registry.py — 8 new Tool entries + handler map (15 → 23)"
       - "mcp_server/tools/validate.py — handles ledger_entry, comparison_pair, pattern, baseline"
       - "mcp_server/tools/context.py — surfaces Judgment phase summary when .judgment/ active"
-      - "_private/book/manuscript/part-3-validation/chapter-17-judgment-loop/ — NEW chapter (11 files)"
-      - "_private/book/manuscript/part-1-foundations/chapter-02-ivd-paradigm/ — Judgment phase mention"
-      - "_private/book/manuscript/part-1-foundations/chapter-04-intent-artifacts/ — artifact types updated"
-      - "_private/book/manuscript/part-3-validation/chapter-11-validation-framework/ — Level 5 mention"
-      - "_private/book/manuscript/part-3-validation/chapter-16-meta-analysis/ — judgment compounding section"
-      - "_private/research/cognitive_foundation.md — NEW (research grounding)"
-      - "_private/research/seed_ledger_entries/README.md — NEW (provenance of seed entries)"
-      - "limitless/frameworks/Judgment_Feedback_Loop_Framework.md — header redirect to ivd/judgment_layer.md"
-      - "limitless/frameworks/Self_Intent_Self_Evaluation_Framework.md — cross-reference note added"
-      - "limitless/frameworks/FRAMEWORK_CONSTELLATION.md — JFL row updated"
-      - "limitless/frameworks/framework_constellation_intent.yaml — JFL canonical_location updated"
 
   - version: 2.4
     date: "2026-02-09"

@@ -129,11 +129,10 @@ verification_pattern:
 # ------------------------------------------------------------------------------
 
 examples:
-  - name: "ADA Eye Heartbeat tone regression (proto-JFL)"
-    location: "ivd/_private/research/seed_ledger_entries/ada_eye_heartbeat_JFL.yaml"
+  - name: "Narrative-pipeline tone regression (proto-JFL)"
     domain: "narrative-pipeline"
     customization: |
-      Two episodes generated with same recipe but different few-shot examples.
+      Two episodes generated with the same recipe but different few-shot examples.
       Diagnostic hypothesis: removing few-shot examples flattens character voice.
       Corroborated by 2 subsequent pairs from different episodes.
     outcome: "Pattern emerged → recommendation → recipe updated → regression eliminated."
