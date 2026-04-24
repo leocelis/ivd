@@ -7,7 +7,7 @@ Phase 0b ships R1, R2, R5, R10, R14 as enforced; the others are reported as
 'partial' until their renderer paths land. The audit is deterministic, and
 its hash is reproducible across runs so callers can compare verdicts (R9).
 
-Reference: CANON_TECH_SPEC.md v0.6 §6.1 (audit), §6.2 (audit diff).
+Reference: canon_layer.md §Audit layer (R-invariant enforcement), §Audit diff.
 """
 
 from __future__ import annotations

@@ -287,11 +287,11 @@ def get_all_tools() -> List[Tool]:
         # Hosted inside this IVD MCP server so every existing IVD client
         # picks them up automatically — zero `mcpServers` config edit.
         # Opt-out: IVD_CANON_TOOLS_ENABLED=false.
-        # See the Canon PRD §11.0b.
+        # See canon_layer.md §Phase 0b MCP tools.
         # -------------------------------------------------------------------
         Tool(
             name="canon_render",
-            description="Canon — render any AI text as a CanonDocument (Setting Phase, confidence-marked body, verification beats, folk-theory notes, identity statement). Tier 1 from raw `text`; Tier 2 from a structured `contract`. Returns markdown by default plus the audit verdict so the caller can gate downstream actions on it. Reference: CANON_PRD.md v0.7 §6, CANON_TECH_SPEC.md v0.6 §5–§6.",
+            description="Canon — render any AI text as a CanonDocument (Setting Phase, confidence-marked body, verification beats, folk-theory notes, identity statement). Tier 1 from raw `text`; Tier 2 from a structured `contract`. Returns markdown by default plus the audit verdict so the caller can gate downstream actions on it. Reference: ivd/canon_layer.md.",
             inputSchema={"type": "object", "properties": {
                 "text": {"type": "string", "description": "Raw AI output to render (Tier 1 path). Provide either `text` or `contract`."},
                 "contract": {"type": "object", "description": "Structured CanonContract (Tier 2 path). Fields: setting, body, confidence_marks[], decision_points[], folk_theory_corrections[], identity_statement, domain_pack, stakes."},
@@ -303,7 +303,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="canon_check",
-            description="Canon — audit text or a CanonDocument against R-invariants (Phase 0b enforces R1, R2, R5, R10, R14; the rest are reported as 'partial' until the renderer paths land). Returns an AuditReport with per-R findings, severities, an overall verdict in {pass, fail, safety_fail, partial}, and a reproducible hash for R9 diffability. Reference: CANON_TECH_SPEC.md v0.6 §6.1.",
+            description="Canon — audit text or a CanonDocument against R-invariants (Phase 0b enforces R1, R2, R5, R10, R14; the rest are reported as 'partial' until the renderer paths land). Returns an AuditReport with per-R findings, severities, an overall verdict in {pass, fail, safety_fail, partial}, and a reproducible hash for R9 diffability. Reference: ivd/canon_layer.md §Audit.",
             inputSchema={"type": "object", "properties": {
                 "text": {"type": "string", "description": "Raw text — Canon will Tier-1-render then audit. Provide either `text` or `document`."},
                 "document": {"type": "object", "description": "A previously rendered CanonDocument (output of canon_render's `document` field). Audited as-is."},
@@ -313,7 +313,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="canon_diff",
-            description="Canon — diff two AuditReports (before / after) and return per-R movement (fixed, regressed, unchanged) plus before/after hashes. Use to verify that an edit improved Canon compliance without regressing other invariants. Reference: CANON_TECH_SPEC.md v0.6 §6.2.",
+            description="Canon — diff two AuditReports (before / after) and return per-R movement (fixed, regressed, unchanged) plus before/after hashes. Use to verify that an edit improved Canon compliance without regressing other invariants. Reference: ivd/canon_layer.md §Audit diff.",
             inputSchema={"type": "object", "properties": {
                 "before": {"type": "object", "description": "AuditReport from canon_check on the original text."},
                 "after":  {"type": "object", "description": "AuditReport from canon_check on the revised text."},
@@ -321,7 +321,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="canon_check_rules_installed",
-            description="Canon — detect whether the IVD + Canon Phase 0a rules block (`<BEGIN-CANON v1.0>` / `<END-CANON v1.0>`) is installed in the active project's agent instruction files (.cursorrules, .clinerules, CLAUDE.md, .github/instructions/canon.md, AGENTS.md, .windsurf/rules/canon.md, optional ~/CLAUDE.md). NEVER writes to disk — when blocks are missing, returns ready-to-paste install_payload entries the AGENT must offer to the user with EXPLICIT permission before editing files. Reference: CANON_PRD.md v0.7 §11.0b, CANON_TECH_SPEC.md v0.6 §9C, and the canon-rules recipe (ivd/recipes/canon-rules.yaml).",
+            description="Canon — detect whether the IVD + Canon Phase 0a rules block (`<BEGIN-CANON v1.0>` / `<END-CANON v1.0>`) is installed in the active project's agent instruction files (.cursorrules, .clinerules, CLAUDE.md, .github/instructions/canon.md, AGENTS.md, .windsurf/rules/canon.md, optional ~/CLAUDE.md). NEVER writes to disk — when blocks are missing, returns ready-to-paste install_payload entries the AGENT must offer to the user with EXPLICIT permission before editing files. Reference: ivd/canon_layer.md, ivd/recipes/canon-rules.yaml.",
             inputSchema={"type": "object", "properties": {
                 "project_root": {"type": "string", "description": "Path to repo root (absolute or relative). Defaults to IVD framework root for testing."},
                 "install_missing": {"type": "boolean", "description": "Hint only. The tool never writes to disk regardless of this flag — the agent must obtain explicit user consent and perform the edits itself.", "default": False},
