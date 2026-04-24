@@ -50,6 +50,47 @@ class TestInitProject:
         assert "next_steps" in result
         assert len(result["next_steps"]) > 0
 
+    def test_init_reports_agent_rules_status_when_agent_file_present(self, tmp_path):
+        """ivd_init must surface {ivd, canon} block status per detected agent file."""
+        si = tmp_path / "system_intent.yaml"
+        if si.exists():
+            si.unlink()
+        # Create a .cursorrules with neither IVD nor Canon blocks.
+        (tmp_path / ".cursorrules").write_text("# plain cursor rules\n")
+        result = json.loads(init_project_tool(str(tmp_path)))
+        assert "agent_rules_status" in result, (
+            "ivd_init must include agent_rules_status when agent files are detected "
+            "(canon_ivd_init_reports_canon_status constraint)"
+        )
+        status = result["agent_rules_status"]
+        assert ".cursorrules" in status
+        assert status[".cursorrules"]["ivd"] is False
+        assert status[".cursorrules"]["canon"] is False
+
+    def test_init_next_steps_recommends_canon_when_missing(self, tmp_path):
+        si = tmp_path / "system_intent.yaml"
+        if si.exists():
+            si.unlink()
+        (tmp_path / ".cursorrules").write_text("# plain cursor rules\n")
+        result = json.loads(init_project_tool(str(tmp_path)))
+        steps_text = " ".join(result.get("next_steps", []))
+        assert "canon_check_rules_installed" in steps_text.lower() or "canon-rules" in steps_text.lower(), (
+            "ivd_init should recommend canon_check_rules_installed in next_steps "
+            "when the Canon rules block is missing from a detected agent file."
+        )
+
+    def test_init_dangling_canon_fence_not_counted(self, tmp_path):
+        si = tmp_path / "system_intent.yaml"
+        if si.exists():
+            si.unlink()
+        (tmp_path / ".cursorrules").write_text(
+            "<BEGIN-CANON v1.0>\n"
+            "content without closing fence\n"
+        )
+        result = json.loads(init_project_tool(str(tmp_path)))
+        status = result.get("agent_rules_status", {})
+        assert status.get(".cursorrules", {}).get("canon") is False
+
 
 class TestScaffoldArtifact:
     """Tests for ivd_scaffold."""

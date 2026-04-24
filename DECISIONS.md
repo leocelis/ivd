@@ -424,6 +424,71 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 
 ---
 
+## FDR-015: Bundling the Judgment Layer into IVD (rather than a separate plugin/MCP)
+
+**Date:** 2026-03-21  
+**Status:** Fixed (Canonical, IVD v3.0)  
+**Identified by:** Leo Celis (architectural pivot during JFL design)  
+
+**Gap:** The Judgment Feedback Loop (JFL) — the structured way to capture, codify, cluster, and inject corrections back into agent context — was originally drafted as a standalone framework in `limitless/frameworks/`. The deployment question (standalone CLI? Cursor-only rule? separate `@leocelis/judgment-mcp` package? plugin?) had no good answer because JFL only matters once a project already has structured intent — i.e., once IVD is in use. Splitting it from IVD forced users to learn two systems, install two MCPs, and reason about two vocabularies for the same workflow.
+
+**Analysis:**
+- **Cognitive cost:** A separate MCP doubles the install surface (two `mcp.json` entries, two version trains, two doc sets) for the same audience.
+- **Vocabulary fit:** Judgment-phase concepts (ledger entry, pattern, recommendation) are direct extensions of IVD's existing vocabulary (intent, constraint, recipe). Splitting them creates artificial seams.
+- **Industry pattern:** Mature open-source frameworks consistently bundle workflow phases inside the core (Django apps, Rails plugins, Kubernetes controllers) rather than shipping each phase as a separate package the user must wire together.
+- **Auto-pickup:** The user's hard requirement was *"agents should pick this up automatically once it exists."* That requires the tools to live in the same MCP the agent is already using.
+- **Opt-in:** The phase is genuinely opt-in (most projects don't need it on day one) — but opt-in via a `.judgment/` folder gate inside the existing MCP, not via a separate package.
+
+**Decision:** The Judgment phase ships *inside* the `user-ivd` MCP, as IVD's 4th phase, governed by Principle 9 (Judgment Compounds), behind a `.judgment/`-folder activation gate. Tools are dormant unless the gate is present.
+
+**Why not a plugin architecture:** A plugin layer would itself need a contract, a discovery mechanism, a versioning scheme — all of which already exist inside the IVD canon. Judgment is *not* an optional plugin from IVD's perspective; it's a phase. Phases belong in the framework, not in plugin land.
+
+**Changes:**
+- `ivd_system_intent.yaml` (v3.0): Principle 9 added; Validation Level 5 added; canonization process step 4.5 added; new `artifact_types` (ledger_entry, comparison_pair, pattern, baseline)
+- `framework.md`: New "Judgment Phase" section; Principle 9 added; ToC bumped
+- `judgment_layer.md`: New canonical doc — IVD-native rewrite of the JFL framework
+- `templates/`: 4 new templates (`baseline.yaml`, `ledger-entry.yaml`, `comparison-pair.yaml`, `pattern.yaml`)
+- `recipes/`: 3 new recipes (`capture-correction.yaml`, `comparison-pair.yaml`, `distill-pattern.yaml`)
+- `mcp_server/tools/judgment.py`: 8 new tool handlers (all gated on `.judgment/`)
+- `mcp_server/registry.py`: 8 new tool registrations (total tools: 15 → 23 in v3.0; v3.1 added the 9th judgment tool `ivd_judgment_check_installed` and the 4 Canon tools, bringing the total to 28)
+- `mcp_server/tools/validate.py`: 4 new artifact validators
+- `mcp_server/tools/context.py`: Knowledge surface includes judgment doc
+- `limitless/frameworks/Judgment_Feedback_Loop_Framework.md`: header redirects to `ivd/judgment_layer.md`
+- `limitless/frameworks/FRAMEWORK_CONSTELLATION.md` + `framework_constellation_intent.yaml`: JFL canonical location now points to IVD
+
+**Relationship to other FDRs:**
+- **FDR-008 (Cognitive Foundation):** Judgment phase extends the contextual-knowledge thesis — corrections are the highest-quality contextual signal a system can accumulate, because they came from real-world failure of the model's parametric defaults.
+- **FDR-009 (Empirical Refinement):** FDR-009 added "what to do when implementation reveals wrong assumptions during a single project lifecycle." FDR-015 generalizes that loop across projects, audiences, and time, with structured persistence.
+
+---
+
+## FDR-016: Version bump to IVD v3.0 (rather than v2.5)
+
+**Date:** 2026-03-21  
+**Status:** Fixed (Canonical)  
+**Identified by:** Spec review (FDR-015 follow-up)  
+
+**Gap:** The Judgment phase introduces a new immutable principle (Principle 9), a 4th phase in the IVD lifecycle, a 5th validation level, 4 new artifact types, and 8 new tools. Initially considered as v2.5 (a feature release).
+
+**Analysis:**
+- **Immutability is the bright line.** IVD's `principle_immutability` constraint states that the core principle set cannot be silently amended. Adding Principle 9 changes the "immutable-N" set from 8 to 9. That is, by definition, a major version event.
+- **Phase change is structural.** Adding a phase changes the IVD lifecycle from a 3-phase loop (Intent / Implementation / Verification) to a 4-phase loop (… + Judgment). Existing intents still work — but downstream tooling that reasoned about the phase set must be aware of the change. Semantic versioning calls for a major bump when the contract changes shape.
+- **Opt-in does not change the version semantics.** Even though the Judgment phase is opt-in via `.judgment/`, the *framework* itself ships the new principle, the new validation level, and the new artifact types in its canonical state. Users have to upgrade their understanding of IVD even if they don't activate the phase.
+- **No backward-incompatible breakage.** Existing v2.x intents validate cleanly under v3.0. The version bump is structural/communicative, not a forced migration.
+
+**Decision:** IVD bumps from v2.4 → **v3.0** when the Judgment layer ships.
+
+**Changes:**
+- `ivd_system_intent.yaml`: `version: "3.0"`, new changelog entry
+- `framework.md`, `cookbook.md`, `cheatsheet.md`, `README.md`, `purpose.md`: version refs updated
+- `judgment_layer.md`: stamped `IVD v3.0`
+- All v3.0 surfaces document Principle 9 explicitly so users understand the immutability shift
+
+**Relationship to other FDRs:**
+- **FDR-015:** This is the version-policy companion to FDR-015 (the architectural decision). FDR-015 = *what* changes; FDR-016 = *how loud* the version says it.
+
+---
+
 ## Template for New Entries
 
 ```markdown

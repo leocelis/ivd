@@ -50,6 +50,11 @@ RECIPE_INFO = {
         "use_cases": ["API integrations", "data sync", "ETL pipelines"],
         "complexity": "medium",
     },
+    "canon-rules": {
+        "description": "Canon — Human Translation Layer (Phase 0a Rules). Pasteable agent rules block (R1, R2, R5, R10, R14) for Cursor / Cline / Claude Code / Copilot / Codex / Windsurf. Composes with the Canon MCP tools (canon_render / canon_check / canon_diff) hosted inside this IVD MCP server.",
+        "use_cases": ["make any AI agent's replies legible to humans", "calibrate trust on AI output", "enforce verification beats before irreversible actions", "ship Canon's R-invariants with zero install"],
+        "complexity": "low",
+    },
 }
 
 

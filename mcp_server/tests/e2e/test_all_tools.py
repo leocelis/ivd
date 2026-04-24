@@ -51,7 +51,8 @@ class TestGetContext:
         assert_no_error(result, "ivd_get_context")
         data = parse_json(result)
         assert "core_principles" in data
-        assert len(data["core_principles"]) == 8
+        # 9 principles: original 8 + 9th "Judgment Compounds" (added IVD v3.0).
+        assert len(data["core_principles"]) == 9
 
     def test_returns_templates(self):
         result = call_tool("ivd_get_context", {})
@@ -388,7 +389,7 @@ class TestSearch:
 
 
 # ---------------------------------------------------------------------------
-# Meta: all 15 tools respond without crashing
+# Meta: all registered tools respond without crashing (28 = 15 core + 9 judgment + 4 Canon)
 # ---------------------------------------------------------------------------
 
 class TestAllToolsRespond:
@@ -416,11 +417,15 @@ class TestAllToolsRespond:
         assert isinstance(result, str), f"{tool_name} returned {type(result)}"
         assert len(result) > 0, f"{tool_name} returned empty string"
 
-    def test_all_15_tools_covered(self):
-        """Verify this test file covers all 15 registered tools."""
+    def test_core_tools_covered(self):
+        """Verify this file still covers all 15 core tools.
+
+        The judgment-phase tools (8) and Canon tools (4) have dedicated
+        suites — see e.g. mcp_server/tests/unit/test_canon.py for Canon.
+        """
         registered = {t.name for t in get_all_tools()}
-        # Tools tested in parametrized + individual classes above
-        tested = {
+        # The 15 core tools tested in parametrized + individual classes above.
+        core_tested = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
@@ -428,4 +433,16 @@ class TestAllToolsRespond:
             "ivd_propose_inversions", "ivd_discover_goal", "ivd_teach_concept",
             "ivd_search",
         }
-        assert tested == registered, f"Missing tests for: {registered - tested}"
+        missing = core_tested - registered
+        assert not missing, f"Core tools no longer registered: {missing}"
+        # Sanity: registry has expanded since the 15-core era — confirm both
+        # families (judgment + canon) are now present so we notice if either
+        # silently disappears.
+        canon_tools = {n for n in registered if n.startswith("canon_")}
+        assert len(canon_tools) == 4, f"Expected 4 canon_* tools, got {sorted(canon_tools)}"
+        judgment_tools = {n for n in registered if n.startswith("ivd_judgment_")}
+        assert len(judgment_tools) == 9, f"Expected 9 ivd_judgment_* tools, got {sorted(judgment_tools)}"
+        assert len(registered) == 28, (
+            f"Expected 28 tools total (15 core + 9 judgment + 4 Canon); "
+            f"registry now reports {len(registered)}"
+        )

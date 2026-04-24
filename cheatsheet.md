@@ -1,6 +1,6 @@
 # Intent-Verified Development: Cheat Sheet
 
-**The Framework for the AI Agents Era (v2.4)**
+**The Framework for the AI Agents Era (v3.1)**
 
 **Core Insight:** The AI writes the intent, implements against it, verifies—so hallucinations are caught and turns drop to one.
 
@@ -301,6 +301,18 @@ When you rewrite in Go, or replace with a vendor service, the intent artifact tr
 
 ---
 
+### Principle 9: Judgment Compounds *(NEW in v3.0)*
+
+**Corrections from real-world use, captured and structured, compound into the only knowledge that doesn't commoditize when the model layer commoditizes.**
+
+- **Use when:** Project has shipped at least one workflow to a real audience and corrections recur across runs.
+- **Skip when:** Single-shot scripts, experiments, or projects where corrections won't recur.
+- **Activation:** Opt-in per project via the `.judgment/` folder at the project root.
+
+The 4th IVD phase. Detailed cheatsheet card below in [Part 2.5](#part-25-the-judgment-phase-quick-card-v30).
+
+---
+
 ### IVD Agent Rules
 
 Embed IVD verification discipline directly in your agent instruction file (`.cursorrules`, `.clinerules`, Copilot system prompt, etc):
@@ -317,6 +329,116 @@ Tool:   ivd_load_recipe(recipe_name="agent-rules-ivd")
 - **Rule 4** — Stress-test intent before implementing (4 probes)
 - **Rule 5** — Empirical refinement: STOP→RECORD→UPDATE→ENRICH→CONTINUE when implementation reveals wrong assumptions; 2-attempt trigger for external enrichment
 - **Rule 6** — Constraint quality: reject high-entropy constraints; check satisfiability
+
+---
+
+## Part 2.5: The Judgment Phase Quick Card (v3.0)
+
+*The 4th IVD phase. Dormant unless `<project_root>/.judgment/` exists.*
+
+> **New to Judgment?** Read [`judgment_explained.md`](judgment_explained.md)
+> first for the plain-English "what problem it solves and how" intro,
+> then come back here for the 10-step loop and tool reference.
+
+### The 10-Step Loop
+
+```
+0. Baseline & Goal Calibration
+1. Capture (raw correction, < 30s)
+2. Codify (5 structured fields)
+3. Pair (optional comparison_pair entry)
+4. Detect Patterns (3+ entries with shared diagnosed_cause)
+5. Propose Recommendation (with build|buy|hire|partner sub-types)
+6. Approve (you — only mandatory human gate)
+7. Apply Fix
+8. Inject Context (next runs)
+9. Resolve / Archive
+```
+
+### The 5 Codified Fields (Step 2)
+
+| Field | What |
+|---|---|
+| `expected_result` | What should have happened |
+| `detected_via` | How was it caught (review / test / audience / runtime) |
+| `diagnosed_cause` | Root cause hypothesis |
+| `proposed_fix` | Specific, actionable |
+| `fix_action_type` | `prompt_patch` / `intent_revision` / `capability_addition` / `domain_reassessment` |
+
+### Pattern Confidence Weighting (`leo_domain_depth`)
+
+| Depth | Weight | Meaning |
+|---|---|---|
+| expert | 1.0 | Built the field; can identify subtle regressions cold |
+| practitioner | 0.7 | Ships in this domain weekly |
+| adjacent | 0.4 | Fluent but not authoritative |
+| novice | 0.2 | Spots obvious wrongs only |
+
+AI reviewers (Erik, etc.) enter as `source: runtime` — **not** weighted by `leo_domain_depth`. They're structural conformance checkers, not quality judges.
+
+### Pattern Freshness
+
+| State | Rule | Injectable? |
+|---|---|---|
+| `fresh` | age ≤ half_life | yes |
+| `aging` | half_life < age ≤ 2× | yes |
+| `stale` | 2× < age ≤ 3× | flagged |
+| `expired` | age > 3× | **no** |
+
+### Comparison Pair Discipline (Pearl Rung-1)
+
+- Always list ≥ 1 `competing_hypothesis`
+- Single pair → `injection_status: plausible`
+- 2+ independent pairs (different author/week/model) → `corroborated`
+- Only `corroborated` enters the **What Works** injection layer
+
+### The 9 Tools (Dormant unless `.judgment/` exists)
+
+| Tool | Purpose |
+|---|---|
+| `ivd_judgment_init` | Bootstrap `.judgment/` + per-domain baselines |
+| `ivd_judgment_capture` | Write a raw ledger entry |
+| `ivd_judgment_codify` | Return structured codify prompt |
+| `ivd_judgment_save_codified` | Persist agent's filled codify fields |
+| `ivd_judgment_pair` | Capture a comparison_pair entry |
+| `ivd_judgment_detect_patterns` | Cluster ledger into patterns |
+| `ivd_judgment_inject_context` | Prioritized context for downstream agents |
+| `ivd_judgment_propose_recommendation` | Draft recommendation against a pattern |
+| `ivd_judgment_check_installed` | Workspace/project activation visibility (read-only; v3.1) |
+
+**Server-level opt-out:** set `IVD_JUDGMENT_TOOLS_ENABLED=false` to disable
+all 9 tools without de-registering them (mirrors `IVD_CANON_TOOLS_ENABLED`).
+
+### See it work (5-second runnable showcase)
+
+```bash
+python examples/judgment_demo/run_demo.py
+```
+
+Walks the full loop end-to-end (capture × 3 → codify × 3 → detect → inject) and writes 4 human-readable artifacts to `examples/judgment_demo/output/` showing the agent's system message before vs after Judgment compounds, plus a side-by-side LLM behavioral diff. Runs offline by default; set `OPENAI_API_KEY` for the live `gpt-4o-mini` call (~$0.001). Full narrative + verdict: [`examples/judgment_demo/README.md`](examples/judgment_demo/README.md).
+
+### Capability Addition Sub-types
+
+| Sub-type | When |
+|---|---|
+| **build** | Core to differentiation; depth is expert; no buy/partner alternative |
+| **buy** | Mature commoditized solution; opportunity cost > license cost |
+| **hire** | Capability requires durable human judgment, not automation |
+| **partner** | Adjacent capability; partner already excels |
+
+### Templates
+
+`templates/baseline.yaml` · `templates/ledger-entry.yaml` · `templates/comparison-pair.yaml` · `templates/pattern.yaml`
+
+### Recipes
+
+`recipes/capture-correction.yaml` · `recipes/comparison-pair.yaml` · `recipes/distill-pattern.yaml`
+
+### Validator artifact_types (`ivd_validate`)
+
+`ledger_entry` · `comparison_pair` · `pattern` · `baseline`
+
+Full canonical doc: [`judgment_layer.md`](judgment_layer.md). Decision records: `DECISIONS.md` ADR-015, ADR-016.
 
 ---
 
@@ -446,8 +568,10 @@ find . -path "*/intents/*_intent.yaml"
 - **`README.md`** - Quick start guide
 - **`cookbook.md`** - Practical implementation guide  
 - **`framework.md`** - Complete IVD specification
+- **`judgment_layer.md`** - Judgment phase (4th phase, v3.0)
 - **`templates/intent_levels_guide.md`** - When to use which intent level
 - **`recipes/`** - Reusable pattern templates
+- **`DECISIONS.md`** - Architectural Decision Records (ADRs)
 
 ---
 

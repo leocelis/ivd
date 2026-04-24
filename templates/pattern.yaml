@@ -1,0 +1,103 @@
+# {pattern_slug}.yaml
+# Pattern Template — IVD Judgment Phase
+#
+# A pattern emerges automatically when 3+ ledger entries in the same domain
+# share the same diagnosed_cause. Patterns are the unit of injection: they
+# (not individual ledger entries) are surfaced into the agent's context by
+# ivd_judgment_inject_context.
+#
+# WORKFLOW:
+#   1. ivd_judgment_detect_patterns()         → creates / updates this file
+#   2. ivd_judgment_propose_recommendation()  → drafts a recommendation against it
+#   3. Recommendation approved + applied      → pattern.status → "addressed"
+#   4. No new members for half_life_days      → pattern freshness decays
+#
+# PLACEMENT: <project_root>/.judgment/patterns/
+# NAMING:    short slug derived from diagnosed_cause + domain
+#            e.g. proto-tone-flattens-without-fewshot.yaml
+# REFERENCE: ivd/judgment_layer.md § "Step 4 — Detect Patterns"
+
+# ----------------------------------------------------------------------------
+# IDENTITY
+# ----------------------------------------------------------------------------
+
+id: "{pattern-slug}"
+created: "{ISO-8601}"
+last_updated: "{ISO-8601}"
+
+# ----------------------------------------------------------------------------
+# CLASSIFICATION
+# ----------------------------------------------------------------------------
+
+domain: ""                           # REQUIRED — must match a baseline.yaml domain
+agent_class: ""                      # OPTIONAL but recommended
+scope:                               # how broadly the pattern applies
+  systems: []                        # e.g. ["narrative-pipeline"]
+  models: []                         # e.g. ["claude-4-opus", "gpt-5"]
+  recipes: []                        # e.g. ["agent-classifier"]
+
+# ----------------------------------------------------------------------------
+# THE PATTERN
+# ----------------------------------------------------------------------------
+
+diagnosed_cause: ""                  # the shared cause the members agree on
+recommended_fix: ""                  # the fix proposed by ivd_judgment_propose_recommendation
+fix_action_type: ""                  # prompt_patch | intent_revision | capability_addition | domain_reassessment
+
+# ----------------------------------------------------------------------------
+# MEMBERSHIP
+# ----------------------------------------------------------------------------
+# Pattern is created when len(members) >= 3 with the same diagnosed_cause.
+# Members continue to accumulate; the pattern's confidence rises with N.
+
+members:
+  - entry_id: ""
+    weight: 1.0                      # adjusted by leo_domain_depth at compute time
+  - entry_id: ""
+  - entry_id: ""
+
+member_count: 0                      # convenience field (= len(members))
+weighted_confidence: 0.0             # 0.0 - 1.0 — see judgment_layer.md § "Confidence Math"
+
+# ----------------------------------------------------------------------------
+# FRESHNESS
+# ----------------------------------------------------------------------------
+# Patterns age. A pattern about claude-3 prompting is stale if the project
+# moved to claude-4. Half-life is configured per-domain in baseline.yaml;
+# patterns may override.
+
+half_life_days: null                 # OPTIONAL override; defaults to baseline.pattern_half_life_days
+last_member_added: "{ISO-8601}"
+freshness: "fresh"                   # fresh | aging | stale | expired
+                                     # fresh:   age <= half_life
+                                     # aging:   half_life < age <= 2 * half_life
+                                     # stale:   2 * half_life < age <= 3 * half_life
+                                     # expired: age > 3 * half_life — NOT injected
+
+# ----------------------------------------------------------------------------
+# TOOL-ORIGINATED FAILURE TRACKING
+# ----------------------------------------------------------------------------
+# If most members were originated_from_tool == X, X may be net-negative.
+# See judgment_layer.md § "Tool-Originated Failure Tracking."
+
+originated_from_tools:
+  - tool: ""
+    member_count: 0
+net_pattern_delta: 0                 # # of pattern members produced by a tool
+
+# ----------------------------------------------------------------------------
+# STATUS
+# ----------------------------------------------------------------------------
+
+status: "open"                       # open | recommendation_pending | addressed | re-emerged | retired
+addressed_by_recommendation_id: null
+addressed_at: null
+
+# ----------------------------------------------------------------------------
+# CHANGELOG
+# ----------------------------------------------------------------------------
+
+changelog:
+  - timestamp: "{ISO-8601}"
+    event: "created"
+    detail: "Pattern emerged from 3 entries sharing diagnosed_cause"

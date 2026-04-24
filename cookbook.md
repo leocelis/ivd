@@ -2,9 +2,9 @@
 
 **The Framework for the AI Agents Era**
 
-**Version:** 2.4  
+**Version:** 3.1  
 **Date:** January 23, 2026  
-**Updated:** March 19, 2026 (Constraint-segmented implementation, stress-test step, post-implementation verification protocol, empirical refinement)
+**Updated:** March 21, 2026 (v3.0: Judgment phase added — see [`judgment_layer.md`](judgment_layer.md))
 
 ---
 
@@ -212,9 +212,13 @@ Result: Intent and code that fit the project, not isolated/inconsistent addition
 
 ---
 
-## The Eight Principles
+## The Nine Principles
 
-> **📋 Full Principle Details:** See `ivd_system_intent.yaml` for the complete specification of all 8 principles with sub-principles, validation checks, and rejection criteria.
+*v3.0 added Principle 9 (Judgment Compounds) — see [`judgment_layer.md`](judgment_layer.md). The eight implementation/intent principles below are unchanged; Principle 9 governs the opt-in 4th phase (Judgment) and is summarized after Principle 8.*
+
+
+
+> **📋 Full Principle Details:** See `ivd_system_intent.yaml` for the complete specification of all 9 principles with sub-principles, validation checks, and rejection criteria.
 
 ### 1. Intent is Primary
 
@@ -319,6 +323,37 @@ AI: [Stress-tests intent: constraint gaps? implementation decisions? conflicts?]
 **Step 5 — Constraint-segmented implementation:** For intents with 3+ constraints, the AI groups constraints by functional area (input validation, core logic, performance, error handling) and implements one group at a time, re-reading those constraints from disk before verifying. This counters a structural LLM limitation: models can read and acknowledge all constraints, then miss constraints in the middle of a long generation span. Re-reading per segment resets attention.
 
 **Step 6 — Post-implementation verification protocol:** After implementation, the AI executes a 4-step audit: (1) Re-read the intent artifact from disk (not from memory), (2) Diff each change against each constraint, (3) Check every test path, (4) Report PASS/FAIL/NEEDS_REVIEW per constraint. Do not declare done until all constraints are PASS.
+
+---
+
+### 9. Judgment Compounds *(NEW in v3.0 — opt-in 4th phase)*
+
+After the system ships, **reality answers back** — corrections from real-world use, audience signals, comparison observations. Without structure, that knowledge decays. With structure, it compounds and forms the moat that survives model commoditization.
+
+```
+Capture (raw, < 30s)
+  → Codify (5 fields)
+  → (optional) Pair (comparison_pair, Pearl Rung-1)
+  → Cluster into Patterns (3+ entries, weighted by leo_domain_depth)
+  → Recommend (build | buy | hire | partner sub-types)
+  → Approve (you)
+  → Apply, Inject into next runs' context
+  → Resolve / Archive
+```
+
+**Activation:** opt-in per project via the `<project_root>/.judgment/` folder. Most projects don't need this on day one. When you do, run `ivd_judgment_init` and the 9 dormant judgment tools come alive (8 workflow tools + `ivd_judgment_check_installed` for activation visibility, added in v3.1). A server-level kill switch (`IVD_JUDGMENT_TOOLS_ENABLED=false`) lets operators disable the entire phase without de-registering the tools — mirrors `IVD_CANON_TOOLS_ENABLED` for symmetry.
+
+**Why it compounds:** every recurring failure becomes a labeled pattern; every pattern becomes injected context for downstream runs; injected context overrides the model's parametric defaults — the same cognitive mechanism IVD uses for intent.
+
+**See it work.** A 5-second runnable showcase walks the full loop end-to-end and demonstrates the agent producing different code on the same request after Judgment compounds. Run it offline (no API key) or with `OPENAI_API_KEY` for the live `gpt-4o-mini` behavioral diff:
+
+```bash
+python examples/judgment_demo/run_demo.py
+```
+
+Narrative, verdict, and reproducibility test: [`examples/judgment_demo/README.md`](examples/judgment_demo/README.md).
+
+Full spec: [`judgment_layer.md`](judgment_layer.md). New tools: 9 (8 workflow + `ivd_judgment_check_installed` for activation visibility, added in v3.1). New artifact types: 4 (`baseline`, `ledger_entry`, `comparison_pair`, `pattern`). New recipes: 3 (`capture-correction`, `comparison-pair`, `distill-pattern`). New ADRs: FDR-015, FDR-016. v3.1 architectural refactor: substance moved to the `ivd/judgment/` engine package (typed `@dataclass` schemas, `engine_version` + reproducible hash on `Pattern`/`InjectionResult`); `mcp_server/tools/judgment.py` is now a thin facade. Mirrors the Canon (Phase 0) architecture for symmetry.
 
 ---
 
@@ -967,7 +1002,7 @@ Before proposing any changes to IVD, read `ivd_system_intent.yaml`:
 - **High Bar for Additions** - real-world validation required
 
 **Key requirements for any addition:**
-1. ✅ Aligns with all 8 principles
+1. ✅ Aligns with all 9 principles (incl. Principle 9: Judgment Compounds — see canonization step 4.5)
 2. ✅ Solves real problem (5+ use cases)
 3. ✅ Comprehensive example (500+ lines)
 4. ✅ Production validation
