@@ -2,10 +2,9 @@
 
 """Unit tests for the IVD Judgment phase — engine + MCP-tool facade.
 
-Pins the priority-1 invariants laid down in
-ivd/_private/research/judgment_layer_integration_spec.md §11 and the
-architectural recommendations from the Judgment-vs-Canon comparison
-(ivd/judgment_layer.md):
+Pins the priority-1 invariants from the Judgment integration spec
+and the architectural recommendations from the Judgment-vs-Canon
+comparison (ivd/judgment_layer.md):
 
   judgment_engine_package_isolation
       → schema, store, freshness, detect, inject, validate live in

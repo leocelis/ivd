@@ -7,12 +7,8 @@
 # inside any IVD project's agent instruction file and turns every reply from
 # Cursor / Claude / Copilot / Cline / Codex / Windsurf into a Canon-shaped reply.
 #
-# Source-of-truth chain:
-#   external/canon/research/HUMAN_COMMUNICATION_RESEARCH.md (Parts I–III)
-#   external/canon/research/FRICTIONLESS_ADOPTION_RESEARCH.md (FA1–FA7)
-#   external/canon/CANON_PRD.md (v0.7 — Phase 0a Canon Rules)
-#   external/canon/CANON_TECH_SPEC.md (v0.6 §9A Canon Rules + §9C IVD recipe integration)
-#   external/canon/canon_system_intent.yaml (v5)
+# Canonical public spec:
+#   ivd/canon_layer.md  (Phase 0a Canon Rules + Phase 0b MCP tools, public)
 #
 # Status: Canonical
 # Version: 1.0
@@ -200,7 +196,7 @@ agent_rules_block:
     # Canon — Human Translation Layer (Phase 0a Rules)
     # ==============================================================================
     # Source: ivd/recipes/canon-rules.yaml v1.0
-    # Reference: external/canon/CANON_PRD.md v0.7 §11 Phase 0a
+    # Reference: ivd/canon_layer.md (Phase 0a)
     # Do not modify by hand — re-run `canon_check_rules_installed` to refresh.
 
     ## Canon Rule R1 — Setting Phase Injection
@@ -303,7 +299,7 @@ agent_rules_block:
     # Canon — Human Translation Layer (Phase 0a Rules)
 
     Source: `ivd/recipes/canon-rules.yaml` v1.0
-    Reference: `external/canon/CANON_PRD.md` v0.7 §11 Phase 0a
+    Reference: `ivd/canon_layer.md` (Phase 0a)
 
     Apply these five invariants on every reply.
 
@@ -588,8 +584,6 @@ changelog:
       source (canon_rules_recipe_in_ivd constraint); every adapter view
       is derived from this one file.
     evidence: |
-      external/canon/CANON_PRD.md v0.7 §11 Phase 0a;
-      external/canon/CANON_TECH_SPEC.md v0.6 §9A + §9C;
-      external/canon/canon_system_intent.yaml v5
-      (canon_rules_recipe_in_ivd, canon_rules_six_clients,
-       canon_rules_copy_paste_sufficiency constraints).
+      ivd/canon_layer.md (Phase 0a + Phase 0b);
+      constraints: canon_rules_recipe_in_ivd, canon_rules_six_clients,
+      canon_rules_copy_paste_sufficiency.

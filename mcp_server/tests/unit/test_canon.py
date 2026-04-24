@@ -2,8 +2,7 @@
 
 """Unit tests for the Canon — Human Translation Layer — as hosted inside IVD.
 
-Enforces the priority-1 constraints declared in
-external/canon/canon_system_intent.yaml v5:
+Enforces the priority-1 constraints declared in the Canon system intent:
 
   canon_mcp_hosted_inside_ivd
       → the four Canon MCP tools MUST be registered in the existing IVD

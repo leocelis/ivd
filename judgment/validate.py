@@ -8,8 +8,7 @@ They do not touch the filesystem, do not enforce activation gates, and do
 not raise exceptions. The MCP-tool layer calls them and wraps the result.
 
 Reference:
-  ivd/judgment_layer.md §2 (artifact catalogue),
-  ivd/_private/research/judgment_layer_integration_spec.md §11.
+  ivd/judgment_layer.md §2 (artifact catalogue).
 """
 
 from __future__ import annotations

@@ -9,9 +9,8 @@ Vendored inside the IVD repo at ``ivd/judgment/``. Reused across:
   - mcp_server/tests/unit/test_judgment.py — unit tests
   - downstream callers that want to operate on .judgment/ folders directly
 
-Source-of-truth chain:
+Canonical public spec:
   ivd/judgment_layer.md                                (canonical spec)
-  ivd/_private/research/judgment_layer_integration_spec.md
   ivd/ivd_system_intent.yaml                           (system intent v3.1)
 
 Architectural note:

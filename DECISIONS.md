@@ -430,7 +430,7 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 **Status:** Fixed (Canonical, IVD v3.0)  
 **Identified by:** Leo Celis (architectural pivot during JFL design)  
 
-**Gap:** The Judgment Feedback Loop (JFL) — the structured way to capture, codify, cluster, and inject corrections back into agent context — was originally drafted as a standalone framework in `internal/frameworks/`. The deployment question (standalone CLI? Cursor-only rule? separate `@leocelis/judgment-mcp` package? plugin?) had no good answer because JFL only matters once a project already has structured intent — i.e., once IVD is in use. Splitting it from IVD forced users to learn two systems, install two MCPs, and reason about two vocabularies for the same workflow.
+**Gap:** The Judgment Feedback Loop (JFL) — the structured way to capture, codify, cluster, and inject corrections back into agent context — was originally drafted as a standalone framework essay. The deployment question (standalone CLI? Cursor-only rule? separate `@leocelis/judgment-mcp` package? plugin?) had no good answer because JFL only matters once a project already has structured intent — i.e., once IVD is in use. Splitting it from IVD forced users to learn two systems, install two MCPs, and reason about two vocabularies for the same workflow.
 
 **Analysis:**
 - **Cognitive cost:** A separate MCP doubles the install surface (two `mcp.json` entries, two version trains, two doc sets) for the same audience.
@@ -453,8 +453,6 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 - `mcp_server/registry.py`: 8 new tool registrations (total tools: 15 → 23 in v3.0; v3.1 added the 9th judgment tool `ivd_judgment_check_installed` and the 4 Canon tools, bringing the total to 28)
 - `mcp_server/tools/validate.py`: 4 new artifact validators
 - `mcp_server/tools/context.py`: Knowledge surface includes judgment doc
-- `internal/frameworks/Judgment_Feedback_Loop_Framework.md`: header redirects to `ivd/judgment_layer.md`
-- `internal/frameworks/FRAMEWORK_CONSTELLATION.md` + `framework_constellation_intent.yaml`: JFL canonical location now points to IVD
 
 **Relationship to other FDRs:**
 - **FDR-008 (Cognitive Foundation):** Judgment phase extends the contextual-knowledge thesis — corrections are the highest-quality contextual signal a system can accumulate, because they came from real-world failure of the model's parametric defaults.

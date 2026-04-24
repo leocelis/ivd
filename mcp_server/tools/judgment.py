@@ -30,10 +30,9 @@ Architectural note:
 
 Reference:
   ivd/judgment_layer.md                  (canonical spec)
-  ivd/_private/research/judgment_layer_integration_spec.md
   ivd/ivd_system_intent.yaml             (system intent v3.1)
   ivd/judgment/                          (engine package — borrowed pattern
-                                          from ivd/canon/, see Canon PRD §11.0b)
+                                          from ivd/canon/)
 """
 
 from __future__ import annotations

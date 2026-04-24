@@ -14,9 +14,8 @@ IVD MCP Tool Registry — registration and dispatch for all 28 tools.
   - 4  Canon tools  (Human Translation Layer, Phase 0b — hosted inside this
                      IVD MCP server so every existing IVD client picks them
                      up automatically with zero `mcpServers` config edit.
-                     Opt-out: `IVD_CANON_TOOLS_ENABLED=false`. See
-                     external/canon/CANON_PRD.md v0.7 §11.0b and
-                     external/canon/CANON_TECH_SPEC.md v0.6 §9B.)
+                     Opt-out: `IVD_CANON_TOOLS_ENABLED=false`. See the
+                     Canon PRD §11.0b and the Canon Tech Spec §9B.)
 """
 
 import json
@@ -288,7 +287,7 @@ def get_all_tools() -> List[Tool]:
         # Hosted inside this IVD MCP server so every existing IVD client
         # picks them up automatically — zero `mcpServers` config edit.
         # Opt-out: IVD_CANON_TOOLS_ENABLED=false.
-        # See external/canon/CANON_PRD.md v0.7 §11.0b.
+        # See the Canon PRD §11.0b.
         # -------------------------------------------------------------------
         Tool(
             name="canon_render",
