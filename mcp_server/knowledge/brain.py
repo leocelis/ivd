@@ -24,8 +24,19 @@ def get_brain_root() -> str:
     return str(Path(__file__).parent.parent / "brain")
 
 
+# Convention: any directory whose name starts with PRIVATE_PREFIX is treated
+# as private content and excluded from embedding scans. The canonical example
+# is `_private/` (also gitignored at repo root, see `.gitignore`). Underscore
+# prefix is the single source of truth for "do not embed".
+PRIVATE_PREFIX = "_"
+
 # Directories to skip during embedding scans.
-# Dirs starting with "_" or "." are also skipped by the scan_directory walk logic.
+# Two layers of defense:
+#   1. SKIP_DIRS — explicit names (this set), including `_private` for
+#      grep-ability even though it would also be caught by PRIVATE_PREFIX.
+#   2. PRIVATE_PREFIX — the `_*` and `.*` prefix rules in scan_directory.
+# Both must agree that `_private/` is excluded; the test
+# `test_brain_scan.py::test_private_dir_never_embedded` locks in the contract.
 SKIP_DIRS = {
     "mcp_server",
     ".venv",
@@ -41,6 +52,7 @@ SKIP_DIRS = {
     ".do",
     "deploy",
     "temp",
+    "_private",
 }
 
 # Root-level files to skip (not IVD knowledge)
@@ -53,12 +65,22 @@ def scan_directory(directory: str, extra_skip: set = None) -> List[Dict]:
     """
     Scan directory recursively for supported files.
 
-    Skips directories in SKIP_DIRS and any starting with '_'.
+    Skips:
+      - Directories listed in SKIP_DIRS (e.g. mcp_server, deploy, _private).
+      - Any directory whose name starts with PRIVATE_PREFIX ("_") — the
+        underscore-prefix convention for private content (e.g. `_private/`,
+        `_drafts/`). Never embedded; never shipped via ivd_search.
+      - Any directory whose name starts with "." (dotfiles, e.g. `.git/`).
     """
     skip = SKIP_DIRS | (extra_skip or set())
     files = []
     for root, dirs, filenames in os.walk(directory):
-        dirs[:] = [d for d in dirs if d not in skip and not d.startswith("_")]
+        dirs[:] = [
+            d for d in dirs
+            if d not in skip
+            and not d.startswith(PRIVATE_PREFIX)
+            and not d.startswith(".")
+        ]
         rel_root = os.path.relpath(root, directory)
         for filename in filenames:
             rel_path = os.path.join(rel_root, filename) if rel_root != "." else filename
