@@ -155,7 +155,7 @@ class AuditReport:
     partial: bool = False  # True when not all R1–R14 are implemented yet
     stakes: Stakes = Stakes.MEDIUM
     domain_pack: str = "general"
-    engine_version: str = "0.1.0"
+    engine_version: str = "0.2.0"
 
     def _payload(self) -> Dict[str, Any]:
         """Hash-input payload (does NOT include the hash field — avoids recursion)."""

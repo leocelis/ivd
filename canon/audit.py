@@ -3,9 +3,16 @@
 """
 Canon Audit layer — checks a CanonDocument against the R-invariants.
 
-Phase 0b ships R1, R2, R5, R10, R14 as enforced; the others are reported as
-'partial' until their renderer paths land. The audit is deterministic, and
-its hash is reproducible across runs so callers can compare verdicts (R9).
+Engine v0.1.0 shipped R1, R2, R5, R10, R14 as enforced.
+Engine v0.2.0 promotes R13 (stakes-adaptive format) to enforced via a
+Tier 1 structural-density heuristic; the remaining 8 partial rules are
+either architecturally out-of-scope for a single-turn deterministic audit
+(R8/R11 need session state) or carry false-positive risk that exceeds
+their value at Tier 1 (R3/R4/R6/R7/R12). They remain instructed via the
+Phase 0a rules block.
+
+The audit is deterministic, and its hash is reproducible across runs so
+callers can compare verdicts (R9).
 
 Reference: canon_layer.md §Audit layer (R-invariant enforcement), §Audit diff.
 """
@@ -47,6 +54,27 @@ _FORBIDDEN_PATTERNS = [
     (re.compile(r"\bI feel (sad|happy|angry|upset|excited)\b", re.I), "emotion-claim"),
     (re.compile(r"\bI('m| am) your (friend|companion|family)\b", re.I), "persona-overclaim"),
 ]
+
+# R13 — stakes-adaptive format. Tier 1 enforces a *structural-density* mismatch
+# heuristic, not the full PRD §5.3.5 example-vs-rule mapping table (which
+# requires deeper semantic analysis than Tier 1 can do deterministically).
+#
+# The heuristic catches the two highest-signal failure modes:
+#   1. LOW stakes + heavy structure (multi-section answer to a chitchat Q)
+#   2. HIGH/IRREVERSIBLE stakes + flat unstructured prose (no headers/lists)
+#
+# MEDIUM stakes is the relaxed band — never fails R13 by design.
+# Domain-pack-specific mapping enforcement is Phase 2 work (see canon_system_intent
+# constraint R13_format_selection).
+_R13_LOW_STAKES_VERBOSE_WORDS = 200
+_R13_HIGH_STAKES_TERSE_WORDS = 50
+
+# Outline-level structural markers: markdown headers (##+), bullet/numbered
+# lists, or pipe-table separators. Single-line code fences and inline code
+# do NOT count — they are content, not outline structure.
+_R13_STRUCTURE_RE = re.compile(
+    r"(?m)^(?:\s{0,3})(?:#{2,}\s|[-*+]\s|\d+\.\s|\|.*\|)",
+)
 
 
 def _add(findings: List[RFinding], r: str, status: str, severity: str, detail: str) -> None:
@@ -139,8 +167,81 @@ def _audit_R14_identity(doc: CanonDocument, findings: List[RFinding]) -> None:
     _add(findings, "R14", "pass", "info", "Identity bounded; no forbidden patterns found.")
 
 
+def _audit_R13_stakes_format(doc: CanonDocument, findings: List[RFinding]) -> None:
+    """R13 stakes-adaptive format — Tier 1 structural-density heuristic.
+
+    Enforces only the structural-density slice of the full PRD §5.3.5 mapping
+    (the example-vs-rule axis requires semantic analysis beyond Tier 1). The
+    detector catches:
+      - LOW stakes + verbose multi-section reply (format too heavy for stakes)
+      - HIGH/IRREVERSIBLE stakes + flat unstructured prose (format too light)
+
+    MEDIUM stakes is the relaxed band — passes by design.
+    """
+    body = doc.body_with_marks or ""
+    word_count = len(body.split())
+    has_structure = bool(_R13_STRUCTURE_RE.search(body))
+
+    if doc.stakes == Stakes.LOW:
+        if word_count > _R13_LOW_STAKES_VERBOSE_WORDS and has_structure:
+            _add(
+                findings,
+                "R13",
+                "fail",
+                "warn",
+                f"Format too heavy for low stakes: {word_count} words with outline structure "
+                f"(threshold: <={_R13_LOW_STAKES_VERBOSE_WORDS} words at low stakes).",
+            )
+            return
+        _add(findings, "R13", "pass", "info", f"Format matches low stakes ({word_count} words).")
+        return
+
+    if doc.stakes in (Stakes.HIGH, Stakes.IRREVERSIBLE):
+        # High/irreversible answers should be either structured OR explicitly
+        # short-and-sufficient. A short flat prose answer at irreversible stakes
+        # is the failure mode (e.g., "yes, delete it" with no breakdown).
+        if word_count >= _R13_HIGH_STAKES_TERSE_WORDS and not has_structure:
+            _add(
+                findings,
+                "R13",
+                "fail",
+                "warn",
+                f"Format too light for {doc.stakes.value} stakes: {word_count} words of flat prose, "
+                "no outline structure (headers/lists/tables expected).",
+            )
+            return
+        if word_count < _R13_HIGH_STAKES_TERSE_WORDS and not has_structure:
+            _add(
+                findings,
+                "R13",
+                "fail",
+                "warn",
+                f"Format too light for {doc.stakes.value} stakes: {word_count} words, no structure. "
+                "High-stakes responses need either structural markers or substantive depth.",
+            )
+            return
+        _add(
+            findings,
+            "R13",
+            "pass",
+            "info",
+            f"Format matches {doc.stakes.value} stakes (structured={has_structure}, words={word_count}).",
+        )
+        return
+
+    # MEDIUM (or any future stakes value) — relaxed band.
+    _add(findings, "R13", "pass", "info", "Medium stakes — format band is relaxed.")
+
+
 def _audit_partial_stubs(findings: List[RFinding]) -> None:
-    """The R-invariants not yet enforced in Phase 0b."""
+    """The R-invariants not yet enforced in Phase 0b.
+
+    R13 was promoted to enforced in engine v0.2.0 (Tier 1 structural-density
+    heuristic). The remaining 8 partial rules are either (a) architecturally
+    out-of-scope for a single-turn deterministic audit (R8/R11 need session
+    state) or (b) carry false-positive risk that exceeds their value at Tier 1
+    (R3/R4/R6/R7/R12). They remain instructed via the Phase 0a rules block.
+    """
     for r, why in [
         ("R3",  "working-memory chunking not yet enforced"),
         ("R4",  "dual-encoding (tables / examples) not yet enforced"),
@@ -150,7 +251,6 @@ def _audit_partial_stubs(findings: List[RFinding]) -> None:
         ("R9",  "audit reproducibility check not yet enforced (hash present)"),
         ("R11", "first-output priority not yet enforced"),
         ("R12", "arousal calibration not yet enforced"),
-        ("R13", "stakes-adaptive format not yet enforced"),
     ]:
         _add(findings, r, "partial", "info", why)
 
@@ -162,6 +262,7 @@ def audit(doc: CanonDocument) -> AuditReport:
     _audit_R2_confidence(doc, findings)
     _audit_R5_verification(doc, findings)
     _audit_R10_folk_theory(doc, findings)
+    _audit_R13_stakes_format(doc, findings)
     _audit_R14_identity(doc, findings)
     _audit_partial_stubs(findings)
 
@@ -180,7 +281,7 @@ def audit(doc: CanonDocument) -> AuditReport:
         partial=any(f.status == "partial" for f in findings),
         stakes=doc.stakes,
         domain_pack=doc.domain_pack,
-        engine_version="0.1.0",
+        engine_version="0.2.0",
     )
 
 
