@@ -268,6 +268,136 @@ class TestCanonEngine:
         beat = document.verification_beats[0]
         assert "irreversible" in beat["reversible"].lower()
 
+    # ------------------------------------------------------------------
+    # R13 stakes-adaptive format (engine v0.2.0 — structural-density heuristic)
+    # ------------------------------------------------------------------
+
+    def test_R13_passes_low_stakes_short(self):
+        from canon.contract import CanonDocument, Stakes
+        doc = CanonDocument(
+            setting_phase="Setting: chitchat.",
+            body_with_marks="Yes, that's correct (✓ verified).",
+            stakes=Stakes.LOW,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "pass", r13.detail
+
+    def test_R13_fails_low_stakes_verbose_with_structure(self):
+        """Long multi-section reply at low stakes — format too heavy."""
+        from canon.contract import CanonDocument, Stakes
+        long_body = (
+            "## Section 1\n\n"
+            + ("Lorem ipsum dolor sit amet consectetur adipiscing elit. " * 20)
+            + "\n\n## Section 2\n\n"
+            + ("Sed do eiusmod tempor incididunt ut labore et dolore magna. " * 20)
+        )
+        doc = CanonDocument(
+            setting_phase="Setting: simple Q.",
+            body_with_marks=long_body,
+            stakes=Stakes.LOW,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "fail", r13.detail
+        assert "low stakes" in r13.detail.lower()
+
+    def test_R13_passes_medium_stakes_any_format(self):
+        from canon.contract import CanonDocument, Stakes
+        doc = CanonDocument(
+            setting_phase="Setting: medium-stakes work.",
+            body_with_marks="Plain prose answer with no structure (✓ verified).",
+            stakes=Stakes.MEDIUM,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "pass", r13.detail
+        assert "medium" in r13.detail.lower() or "relaxed" in r13.detail.lower()
+
+    def test_R13_fails_high_stakes_flat_prose(self):
+        """Long flat prose at high stakes — needs outline structure."""
+        from canon.contract import CanonDocument, Stakes
+        flat = ("This is a long answer that explains the migration in flowing "
+                "prose without any headers or lists or tables. " * 10)
+        doc = CanonDocument(
+            setting_phase="Setting: production migration.",
+            body_with_marks=flat,
+            stakes=Stakes.HIGH,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "fail", r13.detail
+        assert "high" in r13.detail.lower() and "structure" in r13.detail.lower()
+
+    def test_R13_passes_high_stakes_structured(self):
+        from canon.contract import CanonDocument, Stakes
+        body = (
+            "## Plan\n\n"
+            "- Step 1: backup the table\n"
+            "- Step 2: run the migration\n"
+            "- Step 3: verify row counts\n\n"
+            "## Risks\n\n"
+            "| Risk | Mitigation |\n"
+            "|------|------------|\n"
+            "| Data loss | Backup first |\n"
+        )
+        doc = CanonDocument(
+            setting_phase="Setting: production migration plan.",
+            body_with_marks=body,
+            stakes=Stakes.HIGH,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "pass", r13.detail
+
+    def test_R13_fails_irreversible_terse_flat(self):
+        from canon.contract import CanonDocument, Stakes
+        doc = CanonDocument(
+            setting_phase="Setting: delete request.",
+            body_with_marks="Yes, run it. Should be fine.",
+            stakes=Stakes.IRREVERSIBLE,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        assert r13.status == "fail", r13.detail
+        assert "irreversible" in r13.detail.lower()
+
+    def test_R13_not_in_partial_stubs(self):
+        """R13 was promoted to enforced in engine v0.2.0 — must NOT appear
+        in the partial-stubs list anymore."""
+        from canon.contract import CanonDocument, Stakes
+        doc = CanonDocument(
+            setting_phase="Setting: x.",
+            body_with_marks="hi",
+            stakes=Stakes.LOW,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        r13 = next(f for f in report.findings if f.r == "R13")
+        # If R13 ever regresses to "partial" (i.e., back in _audit_partial_stubs)
+        # this test fires the alarm.
+        assert r13.status in ("pass", "fail"), (
+            f"R13 should be enforced (pass/fail) in engine v0.2.0, got {r13.status}"
+        )
+
+    def test_engine_version_is_0_2_0(self):
+        """Engine version bump is the contract that R13 is now enforced."""
+        from canon.contract import CanonDocument, Stakes
+        doc = CanonDocument(
+            setting_phase="Setting: x.",
+            body_with_marks="hi (✓ verified).",
+            stakes=Stakes.LOW,
+            identity_statement="I am an AI assistant.",
+        )
+        report = canon_audit(doc)
+        assert report.engine_version == "0.2.0", report.engine_version
+
     def test_canon_diff_marks_fixed_and_regressed(self):
         """A before that failed R2 and an after that passes should mark R2 fixed."""
         from canon.contract import AuditReport, RFinding, Stakes

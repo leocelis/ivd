@@ -45,7 +45,9 @@ That's it. Five rules. ~150 lines of markdown.
 > are the ones the **rules block** enforces directly in the agent's
 > instruction file; the remaining R-invariants are enforced by the
 > [audit layer](#layer-2--four-mcp-tools) when output passes through
-> `canon_check` or `canon_render`.
+> `canon_check` or `canon_render`. As of engine **v0.2.0**, **R13
+> (stakes-adaptive format)** is also enforced by the audit layer — see
+> [R13 below](#r13--stakes-adaptive-format-engine-v020).
 
 ---
 
@@ -218,6 +220,43 @@ Explicit authority refusal + structured trade-off with confidence glyphs. That i
 
 ---
 
+## R13 — stakes-adaptive format (engine v0.2.0)
+
+**Failure it prevents:** the LLM picks the wrong *delivery shape* for the situation. Two failure modes dominate in practice:
+
+1. **Low-stakes ceremony.** User asks a chitchat or one-liner question; LLM replies with a multi-section, headered, bulleted essay. Wastes attention, signals the model can't read the room.
+2. **High-stakes mush.** User is about to do something irreversible (drop a table, force-push, restore a snapshot); LLM replies with a wall of unstructured prose where the destructive command is buried in a paragraph the user will skim past.
+
+The rule, in one sentence: **format density must match the stakes the reply carries** — terse for low, structured for high/irreversible, relaxed band for medium.
+
+### What the audit checks (Tier 1, deterministic)
+
+The Tier 1 detector is a **structural-density heuristic** — no LLM call, no semantic analysis, runs in microseconds. It looks at two signals:
+
+- **Word count** of the body (excluding the Setting Phase).
+- **Outline structure**: presence of `##+` headers, `-`/`*`/`+` or numbered list items, or pipe-table separators (`|...|`). Inline code or single-line code fences do *not* count — they are content, not outline.
+
+| Stakes | What fails R13 | Why |
+|---|---|---|
+| `low` | > **200 words** *and* has outline structure | Multi-section answer to a question that didn't need one |
+| `medium` | nothing — relaxed band by design | Most replies live here |
+| `high` / `irreversible` | ≥ **50 words** *and* no outline structure | Important reply with no scannable shape |
+| `high` / `irreversible` | < **50 words** *and* no outline structure | Important reply that's also too terse to convey what's at stake |
+
+R13 currently emits findings at **WARN** severity (not safety-blocking), so it surfaces format mismatches in `canon_check` without failing the overall verdict the way R5 (verification beat) does.
+
+### What R13 deliberately does *not* do (yet)
+
+The full PRD §5.3.5 specifies a domain-pack-specific *example-vs-rule mapping* table (e.g., "for a code review reply, use this exact section ordering"). That mapping requires deeper semantic analysis than Tier 1 can do deterministically and is **Phase 2 work** — tracked by the `R13_format_selection` constraint in `canon_system_intent.yaml`. Tier 1 catches the two highest-signal failure modes above and ships now.
+
+### Why this matters for the destructive-command quartet
+
+The headline R5 demos (`rm -rf`, `git push --force`, `DROP TABLE`, urgent restore) are all **irreversible** stakes. R13 now reinforces R5: even if a future model tried to slip the verification beat into a 30-word terse paragraph, R13 would flag it as **"Important reply but no outline structure"** — making the format mismatch visible to any CI pipeline running `canon_check`.
+
+Engine source: [`canon/audit.py::_audit_R13_stakes_format`](canon/audit.py). Test coverage: `mcp_server/tests/unit/test_canon.py` (eight R13-specific tests covering low/medium/high/irreversible × terse/verbose × structured/unstructured).
+
+---
+
 ## How this composes with the rest of IVD
 
 Canon is one of four IVD layers, and each one addresses a distinct failure mode:
@@ -239,6 +278,7 @@ Canon does not replace any other IVD layer. It is the **communication contract o
 - **Phase 0a (Canon Rules):** Shipping. Recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Six client adapters in lockstep.
 - **Phase 0b (Canon MCP tools):** Shipping. Hosted inside the IVD MCP server. Zero `mcpServers` config edit. Opt-out: `IVD_CANON_TOOLS_ENABLED=false`.
 - **Phase 0c (Browser extension surface):** Designed, not yet shipped.
+- **Engine version:** `0.2.0` — adds R13 (stakes-adaptive format) Tier 1 enforcement to the audit layer (R1, R2, R5, R10, R14 unchanged).
 
 Engine source: [`canon/`](canon/). Validation suite: [`canon/validation/`](canon/validation/). Unit tests: [`mcp_server/tests/unit/test_canon.py`](mcp_server/tests/unit/test_canon.py).
 
