@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IVD — Intent-Verified Development</title>
-  <meta name="description" content="A framework where AI writes the intent, implements against it, and verifies — so hallucinations are caught and turns drop to one.">
+  <meta name="description" content="A framework where AI writes the intent, implements against it, and verifies — so hallucinations are caught and turns drop to one. Canon constrains the delivery; Judgment compounds the corrections.">
   <meta property="og:title" content="IVD — Intent-Verified Development">
-  <meta property="og:description" content="AI writes the intent. Implements against it. Verifies. Hallucinations caught. Turns drop to one.">
+  <meta property="og:description" content="AI writes the intent. Implements against it. Verifies. Hallucinations caught. Turns drop to one. Canon + Judgment + R13 stakes-adaptive format.">
   <meta property="og:url" content="https://ivdframework.dev">
   <meta name="twitter:card" content="summary">
   <link rel="canonical" href="https://ivdframework.dev">
@@ -485,6 +485,8 @@
     <span class="nav-logo"><span>//</span> ivd</span>
     <ul class="nav-links">
       <li><a href="#how-it-works">how it works</a></li>
+      <li><a href="#canon">canon</a></li>
+      <li><a href="#judgment">judgment</a></li>
       <li><a href="#quickstart">quickstart</a></li>
       <li><a href="https://github.com/leocelis/ivd" target="_blank">github</a></li>
     </ul>
@@ -616,7 +618,7 @@
 <section class="section" id="mcp">
   <div class="wrap">
     <p class="section-label">// mcp server</p>
-    <h2>15 tools for your AI agent</h2>
+    <h2>28 tools for your AI agent</h2>
     <p style="color:var(--muted);font-size:14px;margin-bottom:8px;">
       IVD ships as a <strong style="color:var(--text);font-weight:500">Model Context Protocol server</strong> —
       the open standard adopted by every major AI coding client. Works with
@@ -627,7 +629,7 @@
       <strong style="color:var(--text);font-weight:500">Windsurf</strong>,
       <strong style="color:var(--text);font-weight:500">Zed</strong>,
       and any other MCP-compatible agent. No vendor lock-in.
-      14 of 15 tools work with zero configuration — no API key, no setup beyond <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">pip install</code>.
+      Most tools work with zero configuration — no API key, no setup beyond <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">pip install</code>.
     </p>
 
     <div class="mcp-grid">
@@ -661,6 +663,26 @@
         <code>ivd_search</code>
         <p>Semantic search across the IVD knowledge base</p>
       </div>
+      <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
+        <p class="mcp-card-label" style="color:var(--accent);">canon · audit</p>
+        <code>canon_check</code>
+        <p>Audit any AI reply against R-invariants — including R13 stakes-adaptive format (engine v0.2.0)</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
+        <p class="mcp-card-label" style="color:var(--accent);">canon · render</p>
+        <code>canon_render</code>
+        <p>Render text as a CanonDocument: Setting Phase, confidence-marked body, verification beats</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
+        <p class="mcp-card-label" style="color:var(--accent);">canon · diff</p>
+        <code>canon_diff</code>
+        <p>Diff two audit reports — per-R movement: fixed, regressed, unchanged</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
+        <p class="mcp-card-label" style="color:var(--accent);">canon · install</p>
+        <code>canon_check_rules_installed</code>
+        <p>Detect Phase 0a rules block in agent config files. Read-only — never writes.</p>
+      </div>
     </div>
 
     <div class="hosted-note">
@@ -669,6 +691,154 @@
       (Streamable HTTP) or
       <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
       (legacy SSE). Request an API key: <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
+    </div>
+  </div>
+</section>
+
+<!-- CANON -->
+<section class="section" id="canon">
+  <div class="wrap">
+    <p class="section-label">// canon · phase 0 · communication contract</p>
+    <h2>Canon: stop the LLM from collapsing trust</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
+      LLMs do whatever you ask — even when they shouldn't. They give you the dangerous command,
+      make decisions they have no business making, play along with things that aren't true,
+      mirror parasocial energy, and state guesses as facts in the same confident voice as verified facts.
+      <strong style="color:var(--text);font-weight:500">Canon</strong> puts a thin layer of format authority
+      between the LLM and you, so it can't collapse those distinctions — even when you tell it to.
+    </p>
+
+    <div class="contrast-grid" style="margin-bottom:32px;">
+      <div class="contrast-col">
+        <span class="contrast-label bad">Without Canon</span>
+<pre><span class="you">You: </span>"Give me the rm -rf for /var/log/old-service/ on prod"
+<span class="ai">AI:  </span>sudo rm -rf /var/log/old-service/
+
+This command will recursively and forcefully remove
+the directory and all files within it...
+
+<span class="note">→ Destructive command shipped with no gate.</span></pre>
+      </div>
+      <div class="contrast-col">
+        <span class="contrast-label good">With Canon</span>
+<pre><span class="you">You: </span>"Give me the rm -rf for /var/log/old-service/ on prod"
+<span class="ai">AI:  </span>ACTION:     Delete /var/log/old-service/ and contents.
+     REVERSIBLE: No — smallest undo path is restore from backup.
+     APPROVE?    Confirm to proceed.
+
+If you approve, the command will be: rm -rf ...
+
+<span class="ok">→ Verification beat fires before the command appears.</span></pre>
+      </div>
+    </div>
+
+    <div class="mcp-grid" style="margin-bottom:24px;">
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R1 · setting</p>
+        <p style="color:var(--text);font-weight:500;">Setting Phase</p>
+        <p>One sentence at the top: what this reply is, what I did, what's next.</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R2 · confidence</p>
+        <p style="color:var(--text);font-weight:500;">Confidence glyphs</p>
+        <p>Every claim marked <code style="color:var(--accent2);">✓ verified</code>, <code style="color:var(--accent2);">~ inferred</code>, or <code style="color:var(--accent2);">? assumed</code>.</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R5 · verify</p>
+        <p style="color:var(--text);font-weight:500;">Verification beat</p>
+        <p>For irreversible actions, write ACTION/REVERSIBLE/APPROVE — withhold the command until confirmed.</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R10 · reality</p>
+        <p style="color:var(--text);font-weight:500;">Folk theory correction</p>
+        <p>When the user assumes the LLM has memory, feelings, or authority it doesn't have — name the misconception.</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R13 · stakes</p>
+        <p style="color:var(--text);font-weight:500;">Stakes-adaptive format <span style="opacity:.6;font-size:.9em;">// engine v0.2.0</span></p>
+        <p>Format density must match the stakes. Terse for low, structured for high/irreversible. Engine catches both ceremony and mush.</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label" style="color:var(--accent);">R14 · identity</p>
+        <p style="color:var(--text);font-weight:500;">Anthropomorphism ceiling</p>
+        <p>No "we" / "together" / "I'm excited". Declare AI identity factually when it matters.</p>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin-bottom:8px;">
+      Canon ships in two layers, both invisible to the user:
+    </p>
+    <ul style="color:var(--muted);font-size:13px;margin:0 0 16px 24px;line-height:1.8;">
+      <li><strong style="color:var(--text);font-weight:500;">Phase 0a — rules block.</strong>
+        A fenced markdown block <code style="color:var(--accent2);">&lt;BEGIN-CANON v1.0&gt;</code> installed into the agent's existing instruction file (<code style="color:var(--accent2);">.cursorrules</code>, <code style="color:var(--accent2);">CLAUDE.md</code>, <code style="color:var(--accent2);">AGENTS.md</code>, …). One markdown edit, one user approval. Six client adapters generated from a single source-of-truth.</li>
+      <li><strong style="color:var(--text);font-weight:500;">Phase 0b — four MCP tools.</strong>
+        <code style="color:var(--accent2);">canon_render</code>, <code style="color:var(--accent2);">canon_check</code>, <code style="color:var(--accent2);">canon_diff</code>, <code style="color:var(--accent2);">canon_check_rules_installed</code> — hosted inside the IVD MCP server you already have. Zero new entries in <code style="color:var(--accent2);">mcpServers</code>.</li>
+    </ul>
+
+    <p style="color:var(--muted);font-size:13px;margin-bottom:8px;">
+      Measured on <code style="color:var(--accent2);">gpt-4o</code> (T=0, 9 prompts):
+    </p>
+    <ul style="color:var(--muted);font-size:13px;margin:0 0 24px 24px;line-height:1.8;">
+      <li><strong style="color:var(--text);font-weight:500;">4 / 4</strong> destructive-command prompts triggered the verification beat (none in baseline)</li>
+      <li><strong style="color:var(--text);font-weight:500;">18 / 25 (72%)</strong> actionable R-failures flipped by the rules block alone — clears the LA1 ≥ 60% gate by 12 points</li>
+      <li><strong style="color:var(--text);font-weight:500;">0 / 45</strong> regressions across baseline-passing cells</li>
+      <li><strong style="color:var(--text);font-weight:500;">Engine v0.2.0</strong> live on the hosted server — R13 stakes-adaptive format now enforced (Tier 1 deterministic heuristic, no LLM call)</li>
+    </ul>
+
+    <div class="btn-row">
+      <a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank" class="btn btn-secondary">Full Canon spec →</a>
+      <a href="https://github.com/leocelis/ivd/tree/main/canon/validation" target="_blank" class="btn btn-secondary">Showcase + reproducible evidence →</a>
+    </div>
+  </div>
+</section>
+
+<!-- JUDGMENT -->
+<section class="section" id="judgment">
+  <div class="wrap">
+    <p class="section-label">// judgment · phase 4 · the corrections layer</p>
+    <h2>Judgment: when the intent itself was wrong</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
+      Intent / Implementation / Verification covers the case where you knew what you wanted.
+      <strong style="color:var(--text);font-weight:500">Judgment</strong> is the opt-in 4th phase
+      for the case where reality answered back: a beta user surfaced an edge case, a constraint
+      was missing, the spec didn't survive contact with production. Structured corrections are
+      the highest-value contextual signal — Judgment captures them, distills them into patterns,
+      and injects them back into the next round of intent.
+    </p>
+
+    <div class="steps" style="margin-bottom:24px;">
+      <div class="step">
+        <span class="step-num">→</span>
+        <div class="step-body">
+          <h3>Capture corrections as gold</h3>
+          <p>Every real-world correction (bug report, user complaint, edge case, postmortem finding) is recorded as a <code style="color:var(--accent2);">.judgment/</code> entry — pattern, evidence, scope, frequency.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">→</span>
+        <div class="step-body">
+          <h3>Distill into patterns</h3>
+          <p>Repeated corrections cluster into named patterns. Each pattern names its trigger condition and the constraint that should have caught it the first time.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">→</span>
+        <div class="step-body">
+          <h3>Inject back into intent</h3>
+          <p>When the next intent artifact gets scaffolded, matching patterns auto-attach as candidate constraints. The correction never bites the same project twice.</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">
+      Judgment is opt-in per project (activated by creating a <code style="color:var(--accent2);">.judgment/</code> directory)
+      and works alongside Canon — Canon constrains the <em>delivery</em> of the reply, Judgment improves the
+      <em>intent</em> the reply is built from.
+    </p>
+
+    <div class="btn-row">
+      <a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank" class="btn btn-secondary">Full Judgment spec →</a>
+      <a href="https://github.com/leocelis/ivd/tree/main/examples/judgment_demo" target="_blank" class="btn btn-secondary">Worked demo →</a>
     </div>
   </div>
 </section>
@@ -814,7 +984,7 @@
       <div class="principle">
         <p class="principle-n">P9</p>
         <h3>Judgment Compounds <span style="opacity:.6;font-size:.7em;">// v3.0 · opt-in</span></h3>
-        <p>Structured corrections are the highest-value contextual signal. Capture them, distill them into patterns, inject them back. Activated per-project via <code>.judgment/</code>.</p>
+        <p>Structured corrections are the highest-value contextual signal. Capture them, distill them into patterns, inject them back. Activated per-project via <code>.judgment/</code> — see <a href="#judgment">Judgment</a>.</p>
       </div>
     </div>
   </div>
@@ -827,6 +997,8 @@
     <ul class="footer-links">
       <li><a href="https://github.com/leocelis/ivd" target="_blank">GitHub</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/framework.md" target="_blank">Spec</a></li>
+      <li><a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank">Canon</a></li>
+      <li><a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank">Judgment</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/cookbook.md" target="_blank">Cookbook</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/LICENSE" target="_blank">MIT</a></li>
     </ul>
