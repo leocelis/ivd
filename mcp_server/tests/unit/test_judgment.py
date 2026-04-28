@@ -804,3 +804,55 @@ class TestJudgmentValidators:
             "members": ["a"], "member_count": 1, "weighted_confidence": 0.7,
         })
         assert any("promotion threshold" in w for w in warns)
+
+
+# ===========================================================================
+# 12. IVD repo self-activation gate
+# ===========================================================================
+
+class TestJudgmentIVDRepoActivation:
+    """Verify that the IVD framework repository itself has the Judgment phase
+    activated (i.e., .judgment/ exists at the repo root).
+
+    Gap closure: the IVD repo was previously the only IVD-managed repo that
+    had *not* bootstrapped the Judgment loop — it could capture corrections
+    about client projects but not about its own engine. This class guards
+    against regressing that state.
+
+    If this test fails it means .judgment/ was deleted from the IVD repo root.
+    Fix: run ivd_judgment_init with project_root pointing at the IVD repo.
+    """
+
+    _IVD_ROOT = Path(__file__).parents[3]  # ivd/mcp_server/tests/unit → ivd/
+
+    def test_judgment_directory_exists_at_ivd_root(self):
+        judgment_dir = self._IVD_ROOT / ".judgment"
+        assert judgment_dir.is_dir(), (
+            f".judgment/ not found at {self._IVD_ROOT}. "
+            "Run: ivd_judgment_init with project_root=<ivd_repo_root>"
+        )
+
+    def test_judgment_config_is_valid_yaml(self):
+        config_path = self._IVD_ROOT / ".judgment" / "config.yaml"
+        assert config_path.is_file(), ".judgment/config.yaml missing"
+        import yaml
+        with open(config_path) as f:
+            cfg = yaml.safe_load(f)
+        assert cfg.get("judgment_phase", {}).get("version") == "1.0", (
+            "config.yaml judgment_phase.version must be '1.0'"
+        )
+
+    def test_judgment_check_installed_reports_activated_for_ivd_root(self):
+        """ivd_judgment_check_installed must return at least one entry with
+        activated=true when asked about the IVD repo root."""
+        out = call_tool(
+            "ivd_judgment_check_installed",
+            {"project_root": str(self._IVD_ROOT)},
+        )
+        payload = json.loads(out)
+        assert payload["tool"] == "ivd_judgment_check_installed"
+        projects = payload.get("projects", [])
+        assert any(p.get("activated") for p in projects), (
+            f"No activated Judgment project found for IVD root. "
+            f"Got: {json.dumps(projects, indent=2)}"
+        )

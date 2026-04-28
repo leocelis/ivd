@@ -1,0 +1,20 @@
+domain_id: ivd-framework
+created: '2026-04-28T21:00:01Z'
+updated: '2026-04-28T21:00:01Z'
+version: '0.1'
+leo_domain_depth: practitioner
+goal_calibration:
+  qualitative: TODO — describe what 'good' looks like in this domain
+  measurable: []
+  out_of_scope: []
+risk_hypotheses: []
+pattern_half_life_policy:
+  half_life_days: 90
+  rationale: Default; tune once you have data
+scale_awareness:
+  current_volume: TODO
+  next_threshold: TODO
+domain_reassessment_triggers: []
+changelog:
+- date: '2026-04-28'
+  change: seeded by ivd_judgment_init
