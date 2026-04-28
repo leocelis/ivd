@@ -303,7 +303,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="canon_check",
-            description="Canon — audit text or a CanonDocument against R-invariants (Phase 0b enforces R1, R2, R5, R10, R14; the rest are reported as 'partial' until the renderer paths land). Returns an AuditReport with per-R findings, severities, an overall verdict in {pass, fail, safety_fail, partial}, and a reproducible hash for R9 diffability. Reference: ivd/canon_layer.md §Audit.",
+            description="Canon — audit text or a CanonDocument against R-invariants (engine v0.2.0 enforces R1, R2, R5, R10, R13, R14; R13 is the stakes-adaptive format heuristic added in v0.2.0; R3/R4/R6/R7/R8/R9/R11/R12 remain 'partial' by design — see canon_layer.md and audit.py). Returns an AuditReport with per-R findings, severities, an overall verdict in {pass, fail, safety_fail, partial}, and a reproducible hash for R9 diffability. Reference: ivd/canon_layer.md §Audit.",
             inputSchema={"type": "object", "properties": {
                 "text": {"type": "string", "description": "Raw text — Canon will Tier-1-render then audit. Provide either `text` or `document`."},
                 "document": {"type": "object", "description": "A previously rendered CanonDocument (output of canon_render's `document` field). Audited as-is."},

@@ -1,0 +1,13 @@
+judgment_phase:
+  version: '1.0'
+  ivd_version: '3.1'
+  engine_version: 0.1.0
+  created: '2026-04-28T21:00:01Z'
+  pattern_promotion_threshold: 3
+  default_half_life_days: 90
+  injection:
+    default_token_budget: 1500
+    include_what_works: true
+  notes: Activation gate for the IVD Judgment phase. While this folder exists, the
+    9 ivd_judgment_* tools are active (unless IVD_JUDGMENT_TOOLS_ENABLED=false). See
+    ivd/judgment_layer.md for the full spec.

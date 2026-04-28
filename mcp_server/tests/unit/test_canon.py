@@ -612,3 +612,62 @@ class TestCanonToolDispatch:
         assert "regressed" in diff
         assert "unchanged" in diff
         assert "verdict" in diff
+
+
+class TestCanonRegistryDescriptions:
+    """Pin the registry tool descriptions so engine changes never silently
+    leave the tool descriptors stale (documentation drift prevention).
+
+    The canon_check description must always mention:
+      - the current enforced engine version (v0.2.0)
+      - R13 as an enforced (not 'partial') rule
+
+    If canon/audit.py promotes more rules or bumps the engine version, the
+    test will fail fast, prompting a matching registry update.
+    """
+
+    def _get_tool_description(self, tool_name: str) -> str:
+        from mcp_server.registry import get_all_tools
+        for t in get_all_tools():
+            if t.name == tool_name:
+                return t.description
+        raise AssertionError(f"Tool '{tool_name}' not found in registry")
+
+    def test_canon_check_description_mentions_engine_v020(self):
+        """registry.py must document that canon_check runs engine v0.2.0."""
+        desc = self._get_tool_description("canon_check")
+        assert "v0.2.0" in desc, (
+            "canon_check description must mention engine v0.2.0. "
+            "Update mcp_server/registry.py when the engine version changes."
+        )
+
+    def test_canon_check_description_mentions_r13_as_enforced(self):
+        """R13 was promoted from 'partial' to enforced in engine v0.2.0.
+        The registry description must reflect this so MCP clients learn
+        R13 is deterministically checked."""
+        desc = self._get_tool_description("canon_check")
+        assert "R13" in desc, (
+            "canon_check description must mention R13. "
+            "The rule was promoted to deterministic enforcement in engine v0.2.0."
+        )
+        assert "partial" not in desc.split("R13")[0].split("R14")[0], (
+            "R13 must not appear in the 'partial' list; it is now enforced. "
+            "Update mcp_server/registry.py."
+        )
+
+    def test_canon_check_description_does_not_list_r13_as_partial(self):
+        """Guard: the text fragment that names which rules 'remain partial'
+        must NOT include R13 — it was promoted to Tier-1 enforcement in v0.2.0.
+        We extract only the substring that follows 'remain' up to the end of
+        the parenthetical, so cross-references like '§R13' in other parts of
+        the description don't trigger a false positive."""
+        desc = self._get_tool_description("canon_check")
+        import re
+        # Grab everything from "remain" to the closing ")".
+        m = re.search(r"remain.*?\)", desc)
+        partial_fragment = m.group() if m else ""
+        assert "R13" not in partial_fragment, (
+            "R13 appears in the partial-rules fragment of the canon_check description. "
+            "It was promoted to Tier-1 enforcement in engine v0.2.0. "
+            f"Fragment: ...{partial_fragment}..."
+        )
