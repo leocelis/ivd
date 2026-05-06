@@ -475,6 +475,125 @@
     }
     .hosted-note strong { color: var(--text); font-weight: 500; }
     .hosted-note a { color: var(--accent2); }
+
+    /* ── TOOL GROUPS ── */
+    .tool-group-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tool-group-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .tool-group-label span { color: var(--accent); }
+
+    /* ── ACCESS CTA ── */
+    .access-block {
+      margin-top: 36px;
+      background: rgba(240,165,0,0.05);
+      border: 1px solid rgba(240,165,0,0.25);
+      border-radius: 8px;
+      padding: 28px 28px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .access-block-left { flex: 1; min-width: 240px; }
+    .access-block-left h3 {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .access-block-left p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      line-height: 1.65;
+    }
+    .access-block-left .access-url {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent2);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .access-block-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .access-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── QS PATHS ── */
+    .qs-paths {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 600px) { .qs-paths { grid-template-columns: 1fr; } }
+    .qs-path {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 20px;
+      background: var(--bg2);
+    }
+    .qs-path.active { border-color: rgba(240,165,0,0.4); }
+    .qs-path-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .qs-path h4 {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .qs-path p { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .qs-divider {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 36px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .qs-divider::before, .qs-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
   </style>
 </head>
 <body>
@@ -485,6 +604,7 @@
     <span class="nav-logo"><span>//</span> ivd</span>
     <ul class="nav-links">
       <li><a href="#how-it-works">how it works</a></li>
+      <li><a href="#mcp">tools</a></li>
       <li><a href="#canon">canon</a></li>
       <li><a href="#judgment">judgment</a></li>
       <li><a href="#quickstart">quickstart</a></li>
@@ -629,9 +749,9 @@
       <strong style="color:var(--text);font-weight:500">Windsurf</strong>,
       <strong style="color:var(--text);font-weight:500">Zed</strong>,
       and any other MCP-compatible agent. No vendor lock-in.
-      Most tools work with zero configuration — no API key, no setup beyond <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">pip install</code>.
     </p>
 
+    <p class="tool-group-label"><span>15 core tools</span> · intent, implementation &amp; verification</p>
     <div class="mcp-grid">
       <div class="mcp-card">
         <p class="mcp-card-label">context</p>
@@ -646,12 +766,22 @@
       <div class="mcp-card">
         <p class="mcp-card-label">validate</p>
         <code>ivd_validate</code>
-        <p>Check structure, required sections, constraint completeness</p>
+        <p>Check structure, required sections, and constraint completeness</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label">init</p>
+        <code>ivd_init</code>
+        <p>Bootstrap IVD in an existing project — scans and pre-fills context</p>
       </div>
       <div class="mcp-card">
         <p class="mcp-card-label">recipes</p>
         <code>ivd_load_recipe</code>
         <p>Load proven patterns for agents, workflows, infra, and more</p>
+      </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label">coverage</p>
+        <code>ivd_assess_coverage</code>
+        <p>Scan a project and report which modules have no intent artifact yet</p>
       </div>
       <div class="mcp-card">
         <p class="mcp-card-label">discovery</p>
@@ -661,8 +791,66 @@
       <div class="mcp-card">
         <p class="mcp-card-label">search</p>
         <code>ivd_search</code>
-        <p>Semantic search across the IVD knowledge base</p>
+        <p>Semantic search across the entire IVD knowledge base</p>
       </div>
+      <div class="mcp-card">
+        <p class="mcp-card-label">inversion</p>
+        <code>ivd_propose_inversions</code>
+        <p>Surface non-obvious solutions by inverting conventional assumptions (P8)</p>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+      Also: <code style="color:var(--accent2);font-family:var(--mono);">ivd_load_template</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_list_recipes</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_find_artifacts</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_check_placement</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_list_features</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_teach_concept</code>
+    </p>
+
+    <p class="tool-group-label"><span>9 judgment tools</span> · phase 4 · opt-in via <code style="text-transform:none;letter-spacing:0;color:var(--accent2);font-size:10px;">.judgment/</code></p>
+    <div class="mcp-grid">
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · init</p>
+        <code>ivd_judgment_init</code>
+        <p>Bootstrap the Judgment phase — creates <code style="color:var(--accent2);">.judgment/</code> folder, seeds domain baselines, activates the other 8 tools</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · capture</p>
+        <code>ivd_judgment_capture</code>
+        <p>Record a real-world correction in under 30 seconds — bug report, user complaint, postmortem finding</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · codify</p>
+        <code>ivd_judgment_codify</code>
+        <p>Structured analysis of a raw correction: expected result, root cause, proposed fix, action type</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · patterns</p>
+        <code>ivd_judgment_detect_patterns</code>
+        <p>Cluster codified corrections by root cause — promotes recurring failures to named patterns</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · inject</p>
+        <code>ivd_judgment_inject_context</code>
+        <p>Return prioritized Judgment context for the next agent run — patterns, recent corrections, What Works layer</p>
+      </div>
+      <div class="mcp-card" style="border-color:rgba(34,197,94,0.3);">
+        <p class="mcp-card-label" style="color:var(--green);">judgment · recommend</p>
+        <code>ivd_judgment_propose_recommendation</code>
+        <p>Draft a you-approvable fix against a detected pattern — prompt patch, intent revision, or capability addition</p>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+      Also:
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_save_codified</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_pair</code>,
+      <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_check_installed</code>
+      — see <a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank">judgment_layer.md</a>
+    </p>
+
+    <p class="tool-group-label"><span>4 canon tools</span> · phase 0 · human translation layer</p>
+    <div class="mcp-grid">
       <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
         <p class="mcp-card-label" style="color:var(--accent);">canon · audit</p>
         <code>canon_check</code>
@@ -681,16 +869,24 @@
       <div class="mcp-card" style="border-color:rgba(240,165,0,0.35);">
         <p class="mcp-card-label" style="color:var(--accent);">canon · install</p>
         <code>canon_check_rules_installed</code>
-        <p>Detect Phase 0a rules block in agent config files. Read-only — never writes.</p>
+        <p>Detect the Phase 0a rules block in agent config files. Read-only — never writes.</p>
       </div>
     </div>
 
-    <div class="hosted-note">
-      <strong>Hosted server available.</strong> Skip the install — point any MCP client at
-      <a href="https://mcp.ivdframework.dev/mcp">mcp.ivdframework.dev/mcp</a>
-      (Streamable HTTP) or
-      <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
-      (legacy SSE). Request an API key: <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
+    <div class="access-block">
+      <div class="access-block-left">
+        <h3>Use the hosted server — no install needed</h3>
+        <p>Skip the clone and setup. Point any MCP client directly at the hosted server. All 28 tools, always up to date.</p>
+        <code class="access-url">https://mcp.ivdframework.dev/mcp</code><br>
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);">Streamable HTTP (VS Code, Copilot, Claude Code, Windsurf)</span><br><br>
+        <code class="access-url">https://mcp.ivdframework.dev/sse</code><br>
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);">Legacy SSE (Cursor, Claude Desktop)</span>
+      </div>
+      <div class="access-block-right">
+        <a href="mailto:leo@leocelis.com?subject=IVD%20API%20Key%20Request" class="btn btn-primary">Request API key →</a>
+        <p class="access-note">Free for individuals. Reply within 24h.</p>
+        <p class="access-note">See <a href="#quickstart" style="color:var(--accent2);">quickstart</a> for per-client config.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -849,6 +1045,21 @@ If you approve, the command will be: rm -rf ...
     <p class="section-label">// quickstart</p>
     <h2>Up in 5 minutes</h2>
 
+    <div class="qs-paths">
+      <div class="qs-path active">
+        <p class="qs-path-label">Path A · self-hosted</p>
+        <h4>Clone &amp; run locally</h4>
+        <p>Free. No API key. Full control. Python 3.12 required. Semantic search needs an OpenAI key (optional).</p>
+      </div>
+      <div class="qs-path">
+        <p class="qs-path-label">Path B · hosted server</p>
+        <h4>Skip the install</h4>
+        <p>No clone. No Python. Point your client at <code style="color:var(--accent2);font-family:var(--mono);font-size:11px;">mcp.ivdframework.dev</code> with an API key. <a href="mailto:leo@leocelis.com?subject=IVD%20API%20Key%20Request" style="color:var(--accent2);">Request a key →</a></p>
+      </div>
+    </div>
+
+    <div class="qs-divider">Path A — self-hosted</div>
+
     <div class="qs-step">
       <h3>// 1. Clone and setup</h3>
       <div class="code-block"><code><span class="c-cmd">git clone https://github.com/leocelis/ivd.git</span>
@@ -858,7 +1069,7 @@ If you approve, the command will be: rm -rf ...
 
     <div class="qs-step">
       <h3>// 2. Connect your AI client</h3>
-      <p>Pick your client — same server, same tools, same YAML intents.</p>
+      <p>Pick your client — same server, same 28 tools, same YAML intents.</p>
 
       <div class="client-block">
         <div class="client-label">Cursor <span class="client-path">~/.cursor/mcp.json</span></div>
@@ -907,19 +1118,79 @@ If you approve, the command will be: rm -rf ...
 
       <div class="client-block">
         <div class="client-label">Windsurf, Zed, Continue, and other MCP clients</div>
-        <p>Any client that speaks MCP can connect. Point it at
+        <p>Any client that speaks MCP (stdio) can connect. Point it at
         <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">python -m mcp_server.server</code>
-        from <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">/path/to/ivd</code>,
-        or use the hosted server below.</p>
+        with <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">cwd</code> set to your clone path.</p>
+      </div>
+    </div>
+
+    <div class="qs-step">
+      <h3>// 3. Use it</h3>
+      <p>Ask your agent:</p>
+      <div class="code-block"><code><span class="c-str">"Use ivd_get_context to learn IVD, then scaffold an intent for [your feature]"</span></code></div>
+    </div>
+
+    <div class="qs-divider">Path B — hosted server</div>
+
+    <div class="qs-step">
+      <h3>// 1. Request an API key</h3>
+      <p>Email <a href="mailto:leo@leocelis.com?subject=IVD%20API%20Key%20Request" style="color:var(--accent2);">leo@leocelis.com</a> with subject "IVD API Key Request". Free for individuals. Reply within 24h.</p>
+    </div>
+
+    <div class="qs-step">
+      <h3>// 2. Connect your AI client</h3>
+      <p>Replace <code style="font-family:var(--mono);font-size:12px;color:var(--accent);">YOUR_API_KEY</code> with your key. No clone or Python environment needed.</p>
+
+      <div class="client-block">
+        <div class="client-label">Cursor <span class="client-path">~/.cursor/mcp.json · SSE</span></div>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
+      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"sse"</span><span class="c-punc">,</span>
+      <span class="c-key">"url"</span><span class="c-punc">:</span>     <span class="c-str">"https://mcp.ivdframework.dev/sse"</span><span class="c-punc">,</span>
+      <span class="c-key">"headers"</span><span class="c-punc">: {</span> <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span> <span class="c-punc">}</span>
+    <span class="c-punc">}</span>
+  <span class="c-punc">}</span>
+<span class="c-punc">}</span></code></div>
       </div>
 
-      <div class="hosted-note" style="margin-top:24px;">
-        <strong>No install?</strong> Use the hosted server at
-        <a href="https://mcp.ivdframework.dev/mcp">mcp.ivdframework.dev/mcp</a>
-        (Streamable HTTP — VS Code / Copilot / Claude Code) or
-        <a href="https://mcp.ivdframework.dev/sse">mcp.ivdframework.dev/sse</a>
-        (legacy SSE — Cursor / Claude Desktop). Request an API key:
-        <a href="mailto:leo@leocelis.com">leo@leocelis.com</a>
+      <div class="client-block">
+        <div class="client-label">Claude Desktop <span class="client-path">~/Library/Application Support/Claude/claude_desktop_config.json · SSE</span></div>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
+      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"sse"</span><span class="c-punc">,</span>
+      <span class="c-key">"url"</span><span class="c-punc">:</span>     <span class="c-str">"https://mcp.ivdframework.dev/sse"</span><span class="c-punc">,</span>
+      <span class="c-key">"headers"</span><span class="c-punc">: {</span> <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span> <span class="c-punc">}</span>
+    <span class="c-punc">}</span>
+  <span class="c-punc">}</span>
+<span class="c-punc">}</span></code></div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">Claude Code <span class="client-path">one-liner · Streamable HTTP</span></div>
+        <div class="code-block"><code><span class="c-cmd">claude mcp add --transport http ivd https://mcp.ivdframework.dev/mcp \
+  --header "Authorization: Bearer <span class="c-acc">YOUR_API_KEY</span>"</span></code></div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">VS Code + GitHub Copilot <span class="client-path">.vscode/mcp.json · Streamable HTTP</span></div>
+        <div class="code-block"><code><span class="c-punc">{</span>
+  <span class="c-key">"servers"</span><span class="c-punc">: {</span>
+    <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
+      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"streamable-http"</span><span class="c-punc">,</span>
+      <span class="c-key">"url"</span><span class="c-punc">:</span>     <span class="c-str">"https://mcp.ivdframework.dev/mcp"</span><span class="c-punc">,</span>
+      <span class="c-key">"headers"</span><span class="c-punc">: {</span> <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span> <span class="c-punc">}</span>
+    <span class="c-punc">}</span>
+  <span class="c-punc">}</span>
+<span class="c-punc">}</span></code></div>
+      </div>
+
+      <div class="client-block">
+        <div class="client-label">Windsurf, Zed, Continue, and other MCP clients</div>
+        <p>Use <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">https://mcp.ivdframework.dev/mcp</code> (Streamable HTTP) for modern clients
+        or <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">https://mcp.ivdframework.dev/sse</code> (SSE) for legacy clients.
+        Add <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">Authorization: Bearer YOUR_API_KEY</code> as a header.</p>
       </div>
     </div>
 
@@ -931,6 +1202,7 @@ If you approve, the command will be: rm -rf ...
 
     <div class="btn-row">
       <a href="https://github.com/leocelis/ivd" target="_blank" class="btn btn-primary">Full docs on GitHub →</a>
+      <a href="mailto:leo@leocelis.com?subject=IVD%20API%20Key%20Request" class="btn btn-secondary">Request hosted access →</a>
     </div>
   </div>
 </section>
