@@ -12,6 +12,10 @@
 </p>
 
 <p align="center">
+  <a href="https://ivdframework.dev"><strong>→ ivdframework.dev</strong></a> — full docs, hosted server, and access request
+</p>
+
+<p align="center">
   <strong>New here?</strong>
   Start with <a href="judgment_explained.md"><code>judgment_explained.md</code></a>
   — a 5-minute, plain-English on-ramp that explains what problem the
