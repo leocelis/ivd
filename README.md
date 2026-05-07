@@ -339,7 +339,7 @@ export OPENAI_API_KEY=your-key
 
 A hosted IVD MCP server is available for users who prefer not to run it locally.
 
-**Request access:** [leo@leocelis.com](mailto:leo@leocelis.com)
+**Request access:** [Open a GitHub Discussion →](https://github.com/leocelis/ivd/discussions/new?category=q-a)
 
 Once you have an API key, use the URL that matches your client:
 
