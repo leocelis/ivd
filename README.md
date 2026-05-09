@@ -355,15 +355,20 @@ Once you have an API key, use the URL that matches your client:
 
 ```json
 {
-  "mcpServers": {
-    "ivd-remote": {
-      "type": "sse",
+  "servers": {
+    "ivd": {
+      "type": "http",
       "url": "https://mcp.ivdframework.dev/mcp",
-      "headers": { "Authorization": "Bearer your-api-key" }
+      "headers": {
+        "Authorization": "Bearer your-api-key",
+        "Accept": "application/json, text/event-stream"
+      }
     }
   }
 }
 ```
+
+> **Note:** The `Accept` header is required. VS Code's default HTTP transport only sends `application/json`; the IVD Streamable HTTP endpoint enforces the MCP spec and requires both `application/json` and `text/event-stream` — omitting it returns a 406 error.
 
 **Cursor** (Settings → Features → MCP):
 
