@@ -353,7 +353,7 @@ python examples/judgment_demo/run_demo.py
 
 Narrative, verdict, and reproducibility test: [`examples/judgment_demo/README.md`](examples/judgment_demo/README.md).
 
-Full spec: [`judgment_layer.md`](judgment_layer.md). New tools: 9 (8 workflow + `ivd_judgment_check_installed` for activation visibility, added in v3.1). New artifact types: 4 (`baseline`, `ledger_entry`, `comparison_pair`, `pattern`). New recipes: 3 (`capture-correction`, `comparison-pair`, `distill-pattern`). New ADRs: FDR-015, FDR-016. v3.1 architectural refactor: substance moved to the `ivd/judgment/` engine package (typed `@dataclass` schemas, `engine_version` + reproducible hash on `Pattern`/`InjectionResult`); `mcp_server/tools/judgment.py` is now a thin facade. Mirrors the Canon (Phase 0) architecture for symmetry.
+Full spec: [`judgment_layer.md`](judgment_layer.md). New tools: 9 (8 workflow + `ivd_judgment_check_installed` for activation visibility, added in v3.1). New artifact types: 4 (`baseline`, `ledger_entry`, `comparison_pair`, `pattern`). New recipes: 3 (`capture-correction`, `comparison-pair`, `distill-pattern`). New FDRs: FDR-015, FDR-016. v3.1 architectural refactor: substance moved to the `ivd/judgment/` engine package (typed `@dataclass` schemas, `engine_version` + reproducible hash on `Pattern`/`InjectionResult`); `mcp_server/tools/judgment.py` is now a thin facade. Mirrors the Canon (Phase 0) architecture for symmetry.
 
 ---
 

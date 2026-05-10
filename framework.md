@@ -2370,7 +2370,7 @@ Intent Artifact: scoring_intent.yaml v3
 
 ✅ DOCUMENTATION SYNC
    Design doc reflects current intent ✓
-   ADR-089 matches decision ✓
+   FDR-089 matches decision ✓
    Comments in code cite intent artifact ✓
 
 OVERALL: VERIFIED ✓
