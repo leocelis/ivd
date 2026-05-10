@@ -4,7 +4,7 @@
 
 **Version:** 3.1  
 **Date:** January 23, 2026  
-**Updated:** March 21, 2026 (v3.0: Judgment phase added — see [`judgment_layer.md`](judgment_layer.md))
+**Updated:** April 23, 2026 (v3.0: Judgment phase — see [`judgment_layer.md`](judgment_layer.md); v3.1: Canon phase — see [`canon_layer.md`](canon_layer.md))
 
 ---
 

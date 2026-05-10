@@ -140,7 +140,7 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 
 ## MCP Tools
 
-28 tools available to any MCP-compatible AI agent (15 core + 9 Judgment-phase tools added in v3.0 + 4 Canon-phase tools added in v3.1):
+28 tools available to any MCP-compatible AI agent (15 core + 9 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` added in v3.1) + 4 Canon tools added in v3.1):
 
 ### Core (15)
 
@@ -397,7 +397,7 @@ Once you have an API key, use the URL that matches your client:
 }
 ```
 
-All 15 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
+All 28 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
 ---
 

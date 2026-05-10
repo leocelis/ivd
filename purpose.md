@@ -609,7 +609,7 @@ Canonical doc: [judgment_layer.md](judgment_layer.md). Principle: 9 (Judgment Co
 **Governed by:** `ivd_system_intent.yaml`  
 **Version:** 3.1  
 **Created:** January 24, 2026  
-**Updated:** March 21, 2026 (Judgment phase added; Principle 9)  
+**Updated:** April 23, 2026 (v3.0: Judgment phase + Principle 9; v3.1: Canon phase — see [`canon_layer.md`](canon_layer.md))  
 **Author:** Leo Celis
 
 ---
