@@ -2435,6 +2435,36 @@ changelog:
       (3) Routing Surface concept documented in framework.md (Principle 6 Multi-Agent section)
       Extends existing interface section (no new top-level optional section).
 
+  - version: 1.7
+    date: "2026-05-10"
+    change: "MCP tools bug fixes and design gap closures (FDR-017 through FDR-023)"
+    reason: |
+      MCP tools health audit identified 3 bugs and 4 design gaps:
+      Bugs:
+        (1) ivd_list_features: duplicate glob patterns caused every system intent
+            to appear twice in results. Removed redundant second pattern.
+        (2) ivd_validate recipe schema: checked for top-level keys that don't exist
+            in actual recipe YAML files. Fixed to validate recipe.name/version/description
+            nested inside the recipe: block, matching the canonical recipe format.
+        (3) ivd_init guard: only detected bare system_intent.yaml, not *_system_intent.yaml
+            variants. A repo with ivd_system_intent.yaml could receive a duplicate
+            system_intent.yaml on re-init. Guard now covers both patterns.
+      Design gaps:
+        (4) ivd_list_recipes: 8 of 17 recipes showed "Recipe available" with no metadata
+            because they lacked entries in the hardcoded RECIPE_INFO dict. Now reads
+            description/use_cases/complexity from recipe YAML files directly; RECIPE_INFO
+            kept as fallback for backward compat.
+        (5) ivd_discover_goal: user_hint parameter was received and echoed back but never
+            used for filtering or ranking. Now keyword-scores recipes against hint tokens
+            and returns the top 4 by relevance.
+        (6) ivd_propose_inversions: empty scaffold returned with no in-band instruction
+            telling the calling agent it must populate the content. Added agent_instructions
+            field to the response payload making the contract explicit.
+        (7) .cursorrules: IVD rules block present but without BEGIN/END fence markers,
+            causing ivd_init and canon_check_rules_installed to report ivd: false for
+            the framework's own repo. Added <BEGIN-IVD v1.5> / <END-IVD v1.5> fences.
+    evidence: "DECISIONS.md FDR-017 through FDR-023; MCP tools health audit 2026-05-10"
+
   - version: 1.6
     date: "2026-02-09"
     change: "Added experimental authorship and evaluation optional sections"

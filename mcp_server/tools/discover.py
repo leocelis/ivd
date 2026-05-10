@@ -156,46 +156,51 @@ def list_features_tool(
         return json.dumps({"error": f"Root not found: {search_root}"}, indent=2)
 
     features = []
-    for pattern in ["**/*_intent.yaml", "**/*_system_intent.yaml"]:
-        for fp in search_root.glob(pattern):
-            if "templates" in str(fp) or "mcp_server" in str(fp):
-                continue
-            try:
-                with open(fp, "r", encoding="utf-8") as f:
-                    data = yaml.safe_load(f)
-            except Exception as e:
-                features.append({"path": str(fp), "parse_error": str(e)})
-                continue
+    seen_paths: Set[str] = set()
+    # Single glob: *_system_intent.yaml is already covered by *_intent.yaml.
+    # Using two patterns caused every system intent to appear twice.
+    for fp in search_root.glob("**/*_intent.yaml"):
+        if "templates" in str(fp) or "mcp_server" in str(fp):
+            continue
+        if str(fp) in seen_paths:
+            continue
+        seen_paths.add(str(fp))
+        try:
+            with open(fp, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+        except Exception as e:
+            features.append({"path": str(fp), "parse_error": str(e)})
+            continue
 
-            if not data:
-                continue
+        if not data:
+            continue
 
-            meta = data.get("metadata") or {}
-            intent_block = data.get("intent") or {}
-            summary = intent_block.get("summary") if isinstance(intent_block, dict) else None
+        meta = data.get("metadata") or {}
+        intent_block = data.get("intent") or {}
+        summary = intent_block.get("summary") if isinstance(intent_block, dict) else None
 
-            feature_id = meta.get("feature_id") or fp.stem.replace("_system_intent", "").replace("_intent", "")
-            feat_category = meta.get("category")
-            feat_status = meta.get("status")
+        feature_id = meta.get("feature_id") or fp.stem.replace("_system_intent", "").replace("_intent", "")
+        feat_category = meta.get("category")
+        feat_status = meta.get("status")
 
-            if category and feat_category != category:
-                continue
-            if status and feat_status != status:
-                continue
+        if category and feat_category != category:
+            continue
+        if status and feat_status != status:
+            continue
 
-            try:
-                rel = fp.relative_to(search_root)
-            except ValueError:
-                rel = fp
+        try:
+            rel = fp.relative_to(search_root)
+        except ValueError:
+            rel = fp
 
-            features.append({
-                "path": str(rel),
-                "feature_id": feature_id,
-                "summary": summary,
-                "category": feat_category,
-                "tags": meta.get("tags") or [],
-                "status": feat_status,
-            })
+        features.append({
+            "path": str(rel),
+            "feature_id": feature_id,
+            "summary": summary,
+            "category": feat_category,
+            "tags": meta.get("tags") or [],
+            "status": feat_status,
+        })
 
     result = {
         "search_root": str(search_root),

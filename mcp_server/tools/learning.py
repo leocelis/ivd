@@ -26,7 +26,23 @@ def discover_goal_tool(
 
     try:
         recipes_data = json.loads(list_recipes_tool())
-        for r in recipes_data.get("recipes", [])[:4]:
+        all_recipes = recipes_data.get("recipes", [])
+
+        # Rank by user_hint keyword overlap when a hint is provided.
+        if user_hint:
+            hint_tokens = set(user_hint.lower().split())
+
+            def _hint_score(r: dict) -> int:
+                searchable = " ".join([
+                    r.get("name", ""),
+                    r.get("description", ""),
+                    " ".join(r.get("use_cases", [])),
+                ]).lower()
+                return sum(1 for tok in hint_tokens if tok in searchable)
+
+            all_recipes = sorted(all_recipes, key=_hint_score, reverse=True)
+
+        for r in all_recipes[:4]:
             name = r.get("name", "")
             desc = r.get("description", "")
             use_cases = ", ".join(r.get("use_cases", [])[:2]) or "general"

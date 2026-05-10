@@ -55,7 +55,10 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             "intent_fields": ["summary", "goal", "success_metric"],
         },
         "recipe": {
-            "top_level": ["recipe", "description", "pattern", "use_cases", "example"],
+            # Recipes have one required top-level key: `recipe:`.
+            # description/pattern/use_cases/example are nested inside it, not siblings.
+            "top_level": ["recipe"],
+            "recipe_fields": ["name", "version", "description"],
         },
         "workflow": {
             "top_level": ["workflow", "description", "steps", "dependencies", "error_handling"],
@@ -107,6 +110,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         missing = [k for k in reqs["top_level"] if k not in artifact]
         if missing:
             errors.extend([f"Missing required top-level key: '{k}'" for k in missing])
+
+        if artifact_type == "recipe" and "recipe" in artifact:
+            recipe_section = artifact["recipe"]
+            if isinstance(recipe_section, dict):
+                missing_fields = [f for f in reqs.get("recipe_fields", []) if f not in recipe_section]
+                if missing_fields:
+                    warnings.extend([f"recipe section missing field: '{f}'" for f in missing_fields])
 
         if artifact_type == "intent" and "intent" in artifact:
             intent_section = artifact["intent"]

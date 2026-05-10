@@ -57,12 +57,19 @@ def init_project_tool(project_root_arg: str, auto_fill: bool = True) -> str:
 
     system_intent_path = root / "system_intent.yaml"
 
-    if root_exists and system_intent_path.exists():
-        return json.dumps({
-            "error": "system_intent.yaml already exists",
-            "path": str(system_intent_path),
-            "suggestion": "Use ivd_scaffold for child intents, or manually update system intent",
-        }, indent=2)
+    if root_exists:
+        # Guard against bare system_intent.yaml AND any *_system_intent.yaml
+        # (e.g. ivd_system_intent.yaml, book_system_intent.yaml). Without this,
+        # calling ivd_init on a repo that already has a named system intent
+        # (like the IVD framework itself) would silently create a second one.
+        existing_system = [system_intent_path] + list(root.glob("*_system_intent.yaml"))
+        found = next((p for p in existing_system if p.exists()), None)
+        if found:
+            return json.dumps({
+                "error": "A system intent already exists in this project",
+                "path": str(found.relative_to(root)),
+                "suggestion": "Use ivd_scaffold for child intents, or manually update the existing system intent",
+            }, indent=2)
 
     if not root_exists:
         auto_fill = False
