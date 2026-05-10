@@ -3,6 +3,7 @@
 """Tools: ivd_load_recipe, ivd_list_recipes."""
 
 import json
+import yaml
 from termcolor import colored
 from mcp_server.tools._paths import get_framework_path
 
@@ -77,16 +78,38 @@ def load_recipe_tool(recipe_name: str) -> str:
     return content
 
 
+def _read_recipe_metadata(recipe_file) -> dict:
+    """Read description/use_cases/complexity from a recipe YAML file.
+
+    Tries the nested `recipe:` block first (canonical format). Falls back
+    to the RECIPE_INFO hardcoded table. Returns a dict with those three keys.
+    """
+    try:
+        data = yaml.safe_load(recipe_file.read_text()) or {}
+        block = data.get("recipe") or {}
+        desc = block.get("description", "").strip()
+        use_cases = block.get("use_cases") or []
+        complexity = block.get("complexity", "unknown")
+        if desc:
+            return {"description": desc, "use_cases": use_cases, "complexity": complexity}
+    except Exception:
+        pass
+    return {}
+
+
 def list_recipes_tool() -> str:
     """List all available IVD recipes with descriptions."""
     print(colored(f"[{LOG}] ivd_list_recipes", "cyan"))
 
     recipes_dir = get_framework_path() / "recipes"
-    actual = [f.stem for f in recipes_dir.glob("*.yaml") if f.stem != "README"]
+    recipe_files = {f.stem: f for f in recipes_dir.glob("*.yaml") if f.stem != "README"}
 
     recipes_list = []
-    for name in actual:
-        info = RECIPE_INFO.get(name, {"description": "Recipe available", "use_cases": [], "complexity": "unknown"})
+    for name, recipe_file in sorted(recipe_files.items()):
+        # Read metadata from the YAML file first; fall back to hardcoded table.
+        info = _read_recipe_metadata(recipe_file)
+        if not info.get("description"):
+            info = RECIPE_INFO.get(name, {"description": "Recipe available", "use_cases": [], "complexity": "unknown"})
         recipes_list.append({"name": name, **info})
 
     result = {

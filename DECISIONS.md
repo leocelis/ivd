@@ -487,6 +487,118 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 
 ---
 
+## FDR-017: ivd_list_features Returns Duplicate Artifacts
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit
+
+**Gap:** `ivd_list_features` iterated two glob patterns (`**/*_intent.yaml` and `**/*_system_intent.yaml`). Since `*_intent.yaml` already matches `*_system_intent.yaml`, every system intent file appeared twice in the result.
+
+**Analysis:** The second glob was added defensively to ensure system intents were always captured. This was unnecessary — the first pattern already covers them. No deduplication logic was present, so callers received duplicate entries and inflated `count`.
+
+**Decision:** Remove the second glob pattern entirely. Add a `seen_paths` set to guard against any future accidental re-traversal. Single glob: `**/*_intent.yaml`.
+
+**Changes:** `mcp_server/tools/discover.py` (`list_features_tool`)
+
+---
+
+## FDR-018: ivd_validate Rejects Valid Recipe Artifacts
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit
+
+**Gap:** `ivd_validate` checked for top-level keys `["recipe", "description", "pattern", "use_cases", "example"]` when `artifact_type="recipe"`. Actual recipe YAML files (including all 17 canonical recipes in `/recipes/`) have only `recipe:` as a top-level block, with `description`, `name`, `version` nested inside it. Running `ivd_validate` on any real recipe reported 4 spurious errors and declared the artifact invalid.
+
+**Analysis:** The validator schema was authored for a hypothetical recipe format that never matched the actual recipe file structure. The canonical format was defined in `ivd_load_recipe` and the recipe files themselves, not in the validator. This is a specification drift bug.
+
+**Decision:** Fix the recipe schema to match the actual format: require only `recipe:` at the top level, and validate `name`, `version`, `description` as nested fields inside the `recipe:` block (same pattern as `intent.summary/goal/success_metric`). This is Canonical because the recipe format is already stable.
+
+**Changes:** `mcp_server/tools/validate.py` (`validate_artifact_tool`)
+
+---
+
+## FDR-019: ivd_init Guard Does Not Detect Existing Named System Intents
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit (test call on /workspace created spurious system_intent.yaml)
+
+**Gap:** `ivd_init` guarded against re-initialization by checking if `system_intent.yaml` (exact name) already exists. It did not check for `*_system_intent.yaml` patterns (e.g., `ivd_system_intent.yaml`, `book_system_intent.yaml`). A repo that already had a named system intent could receive a second, conflicting one.
+
+**Analysis:** The naming convention documented in `framework.md` explicitly supports both `system_intent.yaml` and `{project}_system_intent.yaml`. The guard only protected the bare form. This was a gap in defensive programming — the IVD framework's own repo demonstrated the failure when `ivd_init` wrote a new `system_intent.yaml` alongside the existing `ivd_system_intent.yaml`.
+
+**Decision:** Expand the guard to check both `system_intent.yaml` and any `*_system_intent.yaml` glob match. Return an informative error including the path of the existing artifact.
+
+**Changes:** `mcp_server/tools/scaffold.py` (`init_project_tool`)
+
+---
+
+## FDR-020: ivd_list_recipes Returns Opaque Metadata for 8 of 17 Recipes
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit
+
+**Gap:** `list_recipes_tool` populated metadata from a hardcoded `RECIPE_INFO` dict. Eight recipes had no entry in that dict and fell through to `"description": "Recipe available", "use_cases": [], "complexity": "unknown"`. This made those recipes invisible to `ivd_discover_goal` filtering and unhelpful to callers doing tool selection. The hardcoded table also required manual maintenance on every recipe addition.
+
+**Analysis:** All recipe YAML files already contain `recipe.description`, `recipe.use_cases` (in some), and `recipe.complexity` (in some) as part of their canonical structure. Reading this directly from the file eliminates the maintenance burden and self-documents.
+
+**Decision:** Add `_read_recipe_metadata()` helper that reads `recipe.description/use_cases/complexity` from the YAML file. `RECIPE_INFO` is kept as a fallback for recipes that predate structured metadata (backward compat). Priority: file > hardcoded table > default. This is Canonical.
+
+**Changes:** `mcp_server/tools/recipes.py` (`list_recipes_tool`, new `_read_recipe_metadata`)
+
+---
+
+## FDR-021: ivd_discover_goal Ignores user_hint Parameter
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit
+
+**Gap:** `ivd_discover_goal` accepted a `user_hint` parameter but never used it to filter or rank candidates. The tool always returned the first 4 recipes in filesystem order. A caller providing `"I want to track errors in my Python app"` received the same 4 recipes as a caller providing `"I want to classify leads"`.
+
+**Analysis:** The `user_hint` was stored in `context_used` for transparency but served no functional purpose. Agents and users calling the tool with a hint reasonably expected hint-based relevance. Even simple keyword overlap scoring is substantially better than unordered filesystem traversal.
+
+**Decision:** Add keyword-overlap ranking: tokenize `user_hint` on whitespace, score each recipe by how many tokens appear in `name + description + use_cases`, sort descending, take top 4. This is a deliberate choice against embedding-based semantic ranking — the tool must stay lightweight and work without external API calls. Simple keyword overlap handles the common cases (e.g., "error" → `infra-structured-logging`, "workflow" → `workflow-orchestration`). Canonical.
+
+**Changes:** `mcp_server/tools/learning.py` (`discover_goal_tool`)
+
+---
+
+## FDR-022: ivd_propose_inversions Returns Silent Empty Scaffold
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit
+
+**Gap:** `ivd_propose_inversions` returned an empty `proposed_inversions: []` scaffold with no signal to the calling agent that it was expected to populate it. Agents that parsed the response and saw the empty list could pass it upstream as-is, silently omitting the inversion content that Principle 8 requires.
+
+**Analysis:** The tool is intentionally a scaffold generator, not an AI-generative tool — the calling agent knows the domain and should produce the content. The problem was that this contract was implicit: only the tool description stated it, not the response payload. Agents working from the response alone had no in-band instruction.
+
+**Decision:** Add an `agent_instructions` field directly in the response payload, making the contract explicit and in-band. This follows the same pattern as `ivd_codify`'s `codify_prompt` field: the tool tells the agent exactly what to do next in the response body, not just in documentation. Canonical.
+
+**Changes:** `mcp_server/tools/inversions.py` (`propose_inversions_tool`)
+
+---
+
+## FDR-023: IVD Rules Block in .cursorrules Missing Detection Fence Markers
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** MCP tools health audit (`ivd_init` scan reported `ivd: false` for .cursorrules)
+
+**Gap:** The IVD framework's own `.cursorrules` contained the IVD verification rules (R1–R6) as raw markdown, without the `<BEGIN-IVD v1.5>` / `<END-IVD v1.5>` fence markers that `canon_check_rules_installed` and `ivd_init` use for detection. The Canon block had correct fences; the IVD block did not. Result: the framework's own repo reported `ivd: false` when its own detection tool ran on it.
+
+**Analysis:** The fence convention was added to the Canon block after the IVD rules block was written. The IVD rules were never retrofitted with fences when the convention was established. The detection regex `<BEGIN-IVD v[\d.]+>` was correct; the file content was not.
+
+**Decision:** Wrap the existing IVD rules section with `<BEGIN-IVD v1.5>` / `<END-IVD v1.5>` fences and add the `Source:` header comment (matching the Canon block's format). Content unchanged — no rules added or removed. Canonical.
+
+**Changes:** `.cursorrules`
+
+---
+
 ## Template for New Entries
 
 ```markdown

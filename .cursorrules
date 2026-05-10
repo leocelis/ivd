@@ -3,11 +3,13 @@
 # Both blocks below also serve as the canonical example of what
 # users should install in their own projects when adopting IVD.
 
+# <BEGIN-IVD v1.5>
 # ==============================================================================
 # IVD: Intent-Verified Development Rules
 # ==============================================================================
-# These rules enforce the IVD verification loop. Do not remove them.
+# Source: ivd/recipes/agent-rules-ivd.yaml v1.5
 # Reference: ivd_system_intent.yaml, framework.md (Principle 4, Principle 6)
+# Do not modify by hand — reload from recipes/agent-rules-ivd.yaml to refresh.
 
 ## IVD Rule 1: Intent Before Implementation
 
@@ -140,6 +142,7 @@ Prohibitions are often more effective than requirements.
 
 SATISFIABILITY CHECK — If the constraint set has 3+ constraints, add a
 constraint_satisfiability block documenting conflicts and resolution strategy.
+# <END-IVD v1.5>
 
 # <BEGIN-CANON v1.0>
 # ==============================================================================

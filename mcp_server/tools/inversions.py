@@ -24,6 +24,12 @@ def propose_inversions_tool(
             "dominant_belief": "",
             "proposed_inversions": [],
         },
+        "agent_instructions": (
+            "This scaffold is intentionally empty — YOU (the calling AI agent) must fill it in. "
+            "Use your knowledge of the domain to: (1) state the dominant_belief (the conventional "
+            "way to solve this problem), then (2) generate 2-4 inversions. "
+            "The tool provides the structure; the agent provides the content."
+        ),
         "guidance": {
             "principle_8_steps": [
                 "1. State the Default: What is the conventional way? → fill dominant_belief",
