@@ -686,7 +686,7 @@ python examples/judgment_demo/run_demo.py
 ```
 
 Canonical doc: [`judgment_layer.md`](./judgment_layer.md). Decision records:
-`DECISIONS.md` ADR-015 (bundling rationale), ADR-016 (v3.0 bump rationale).
+`DECISIONS.md` FDR-015 (bundling rationale), FDR-016 (v3.0 bump rationale).
 
 ---
 

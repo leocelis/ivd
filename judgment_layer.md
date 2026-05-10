@@ -462,7 +462,7 @@ source of truth.
 
 - IVD principles 1–9: `framework.md` § Core Principles
 - Master intent (where Principle 9 lives): `ivd_system_intent.yaml`
-- Decision record (why bundle into IVD, why v3.0 bump): `DECISIONS.md` ADR-015, ADR-016
+- Decision record (why bundle into IVD, why v3.0 bump): `DECISIONS.md` FDR-015, FDR-016
 - Cookbook chapter "Closing the Loop with Judgment": `cookbook.md`
 - Quick reference card: `cheatsheet.md` § Judgment Phase
 
@@ -473,7 +473,7 @@ source of truth.
 - **v1.0** (2026-03-21) — Initial canonical version. Promotes the Judgment Feedback Loop
   framework into operational IVD canon. Establishes Principle 9, the
   4th IVD phase, the 8 MCP tools, the 4 templates, the 3 recipes, and the `.judgment/`
-  activation gate. See `DECISIONS.md` ADR-015 (bundling) and ADR-016 (v3.0 bump).
+  activation gate. See `DECISIONS.md` FDR-015 (bundling) and FDR-016 (v3.0 bump).
 - **v1.1** (IVD v3.1) — Architectural refactor inspired by Canon (v3.1).
   Extracts `ivd/judgment/` engine package (schema, store, freshness, detect, inject,
   validate); rewrites `mcp_server/tools/judgment.py` as a thin facade. Adds

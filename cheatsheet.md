@@ -438,7 +438,7 @@ Walks the full loop end-to-end (capture × 3 → codify × 3 → detect → inje
 
 `ledger_entry` · `comparison_pair` · `pattern` · `baseline`
 
-Full canonical doc: [`judgment_layer.md`](judgment_layer.md). Decision records: `DECISIONS.md` ADR-015, ADR-016.
+Full canonical doc: [`judgment_layer.md`](judgment_layer.md). Decision records: `DECISIONS.md` FDR-015, FDR-016.
 
 ---
 
