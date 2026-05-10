@@ -1,14 +1,27 @@
 # Legal Notices and Disclaimers
 
-> **Version:** 1.0 · **Effective:** May 10, 2026
+> **Version:** 2.0 · **Effective:** May 10, 2026
 >
 > This document applies to the IVD framework (ivdframework.dev), the hosted MCP server
 > at `mcp.ivdframework.dev`, the open-source repository at github.com/leocelis/ivd,
 > and any self-hosted deployment of the same codebase.
 >
-> This document is **not legal advice**. It describes how IVD is designed, what it does
+> **This document is not legal advice.** It describes how IVD is designed, what it does
 > and does not do, and what responsibilities remain with the user. If you are deploying
-> IVD in a regulated context, consult qualified legal counsel.
+> IVD in a regulated context, consult qualified legal counsel before proceeding.
+>
+> **Related documents** (all incorporated into these notices by reference):
+> - [TERMS_OF_SERVICE.md](TERMS_OF_SERVICE.md) — binding terms of use; governs API key
+>   acceptance and hosted server access
+> - [PRIVACY_POLICY.md](PRIVACY_POLICY.md) — GDPR Art. 13 compliant privacy notice;
+>   what data is collected, why, and your rights
+> - [DATA_PROCESSING_AGREEMENT.md](DATA_PROCESSING_AGREEMENT.md) — GDPR Art. 28 DPA
+>   template for EU enterprise users processing personal data through the hosted server
+>
+> **Acceptance:** By requesting an API key, activating an API key, or connecting to the
+> hosted server, you are accepting the Terms of Service. Free and open-source use of the
+> codebase is governed by the MIT License; hosted server use additionally requires ToS
+> acceptance.
 
 ---
 
@@ -26,304 +39,707 @@ IVD is **not**:
 
 - A certified AI system under Regulation (EU) 2024/1689 (EU AI Act) or any other
   regulatory scheme
-- A legal compliance product or conformity assessment tool
+- A legal compliance product, conformity assessment tool, or audit trail solution
 - A guarantee that AI outputs are accurate, hallucination-free, or legally sufficient
 - A substitute for human review, professional judgment, or legal counsel
+- A professional service or consulting engagement (see Section 14)
 
 **Classification note (EU AI Act):** IVD does not provide LLM inference — it
-orchestrates calls to third-party LLMs. It is not listed in Annex III of Regulation
-(EU) 2024/1689. Under current guidance, IVD is most likely classified as a
-non-high-risk general-purpose software tool. However, **if you use IVD to build a
-system that falls under Annex III** (employment screening, credit scoring, medical
-diagnosis, critical infrastructure management, etc.), your system — not IVD — bears
-the obligations under Articles 6, 9, 13, and 14 of the AI Act, and you are the
-deployer responsible for compliance.
+orchestrates calls to third-party LLMs. It is not listed in Annex III of
+Regulation (EU) 2024/1689. Under guidance current at the effective date of this
+document, IVD appears likely to be classified as a non-high-risk general-purpose
+software tool; however, this classification is not legally certified, may be subject
+to regulatory reinterpretation, and does not bind any competent authority. If you use
+IVD to build a system covered by Annex III (employment screening, credit scoring,
+medical diagnosis, critical infrastructure management, etc.), **your system — not IVD
+— bears the obligations under Articles 6, 9, 13, and 14 of the AI Act.** You are the
+deployer responsible for compliance regardless of which tools you used to build the system.
 
 Official text: <https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202401689>
 
 ---
 
-## 2. Inherent AI Limitations
+## 2. Intellectual Property and Copyright
 
-IVD mitigates known LLM failure modes but cannot eliminate them. The following
-limitations are **architectural properties of all current large language models**, not
-defects specific to IVD:
+Copyright © 2024–2026 Leo Celis. All rights reserved except as licensed below.
 
-### 2.1 Read-Acknowledge-Violate Pattern
+The IVD framework, including but not limited to the framework specification, the four-phase
+methodology (Intent · Implementation · Verification · Judgment), the Canon layer
+specification, all recipes, all intent artifact schemas, all MCP tool implementations,
+and all associated documentation, is the intellectual property of Leo Celis.
 
-An AI agent can recite all constraints from an intent artifact and confirm understanding
-— then violate those same constraints in the implementation. This occurs because LLM
-attention is finite and degrades over long contexts. IVD's segmented implementation
-workflow (IVD Rule 1) reduces this risk by forcing attention resets between segments,
-but compliance cannot be mechanically guaranteed.
+**License:** The source code is licensed under the MIT License (see `LICENSE`). The MIT
+License grants you permission to use, copy, modify, merge, publish, distribute,
+sublicense, and sell copies of the software. It does **not** transfer ownership of the
+underlying IP, trademarks, or methodology; nor does it grant the right to represent
+third-party implementations or derivatives as the official IVD framework.
 
-**Research basis:** Issues #26848, #6120, #32290, and #742 in the anthropics/claude-code
-GitHub repository document this pattern empirically across multiple model families.
+**Outputs generated by the tools:** Intent artifacts, Judgment ledger entries, and other
+files produced by IVD tools when operating on your content belong to you. IVD makes no
+claim to user-generated content.
 
-### 2.2 Position Bias
+**AI-generated content in artifacts:** When an AI agent uses `ivd_scaffold` or other
+generative IVD tools to draft an intent artifact, the resulting content is AI-generated.
+Copyright status of AI-generated content varies by jurisdiction; consult legal counsel
+if you are relying on copyright protection for AI-generated artifacts.
 
-Constraints listed earlier in an intent artifact are weighted less heavily than those
-listed later when conflicts arise between them. This is a documented LLM architectural
-property.
+**Names and branding:** "IVD," "Intent-Verified Development," "ivdframework.dev," and
+associated logos are common law marks under continuous use. Unauthorized use of these
+names in competing products, services, or marketing materials is not permitted.
 
-**Research basis:** NIST AI 600-1 (Confabulation risk, GV-6.1); IFScale 2025
-(constraint compliance degrades to 68% accuracy at high constraint density).
-
-### 2.3 Context Window Saturation
-
-In long coding sessions, early intent artifacts may be displaced from the model's active
-context window, causing the agent to operate without the constraints it was given. IVD's
-`ivd_load_context` tool addresses this; users who skip this step in long sessions do so
-at their own risk.
-
-### 2.4 Hallucination in AI-Generated Artifacts
-
-When an AI agent uses `ivd_scaffold` to generate an intent artifact, the generated
-constraints may be plausible but factually incorrect, overly broad, or structurally
-valid while missing the actual system intent. The mandatory human review step (IVD Step
-3) is the designed mitigation. **Skipping human review eliminates the primary safety
-gate.**
-
-NIST AI 600-1 identifies confabulation as one of 13 primary generative AI risks and
-recommends human-in-the-loop processes for consequential outputs. IVD's design
-implements this recommendation; users who bypass it accept the residual risk.
-
-**Source:** <https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf>  
-**Source:** <https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence>
+> ~ inferred: USPTO and EUIPO trademark registration for "IVD" and "Intent-Verified
+> Development" is under consideration. Until registered marks are in place, protection
+> is limited to the geographic areas of actual commercial use. Common law rights do
+> exist but are harder to enforce internationally than a registered mark. Do not use
+> these names in any way that could imply affiliation with or endorsement by IVD.
 
 ---
 
-## 3. Marketing Claims — Scope and Limits
+## 3. Inherent AI Limitations
+
+IVD mitigates known LLM failure modes but cannot eliminate them. The following are
+architectural properties of current large language models, not defects specific to IVD.
+**Each of these limitations is your risk to manage in your use case.**
+
+### 3.1 Read-Acknowledge-Violate Pattern (R-008)
+
+An AI agent can recite all constraints from an intent artifact and confirm understanding
+— then violate those same constraints in the implementation. This occurs because LLM
+attention degrades over long contexts. IVD's segmented implementation workflow reduces
+this risk but cannot mechanically guarantee compliance.
+
+**Research basis:** anthropics/claude-code GitHub issues #26848, #6120, #32290, and #742;
+MOSAIC 2025; IFScale 2025.
+
+### 3.2 Position Bias (R-009)
+
+Constraints listed earlier in an intent artifact receive weaker LLM attention than those
+listed later. When conflicting constraints are present, the model tends to satisfy those
+encountered last. `ivd_scaffold` and `ivd_validate` do not reorder constraints or warn
+on constraint order — this is a fully manual discipline.
+
+**Research basis:** NIST AI 600-1 GV-6.1; IFScale 2025.
+
+### 3.3 Constraint Satisfiability — No Automated Checker (R-002)
+
+Two constraints that cannot both be satisfied simultaneously will cause the LLM to
+silently satisfy whichever it encounters last, violating the other. No automated
+satisfiability checker exists in IVD. Satisfiability review (IVD Rule 4, Probe 4) is
+entirely a manual step that agents and users can skip without any tool-enforced gate.
+
+### 3.4 Context Window Saturation (R-010)
+
+In long coding sessions or with large intent trees (system + workflow + module + task
+intents plus Judgment injection), token pressure can cause early intent content to be
+deprioritized (the lost-in-the-middle effect). There is no tooling in IVD that enforces
+selective intent loading or provides token-budget warnings. Users who load the full
+intent tree may receive degraded constraint adherence without any error signal.
+
+### 3.5 Parent-Intent Not Loaded (R-007)
+
+Child intents reference `parent_intent:` paths that must be loaded by the agent before
+implementation. This loading is convention-only — no IVD tool enforces it. One-shot
+prompts that skip parent-intent loading operate without project-wide conventions, and
+any hallucinations about project architecture that the parent intent was designed to
+prevent will recur.
+
+### 3.6 Hallucination in AI-Generated Artifacts (R-011)
+
+When an AI agent scaffolds an intent artifact, the generated constraints may be plausible
+but factually incorrect, overly broad, or structurally valid while misrepresenting the
+actual user goal. **Skipping the mandatory human review step (IVD Step 3) removes the
+only gate that catches this failure.** If a user approves an artifact that subtly
+misrepresents their intent, the resulting implementation will be internally consistent
+with the wrong goal. This is an inherent risk of any intent-mediated workflow.
+
+NIST AI 600-1 identifies confabulation as one of 13 primary generative AI risks and
+recommends human-in-the-loop processes for consequential outputs.
+
+**Source:** <https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf>
+
+### 3.7 Context Saturation from Over-Constrained Artifacts (R-006)
+
+At high constraint density (above approximately 10–15 constraints per artifact), LLMs
+begin silently violating earlier constraints to satisfy later ones. IFScale 2025 reports
+~68% constraint compliance accuracy at high density. `ivd_validate` does not warn on
+constraint count. This is a known statistical failure mode that users accept when writing
+dense artifacts.
+
+### 3.8 MCP Session Expiry After Server Restart (R-012)
+
+When the hosted IVD server restarts (including after a new deployment), all active MCP
+sessions become invalid. Subsequent tool calls return "No valid session ID provided."
+Users must manually reconnect the MCP server in their IDE. There is no automatic
+session recovery mechanism.
+
+### 3.9 Client Transport Mismatch (R-013)
+
+The hosted server supports two transports: SSE (`/sse`, for Cursor) and Streamable-HTTP
+(`/mcp`, for VS Code + GitHub Copilot). Using the wrong URL or wrong transport type
+causes silent connection failure — MCP tools simply do not appear. The server returns
+opaque HTTP errors (e.g., 406) that do not guide users to the correct configuration.
+
+### 3.10 Stale Search Embeddings (R-015)
+
+`ivd_search` uses embeddings generated at server build time. For self-hosted deployments,
+any recipe files, framework docs, or intent templates added after the last embedding
+generation will not be found by search. The tool succeeds and returns zero results —
+which looks like "no relevant documentation exists" rather than "index is stale."
+The tool does not report index freshness or document count. Hosted-server embeddings are
+regenerated on every deploy; self-hosted users must run `embed.sh` manually.
+
+---
+
+## 4. Marketing Claims — Scope and Limits
 
 IVD's marketing references "eliminating hallucinations" and "turning complex
-implementations into single-turn completions." These claims are **scoped to specific,
-tested conditions**:
+implementations into single-turn completions." These claims apply under **specific
+conditions** and must not be generalized:
 
 - The Canon layer's 4/4 verification beat detection and 72% R-failure improvement
-  figures are based on n=9 internal test scenarios. These are illustrative results,
-  not statistically guaranteed performance across all models, contexts, or task types.
-- The "single-turn completion" claim applies to well-constrained intent artifacts with
-  near-zero entropy constraints. High-entropy or under-specified artifacts will not
-  produce this outcome.
-- IVD's effectiveness depends entirely on the quality of the intent artifact. A
+  figures come from n=9 internal test scenarios. They are illustrative of the
+  mechanism's performance in those tests, not statistically certified performance
+  across all models, context types, or task categories. Parties evaluating IVD for
+  procurement, compliance documentation, or litigation purposes should treat these
+  figures accordingly.
+- The "single-turn completion" outcome applies to intent artifacts with near-zero
+  entropy constraints and well-defined test paths. High-entropy, vague, or
+  contradictory constraints will not produce this outcome regardless of which model
+  or version is used.
+- IVD's effectiveness is contingent on the quality of the intent artifact. A
   structurally valid artifact with vague constraints (`write well`, `be appropriate`)
-  will not prevent hallucinations — it will pass validation while providing no actual
-  constraint.
+  passes `ivd_validate` while providing no actual constraint signal. The user bears
+  full responsibility for artifact quality.
 
 The FTC has stated that unsubstantiated efficacy claims about AI capabilities are
-actionable as deceptive practices under 15 U.S.C. § 45 (Section 5 of the FTC Act).
-IVD does not guarantee the marketing outcomes for use cases, models, or constraint
-qualities outside the tested conditions described above.
+actionable as deceptive practices under 15 U.S.C. § 45. IVD does not guarantee
+marketing outcomes for use cases, models, or constraint qualities outside the conditions
+described above.
 
 **Source:** <https://www.ftc.gov/business-guidance/blog/2023/02/keep-your-ai-claims-check>  
 **Source:** <https://www.ftc.gov/news-events/news/press-releases/2024/09/ftc-announces-crackdown-deceptive-ai-claims-schemes>
 
 ---
 
-## 4. Hosted Server — Data Transmission and Privacy
+## 5. Hosted Server — Data Transmission and Privacy
 
 When you use the hosted IVD MCP server at `mcp.ivdframework.dev`:
 
-### 4.1 What is transmitted
+### 5.1 What is transmitted
 
-**Every tool call** sends the arguments you provide — including `yaml_content`,
-`project_root`, `artifact_path`, and any other parameters — to the hosted server over
-HTTPS. This content is processed to execute the tool and is not intentionally retained
-beyond the session.
+**Every tool call** transmits the arguments you provide — including `yaml_content`,
+`project_root`, `artifact_path`, correction text, and all other parameters — to the
+hosted server over HTTPS. This content is processed to execute the tool.
 
-### 4.2 Where it is processed
+**Retention:** Content transmitted through tool arguments is not retained in IVD's own
+application storage beyond the active processing session. However, provider-level
+infrastructure logs, operational traces, and crash/error reports generated by the
+underlying hosting platform (DigitalOcean) and API providers (OpenAI) may capture
+transmitted content as a side effect of normal operations, subject to those providers'
+own data handling policies.
+
+### 5.2 Where it is processed
 
 The hosted server runs on **DigitalOcean App Platform (US East region)**. Search queries
-made via `ivd_search` are processed using the **OpenAI Embeddings API** (text-embedding-3-small
-model). These are US-based infrastructure providers.
+via `ivd_search` are processed using the **OpenAI Embeddings API** (text-embedding-3-small
+model). Both providers are US-based.
 
-**If you are in the European Union**, transmitting personal data through tool arguments
-constitutes an international data transfer from the EU to the United States under
-GDPR Chapter V (Articles 44–46, Regulation (EU) 2016/679).
+**If you are in the European Union:** Transmitting personal data through tool arguments
+constitutes an international data transfer from the EU to the United States under GDPR
+Chapter V (Articles 44–46, Regulation (EU) 2016/679). No Standard Contractual Clauses
+(SCCs) or Data Processing Agreement (DPA) between IVD and its users currently exists.
+**EU controllers must not transmit personal data through hosted-server tool arguments
+until SCCs or equivalent safeguards are in place.** Use a self-hosted deployment instead.
 
-**Source:** <https://www.edpb.europa.eu/sme-data-protection-guide/international-data-transfers_en>
+**Source:** <https://www.edpb.europa.eu/sme-data-protection-guide/international-data-transfers_en>  
+**Source:** <https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/standard-contractual-clauses-scc_en>
 
-### 4.3 Sub-processors
+### 5.3 Controller/processor roles
+
+For the purposes of GDPR Article 28: IVD operates the hosted server as a **processor**
+of any personal data you transmit through tool arguments. You remain the **controller**
+for that data. This allocation of roles does not absolve IVD of processor-level
+obligations, nor does it reduce your controller-level accountability for transmitting
+personal data to a third-country server.
+
+### 5.4 Sub-processors
 
 | Sub-processor | Role | DPA |
 |---------------|------|-----|
 | DigitalOcean, Inc. | Infrastructure hosting | <https://www.digitalocean.com/legal/data-processing-agreement> |
 | OpenAI, L.L.C. | Embedding generation (`ivd_search`) | <https://openai.com/policies/data-processing-addendum/> |
 
-### 4.4 What you must not transmit
+No signed DPA between IVD and its users currently covers these sub-processors. This is
+a known compliance gap (see legal_risk_mapping.md Gap 5 / FDR-024). Until a formal DPA
+is published, enterprise and EU-based users should use self-hosted deployments for any
+work involving personal data.
 
-Do not transmit the following through hosted server tool arguments:
+### 5.5 What you must not transmit
 
-- **Personal data** (names, emails, government IDs, IP addresses, behavioral data
-  attributable to individuals) — doing so without a lawful basis and appropriate
-  safeguards violates GDPR Article 6 if you are an EU controller
-- **Sensitive personal data** (health, biometric, political, religious, or sexual
-  orientation data) — prohibited basis processing under GDPR Article 9
-- **Trade secrets or confidential business information** — the hosted server is a
-  shared infrastructure; treat it as untrusted for confidential content
-- **API keys, credentials, or secrets** — never include these in intent artifact
-  content, correction text, or any tool argument
+Do not transmit the following through hosted-server tool arguments:
 
-### 4.5 Self-hosted alternative
+- **Personal data** (names, emails, government IDs, IP addresses, biometrics, or any
+  data attributable to an identified or identifiable natural person) — no lawful basis
+  or SCC is in place for EU transfers; GDPR Articles 6 and 44–46 apply
+- **Sensitive personal data** — health, genetic, biometric, political, religious, racial,
+  or sexual orientation data — prohibited basis processing under GDPR Article 9
+- **Trade secrets, unreleased product specifications, or confidential business
+  information** — the hosted server is shared infrastructure; treat it as untrusted
+  for confidential content
+- **Credentials, API keys, tokens, or secrets** — never include these in intent
+  artifact content, correction text, or any tool argument
 
-If data isolation is required, clone the repository and run the server locally. In a
-self-hosted deployment, no data leaves your environment. The `OPENAI_API_KEY` you
-configure is used only by your own instance of the server and is not accessible to IVD
-as a project.
+### 5.6 API key security (R-019)
+
+IVD API keys are bearer tokens. A compromised key grants access to all 28 IVD tools
+under your identity. There is no per-key scope, IP restriction, rate limiting, or
+automatic expiry. If you believe your key has been exposed: (1) revoke it immediately
+via the IVD dashboard, (2) audit any recent tool call logs, (3) if personal data was
+accessible through the key, assess your obligations under GDPR Article 33 (72-hour
+breach notification) and applicable US breach notification laws.
+
+### 5.7 Self-hosted alternative
+
+If data isolation is required, deploy locally. In a self-hosted deployment, all
+processing remains on your infrastructure. The `OPENAI_API_KEY` you configure is used
+only by your own server instance and is not accessible to IVD as a project.
 
 Self-hosting instructions: [`deploy/`](deploy/) directory and
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
-## 5. Judgment Phase — Special Data Handling Warning
+## 6. Third-Party Services and Service Availability
 
-The Judgment phase tools (`ivd_judgment_capture`, `ivd_judgment_distill_pattern`,
-`ivd_judgment_inject_context`, and related tools) capture corrections made to AI outputs
-and accumulate them in a `.judgment/` directory as structured YAML files.
+### 6.1 Third-party service disclaimer
 
-**This creates a persistent record of individual corrections.** Before using these tools,
-understand the following:
+IVD's hosted server depends on third-party infrastructure and AI services:
+**DigitalOcean App Platform** (hosting, Redis session management), **OpenAI** (search
+embeddings), and **Redis** (MCP session storage). IVD has no control over the
+availability, terms of service, pricing, API behavior, regulatory status, or data
+handling practices of these providers.
 
-- **PII risk:** Correction text often naturally includes names, code comments that
-  reference individuals, ticket numbers linked to personnel, or other identifying
-  information. Do not include PII in correction descriptions. The tool does not
-  automatically sanitize these entries.
+IVD is **not liable** for any interruption, degradation, data loss, API behavior change,
+or legal development attributable to DigitalOcean, OpenAI, Redis, or any other
+third-party provider on which IVD depends. Changes in these providers' terms,
+pricing, or capabilities — including the deprecation of the OpenAI text-embedding-3-small
+model — may affect IVD tool functionality without advance notice.
 
-- **Employment law risk:** Judgment ledger entries that accumulate corrections
-  attributed to a specific person may constitute profiling under GDPR Article 22
-  if used in employment or performance assessment decisions. Individuals have the
-  right to object (GDPR Article 21) and to request human review of any
-  significant automated decision (GDPR Article 22(3)).
+OpenAI DPA: <https://openai.com/policies/data-processing-addendum/>  
+DigitalOcean DPA: <https://www.digitalocean.com/legal/data-processing-agreement>
 
-- **Retention:** There is no automatic expiry on `.judgment/` entries. If the ledger
-  is committed to version control, entries are permanent in the git history. Apply
-  your organization's data retention policy to this directory.
+### 6.2 No uptime guarantee or service level agreement
+
+IVD provides the hosted server on a best-effort basis. There is **no SLA, no uptime
+guarantee, no status page, and no planned maintenance window commitment.** The
+following events may cause full or partial unavailability without advance notice and
+without triggering any liability on IVD's part:
+
+- DigitalOcean App Platform outages or maintenance
+- New deployments (which invalidate active MCP sessions — see §3.8)
+- Cold starts after container scale-down (5–30 seconds of first-call latency)
+- Redis outages (which prevent new MCP sessions from being established)
+- OpenAI API outages or key expiry (which degrade `ivd_search` only; other 27 tools
+  continue to function)
+- Build or embedding pipeline failures during deployment
+
+The self-hosted path, which runs on your own infrastructure, is the recommended option
+for any workflow that requires guaranteed availability.
+
+---
+
+## 7. Judgment Phase — Special Data Handling Warning
+
+The Judgment phase tools (`ivd_judgment_capture`, `ivd_judgment_codify_correction`,
+`ivd_judgment_distill_pattern`, `ivd_judgment_inject_context`, and related tools) create
+a persistent, accumulating record of AI corrections in the `.judgment/` directory.
+
+**Before using Judgment tools, understand all of the following:**
+
+### 7.1 PII in correction text (R-023)
+
+Correction descriptions are captured verbatim and written to YAML files on disk. If a
+correction references a specific person's name, email address, code comment, ticket
+number, or other identifying information, that PII is persisted to the ledger file and
+to any git commit that includes it — permanently. **Do not include PII, specific
+credentials, or production data in correction text.**
+
+### 7.2 Profiling and employment law risk (R-025)
+
+Judgment ledger entries include source fields that link corrections to individual
+contributors. If ledger data is used by a manager or HR function to assess an individual's
+performance, it may constitute **profiling producing legally significant effects** under
+GDPR Article 22. The individual has the right to object (GDPR Article 21), to receive
+an explanation of the automated logic (GDPR Article 22(3)), and to request human review.
+**Judgment is designed as a team learning tool, not as an individual performance or
+audit mechanism.** Using it for the latter may expose your organization to employment
+law and data protection liability.
+
+### 7.3 Biased pattern promotion (R-021)
+
+Judgment patterns derive confidence from ledger entries. A single contributor with
+incorrect domain assumptions can generate multiple entries that promote an authoritative
+pattern injected into all future agents. Domain depth scores are self-assigned in the
+baseline configuration. There is no peer-review gate or override mechanism for
+single-source systematic bias.
+
+### 7.4 Context bloat from untargeted injection (R-024)
+
+`ivd_judgment_inject_context` returns all live patterns regardless of whether they are
+relevant to the current task. Irrelevant patterns consume context budget and may cause
+the agent to apply domain-specific rules from one context (e.g., React testing) to a
+different task (e.g., SQL migration). This is a known design gap — task-aware filtering
+does not currently exist.
+
+### 7.5 No automatic archival (R-022)
+
+`.judgment/` grows indefinitely. There is no automatic expiry, pruning, or archive job.
+At sufficient volume, the injection output can saturate context windows. Apply your
+organization's data retention policy to this directory. GDPR Article 5(1)(e) requires
+that personal data not be kept longer than necessary; if ledger entries contain personal
+data, this obligation applies.
 
 **Source:** <https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-fairness-in-ai/>  
 **Source:** <https://edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_201904_dataprotection_by_design_and_by_default_v2.0_en.pdf>
 
 ---
 
-## 6. Your Responsibilities as a Deployer
+## 8. Canon Phase — Limitations and User Responsibility
+
+The Canon layer (Phase 0a rules + Phase 0b MCP tools) provides structured AI output
+guidelines and verification tools. The following limitations apply:
+
+### 8.1 Rules must be installed in the correct instruction file (R-026)
+
+Canon rules installed in one instruction file (e.g., `.cursor/rules/myproject.mdc`)
+have no effect if the AI agent reads from a different file (e.g., `.cursorrules`).
+Zero R-invariants are enforced when the rules are present on disk but not in the
+agent's loaded instruction context. `canon_check_rules_installed` reports installation
+status — but only when run. There is no automated check on agent startup.
+
+### 8.2 Verification beat normalization (R-027)
+
+Canon R5 fires a `ACTION / REVERSIBLE / APPROVE?` beat before irreversible actions. If
+users habitually confirm without reading — a known click-through pattern common to
+software consent dialogs — the safety gate becomes non-functional. The R13 (stakes-adaptive
+format) rule attempts to reduce over-triggering, but IVD has no telemetry to detect
+normalization. **The user bears full responsibility for reading and evaluating each
+verification beat.**
+
+### 8.3 Version drift between rules and engine (R-028)
+
+Canon rules installed in an instruction file are static text. The hosted MCP Canon
+engine may ship new R-invariants (e.g., R13 in v0.2.0) that the installed rules block
+does not include. `canon_check` may report failures for rules the agent was never told
+to enforce. Use `canon_check_rules_installed` to detect and refresh stale Canon rules.
+
+### 8.4 Conflict with existing project instructions (R-029)
+
+If a project's existing agent instructions conflict with Canon rules, the agent will
+resolve the conflict unpredictably or produce inconsistent behavior between sessions.
+`canon_check_rules_installed` does not scan for pre-existing conflicting instructions.
+Conflict detection is the user's responsibility.
+
+---
+
+## 9. Sensitive Data and Version Control
+
+### 9.1 Intent artifacts in public repositories (R-030)
+
+Intent artifacts (particularly system_intent.yaml and workflow-level intents) typically
+contain architecture decisions, permission models, compliance requirements, and business
+rules. **IVD's default convention places intent artifacts at the repository root or in
+module directories, directly alongside code.** If your repository is public, this
+information is public.
+
+For sensitive projects: keep system-level and workflow-level intents in a gitignored
+`_private/` directory or a separate private repository. The `.gitignore` in the IVD
+public repo provides a template; ensure it is carried into forked or derivative repos.
+
+### 9.2 Credentials and .env files (R-031)
+
+Self-hosted deployments require a `.env` file containing `OPENAI_API_KEY`, `REDIS_URL`,
+and `IVD_API_KEYS`. If this file is committed to a repository — even temporarily — the
+credentials are exposed. The IVD repo's `.gitignore` excludes `.env`; **this protection
+does not automatically transfer when you fork, copy, or reuse the configuration in a new
+project.** Verify that `.env` is explicitly excluded in every repository that contains
+an IVD deployment.
+
+If credentials are exposed in a public repository, treat it as a security incident:
+rotate all keys immediately and audit access logs for the affected services.
+
+---
+
+## 10. Organizational and Adoption Risks
+
+### 10.1 IVD as a compliance metric rather than a quality tool (R-032)
+
+If a team's adoption goal becomes "all modules have intent artifacts" rather than
+"we ship fewer constraint violations," the optimization shifts to producing
+structurally valid artifacts that satisfy `ivd_validate` without providing useful
+contextual signal. This is Goodhart's Law applied to IVD. Such artifacts satisfy the
+format check while providing no actual constraint to the AI — reproducing exactly the
+failure mode IVD was built to prevent.
+
+IVD's value comes from substantive constraint quality. An organization that treats
+artifact creation as a checkbox metric will not realize the methodology's benefits
+and should not represent its systems as "IVD-verified" to downstream parties.
+
+### 10.2 Recipes applied without confirming use-case fit (R-033)
+
+IVD recipes are designed for specific technology contexts described in their `use_cases`
+field. Applying a recipe (e.g., `infra-background-job.yaml`, which targets Celery/Redis)
+to a different infrastructure (e.g., AWS SQS) without reviewing the use-case section
+will cause the agent to implement faithfully against the wrong constraints. `ivd_load_recipe`
+returns the full recipe content but does not gate on use-case confirmation. Verify that
+the recipe's constraints match your actual stack before proceeding.
+
+### 10.3 Stale intent read as current truth (R-034)
+
+New team members who onboard by reading intent artifacts assume those artifacts reflect
+the current system. If intent has drifted from code (R-004), this creates a wrong mental
+model at scale. Artifacts carry `status:` metadata (`canonical`, `experimental`,
+`deprecated`) and a `verification:` section, but stale artifacts are rarely proactively
+marked deprecated. There is no tooling that flags artifacts not updated in a given period.
+
+### 10.4 Overhead for trivial tasks (R-035)
+
+IVD adds structured intent overhead before implementation. This overhead is not warranted
+for trivial changes (fixing a typo, renaming a variable, adding a comment). Applying the
+full IVD workflow to every task will produce fatigue and adoption failure. IVD is designed
+for tasks where the AI's interpretation of intent matters — not as a universal
+requirement for all code changes.
+
+---
+
+## 11. Your Responsibilities as a Deployer
 
 When you use IVD to build AI-powered systems, you are the **deployer** of those systems.
-The obligations that apply to your system are yours, not IVD's.
+The obligations that apply to your systems are yours. IVD's involvement as the toolchain
+used in development does not transfer, share, or reduce those obligations.
 
-### 6.1 EU AI Act (Regulation (EU) 2024/1689)
+### 11.1 EU AI Act (Regulation (EU) 2024/1689)
 
-Under Article 25 of the AI Act, deployers of high-risk AI systems bear specific
-obligations regardless of the tool they used to build the system. If you are building
-a system covered by Annex III using IVD:
+Under Article 25, deployers of high-risk AI systems bear obligations regardless of the
+development tool used. If you are building an Annex III system using IVD:
 
 - You must implement Article 9 risk management for your system
-- You must provide Article 13 transparency documentation that accurately reflects your
-  *current* system (stale IVD intent artifacts do not satisfy this obligation)
-- You must implement Article 14 human oversight — IVD's Step 3 review supports this,
-  but skipping it eliminates compliance
+- Your Article 13 transparency documentation must be accurate and current — stale
+  IVD intent artifacts that no longer reflect the deployed system do not satisfy
+  this obligation
+- You must implement Article 14 human oversight. IVD's Step 3 review supports this
+  requirement; skipping it eliminates the compliant gate
 
-**Source:** <https://artificialintelligenceact.eu/article/14/>
+**Source:** <https://artificialintelligenceact.eu/article/14/>  
+**Source:** <https://artificialintelligenceact.eu/article/25/>
 
-### 6.2 Colorado AI Act (SB 24-205)
+### 11.2 Colorado AI Act (Colo. Rev. Stat. § 6-1-1701 — SB 24-205)
 
-Effective June 30, 2026, Colorado Revised Statute § 6-1-1701 et seq. (SB 24-205)
-requires developers and deployers of high-risk AI systems used in **consequential
-decisions** (employment, housing, financial services, insurance, education, healthcare,
-legal) to:
+Effective June 30, 2026, this statute requires developers and deployers of high-risk AI
+systems used in consequential decisions (employment, housing, financial services,
+insurance, education, healthcare, legal services) to:
 
 - Conduct algorithmic discrimination impact assessments
-- Notify affected consumers before consequential decisions
+- Notify affected consumers before consequential automated decisions
 - Provide the right to appeal and request human review
 
-If you deploy an IVD-assisted system that makes consequential decisions affecting
-Colorado residents, these obligations apply to you.
+These obligations apply to you if you deploy an IVD-assisted system making consequential
+decisions affecting Colorado residents.
 
 **Source:** <https://leg.colorado.gov/bills/SB24-205>
 
-### 6.3 GDPR (if applicable to your users)
+### 11.3 GDPR (Regulation (EU) 2016/679)
 
-If your AI system processes personal data of EU residents, GDPR applies to you as a
-controller. IVD intent artifacts used to document your system may support GDPR
-Article 25 (data protection by design) and Article 13 (transparency) compliance — but
-only if those artifacts are accurate, current, and substantive. Structural compliance
-(artifacts exist) without substantive compliance (artifacts accurately constrain the
-system) does not satisfy the regulation.
+If your AI system processes personal data of EU residents, you are a data controller.
+IVD intent artifacts may support GDPR Article 25 (data protection by design) and
+Article 13 (transparency) compliance — but only if those artifacts are accurate, current,
+and substantive. Structural compliance (artifacts exist and pass `ivd_validate`) without
+substantive compliance (artifacts accurately constrain the deployed system) does not
+satisfy the regulation. You bear the controller obligations; IVD bears processor
+obligations only with respect to personal data you transmit through the hosted server.
 
 **Source:** <https://eur-lex.europa.eu/eli/reg/2016/679/oj>
 
-### 6.4 CCPA/CPRA (if applicable)
+### 11.4 CCPA/CPRA (Cal. Civ. Code §§ 1798.100–1798.199.100)
 
-If your business meets California Consumer Privacy Act thresholds (Cal. Civ. Code
-§§ 1798.100–1798.199.100: annual gross revenue > $25M, or data of ≥ 100,000
-California consumers/households, or ≥ 50% revenue from selling personal information),
-CCPA/CPRA applies to your processing of California residents' data. IVD provides
-no CCPA compliance coverage.
+If your business meets CCPA applicability thresholds (annual gross revenue > $25M, or
+data of ≥ 100,000 California consumers, or ≥ 50% revenue from selling personal
+information), CCPA/CPRA applies to your processing of California residents' data. IVD
+provides no CCPA compliance functionality, tooling, or documentation.
 
 **Source:** <https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=3.&lawCode=CIV&part=4&title=1.81.5.>
 
 ---
 
-## 7. Known Architectural Limitation — Hosted Server and Local Filesystems
+## 12. Known Architectural Limitation — Hosted Server and Local Filesystems
 
-The hosted MCP server at `mcp.ivdframework.dev` **cannot access your local
-filesystem**. Path-based tools (`ivd_assess_coverage`, `ivd_list_features`,
-`ivd_validate` with a file path, `ivd_search` over a local project) will not find
-your files when called against a local path — they operate against the server's own
-filesystem only.
+The hosted MCP server at `mcp.ivdframework.dev` **cannot access your local filesystem.**
+Path-based tools (`ivd_find_artifacts`, `ivd_assess_coverage`, `ivd_check_placement`,
+`ivd_list_features`, `ivd_init`) accept `project_root` paths but operate against the
+server's own sandboxed filesystem — not your machine. Any path such as
+`/Users/yourname/myproject` will return "Project root not found."
 
-This is not a bug; it is a consequence of the remote service architecture. If you
-need these tools to operate against your local project files, use a self-hosted
-deployment.
+This is a consequence of the remote service architecture, not a bug. If you need
+these tools to operate against your local project files, use a self-hosted deployment.
 
 This limitation is a material fact for any organization evaluating IVD for compliance
-documentation purposes under EU AI Act Article 13 or FTC Section 5.
+documentation under EU AI Act Article 13(3)(b) (known limitations) or for any disclosure
+obligation under FTC Act Section 5 (material omissions).
 
 ---
 
-## 8. No Warranty
+## 13. No Professional Relationship
 
-THE IVD FRAMEWORK, HOSTED SERVER, AND ALL ASSOCIATED TOOLS ARE PROVIDED "AS IS,"
-WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY OF AI-GENERATED
-OUTPUTS, REGULATORY COMPLIANCE, OR NON-INFRINGEMENT.
+Use of IVD — whether hosted or self-hosted, free or paid, under any licensing arrangement
+— does **not** create a professional services relationship of any kind between you and
+Leo Celis or the IVD project. In particular:
 
-USE OF IVD DOES NOT GUARANTEE THAT YOUR AI SYSTEM WILL COMPLY WITH ANY LAW, REGULATION,
-OR STANDARD, INCLUDING BUT NOT LIMITED TO THE EU AI ACT, GDPR, CCPA/CPRA, NIST AI RMF,
-OR THE COLORADO AI ACT.
+- No attorney-client relationship, legal advisory relationship, or privileged
+  communication arises from using IVD or from reading any IVD documentation,
+  including this document
+- No engineering consulting, systems integration, or professional IT services
+  relationship arises from using IVD tools in your development workflow
+- No fiduciary duty, duty of care, or advisory duty attaches to IVD's role as a
+  tool provider
+- No implied reliance relationship is created by IVD's published documentation,
+  marketing materials, or this disclaimer
 
----
-
-## 9. Limitation of Liability
-
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE IVD PROJECT,
-ITS CONTRIBUTORS, OR ITS MAINTAINERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
-CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF DATA, LOSS OF
-PROFITS, REGULATORY FINES OR PENALTIES, OR BUSINESS INTERRUPTION) ARISING OUT OF OR
-IN CONNECTION WITH YOUR USE OF IVD, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-
-NOTHING IN THIS SECTION LIMITS LIABILITY FOR FRAUD, GROSS NEGLIGENCE, OR INTENTIONAL
-MISCONDUCT.
+If you require professional advice — legal, compliance, engineering, or otherwise —
+engage a qualified professional independently.
 
 ---
 
-## 10. Security Vulnerabilities
+## 14. Indemnification
+
+**To the maximum extent permitted by applicable law**, you agree to defend, indemnify,
+and hold harmless Leo Celis, the IVD project, its contributors, and its maintainers
+from and against any and all claims, damages, obligations, losses, liabilities, costs,
+or expenses (including reasonable legal fees) arising from:
+
+1. Your use of IVD or the hosted server in any manner
+2. Any AI system, workflow, product, or service you build using IVD tools
+3. Your violation of any applicable law or regulation in connection with your use of IVD,
+   including but not limited to the EU AI Act, GDPR, CCPA/CPRA, the Colorado AI Act,
+   or the FTC Act
+4. Any claim by a third party that your AI system caused harm, violated rights, or
+   failed to comply with applicable law
+5. Any personal data you transmit through hosted-server tool arguments in violation of
+   GDPR, CCPA/CPRA, or any other privacy law
+6. Any content you generate, store, or publish using IVD tools
+7. Your misrepresentation of IVD's capabilities, certifications, or compliance coverage
+   to any third party, customer, regulator, or auditor
+
+This indemnification obligation survives termination or discontinuation of your use of IVD.
+
+---
+
+## 15. No Warranty
+
+THE IVD FRAMEWORK, HOSTED SERVER, MCP TOOLS, RECIPES, INTENT ARTIFACT SCHEMAS, CANON
+LAYER, JUDGMENT PHASE, AND ALL ASSOCIATED MATERIALS ARE PROVIDED "AS IS," WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:
+
+- WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE
+- ACCURACY, COMPLETENESS, OR RELIABILITY OF AI-GENERATED OUTPUTS
+- REGULATORY COMPLIANCE, CONFORMITY ASSESSMENT READINESS, OR AUDIT TRAIL ADEQUACY
+- UPTIME, AVAILABILITY, OR UNINTERRUPTED SERVICE
+- SECURITY AGAINST UNAUTHORIZED ACCESS OR DATA BREACH
+- NON-INFRINGEMENT OF THIRD-PARTY RIGHTS
+- COMPATIBILITY WITH ANY PARTICULAR AI MODEL, IDE, OR MCP CLIENT
+
+**USE OF IVD DOES NOT GUARANTEE THAT YOUR AI SYSTEM WILL COMPLY WITH ANY LAW,
+REGULATION, OR STANDARD,** INCLUDING BUT NOT LIMITED TO THE EU AI ACT, GDPR,
+CCPA/CPRA, NIS2, THE CYBER RESILIENCE ACT, NIST AI RMF, THE COLORADO AI ACT,
+OR ANY SECTOR-SPECIFIC REGULATION.
+
+**ALL USES OF IVD — INCLUDING USES, WORKFLOWS, AND RISKS NOT INDIVIDUALLY ENUMERATED
+IN THIS DOCUMENT — ARE AT YOUR OWN RISK.** This document identifies known and
+foreseeable risks; it is not an exhaustive enumeration of all risks you may encounter.
+
+---
+
+## 16. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+
+**16.1** IN NO EVENT SHALL LEO CELIS, THE IVD PROJECT, ITS CONTRIBUTORS, OR ITS
+MAINTAINERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE
+DAMAGES — INCLUDING BUT NOT LIMITED TO LOSS OF DATA, LOSS OF PROFITS, LOSS OF BUSINESS
+OPPORTUNITY, REGULATORY FINES OR PENALTIES, BUSINESS INTERRUPTION, OR REPUTATIONAL HARM
+— ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF IVD, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+**16.2 AGGREGATE LIABILITY CAP:** IVD'S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS
+ARISING OUT OF OR RELATED TO YOUR USE OF IVD — INCLUDING DIRECT DAMAGES — SHALL NOT
+EXCEED THE GREATER OF (a) THE TOTAL FEES ACTUALLY PAID BY YOU TO IVD IN THE TWELVE
+MONTHS IMMEDIATELY PRECEDING THE CLAIM, OR (b) USD $50. FOR USERS WHO HAVE PAID
+NOTHING (INCLUDING ALL FREE-TIER AND OPEN-SOURCE USERS), THIS CAP IS USD $0.
+
+**16.3** NOTHING IN THIS SECTION LIMITS LIABILITY FOR FRAUD OR INTENTIONAL
+MISCONDUCT ON THE PART OF LEO CELIS.
+
+**16.4** SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE
+LIMITATION OF CERTAIN TYPES OF DAMAGES. WHERE SUCH RESTRICTIONS APPLY, THE EXCLUSIONS
+AND LIMITATIONS ABOVE APPLY TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW.
+
+---
+
+## 17. Governing Law and Jurisdiction
+
+This document and all disputes arising from your use of IVD are governed by the laws of
+the **State of Florida, United States**, without regard to its conflict-of-law provisions.
+
+Any legal action or proceeding arising from this document or your use of IVD must be
+brought exclusively in the state or federal courts located in **Broward County, Florida,
+United States.** You irrevocably consent to the personal jurisdiction and venue of those
+courts and waive any objection based on inconvenient forum.
+
+**EU users note:** Nothing in this section limits mandatory consumer or data-subject
+rights available under EU law, including rights under GDPR, the EU AI Act, or applicable
+EU consumer protection law. EU-resident users retain those rights regardless of this
+choice-of-law clause.
+
+---
+
+## 18. Security Vulnerabilities
 
 To report a security vulnerability in IVD (including the hosted server), follow the
 responsible disclosure process in [`SECURITY.md`](SECURITY.md). Do not open a public
 GitHub issue for security vulnerabilities.
 
+For potential personal data breaches involving the hosted server (e.g., suspected
+unauthorized access to data transmitted through tool arguments), contact
+[leo@leocelis.com](mailto:leo@leocelis.com) immediately. If you are an EU controller
+and the breach triggers GDPR Article 33 obligations for your organization, do not wait
+for IVD's response — begin your 72-hour supervisory authority notification process
+immediately using the information available to you.
+
+**Full legal document set:**
+
+| Document | Purpose |
+|----------|---------|
+| [TERMS_OF_SERVICE.md](TERMS_OF_SERVICE.md) | Binding terms of use and acceptance |
+| [PRIVACY_POLICY.md](PRIVACY_POLICY.md) | GDPR Art. 13 privacy notice |
+| [DATA_PROCESSING_AGREEMENT.md](DATA_PROCESSING_AGREEMENT.md) | GDPR Art. 28 DPA (request for EU enterprise) |
+| [SECURITY.md](SECURITY.md) | Vulnerability disclosure process |
+| [LICENSE](LICENSE) | MIT License (open-source code) |
+
 ---
 
-## 11. Changes to This Document
+## 19. Changes to This Document
 
 Material changes to this document will be noted in `DECISIONS.md` with an FDR entry.
-The effective date at the top of this file reflects the last revision. This document
-does not have automatic email notification — check the repository for the current
-version before relying on it.
+The version number and effective date at the top of this file reflect the last revision.
+
+**Notice to hosted-server users:** Because this document is maintained in a public git
+repository, changes do not trigger automatic email notification. If you rely on this
+document for compliance purposes, monitor the repository for changes or periodically
+review the effective date. For enterprise or regulated deployments, maintaining a local
+copy of the version effective at your deployment date is recommended.
 
 ---
 
-## 12. Reference Index
+## 20. Reference Index
 
 All legal sources cited in this document, with official URLs and verification dates:
 
@@ -359,5 +775,8 @@ All legal sources cited in this document, with official URLs and verification da
 
 ---
 
+*Version 2.0 — expanded from v1.0 with full risk coverage, owner-protective clauses,
+and addressing all gaps identified in the cross-check revision of 2026-05-10.*
+
 *This document is not legal advice. Consult qualified legal counsel before making
-compliance decisions based on this text.*
+compliance or legal decisions based on this text.*
