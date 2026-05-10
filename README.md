@@ -450,6 +450,14 @@ Issues, bug reports, and recipe suggestions are welcome. See [CONTRIBUTING.md](C
 
 ---
 
+## Legal
+
+See [LEGAL.md](LEGAL.md) for disclaimers, data transmission disclosures, AI limitation
+notices, known architectural limitations (hosted server vs. self-hosted), and your
+responsibilities as a deployer under the EU AI Act, GDPR, and US law.
+
+---
+
 ## License
 
 [MIT](LICENSE) · Created by [Leo Celis](https://github.com/leocelis)
