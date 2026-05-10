@@ -599,6 +599,36 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 
 ---
 
+## FDR-024: No Public Legal Disclaimer Covering AI Limitations, Data Transmission, and Deployer Obligations
+
+**Date:** 2026-05-10
+**Status:** Fixed (Canonical)
+**Identified by:** Full risk registry and legal risk mapping review (cross-check pass)
+
+**Gap:** IVD had no public document disclosing: (1) inherent LLM behavioral limitations that IVD
+mitigates but cannot eliminate; (2) that hosted server tool calls transmit content to US-based
+infrastructure (DigitalOcean + OpenAI); (3) scope and conditions of marketing claims;
+(4) deployer responsibilities under EU AI Act, GDPR, CCPA/CPRA, and Colorado SB 24-205;
+(5) the architectural limitation that the hosted server cannot access local filesystems;
+(6) Judgment phase data handling risks (PII, retention, profiling). Gaps 1–6 in
+`_private/research/legal_risk_mapping.md` all required a public-facing disclosure.
+
+**Analysis:** The absence of any legal notice constitutes a potential unfair practice under
+FTC Act § 5 (15 U.S.C. § 45) for the failure to disclose material facts about the hosted
+service. It also creates a GDPR Article 13 gap for EU users (no transparency notice at
+point of data collection). The FTC's Operation AI Comply (Sept 2024) and "Keep Your AI
+Claims in Check" (Feb 2023) guidance both identify non-disclosure and unsubstantiated
+efficacy claims as enforcement priorities. The risk of "intent theater" (R-005) additionally
+requires that marketing claims be explicitly scoped to tested conditions.
+
+**Decision:** Create `LEGAL.md` as a public, first-class document in the repo root. It covers
+all six compliance gaps identified in the legal risk mapping, with every claim backed by an
+official source URL verified on 2026-05-10. Linked from README.md's License section.
+
+**Changes:** `LEGAL.md` (created), `README.md` (Legal section added before License)
+
+---
+
 ## Template for New Entries
 
 ```markdown
