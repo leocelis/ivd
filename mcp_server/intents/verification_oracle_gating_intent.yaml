@@ -1,0 +1,210 @@
+# verification_oracle_gating_intent.yaml
+# Task-Level Intent: External-Oracle Gating for ivd_validate
+#
+# Co-located per IVD placement rules:
+#   mcp_server/intents/{task}_intent.yaml  (task-level intent for the module)
+#
+# Origin: Internal red-team remediation of IVD's core verification claim (2026-06-17).
+#
+# Implements (scoped per the in-depth review):
+#   Fix 1 — test_provenance + ai_generated PASS-gating  (MVP, highest leverage)
+#   Fix 3 — joint-satisfaction nudge for 3+ constraints
+#   Fix 4 — conflict_prone flag + anti-pattern anchoring (manual flag; NO auto-detection)
+# Deferred: Fix 2 review-gate UX (human is the backstop there). The "worked
+#   examples" sub-part is folded in via the verification.test_cases convention,
+#   which already exists in the template.
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "verification_oracle_gating"
+  category: "verification"
+  tags: ["validate", "provenance", "red-team", "principle-2"]
+  status: "implemented"
+  introduced_version: "1.6.0"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Gate constraint PASS on external-oracle evidence: a constraint backed only by an AI-generated test can never be auto-marked PASS by ivd_validate; surface it as NEEDS_EXTERNAL_ORACLE."
+  goal: |
+    Close the circular-self-verification hole identified by the red-team pass:
+    when the same AI writes the intent, the test, AND runs the test, a wrong
+    intent verifies green. The break is real and research-backed — LLM-written
+    tests are frequently invalid (pass rates often <50%; incorrect assertions
+    cause >85% of failures in some benchmarks: arXiv 2511.21382, 2305.00418),
+    and the incorrect assertion ratifies the buggy behavior ("circularity of
+    error").
+
+    ARCHITECTURE (canon to the existing design): ivd_validate stays a
+    STRUCTURE validator — it does NOT execute tests (no subprocess, respects the
+    "structure_only" contract and the sandboxed-server security model). Test
+    execution remains the agent's job in the Post-Implementation Verification
+    Protocol. This intent adds the *gating signal*: validate marks AI-only
+    evidence as insufficient, and the agent rules forbid reporting PASS on it.
+  success_metric: |
+    - A constraint with test_provenance: ai_generated is reported in
+      verification_gating.constraints_needing_external_oracle (status
+      NEEDS_EXTERNAL_ORACLE), never silently treated as verifiable.
+    - Invalid test_provenance values are flagged.
+    - 3+ constraints without a constraint_satisfiability block are nudged.
+    - conflict_prone constraints missing an anti_pattern or test are flagged.
+    - ZERO regressions: no legacy intent that validated before becomes invalid;
+      all new checks emit warnings/notes only, never errors.
+  stakeholders:
+    - "AI agents running the IVD verification protocol"
+    - "IVD framework maintainer (Leo)"
+    - "Anyone trusting an IVD 'PASS' to mean real verification"
+
+# ==============================================================================
+# CONSTRAINTS
+# Order: most critical LAST (position bias — UltraBench 2025).
+# Backward-compatibility (no new errors) is the most critical → listed last.
+# ==============================================================================
+
+constraints:
+  - name: "provenance_value_validation"
+    requirement: "When a constraint declares test_provenance, its value MUST be one of {human_authored, execution_derived, ai_generated}; any other value yields a warning."
+    test: "mcp_server/tests/unit/test_validate.py::TestExternalOracleGating::test_invalid_provenance_warns"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 4
+    consequence_if_violated: "Typo'd provenance silently bypasses the gate."
+
+  - name: "joint_satisfaction_nudge"
+    requirement: "An intent with 3+ constraints and no constraint_satisfiability block produces a warning recommending one plus a joint-satisfaction test (individual-pass != joint-pass)."
+    test: "mcp_server/tests/unit/test_validate.py::TestJointSatisfaction::test_three_constraints_without_satisfiability_warns"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 3
+    consequence_if_violated: "Constraint-density abandonment (UltraBench 2025) goes unflagged."
+
+  - name: "conflict_prone_requires_anchor"
+    requirement: "A constraint with conflict_prone: true MUST have both a test field and an anti_pattern field; missing either yields a warning."
+    test: "mcp_server/tests/unit/test_validate.py::TestConflictProne::test_conflict_prone_requires_antipattern"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 3
+    consequence_if_violated: "An idiosyncratic rule the model's prior fights gets no executable test or anti-pattern anchor (knowledge-conflict inversion)."
+
+  - name: "ai_generated_gating"
+    requirement: "Any constraint with test_provenance: ai_generated is listed in verification_gating.constraints_needing_external_oracle with status NEEDS_EXTERNAL_ORACLE."
+    test: "mcp_server/tests/unit/test_validate.py::TestExternalOracleGating::test_ai_generated_flagged_needs_oracle"
+    test_provenance: "execution_derived"
+    conflict_prone: true
+    anti_pattern: "The common pattern is to treat any green test as proof. This system requires NOT-that: an AI-authored test alone is low-trust and cannot clear a constraint — the code-under-test must never be its own oracle."
+    entropy: "near-zero"
+    priority: 2
+    consequence_if_violated: "The exact circular-self-verification hole the red-team found stays open — a wrong intent verifies green."
+
+  - name: "backward_compat_no_new_errors"
+    requirement: "Every new check emits warnings/notes only; none add to the errors list. A previously-valid intent (no new fields) stays valid:true with zero errors."
+    test: "mcp_server/tests/unit/test_validate.py::TestBackwardCompatibility::test_new_fields_never_produce_errors"
+    test_provenance: "execution_derived"
+    entropy: "near-zero"
+    priority: 1
+    consequence_if_violated: "Existing IVD users' intents break on upgrade — unacceptable; this is the highest-priority constraint."
+
+# ==============================================================================
+# CONSTRAINT SATISFIABILITY (5 constraints → block required, Rule 6)
+# ==============================================================================
+
+constraint_satisfiability:
+  conflicts_checked: true
+  known_tensions:
+    - between: ["ai_generated_gating", "backward_compat_no_new_errors"]
+      resolution: |
+        Gating must be visible but must not break existing artifacts. Resolved by
+        emitting gating as a NON-error signal: a dedicated verification_gating
+        report block + warnings, never an entry in `errors`. valid stays True.
+    - between: ["joint_satisfaction_nudge", "backward_compat_no_new_errors"]
+      resolution: |
+        The 3+ constraint nudge is a warning, not an error. Sample fixtures with
+        <3 constraints never trigger it; multi-constraint legacy intents get a
+        warning but remain valid.
+  simultaneous_satisfaction: "All five satisfiable: gating + nudges + flags are warnings/report-only; validity (errors) is untouched, so backward_compat holds simultaneously."
+
+# ==============================================================================
+# RATIONALE
+# ==============================================================================
+
+rationale:
+  decision: "Add provenance-based PASS-gating to ivd_validate (structure-only, no test execution) + agent-rule enforcement; defer a test runner."
+  reasoning: |
+    The in-depth review found all four red-team topics are DOCUMENTED in the
+    framework but ENFORCED nowhere in code (ivd_validate is structure_only; no
+    tool executes or analyzes semantics). The cheapest, highest-leverage fix is
+    the provenance gate: a schema field + a gating rule, no sandbox. It delivers
+    ~80% of Fix 1's value at ~20% of the build and makes Fix 3/Fix 4(a) cheap
+    follow-ons. Auto-detecting "conflict with the model's prior" was rejected as
+    itself high-entropy/unreliable (Rule 6) — conflict_prone is a manual flag.
+  evidence: "Internal red-team remediation analysis (2026-06-17); arXiv 2511.21382, 2305.00418 (LLM test validity), 2409.08435 (knowledge conflict)."
+  date: "2026-06-17"
+  stakeholder: "Leo"
+
+# ==============================================================================
+# ALTERNATIVES
+# ==============================================================================
+
+alternatives:
+  - name: "ivd_validate runs the tests in a sandbox"
+    rejected_because: "Breaks the structure_only contract and the sandboxed-server security model; the agent already has the execution environment. Higher build cost, security surface, for the remaining ~20% of value."
+    when_it_works: "If IVD ever ships a dedicated, isolated test-runner service — out of scope here."
+  - name: "Auto-detect conflict_prone constraints"
+    rejected_because: "Detecting 'conflicts with the model's typical prior' is itself a fuzzy LLM judgment (high interpretive entropy) — Rule 6 rejects it. Manual author-set flag is reliable."
+    when_it_works: "Never reliably; revisit only with execution-derived evidence."
+
+# ==============================================================================
+# RISKS
+# ==============================================================================
+
+risks:
+  - condition: "Authors omit test_provenance to dodge the gate"
+    action: "Aggregate suggestion nudges declaring provenance; agent Rule 2 treats unknown-provenance tests as unverified until checked. Validator is advisory; the runtime gate is the agent rule."
+    monitor: "verification_gating block in ivd_validate output"
+    severity: "medium"
+  - condition: "New warnings flood legacy intents and create noise"
+    action: "Per-constraint warnings only for explicit ai_generated / invalid values / conflict_prone gaps; provenance-absence is ONE aggregate suggestion, not per-constraint."
+    monitor: "warning counts on existing fixtures"
+    severity: "low"
+
+# ==============================================================================
+# IMPLEMENTATION
+# ==============================================================================
+
+implementation:
+  current: "mcp_server/tools/validate.py"
+  function: "validate_artifact_tool"
+  version: 1
+  tests: "mcp_server/tests/unit/test_validate.py"
+  documentation: "templates/intent.yaml, recipes/agent-rules-ivd.yaml, cookbook.md"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+verification:
+  test_cases:
+    - name: "ai_generated_gated"
+      description: "Constraint with test_provenance: ai_generated is surfaced as NEEDS_EXTERNAL_ORACLE."
+      input: "intent with one ai_generated constraint"
+      expected_output: "verification_gating.constraints_needing_external_oracle contains that constraint"
+      validates_constraint: "ai_generated_gating"
+    - name: "legacy_intent_unchanged"
+      description: "sample_intent.yaml (no new fields) still valid:true, zero errors."
+      input: "fixtures/sample_intent.yaml"
+      expected_output: "valid: true, errors: []"
+      validates_constraint: "backward_compat_no_new_errors"
+
+changelog:
+  - version: 1
+    date: "2026-06-17"
+    change: "Initial intent: external-oracle gating, joint-satisfaction nudge, conflict_prone flag."
+    reason: "Red-team remediation Fix 1/3/4 (scoped)."

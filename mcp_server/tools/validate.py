@@ -48,6 +48,12 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     errors = []
     warnings = []
     suggestions = []
+    # Fix 1 (red-team remediation): constraints whose only verification evidence
+    # is an AI-authored test cannot clear on their own — reported, never PASS.
+    needs_external_oracle = []
+
+    # Allowed test provenance tiers (signal hierarchy: ground-truth > proxy > self).
+    ALLOWED_PROVENANCE = ("human_authored", "execution_derived", "ai_generated")
 
     required_keys = {
         "intent": {
@@ -129,12 +135,73 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             constraints = artifact["constraints"]
             if isinstance(constraints, list):
                 missing_test_count = 0
+                provenance_absent_count = 0
                 for i, c in enumerate(constraints):
-                    if isinstance(c, dict) and "test" not in c:
+                    if not isinstance(c, dict):
+                        continue
+                    cname = c.get("name", f"#{i+1}")
+                    if "test" not in c:
                         missing_test_count += 1
                         warnings.append(f"Constraint #{i+1} missing 'test' field — the Post-Implementation Verification Protocol cannot verify this constraint (Principle 2 + Principle 4)")
+
+                    # Fix 1: test provenance gating (external ground-truth signal).
+                    prov = c.get("test_provenance")
+                    if prov is None:
+                        if "test" in c:
+                            provenance_absent_count += 1
+                    elif prov not in ALLOWED_PROVENANCE:
+                        warnings.append(
+                            f"Constraint '{cname}' has unrecognized test_provenance '{prov}' — "
+                            f"use one of {', '.join(ALLOWED_PROVENANCE)} (Fix 1: external-oracle gating)"
+                        )
+                    elif prov == "ai_generated":
+                        # An AI-authored test alone is low-trust: it confirms the
+                        # code/intent rather than catches it (circularity of error).
+                        needs_external_oracle.append(cname)
+
+                    # Fix 4: conflict_prone constraints (idiosyncratic rules the
+                    # model's prior may ignore) need an executable test AND an
+                    # anti-pattern anchor. Manual flag — no auto-detection.
+                    if c.get("conflict_prone") is True:
+                        if "test" not in c:
+                            warnings.append(
+                                f"Constraint '{cname}' is conflict_prone but has no 'test' — "
+                                "conflict-prone constraints require an executable test (Fix 4)"
+                            )
+                        if not c.get("anti_pattern"):
+                            warnings.append(
+                                f"Constraint '{cname}' is conflict_prone but has no 'anti_pattern' anchor — "
+                                "name the common pattern and why this system requires NOT-it (Fix 4)"
+                            )
+
                 if missing_test_count > 0:
                     warnings.append(f"{missing_test_count}/{len(constraints)} constraints lack test fields — AI agents cannot execute the verification protocol without them. See recipes/agent-rules-ivd.yaml")
+
+                # Fix 1: nudge declaring provenance so the gate can apply.
+                if provenance_absent_count > 0:
+                    suggestions.append(
+                        f"{provenance_absent_count}/{len(constraints)} constraints declare a test but no "
+                        "'test_provenance' (human_authored | execution_derived | ai_generated). Declare it so "
+                        "ivd_validate can gate AI-only evidence (Fix 1). The code-under-test must never be its own oracle."
+                    )
+
+                # Fix 3: joint constraint satisfaction — individual-pass != joint-pass.
+                # 3+ constraints without a satisfiability block is the density-abandonment risk.
+                if len(constraints) >= 3 and "constraint_satisfiability" not in artifact:
+                    warnings.append(
+                        "3+ constraints but no 'constraint_satisfiability' block — add one (conflicts_checked, "
+                        "known_tensions, simultaneous_satisfaction) and a joint-satisfaction test that asserts ALL "
+                        "constraints hold on the SAME output. Individual-pass does not imply joint-pass (UltraBench 2025; Fix 3)."
+                    )
+
+        # Fix 3: when a constraint_satisfiability block exists, check it carries the
+        # fields that make joint satisfaction reviewable (report-only — never an error).
+        if artifact_type == "intent" and "constraint_satisfiability" in artifact:
+            cs = artifact["constraint_satisfiability"]
+            if isinstance(cs, dict):
+                for field in ("conflicts_checked", "simultaneous_satisfaction"):
+                    if field not in cs:
+                        warnings.append(f"constraint_satisfiability missing '{field}' (Fix 3: joint satisfaction)")
 
         # Validate interface section (optional — for agents, MCP servers, APIs, CLIs, services)
         if artifact_type == "intent" and "interface" in artifact:
@@ -261,6 +328,24 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "validation_level": "structure_only",
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
+
+    # Fix 1: external-oracle gating report. Structure-only validation cannot RUN
+    # tests, but it can flag constraints whose only declared evidence is an
+    # AI-authored test — those can never be auto-marked PASS by the verification
+    # protocol; they need a human-authored assertion or an execution-derived
+    # oracle (golden output, property/differential test). Report-only: this does
+    # NOT affect `valid` (backward compatibility).
+    if needs_external_oracle:
+        result["verification_gating"] = {
+            "constraints_needing_external_oracle": needs_external_oracle,
+            "status": "NEEDS_EXTERNAL_ORACLE",
+            "note": (
+                "These constraints declare an AI-generated test as their only evidence. "
+                "An AI-authored test is low-trust (it tends to confirm the code/intent rather "
+                "than catch it). Do not report PASS until a human-authored assertion or an "
+                "execution-derived oracle clears them. The code-under-test must never be its own oracle."
+            ),
+        }
 
     status = "passed" if valid else "failed"
     color = "green" if valid else "red"

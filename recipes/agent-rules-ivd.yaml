@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.2
+# Version: 1.6
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.2"
+  version: "1.6"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -99,26 +99,39 @@ verification_protocol:
       why: "Changes may satisfy some constraints while silently violating others."
 
     - step: 3
-      name: "Check verification criteria"
+      name: "Check verification criteria (with provenance gating)"
       action: |
         For each constraint that has a 'test' field, verify:
         - Does the test path exist?
         - Can the test be run?
         - Does the implementation pass the test?
+        - PROVENANCE GATE (Fix 1): who authored the test (test_provenance)?
+          An `ai_generated` test ALONE cannot clear a constraint — a green
+          AI-written test tends to confirm the code/intent rather than catch it
+          ("circularity of error"). Such a constraint is NEEDS_EXTERNAL_ORACLE
+          until a human_authored assertion or an execution_derived oracle
+          (golden output, property test, differential test) clears it.
+        - Never let the implementation-under-test be its own oracle.
         If the test can't be run (e.g., manual review), note it and describe
         what a reviewer should check.
-      why: "Test paths are the executable understanding. Unchecked tests are unverified claims."
+      why: "Test paths are the executable understanding. Unchecked tests are unverified claims; an AI-authored test is only as external as its author."
 
     - step: 4
       name: "Report results"
       action: |
         Produce a structured report:
-        - For each constraint: PASS / FAIL / NEEDS_REVIEW
+        - For each constraint: PASS / FAIL / NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE
         - For each FAIL: what specifically doesn't match and what to fix
         - For each NEEDS_REVIEW: what a human should verify
+        - For each NEEDS_EXTERNAL_ORACLE (Fix 1): the constraint's only evidence
+          is an AI-authored test — name what human assertion or execution-derived
+          oracle is required before it can become PASS.
+        JOINT SATISFACTION (Fix 3): for intents with 3+ constraints, also report
+        whether ALL constraints hold on the SAME output (joint_satisfaction_pass),
+        not just each in isolation. Individual-pass does not imply joint-pass.
         Do not declare implementation complete until all constraints are PASS
-        or explicitly acknowledged as NEEDS_REVIEW.
-      why: "Structured reporting makes verification visible and auditable."
+        or explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE.
+      why: "Structured reporting makes verification visible and auditable; joint satisfaction catches inter-constraint violations individual checks miss."
 
   failure_mode: |
     If the agent skips this protocol, the IVD loop is broken:
@@ -193,17 +206,36 @@ agent_rules_block:
        not affect the constraint?
     3. CHECK every constraint that has a 'test' field — does the implementation
        pass? If the test can't be run, note what a reviewer should verify.
-    4. REPORT structured results: for each constraint, PASS / FAIL / NEEDS_REVIEW
+       PROVENANCE GATE: an `ai_generated` test alone cannot mark a constraint
+       PASS (an AI-written test tends to confirm the code rather than catch it).
+       Report such a constraint as NEEDS_EXTERNAL_ORACLE until a human_authored
+       or execution_derived oracle clears it. Never let the code-under-test be
+       its own oracle.
+    4. REPORT structured results: for each constraint, PASS / FAIL /
+       NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE. For 3+ constraints, also report
+       joint_satisfaction_pass — do ALL constraints hold on the SAME output?
+       (Individual-pass does not imply joint-pass.)
 
     Do not declare implementation complete until all constraints are PASS or
-    explicitly acknowledged as NEEDS_REVIEW with justification.
+    explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE with justification.
 
-    ## IVD Rule 3: Constraint Tests Are Mandatory
+    ## IVD Rule 3: Constraint Tests Are Mandatory — and Externally Sourced
 
     Every constraint in an intent artifact MUST have a 'test' field. If you
     encounter a constraint without a test, add one before implementing.
     A constraint without a test is an unverifiable claim — it violates
     Principle 2 (Understanding Must Be Executable).
+
+    Every test SHOULD declare 'test_provenance' (human_authored |
+    execution_derived | ai_generated). This matters because LLM-written tests
+    are frequently invalid and exhibit a circularity of error — they ratify the
+    code/intent instead of catching it. Therefore:
+    - An `ai_generated` test alone can NEVER mark a constraint PASS. It requires
+      a human-authored assertion or an execution-derived oracle (golden output,
+      property test, or differential test against real behaviour/data).
+    - Never let the implementation-under-test be its own oracle ("the function
+      returns what the function returns" is not verification).
+    `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE.
 
     ## IVD Rule 4: Stress-Test Intent Before Implementing
 
@@ -225,7 +257,19 @@ agent_rules_block:
        failure at simultaneous satisfaction. CMU 2025 — conflicting constraints
        cause 20%+ accuracy drops even when all are individually explicit.
        If conflicts exist, resolve them NOW: add priority ordering and a
-       constraint_satisfiability block before implementing.
+       constraint_satisfiability block before implementing. For 3+ constraints,
+       also specify a joint-satisfaction test (joint_test) that asserts ALL
+       constraints hold on the SAME output — individual-pass != joint-pass (Fix 3).
+    5. KNOWLEDGE-CONFLICT CHECK (Fix 4): Does any constraint encode a rule that
+       is UNUSUAL for the domain — i.e., it contradicts the model's typical
+       training prior (your idiosyncratic business logic)? Research shows models
+       frequently ignore loaded context and fall back on the parametric prior
+       exactly when the rule is unusual/familiar-but-wrong (arXiv 2409.08435;
+       knowledge-conflict literature). Mark such constraints `conflict_prone: true`.
+       Each conflict_prone constraint REQUIRES (a) an executable test, ideally
+       execution_derived, and (b) an `anti_pattern` anchor that names the common
+       pattern and states why this system requires NOT-it. Context alone may lose
+       to the prior; the anti-pattern anchor and a hard test are the backstop.
 
     If gaps are found, update the intent (add constraints, test paths, or
     clarifying notes) BEFORE implementing. For significant changes, flag
@@ -406,8 +450,8 @@ integration:
     action: "Append IVD rules block to scan summary and next_steps"
 
   ivd_validate:
-    description: "ivd_validate already checks for constraints without test fields. The verification protocol depends on test fields existing."
-    relationship: "Validation ensures the intent is verifiable; the protocol ensures the agent actually verifies."
+    description: "ivd_validate checks for constraints without test fields AND gates provenance: it surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE (verification_gating block), nudges a constraint_satisfiability block + joint test at 3+ constraints, and flags conflict_prone constraints missing a test or anti_pattern anchor. All report-only — never errors."
+    relationship: "Validation ensures the intent is verifiable AND that its evidence is externally sourced; the protocol ensures the agent actually verifies and honors the provenance gate."
 
   ivd_scaffold:
     description: "Scaffolded intents include constraints with test placeholders. The protocol ensures the agent fills them in and checks them."
@@ -500,6 +544,32 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.6"
+    date: "2026-06-17"
+    change: |
+      Red-team remediation (Fix 1/3/4). Rule 2 step 3/4: added the PROVENANCE
+      GATE — an ai_generated test alone cannot mark a constraint PASS; report
+      NEEDS_EXTERNAL_ORACLE; never let the code-under-test be its own oracle.
+      Rule 3 renamed "…and Externally Sourced"; added test_provenance tiers.
+      Rule 4: added Probe 5 (knowledge-conflict / conflict_prone + anti_pattern
+      anchoring) and joint_test note. Rule 2/4 report status now includes
+      joint_satisfaction_pass for 3+ constraints.
+    reason: |
+      Adversarial stress-test found IVD's core verification claim breaks under
+      circular self-verification: when the AI writes the intent, the test, AND
+      runs it, a wrong intent verifies green. LLM-written tests are frequently
+      invalid (pass rates often <50%; incorrect assertions cause >85% of failures
+      in some benchmarks). The framework documented executable verification but
+      enforced no provenance gate — ivd_validate is structure-only and nothing
+      ran tests. This adds the gating signal in validate + the runtime rule in
+      the agent instructions. Architecture preserved: validate stays structure-
+      only (no test execution); the agent runs tests in the verification protocol.
+    evidence: |
+      Internal red-team remediation analysis (2026-06-17); arXiv 2511.21382 &
+      2305.00418 (LLM test validity); arXiv 2409.08435 (knowledge conflict);
+      UltraBench 2025 / CMU 2025 (joint satisfaction). Intent: mcp_server/intents/
+      verification_oracle_gating_intent.yaml.
+
   - version: "1.5"
     date: "2026-02-09"
     change: "Expanded Rule 1 IMPLEMENT step with constraint-segmented protocol (3+ constraint threshold); added common_failure 'Single-Pass Implementation Against Complex Intent'"

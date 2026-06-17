@@ -257,10 +257,17 @@ rationale:
 constraints:
   - requirement: "precision >= 0.80"
     test: "tests/test_lead_scoring.py::test_precision"
+    test_provenance: "human_authored"   # who authored the test — see gating below
     consequence_if_violated: "Sales wastes time on low-quality leads"
 ```
 
-**System runs the test. Claim is proven or fails.**
+**The constraint links to an executable test. During the Post-Implementation
+Verification Protocol the agent *runs* that test and reports PASS / FAIL /
+NEEDS_REVIEW.** `ivd_validate` does structure-only validation — it does not
+execute tests — but it gates the claim: a constraint whose only evidence is an
+`ai_generated` test is reported `NEEDS_EXTERNAL_ORACLE` and can never be marked
+PASS on its own. A green test is only as external as its author; the
+code-under-test must never be its own oracle.
 
 ---
 

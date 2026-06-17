@@ -630,6 +630,23 @@ constraints:
   - name: "constraint_id"
     requirement: "metric >= threshold (near-zero) OR qualitative with measurable proxy (low-qualitative)"
     test: "path/to/test.py::test_name OR human review checklist"
+    # test_provenance (Fix 1 — external-oracle gating): WHO authored the test that
+    # clears this constraint. A green test is only as external as its author.
+    #   human_authored    — a person wrote the assertion (ground-truth signal)
+    #   execution_derived — a golden output, property test, or differential test
+    #                       derived from real behavior/data (ground-truth signal)
+    #   ai_generated      — the AI wrote the test (LOW-TRUST: it tends to confirm
+    #                       the code/intent rather than catch it — "circularity of
+    #                       error"). An ai_generated test ALONE can never mark this
+    #                       constraint PASS; ivd_validate reports NEEDS_EXTERNAL_ORACLE.
+    # Rule: never let the implementation-under-test be its own oracle.
+    test_provenance: "human_authored | execution_derived | ai_generated"  # recommended
+    # conflict_prone (Fix 4): set true when this rule is UNUSUAL for the domain —
+    # the model's training prior may ignore the loaded context and fall back on the
+    # common pattern (knowledge-conflict inversion). Conflict-prone constraints
+    # REQUIRE an executable test + an anti_pattern anchor below.
+    conflict_prone: false                     # optional; manual flag, no auto-detection
+    anti_pattern: "The common pattern is A; this system requires NOT-A because …"  # required when conflict_prone: true
     entropy: "near-zero | low-qualitative"   # optional but recommended
     priority: 1                               # 1=highest; list highest-priority constraints LAST
     consequence_if_violated: "What breaks if this fails"
@@ -645,6 +662,10 @@ constraints:
 #     - between: ["constraint_a", "constraint_b"]
 #       resolution: "When they conflict, do X (e.g., reduce Y before reducing Z)"
 #   simultaneous_satisfaction: "All satisfiable given known tensions resolved above"
+#   # Fix 3 — joint satisfaction: individual-pass does NOT imply joint-pass.
+#   # Point to a single test that asserts ALL constraints hold on the SAME output
+#   # (not N separate checks). This is the gating verification when 3+ constraints.
+#   joint_test: "tests/test_joint.py::test_all_constraints_on_one_output"
 
 # WHY this approach?
 rationale:
