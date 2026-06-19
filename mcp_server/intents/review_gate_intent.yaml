@@ -1,0 +1,118 @@
+# review_gate_intent.yaml
+# Task-Level Intent: Human Review Gate (Fix 2)
+#
+# Co-located: mcp_server/intents/review_gate_intent.yaml
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "review_gate"
+  category: "verification"
+  tags: ["review", "human-gate", "red-team", "fix-2"]
+  status: "implemented"
+  introduced_version: "1.8.0"
+
+intent:
+  summary: "Strengthen P6 step 3: rank constraints by risk, force GUESSED sign-off with example + counter-example, render worked examples — structure-only review packet."
+  goal: |
+    Close red-team break 1.2 (weak human gate): YAML looks authoritative while wrong.
+    ivd_review_intent emits a review_gate packet (ranked constraints, worked examples,
+    pending_signoffs). ivd_validate nudges incomplete GUESSED sign-offs. Agent rules
+    forbid implementation while status is PENDING_SIGNOFF.
+
+    ARCHITECTURE: structure-only MCP tool — no LLM in the server. assumption_status
+    is author-set (EIF DECLARE vocabulary), not auto-classified (Rule 6).
+  success_metric: |
+    - GUESSED constraints without complete review_signoff appear in pending_signoffs.
+    - ranked_constraints sorted by risk_score descending.
+    - verification.test_cases surfaced as worked_examples.
+    - Report-only validate warnings; never errors on legacy intents.
+  stakeholders:
+    - "Human reviewers (Leo)"
+    - "AI agents running IVD P6 workflow"
+
+constraints:
+  - name: "invalid_assumption_status_warns"
+    requirement: "Unrecognized assumption_status values produce warnings only."
+    test: "mcp_server/tests/unit/test_review_gate.py::TestReviewGateValidate::test_invalid_assumption_status_warns"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 4
+    consequence_if_violated: "Typo bypasses review gate."
+
+  - name: "risk_ranking_deterministic"
+    requirement: "ranked_constraints are sorted by risk_score descending using consequence × likelihood from YAML fields."
+    test: "mcp_server/tests/unit/test_review_gate.py::TestReviewGateTool::test_ranks_higher_risk_first"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 3
+    consequence_if_violated: "Human still sees low-risk items first."
+
+  - name: "guessed_signoff_gating"
+    requirement: "GUESSED constraints with incomplete review_signoff yield review_gate.status PENDING_SIGNOFF and appear in pending_signoffs."
+    test: "mcp_server/tests/unit/test_review_gate.py::TestReviewGateTool::test_guessed_missing_signoff_pending"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "property_test"
+      property: "invariant"
+    assumption_status: "GUESSED"
+    review_signoff:
+      concrete_example: "input X → output Y"
+      counter_example: "if wrong, we'd see Z"
+      human_acknowledged: false
+    entropy: "near-zero"
+    priority: 2
+    consequence_if_violated: "Silent YAML skim on highest-risk assumptions."
+
+  - name: "backward_compat_no_new_errors"
+    requirement: "New checks are warnings/review_gate only; legacy intents stay valid:true with zero errors."
+    test: "mcp_server/tests/unit/test_validate.py::TestBackwardCompatibility::test_new_fields_never_produce_errors"
+    test_provenance: "execution_derived"
+    entropy: "near-zero"
+    priority: 1
+    consequence_if_violated: "Upgrade breaks existing users."
+
+constraint_satisfiability:
+  conflicts_checked: true
+  known_tensions:
+    - between: ["guessed_signoff_gating", "backward_compat_no_new_errors"]
+      resolution: "Gating is review_gate status + warnings, never errors."
+  simultaneous_satisfaction: "All four satisfiable via report-only checks."
+
+rationale:
+  decision: "ivd_review_intent structure packet + assumption_status/review_signoff schema; no server LLM."
+  reasoning: "Fix 2 closes the human-gate break at the same cost profile as Fix 1. EIF DECLARE adapted as author-set fields."
+  evidence: "Red-team break 1.2; DESIGN_FIXES Fix 2 (2026-06-17)."
+  date: "2026-06-18"
+  stakeholder: "Leo"
+
+alternatives:
+  - name: "LLM auto-classify GUESSED in MCP server"
+    rejected_because: "Breaks structure-only contract; high interpretive entropy (Rule 6)."
+    when_it_works: "Agent Rule 4 assumption challenge — author sets assumption_status."
+
+implementation:
+  current: "mcp_server/tools/review_gate.py"
+  function: "review_intent_tool"
+  version: 1
+  tests: "mcp_server/tests/unit/test_review_gate.py"
+  documentation: "templates/intent.yaml, recipes/agent-rules-ivd.yaml"
+
+verification:
+  test_cases:
+    - name: "pending_signoff"
+      description: "GUESSED without human_acknowledged → PENDING_SIGNOFF"
+      input: "intent with GUESSED constraint, incomplete signoff"
+      expected_output: "review_gate.status PENDING_SIGNOFF"
+      validates_constraint: "guessed_signoff_gating"
+
+changelog:
+  - version: 1
+    date: "2026-06-18"
+    change: "Fix 2 MVP: ivd_review_intent + assumption_status/review_signoff schema."
+    reason: "Red-team human gate remediation."

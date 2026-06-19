@@ -1,7 +1,7 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 28 tools.
+IVD MCP Tool Registry — registration and dispatch for all 29 tools.
 
   - 15 core tools (Intent, Implementation, Verification phases)
   - 9  judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
@@ -31,6 +31,7 @@ from mcp_server.tools import (
     list_recipes_tool,
     load_template_tool,
     validate_artifact_tool,
+    review_intent_tool,
     init_project_tool,
     scaffold_artifact_tool,
     find_artifacts_tool,
@@ -62,7 +63,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 28 IVD MCP tools (15 core + 9 judgment-phase + 4 Canon-phase, IVD v3.1)."""
+    """Return all 29 IVD MCP tools (16 core + 9 judgment-phase + 4 Canon-phase, IVD v3.1)."""
     return [
         Tool(
             name="ivd_get_context",
@@ -94,6 +95,13 @@ def get_all_tools() -> List[Tool]:
             inputSchema={"type": "object", "properties": {
                 "artifact_yaml": {"type": "string", "description": "YAML content of the artifact to validate"},
                 "artifact_type": {"type": "string", "description": "Type of artifact", "enum": ["intent", "recipe", "workflow", "baseline", "ledger_entry", "comparison_pair", "pattern"], "default": "intent"},
+            }, "required": ["artifact_yaml"]},
+        ),
+        Tool(
+            name="ivd_review_intent",
+            description="Build a human review gate packet for an intent (Fix 2). Ranks constraints by risk, surfaces verification.test_cases as worked examples, lists GUESSED constraints pending sign-off. Structure-only — does not auto-approve.",
+            inputSchema={"type": "object", "properties": {
+                "artifact_yaml": {"type": "string", "description": "YAML content of the intent artifact"},
             }, "required": ["artifact_yaml"]},
         ),
         Tool(
@@ -340,6 +348,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_load_template": lambda template_type, **_: load_template_tool(template_type),
     "ivd_list_recipes": lambda **_: list_recipes_tool(),
     "ivd_validate": lambda artifact_yaml, artifact_type="intent", **_: validate_artifact_tool(artifact_yaml, artifact_type),
+    "ivd_review_intent": lambda artifact_yaml, **_: review_intent_tool(artifact_yaml),
     "ivd_init": lambda project_root, auto_fill=True, **_: init_project_tool(project_root, auto_fill),
     "ivd_scaffold": lambda level, name, module_path=None, coordinator_path=None, project_root=None, **_: scaffold_artifact_tool(level, name, module_path, coordinator_path, project_root),
     "ivd_find_artifacts": lambda scope="all", project_root=None, **_: find_artifacts_tool(scope, project_root),

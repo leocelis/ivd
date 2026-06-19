@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.7
+# Version: 1.8
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.7"
+  version: "1.8"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -247,6 +247,23 @@ agent_rules_block:
       returns what the function returns" is not verification).
     `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE
     and missing/non-executable tests as UNVERIFIED (verification_gating block).
+    `ivd_review_intent` ranks constraints for human review and lists GUESSED
+    constraints pending sign-off (review_gate block).
+
+    ## IVD Rule 3b: Human Review Gate (Fix 2)
+
+    After Rule 4 stress test updates the intent (assumption_status set on each
+    constraint) and BEFORE implementing:
+
+    1. CALL `ivd_review_intent` on the intent YAML
+    2. PRESENT to the human: ranked_constraints (highest risk first) and
+       worked_examples from verification.test_cases (input → expected output)
+    3. For each entry in pending_signoffs (GUESSED constraints): obtain
+       concrete_example + counter_example + set human_acknowledged: true on disk
+    4. DO NOT implement while review_gate.status is PENDING_SIGNOFF
+
+    During Rule 4 probe 3 (assumption challenge), set assumption_status on each
+    constraint (KNOWN | ASSUMED | GUESSED). GUESSED requires review_signoff.
 
     ## IVD Rule 4: Stress-Test Intent Before Implementing
 
@@ -260,6 +277,9 @@ agent_rules_block:
        paths? Ordering dependencies?
     3. ASSUMPTION CHALLENGE: What am I assuming about the environment, data,
        dependencies, or user behavior that isn't documented in the intent?
+       Set `assumption_status` (KNOWN | ASSUMED | GUESSED) on each constraint.
+       GUESSED constraints need review_signoff (concrete_example, counter_example,
+       human_acknowledged) — see Rule 3b.
     4. CONSTRAINT SATISFIABILITY: Do any two constraints conflict? Can ALL
        constraints be satisfied simultaneously? Are critical constraints listed
        LAST (position bias — models weight later constraints more heavily;
@@ -461,7 +481,7 @@ integration:
     action: "Append IVD rules block to scan summary and next_steps"
 
   ivd_validate:
-    description: "ivd_validate checks for constraints without test fields AND gates provenance: it surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE, missing/non-executable tests as UNVERIFIED (verification_gating block), nudges execution_oracle for execution_derived, nudges a constraint_satisfiability block + joint test at 3+ constraints, and flags conflict_prone constraints missing a test or anti_pattern anchor. All report-only — never errors."
+    description: "ivd_validate checks structure and verification gating (NEEDS_EXTERNAL_ORACLE, UNVERIFIED). ivd_review_intent builds the human review packet (ranked constraints, worked examples, pending GUESSED sign-offs). Also nudges execution_oracle, constraint_satisfiability, conflict_prone. All report-only — never errors."
     relationship: "Validation ensures the intent is verifiable AND that its evidence is externally sourced; the protocol ensures the agent actually verifies and honors the provenance gate."
 
   ivd_scaffold:
@@ -555,6 +575,19 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.8"
+    date: "2026-06-18"
+    change: |
+      Fix 2 review gate. New Rule 3b: call ivd_review_intent after Rule 4, present
+      ranked_constraints + worked_examples, clear pending_signoffs before implement.
+      Rule 4 probe 3 sets assumption_status (KNOWN|ASSUMED|GUESSED). Schema:
+      review_signoff for GUESSED constraints.
+    reason: |
+      Red-team break 1.2 — weak human gate. YAML skim passes wrong intents.
+      Structure-only ivd_review_intent + author-set assumption_status (no server LLM).
+    evidence: |
+      DESIGN_FIXES Fix 2 (2026-06-17). Intent: mcp_server/intents/review_gate_intent.yaml.
+
   - version: "1.7"
     date: "2026-06-18"
     change: |

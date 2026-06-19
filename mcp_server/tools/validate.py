@@ -11,6 +11,7 @@ from termcolor import colored
 
 from judgment import VALIDATORS as JUDGMENT_VALIDATORS
 from mcp_server.tools._paths import IVD_FRAMEWORK_ROOT
+from mcp_server.tools.review_gate import validate_assumption_fields
 
 LOG = "IVD Tools"
 
@@ -276,6 +277,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
             if isinstance(constraints, list):
                 missing_test_count = 0
                 provenance_absent_count = 0
+                assumption_absent_count = 0
                 for i, c in enumerate(constraints):
                     if not isinstance(c, dict):
                         continue
@@ -336,6 +338,10 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                                 "name the common pattern and why this system requires NOT-it (Fix 4)"
                             )
 
+                    assumption_absent_count = validate_assumption_fields(
+                        cname, c, warnings, assumption_absent_count
+                    )
+
                 if missing_test_count > 0:
                     warnings.append(f"{missing_test_count}/{len(constraints)} constraints lack test fields — AI agents cannot execute the verification protocol without them. See recipes/agent-rules-ivd.yaml")
 
@@ -345,6 +351,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                         f"{provenance_absent_count}/{len(constraints)} constraints declare a test but no "
                         "'test_provenance' (human_authored | execution_derived | ai_generated). Declare it so "
                         "ivd_validate can gate AI-only evidence (Fix 1). The code-under-test must never be its own oracle."
+                    )
+
+                if assumption_absent_count > 0:
+                    suggestions.append(
+                        f"{assumption_absent_count}/{len(constraints)} constraints have no 'assumption_status' "
+                        "(KNOWN | ASSUMED | GUESSED). Declare during Rule 4 stress test so ivd_review_intent "
+                        "can rank review risk (Fix 2)."
                     )
 
                 # Fix 3: joint constraint satisfaction — individual-pass != joint-pass.
