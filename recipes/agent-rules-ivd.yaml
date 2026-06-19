@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.9
+# Version: 1.10
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.9"
+  version: "1.10"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -179,10 +179,13 @@ agent_rules_block:
             Example groups: input validation | core logic / output | performance |
             error handling | security
          b. IMPLEMENT one segment ONLY — do NOT single-pass the full intent
-         c. RE-READ the intent constraints for that segment from disk
+         c. Before implementing any constraint with conflict_prone: true, inject
+            its anti_pattern text into the active implementation context (Fix 4 —
+            the common-pattern-vs-NOT-it anchor must be in the prompt, not only YAML)
+         d. RE-READ the intent constraints for that segment from disk
             (not from memory — forces attention reset; counters lost-in-the-middle)
-         d. VERIFY the segment satisfies its constraints before proceeding
-         e. Repeat steps b–d for each segment
+         e. VERIFY the segment satisfies its constraints before proceeding
+         f. Repeat steps b–e for each segment
 
        Single-pass implementation against 3+ constraints violates Rule 1.
 
@@ -223,6 +226,10 @@ agent_rules_block:
        its own oracle.
        UNVERIFIED GATE: no test, prose-only test, or missing repo test file →
        report UNVERIFIED, never PASS, until an executable test clears it.
+       CONFLICT-PRONE GATE (Fix 4): conflict_prone constraints require
+       test_provenance: execution_derived + execution_oracle; inject anti_pattern
+       into implementation context. ivd_validate surfaces insufficient anchors in
+       verification_gating.conflict_prone — do not report PASS until cleared.
     4. REPORT in two sections (Fix 3 report shape):
        each_constraint_pass: for each constraint, PASS / FAIL / NEEDS_REVIEW /
        NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
@@ -257,7 +264,9 @@ agent_rules_block:
     `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE
     and missing/non-executable tests as UNVERIFIED (verification_gating block).
     For 3+ constraints it also surfaces joint_satisfaction gating when
-    joint_satisfaction_test is missing or unverified. `ivd_review_intent` ranks constraints
+    joint_satisfaction_test is missing or unverified. For conflict_prone constraints
+    it surfaces verification_gating.conflict_prone when execution_derived evidence
+    or anti_pattern anchors are missing. `ivd_review_intent` ranks constraints
     for human review and lists GUESSED constraints pending sign-off (review_gate block).
 
     ## IVD Rule 3b: Human Review Gate (Fix 2)
@@ -309,9 +318,9 @@ agent_rules_block:
        frequently ignore loaded context and fall back on the parametric prior
        exactly when the rule is unusual/familiar-but-wrong (arXiv 2409.08435;
        knowledge-conflict literature). Mark such constraints `conflict_prone: true`.
-       Each conflict_prone constraint REQUIRES (a) an executable test, ideally
-       execution_derived, and (b) an `anti_pattern` anchor that names the common
-       pattern and states why this system requires NOT-it. Context alone may lose
+       Each conflict_prone constraint REQUIRES (a) test_provenance: execution_derived
+       with an execution_oracle block, and (b) an `anti_pattern` anchor injected
+       into the implementation prompt (not YAML storage alone). Context alone may lose
        to the prior; the anti-pattern anchor and a hard test are the backstop.
 
     If gaps are found, update the intent (add constraints, test paths, or
@@ -495,7 +504,7 @@ integration:
     action: "Append IVD rules block to scan summary and next_steps"
 
   ivd_validate:
-    description: "ivd_validate checks structure and verification gating (NEEDS_EXTERNAL_ORACLE, UNVERIFIED). ivd_review_intent builds the human review packet (ranked constraints, worked examples, pending GUESSED sign-offs). Also nudges execution_oracle, constraint_satisfiability, conflict_prone. All report-only — never errors."
+    description: "ivd_validate checks structure and verification gating (NEEDS_EXTERNAL_ORACLE, UNVERIFIED, joint_satisfaction, conflict_prone). ivd_review_intent builds the human review packet (ranked constraints, worked examples, pending GUESSED sign-offs). Also nudges execution_oracle, constraint_satisfiability. All report-only — never errors."
     relationship: "Validation ensures the intent is verifiable AND that its evidence is externally sourced; the protocol ensures the agent actually verifies and honors the provenance gate."
 
   ivd_scaffold:
@@ -589,6 +598,19 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.10"
+    date: "2026-06-18"
+    change: |
+      Fix 4 completion. Rule 1: inject anti_pattern into implementation context
+      for conflict_prone constraints before codegen. Rule 2/3: CONFLICT-PRONE GATE —
+      execution_derived + execution_oracle required; verification_gating.conflict_prone
+      report block. Manual flag only — auto-detect permanently rejected (Rule 6).
+    reason: |
+      Red-team break 1.4 — knowledge-conflict inversion. MVP warnings were insufficient;
+      unusual rules need execution-derived evidence and prompt-level NOT-A anchoring.
+    evidence: |
+      DESIGN_FIXES Fix 4 (2026-06-17). Intent: mcp_server/intents/conflict_prone_intent.yaml.
+
   - version: "1.9"
     date: "2026-06-18"
     change: |

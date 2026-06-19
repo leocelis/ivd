@@ -280,6 +280,16 @@ SAME output. The Post-Implementation report must include `each_constraint_pass`
 test is missing or unverified. Above **7 constraints** per intent, split into
 sub-module intents rather than packing more into one artifact.
 
+**Knowledge-conflict / `conflict_prone` (Fix 4):** when a constraint encodes
+*unusual* idiosyncratic logic the model's training prior may override, set
+`conflict_prone: true` manually during Rule 4 Probe 5 — **never auto-detected**
+by `ivd_validate`. Such constraints require `test_provenance: execution_derived`
+with an `execution_oracle`, plus an `anti_pattern` field. Before implementing,
+**inject the `anti_pattern` text into the agent's active context** (e.g. "Common
+pattern: X. This system requires NOT-X because Y.") — storing it only in YAML is
+insufficient. `ivd_validate` reports `verification_gating.conflict_prone` when
+execution-derived evidence or anchors are missing.
+
 ---
 
 ### 3b. Empirical Refinement — When Implementation Reveals New Reality

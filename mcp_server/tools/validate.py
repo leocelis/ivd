@@ -198,12 +198,57 @@ def _evaluate_joint_satisfaction_gating(
     return None
 
 
+def _evaluate_conflict_prone_gating(
+    needing_execution_derived: List[str],
+    missing_anchor: List[str],
+) -> Optional[Dict]:
+    """Fix 4 gating for manual conflict_prone constraints. Report-only."""
+    if not needing_execution_derived and not missing_anchor:
+        return None
+
+    gating: Dict = {
+        "required_report_fields": ["anti_pattern_in_implementation_prompt"],
+    }
+    if needing_execution_derived:
+        gating["constraints_needing_execution_derived"] = needing_execution_derived
+    if missing_anchor:
+        gating["constraints_missing_anchor"] = missing_anchor
+
+    if needing_execution_derived and missing_anchor:
+        gating["status"] = "MIXED"
+        gating["note"] = (
+            "conflict_prone constraints need execution_derived provenance with an "
+            "execution_oracle AND an anti_pattern anchor injected into the implementation "
+            "prompt. Context alone may lose to the model's prior (Fix 4)."
+        )
+    elif needing_execution_derived:
+        gating["status"] = "NEEDS_EXECUTION_DERIVED"
+        gating["note"] = (
+            "conflict_prone constraints require test_provenance: execution_derived and an "
+            "execution_oracle block — unusual rules cannot rely on human_authored, ai_generated, "
+            "or undeclared provenance (Fix 4)."
+        )
+    else:
+        gating["status"] = "MISSING_ANCHOR"
+        gating["note"] = (
+            "conflict_prone constraints require an executable test and an anti_pattern field "
+            "naming the common pattern and why this system requires NOT-it (Fix 4)."
+        )
+    return gating
+
+
 def _build_verification_gating(
     needs_external_oracle: list,
     constraints_unverified: list,
     joint_satisfaction: Optional[Dict] = None,
+    conflict_prone: Optional[Dict] = None,
 ) -> Optional[Dict]:
-    if not needs_external_oracle and not constraints_unverified and not joint_satisfaction:
+    if (
+        not needs_external_oracle
+        and not constraints_unverified
+        and not joint_satisfaction
+        and not conflict_prone
+    ):
         return None
 
     gating: dict = {}
@@ -238,6 +283,9 @@ def _build_verification_gating(
 
     if joint_satisfaction:
         gating["joint_satisfaction"] = joint_satisfaction
+
+    if conflict_prone:
+        gating["conflict_prone"] = conflict_prone
 
     return gating
 
@@ -284,6 +332,8 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     # Fix 1 (completion): missing / non-executable / absent test file → UNVERIFIED.
     constraints_unverified = []
     constraint_count = 0
+    conflict_prone_needing_execution_derived: List[str] = []
+    conflict_prone_missing_anchor: List[str] = []
     framework_root = IVD_FRAMEWORK_ROOT
 
     # Allowed test provenance tiers (signal hierarchy: ground-truth > proxy > self).
@@ -421,16 +471,40 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                     # model's prior may ignore) need an executable test AND an
                     # anti-pattern anchor. Manual flag — no auto-detection.
                     if c.get("conflict_prone") is True:
+                        anchor_missing = False
                         if "test" not in c:
+                            anchor_missing = True
                             warnings.append(
                                 f"Constraint '{cname}' is conflict_prone but has no 'test' — "
                                 "conflict-prone constraints require an executable test (Fix 4)"
                             )
                         if not c.get("anti_pattern"):
+                            anchor_missing = True
                             warnings.append(
                                 f"Constraint '{cname}' is conflict_prone but has no 'anti_pattern' anchor — "
                                 "name the common pattern and why this system requires NOT-it (Fix 4)"
                             )
+                        if anchor_missing:
+                            conflict_prone_missing_anchor.append(cname)
+
+                        prov = c.get("test_provenance")
+                        needs_execution_derived = (
+                            prov != "execution_derived"
+                            or (prov == "execution_derived" and "execution_oracle" not in c)
+                        )
+                        if needs_execution_derived:
+                            conflict_prone_needing_execution_derived.append(cname)
+                            if prov is None:
+                                warnings.append(
+                                    f"Constraint '{cname}' is conflict_prone but has no test_provenance — "
+                                    "declare execution_derived with execution_oracle (Fix 4)"
+                                )
+                            elif prov != "execution_derived":
+                                warnings.append(
+                                    f"Constraint '{cname}' is conflict_prone but test_provenance is "
+                                    f"'{prov}' — conflict-prone constraints require execution_derived "
+                                    "with execution_oracle (Fix 4)"
+                                )
 
                     assumption_absent_count = validate_assumption_fields(
                         cname, c, warnings, assumption_absent_count
@@ -619,14 +693,22 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
 
-    # Fix 1 + Fix 3: verification gating reports. Structure-only — does NOT affect valid.
+    # Fix 1 + Fix 3 + Fix 4: verification gating reports. Structure-only — does NOT affect valid.
     joint_gating = None
+    conflict_gating = None
     if artifact_type == "intent":
         joint_gating = _evaluate_joint_satisfaction_gating(
             constraint_count, artifact, framework_root
         )
+        conflict_gating = _evaluate_conflict_prone_gating(
+            conflict_prone_needing_execution_derived,
+            conflict_prone_missing_anchor,
+        )
     gating = _build_verification_gating(
-        needs_external_oracle, constraints_unverified, joint_gating
+        needs_external_oracle,
+        constraints_unverified,
+        joint_gating,
+        conflict_gating,
     )
     if gating:
         result["verification_gating"] = gating

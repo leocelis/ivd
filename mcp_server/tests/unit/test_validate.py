@@ -255,6 +255,11 @@ class TestExecutionOracle:
 class TestConflictProne:
     """Fix 4 (red-team remediation): conflict_prone constraints need anchoring."""
 
+    _EXEC_DERIVED = (
+        "    test_provenance: execution_derived\n"
+        "    execution_oracle:\n      type: property_test\n      property: invariant\n"
+    )
+
     def test_conflict_prone_requires_antipattern(self):
         yaml_str = _intent_with(
             "constraints:\n"
@@ -263,16 +268,20 @@ class TestConflictProne:
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert any("anti_pattern" in w for w in result["warnings"])
+        cp = result["verification_gating"]["conflict_prone"]
+        assert cp["status"] in ("MIXED", "MISSING_ANCHOR", "NEEDS_EXECUTION_DERIVED")
 
-    def test_conflict_prone_with_anchor_passes(self):
+    def test_conflict_prone_with_full_anchor_no_gating(self):
         yaml_str = _intent_with(
             "constraints:\n"
             "  - name: weird_rule\n    requirement: x\n    test: t.py::t\n"
             "    conflict_prone: true\n"
             "    anti_pattern: 'common pattern is A; this needs NOT-A because reasons'\n"
+            + self._EXEC_DERIVED
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert not any("anti_pattern" in w for w in result["warnings"])
+        assert "conflict_prone" not in result.get("verification_gating", {})
 
     def test_conflict_prone_without_test_warns(self):
         yaml_str = _intent_with(
@@ -283,6 +292,52 @@ class TestConflictProne:
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert any("conflict_prone" in w and "test" in w for w in result["warnings"])
+        assert "weird_rule" in result["verification_gating"]["conflict_prone"]["constraints_missing_anchor"]
+
+    def test_conflict_prone_without_execution_derived_gates(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: weird_rule\n    requirement: x\n    test: t.py::t\n"
+            "    test_provenance: human_authored\n"
+            "    conflict_prone: true\n"
+            "    anti_pattern: 'common pattern is A; this needs NOT-A'\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        cp = result["verification_gating"]["conflict_prone"]
+        assert cp["status"] == "NEEDS_EXECUTION_DERIVED"
+        assert "weird_rule" in cp["constraints_needing_execution_derived"]
+
+    def test_conflict_prone_execution_derived_with_oracle_no_gating(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: weird_rule\n    requirement: x\n    test: t.py::t\n"
+            "    conflict_prone: true\n"
+            "    anti_pattern: 'common pattern is A; this needs NOT-A'\n"
+            + self._EXEC_DERIVED
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "conflict_prone" not in result.get("verification_gating", {})
+
+    def test_non_conflict_prone_never_gates(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: normal\n    requirement: x\n    test: t.py::t\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "conflict_prone" not in result.get("verification_gating", {})
+
+    def test_conflict_prone_ai_generated_hits_both_gates(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: weird_rule\n    requirement: x\n    test: t.py::t\n"
+            "    test_provenance: ai_generated\n"
+            "    conflict_prone: true\n"
+            "    anti_pattern: 'common pattern is A; this needs NOT-A'\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        gating = result["verification_gating"]
+        assert "weird_rule" in gating["constraints_needing_external_oracle"]
+        assert gating["conflict_prone"]["status"] == "NEEDS_EXECUTION_DERIVED"
 
 
 class TestJointSatisfaction:

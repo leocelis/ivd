@@ -653,8 +653,10 @@ constraints:
     #   expected: tests/fixtures/output.json
     # conflict_prone (Fix 4): set true when this rule is UNUSUAL for the domain —
     # the model's training prior may ignore the loaded context and fall back on the
-    # common pattern (knowledge-conflict inversion). Conflict-prone constraints
-    # REQUIRE an executable test + an anti_pattern anchor below.
+    # common pattern (knowledge-conflict inversion). Manual author-set flag ONLY —
+    # ivd_validate never auto-detects conflict_prone (Rule 6 / high entropy).
+    # REQUIRE: test_provenance: execution_derived + execution_oracle + anti_pattern.
+    # Agent MUST inject anti_pattern into the implementation prompt before codegen.
     conflict_prone: false                     # optional; manual flag, no auto-detection
     anti_pattern: "The common pattern is A; this system requires NOT-A because …"  # required when conflict_prone: true
     # assumption_status (Fix 2 — EIF DECLARE borrow, author-set): how well-sourced is this constraint?

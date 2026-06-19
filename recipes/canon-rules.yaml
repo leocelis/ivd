@@ -20,6 +20,7 @@ recipe:
   version: "1.0"
   category: "agent_patterns"
   status: "canonical"
+  complexity: "low"
   created: "2026-04-23"
 
   description: |

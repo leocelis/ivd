@@ -197,6 +197,19 @@ For **creative, narrative, and documentary artifacts** — decompose into the lo
 
 **The key insight for non-code artifacts:** Constraints that feel "creative" are often decomposable into near-zero-entropy sub-constraints. "Write a compelling story" is pure entropy. "1,400 words, three scenes, first person, present tense, melancholic protagonist, no dialogue in final scene" is six near-zero or low-qualitative constraints. The CS4 benchmark (2024) demonstrated this directly: increasing prompt constraint specificity measurably improves creative output quality and reduces reliance on parametric averaging.
 
+#### Knowledge-Conflict and `conflict_prone` Constraints (Fix 4)
+
+Some constraints encode **idiosyncratic business logic** that contradicts the model's typical training prior. Research on knowledge conflict (arXiv 2409.08435) shows models often ignore loaded context and fall back on the parametric prior exactly when the rule is unusual — IVD's value proposition and its weak spot.
+
+**Manual flag only:** set `conflict_prone: true` on a constraint during the Rule 4 stress test when the rule is unusual for the domain. `ivd_validate` **never auto-detects** conflict-prone constraints — detecting "conflicts with the model's prior" is high interpretive entropy (Rule 6).
+
+**Requirements when `conflict_prone: true`:**
+- `test_provenance: execution_derived` with an `execution_oracle` block (golden fixture, property test, or differential test)
+- `anti_pattern` naming the common pattern and why this system requires **NOT-it**
+- **Prompt injection:** before implementing, the agent must inject the `anti_pattern` text into the active implementation context — YAML storage alone is insufficient
+
+`ivd_validate` emits `verification_gating.conflict_prone` when execution-derived evidence or anchors are missing (report-only; never an error).
+
 #### Constraint Satisfiability: The Multi-Constraint Problem
 
 A critical failure mode that IVD's original constraint model did not address: **constraints can conflict, and LLMs fail disproportionately when all constraints must be satisfied simultaneously.**
