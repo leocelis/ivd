@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/ivd_capture_gating.py",
+        "matcher": "ivd_validate|ivd_review_intent"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/ivd_stop_gating.py",
+        "loop_limit": 5
+      }
+    ]
+  }
+}

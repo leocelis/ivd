@@ -133,7 +133,7 @@ def _seed_entries(
                 "proposed_fix": f"fix for {cause}",
                 "fix_action_type": "prompt_patch",
             },
-            "leo_domain_depth": "expert",
+            "domain_depth": "expert",
         })
         save = _j(judgment_save_codified_tool(
             entry_id=entry_id,
@@ -226,7 +226,7 @@ class TestFullLoop:
                 "proposed_fix": "add guard at top of handler",
                 "fix_action_type": "prompt_patch",
             },
-            "leo_domain_depth": "expert",
+            "domain_depth": "expert",
         })
         save = _j(judgment_save_codified_tool(
             entry_id=cap["entry_id"],

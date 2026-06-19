@@ -197,7 +197,7 @@ For **creative, narrative, and documentary artifacts** — decompose into the lo
 
 **The key insight for non-code artifacts:** Constraints that feel "creative" are often decomposable into near-zero-entropy sub-constraints. "Write a compelling story" is pure entropy. "1,400 words, three scenes, first person, present tense, melancholic protagonist, no dialogue in final scene" is six near-zero or low-qualitative constraints. The CS4 benchmark (2024) demonstrated this directly: increasing prompt constraint specificity measurably improves creative output quality and reduces reliance on parametric averaging.
 
-#### Knowledge-Conflict and `conflict_prone` Constraints (Fix 4)
+#### Knowledge-Conflict and `conflict_prone` Constraints
 
 Some constraints encode **idiosyncratic business logic** that contradicts the model's typical training prior. Research on knowledge conflict (arXiv 2409.08435) shows models often ignore loaded context and fall back on the parametric prior exactly when the rule is unusual — IVD's value proposition and its weak spot.
 
@@ -209,6 +209,18 @@ Some constraints encode **idiosyncratic business logic** that contradicts the mo
 - **Prompt injection:** before implementing, the agent must inject the `anti_pattern` text into the active implementation context — YAML storage alone is insufficient
 
 `ivd_validate` emits `verification_gating.conflict_prone` when execution-derived evidence or anchors are missing (report-only; never an error).
+
+#### Agent-loop enforcement (client_enforcement)
+
+`ivd_validate` and `ivd_review_intent` emit an optional top-level `client_enforcement` block when implementation must not be marked complete:
+
+- `implementation_complete_blocked: true` — external monitors or IDE hooks should treat this as a hard stop
+- `active_gates` — machine-readable gate ids (e.g. `UNVERIFIED`, `joint_satisfaction:MISSING_JOINT_TEST`, `PENDING_SIGNOFF`)
+- `monitoring_event` — `verification_gating_active` or `review_gate_pending_signoff`
+
+This is report-only on the server — same as `verification_gating`. Clients (Cursor hooks, CI scripts, custom agent loops) consume the signal. Re-run `ivd_validate` after clearing conditions; when gating is absent, `client_enforcement` is omitted.
+
+**Opt-in test runner:** `ivd_run_constraint_tests` runs allowlisted pytest nodes from the intent when `IVD_TEST_RUNNER_ENABLED=true` (default false on public MCP servers). It never runs inside `ivd_validate`.
 
 #### Constraint Satisfiability: The Multi-Constraint Problem
 
@@ -1939,7 +1951,7 @@ find agent/reviewer/ -name "*_reviewer_intent.yaml"
 ```
 
 **Why variants exist:**
-- Multiple personas (Erik reviewer vs Sarah reviewer)
+- Multiple personas (reviewer A vs reviewer B)
 - Configuration variants (strict vs lenient)
 - Experimental vs production intents
 
@@ -2523,11 +2535,11 @@ corrections.
 
 ### Expert Intuition Principle
 
-Pattern confidence is weighted by `leo_domain_depth` (the practitioner's
+Pattern confidence is weighted by `domain_depth` (the practitioner's
 self-rated depth in the domain): **expert 1.0 / practitioner 0.7 / adjacent
-0.4 / novice 0.2**. AI reviewers (e.g. Erik in ADA) are **structural
+0.4 / novice 0.2**. AI reviewer agents are **structural
 conformance checkers**, not quality judges — their corrections enter as
-`source: runtime` and are not weighted by `leo_domain_depth`. This separation
+`source: runtime` and are not weighted by `domain_depth`. This separation
 is what lets the loop amplify weak expert signals into reliable patterns
 without diluting them with structural noise.
 
@@ -3262,5 +3274,5 @@ It acknowledges that in the AI Agents era, **the AI builds, writes, and verifies
 
 **Version:** 3.1  
 **Status:** Production Ready  
-**Maintained by:** Leo Celis  
+**Maintained by:** IVD maintainers  
 **Key Insight:** The AI writes the intent, implements against it (constraint-segmented for 3+ constraints), verifies, and compounds judgment from real-world corrections — eliminating many-turns and hallucinations.

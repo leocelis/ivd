@@ -93,7 +93,7 @@ class TestValidateArtifact:
 
 
 class TestExternalOracleGating:
-    """Fix 1 (red-team remediation): test_provenance gating of constraint PASS."""
+    """External-oracle gating: test_provenance gates constraint PASS."""
 
     def test_ai_generated_flagged_needs_oracle(self):
         """A constraint whose only evidence is an AI-generated test is reported
@@ -145,7 +145,7 @@ class TestExternalOracleGating:
 
 
 class TestUnverifiedGating:
-    """Fix 1 completion: UNVERIFIED constraints in verification_gating."""
+    """UNVERIFIED gating for missing or non-executable tests."""
 
     def test_missing_test_is_unverified(self):
         yaml_str = _intent_with(
@@ -208,7 +208,7 @@ class TestUnverifiedGating:
 
 
 class TestExecutionOracle:
-    """Fix 1 completion: execution_oracle schema validation."""
+    """execution_oracle schema validation."""
 
     def test_execution_derived_without_oracle_warns(self):
         yaml_str = _intent_with(
@@ -253,7 +253,7 @@ class TestExecutionOracle:
 
 
 class TestConflictProne:
-    """Fix 4 (red-team remediation): conflict_prone constraints need anchoring."""
+    """Conflict-prone gating for unusual domain rules."""
 
     _EXEC_DERIVED = (
         "    test_provenance: execution_derived\n"
@@ -341,7 +341,7 @@ class TestConflictProne:
 
 
 class TestJointSatisfaction:
-    """Fix 3 (red-team remediation): individual-pass != joint-pass."""
+    """Joint satisfaction gating for 3+ constraints."""
 
     _THREE_CONSTRAINTS = (
         "constraints:\n"

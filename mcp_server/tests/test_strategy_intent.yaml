@@ -154,7 +154,7 @@ rationale:
 
   evidence: "Current state: zero tests. mcp_server_intent.yaml verification section lists manual smoke testing only."
   date: "2026-02-07"
-  stakeholder: "Leo Celis"
+  stakeholder: "IVD framework maintainer"
 
 # ==============================================================================
 # ALTERNATIVES

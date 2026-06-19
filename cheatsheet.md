@@ -365,7 +365,7 @@ Tool:   ivd_load_recipe(recipe_name="agent-rules-ivd")
 | `proposed_fix` | Specific, actionable |
 | `fix_action_type` | `prompt_patch` / `intent_revision` / `capability_addition` / `domain_reassessment` |
 
-### Pattern Confidence Weighting (`leo_domain_depth`)
+### Pattern Confidence Weighting (`domain_depth`)
 
 | Depth | Weight | Meaning |
 |---|---|---|
@@ -374,7 +374,7 @@ Tool:   ivd_load_recipe(recipe_name="agent-rules-ivd")
 | adjacent | 0.4 | Fluent but not authoritative |
 | novice | 0.2 | Spots obvious wrongs only |
 
-AI reviewers (Erik, etc.) enter as `source: runtime` — **not** weighted by `leo_domain_depth`. They're structural conformance checkers, not quality judges.
+AI reviewers enter as `source: runtime` — **not** weighted by `domain_depth`. They're structural conformance checkers, not quality judges.
 
 ### Pattern Freshness
 

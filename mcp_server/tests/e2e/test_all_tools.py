@@ -389,7 +389,7 @@ class TestSearch:
 
 
 # ---------------------------------------------------------------------------
-# Meta: all registered tools respond without crashing (28 = 15 core + 9 judgment + 4 Canon)
+# Meta: all registered tools respond without crashing (30 = 16 core + 9 judgment + 4 Canon + 1 opt-in)
 # ---------------------------------------------------------------------------
 
 class TestAllToolsRespond:
@@ -418,13 +418,12 @@ class TestAllToolsRespond:
         assert len(result) > 0, f"{tool_name} returned empty string"
 
     def test_core_tools_covered(self):
-        """Verify this file still covers all 15 core tools.
+        """Verify this file still covers core smoke tools.
 
-        The judgment-phase tools (8) and Canon tools (4) have dedicated
+        The judgment-phase tools (9) and Canon tools (4) have dedicated
         suites — see e.g. mcp_server/tests/unit/test_canon.py for Canon.
         """
         registered = {t.name for t in get_all_tools()}
-        # The 15 core tools tested in parametrized + individual classes above.
         core_tested = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
@@ -435,14 +434,11 @@ class TestAllToolsRespond:
         }
         missing = core_tested - registered
         assert not missing, f"Core tools no longer registered: {missing}"
-        # Sanity: registry has expanded since the 15-core era — confirm both
-        # families (judgment + canon) are now present so we notice if either
-        # silently disappears.
         canon_tools = {n for n in registered if n.startswith("canon_")}
         assert len(canon_tools) == 4, f"Expected 4 canon_* tools, got {sorted(canon_tools)}"
         judgment_tools = {n for n in registered if n.startswith("ivd_judgment_")}
         assert len(judgment_tools) == 9, f"Expected 9 ivd_judgment_* tools, got {sorted(judgment_tools)}"
-        assert len(registered) == 28, (
-            f"Expected 28 tools total (15 core + 9 judgment + 4 Canon); "
+        assert len(registered) == 30, (
+            f"Expected 30 tools total (16 core + 9 judgment + 4 Canon + 1 opt-in); "
             f"registry now reports {len(registered)}"
         )

@@ -271,7 +271,7 @@ own. Declare `execution_oracle` when using `execution_derived` provenance
 (golden fixture, property test, or differential test). A green test is only as
 external as its author; the code-under-test must never be its own oracle.
 
-**Joint satisfaction (Fix 3 — 3+ constraints):** individual constraint tests can
+**Joint satisfaction (3+ constraints):** individual constraint tests can
 all pass while inter-constraint violations remain. Add `constraint_satisfiability`
 with `joint_satisfaction_test` — one pytest path asserting ALL constraints on the
 SAME output. The Post-Implementation report must include `each_constraint_pass`
@@ -280,7 +280,7 @@ SAME output. The Post-Implementation report must include `each_constraint_pass`
 test is missing or unverified. Above **7 constraints** per intent, split into
 sub-module intents rather than packing more into one artifact.
 
-**Knowledge-conflict / `conflict_prone` (Fix 4):** when a constraint encodes
+**Knowledge-conflict / `conflict_prone`:** when a constraint encodes
 *unusual* idiosyncratic logic the model's training prior may override, set
 `conflict_prone: true` manually during Rule 4 Probe 5 — **never auto-detected**
 by `ivd_validate`. Such constraints require `test_provenance: execution_derived`
@@ -289,6 +289,14 @@ with an `execution_oracle`, plus an `anti_pattern` field. Before implementing,
 pattern: X. This system requires NOT-X because Y.") — storing it only in YAML is
 insufficient. `ivd_validate` reports `verification_gating.conflict_prone` when
 execution-derived evidence or anchors are missing.
+
+**Agent-loop enforcement:** When gating or pending review sign-off blocks completion,
+`ivd_validate` / `ivd_review_intent` include `client_enforcement` with
+`implementation_complete_blocked: true` and `active_gates`. IDE hooks or custom
+monitors can enforce this at agent stop. Clear by fixing the intent and re-validating.
+
+**Opt-in test runner:** Call `ivd_run_constraint_tests` in local/CI when
+`IVD_TEST_RUNNER_ENABLED=true` to run pytest nodes declared in the intent only.
 
 ---
 
@@ -362,7 +370,7 @@ After the system ships, **reality answers back** — corrections from real-world
 Capture (raw, < 30s)
   → Codify (5 fields)
   → (optional) Pair (comparison_pair, Pearl Rung-1)
-  → Cluster into Patterns (3+ entries, weighted by leo_domain_depth)
+  → Cluster into Patterns (3+ entries, weighted by domain_depth)
   → Recommend (build | buy | hire | partner sub-types)
   → Approve (you)
   → Apply, Inject into next runs' context
@@ -625,7 +633,7 @@ INTENT VERIFIED ✓
 
 **New engineer asks:** "Why is the threshold 0.70?"
 
-**Answer:** "Um... I think Sarah set it? She left last year. Check git blame maybe?"
+**Answer:** "Um... I think a former teammate set it? They left last year. Check git blame maybe?"
 
 ### After IVD
 

@@ -1,6 +1,6 @@
 # mcp_server/tools/review_gate.py
 
-"""Tool: ivd_review_intent — human review gate packet (Fix 2, structure-only)."""
+"""Tool: ivd_review_intent — human review gate packet."""
 
 import json
 import re
@@ -8,6 +8,8 @@ from typing import Dict, List, Optional
 
 import yaml
 from termcolor import colored
+
+from mcp_server.tools.client_enforcement import build_client_enforcement_from_review_gate
 
 LOG = "IVD Tools"
 
@@ -67,21 +69,21 @@ def validate_assumption_fields(
     warnings: list,
     assumption_absent_count: int,
 ) -> int:
-    """Report-only Fix 2 checks for ivd_validate. Returns updated absent count."""
+    """Report-only human review gate checks for ivd_validate. Returns updated absent count."""
     status = constraint.get("assumption_status")
     if status is None:
         return assumption_absent_count + 1
     if status not in ALLOWED_ASSUMPTION_STATUS:
         warnings.append(
             f"Constraint '{cname}' has unrecognized assumption_status '{status}' — "
-            f"use one of {', '.join(ALLOWED_ASSUMPTION_STATUS)} (Fix 2: review gate)"
+            f"use one of {', '.join(ALLOWED_ASSUMPTION_STATUS)} (human review gate)"
         )
         return assumption_absent_count
     missing = signoff_missing_fields(constraint)
     if missing:
         warnings.append(
             f"Constraint '{cname}' is GUESSED but review_signoff is incomplete — "
-            f"missing: {', '.join(missing)} (Fix 2: require example + counter-example + human_acknowledged)"
+            f"missing: {', '.join(missing)}"
         )
     return assumption_absent_count
 
@@ -174,7 +176,7 @@ def build_review_gate(artifact: dict) -> dict:
 
 
 def review_intent_tool(artifact_yaml: str) -> str:
-    """Build a human review gate packet for an intent artifact (Fix 2)."""
+    """Build a human review gate packet for an intent artifact."""
     print(colored(f"[{LOG}] ivd_review_intent", "cyan"))
 
     try:
@@ -205,6 +207,9 @@ def review_intent_tool(artifact_yaml: str) -> str:
             "explicit human sign-off on each pending GUESSED constraint before implementing."
         ),
     }
+    client_enforcement = build_client_enforcement_from_review_gate(gate)
+    if client_enforcement:
+        result["client_enforcement"] = client_enforcement
     print(colored(
         f"[{LOG}] review_gate status={gate['status']} pending={len(gate['pending_signoffs'])}",
         "green" if gate["status"] in ("READY", "APPROVED") else "yellow",

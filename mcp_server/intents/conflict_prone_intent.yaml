@@ -1,11 +1,11 @@
 # conflict_prone_intent.yaml
-# Task-Level Intent: Fix 4 — Knowledge-conflict inversion (conflict_prone flagging)
+# Task-Level Intent: Conflict-prone gating
 #
 # Co-located per IVD placement rules:
 #   mcp_server/intents/{task}_intent.yaml
 #
-# Closes red-team break 1.4: unusual/idiosyncratic rules get ignored when the
-# model's parametric prior wins over loaded context. Builds on Fix 4a warnings
+# Knowledge-conflict inversion: unusual/idiosyncratic rules get ignored when the
+# model's parametric prior wins over loaded context. Builds on conflict-prone warnings
 # in verification_oracle_gating_intent.yaml (v1.6 MVP).
 
 parent_intent: "../mcp_server_intent.yaml"
@@ -18,12 +18,12 @@ scope:
 metadata:
   feature_id: "conflict_prone"
   category: "verification"
-  tags: ["validate", "conflict_prone", "anti_pattern", "red-team", "principle-2"]
+  tags: ["validate", "conflict_prone", "anti_pattern", "principle-2"]
   status: "implemented"
   introduced_version: "1.10.0"
 
 intent:
-  summary: "Fix 4: manual conflict_prone flag + execution_derived gating + anti_pattern prompt anchor; auto-detect permanently rejected."
+  summary: "Conflict-prone gating: manual conflict_prone flag + execution_derived gating + anti_pattern prompt anchor; auto-detect permanently rejected."
   goal: |
     The v1.6 MVP warned when conflict_prone constraints lacked test or anti_pattern,
     but did not gate on execution_derived provenance — authors could mark unusual
@@ -31,7 +31,7 @@ intent:
     model's prior can still override during implementation (knowledge-conflict
     inversion, arXiv 2409.08435).
 
-    This intent completes Fix 4:
+    This intent completes conflict-prone gating:
     - conflict_prone is a MANUAL author-set flag during Rule 4 Probe 5 (never auto-detected)
     - conflict_prone constraints MUST declare test_provenance: execution_derived + execution_oracle
     - ivd_validate emits verification_gating.conflict_prone for insufficient anchors
@@ -46,7 +46,7 @@ intent:
     - ZERO regressions: report-only, legacy non-conflict_prone intents unchanged
   stakeholders:
     - "AI agents implementing idiosyncratic business rules from intent"
-    - "IVD framework maintainer (Leo)"
+    - "IVD framework maintainer"
 
 constraints:
   - name: "anti_pattern_prompt_convention"
@@ -64,7 +64,7 @@ constraints:
   - name: "auto_detect_permanently_rejected"
     requirement: |
       ivd_validate MUST NOT auto-detect or LLM-classify conflict_prone. Only an
-      explicit author-set conflict_prone: true on a constraint triggers Fix 4 checks.
+      explicit author-set conflict_prone: true on a constraint triggers conflict-prone checks.
       alternatives in this intent document the rejection; no server-side semantic
       'unusual for domain' detector is added.
     test: "mcp_server/tests/unit/test_validate.py::TestConflictProne::test_non_conflict_prone_never_gates"
@@ -104,7 +104,7 @@ constraint_satisfiability:
     - between: ["conflict_prone_execution_derived_gating", "verification_oracle_gating MVP"]
       resolution: |
         A conflict_prone constraint with ai_generated also appears in
-        constraints_needing_external_oracle (Fix 1). Both sub-blocks may appear;
+        constraints_needing_external_oracle. Both sub-blocks may appear;
         agent must clear both before PASS.
     - between: ["conflict_prone_execution_derived_gating", "backward_compat_no_new_errors"]
       resolution: "Gating is report-only; valid stays True."
@@ -118,9 +118,9 @@ rationale:
     Authors who know their domain mark conflict_prone during stress test. Those
     constraints need harder evidence (execution_derived oracle) and explicit NOT-A
     anchoring in the implementation prompt, not just YAML storage.
-  evidence: "Red-team Fix 4 (2026-06-17); arXiv 2409.08435 (knowledge conflict)."
+  evidence: "IVD verification hardening — conflict-prone gating (2026-06); arXiv 2409.08435 (knowledge conflict)."
   date: "2026-06-18"
-  stakeholder: "Leo"
+  stakeholder: "IVD framework maintainer"
 
 alternatives:
   - name: "Auto-detect conflict_prone via LLM in ivd_validate"
@@ -158,5 +158,5 @@ verification:
 changelog:
   - version: 1
     date: "2026-06-18"
-    change: "Fix 4 completion: execution_derived gating, anti_pattern convention, auto-detect rejection."
-    reason: "Red-team remediation — protect idiosyncratic rules from knowledge-conflict inversion."
+    change: "Conflict-prone gating completion: execution_derived gating, anti_pattern convention, auto-detect rejection."
+    reason: "Protect idiosyncratic rules from knowledge-conflict inversion."

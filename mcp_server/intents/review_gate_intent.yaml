@@ -1,5 +1,5 @@
 # review_gate_intent.yaml
-# Task-Level Intent: Human Review Gate (Fix 2)
+# Task-Level Intent: Human Review Gate
 #
 # Co-located: mcp_server/intents/review_gate_intent.yaml
 
@@ -13,27 +13,27 @@ scope:
 metadata:
   feature_id: "review_gate"
   category: "verification"
-  tags: ["review", "human-gate", "red-team", "fix-2"]
+  tags: ["review", "human-gate", "principle-6"]
   status: "implemented"
   introduced_version: "1.8.0"
 
 intent:
   summary: "Strengthen P6 step 3: rank constraints by risk, force GUESSED sign-off with example + counter-example, render worked examples — structure-only review packet."
   goal: |
-    Close red-team break 1.2 (weak human gate): YAML looks authoritative while wrong.
+    Close the weak human gate: YAML looks authoritative while wrong assumptions slip through.
     ivd_review_intent emits a review_gate packet (ranked constraints, worked examples,
     pending_signoffs). ivd_validate nudges incomplete GUESSED sign-offs. Agent rules
     forbid implementation while status is PENDING_SIGNOFF.
 
     ARCHITECTURE: structure-only MCP tool — no LLM in the server. assumption_status
-    is author-set (EIF DECLARE vocabulary), not auto-classified (Rule 6).
+    is author-set (declarative vocabulary), not auto-classified (Rule 6).
   success_metric: |
     - GUESSED constraints without complete review_signoff appear in pending_signoffs.
     - ranked_constraints sorted by risk_score descending.
     - verification.test_cases surfaced as worked_examples.
     - Report-only validate warnings; never errors on legacy intents.
   stakeholders:
-    - "Human reviewers (Leo)"
+    - "Human reviewers"
     - "AI agents running IVD P6 workflow"
 
 constraints:
@@ -86,10 +86,10 @@ constraint_satisfiability:
 
 rationale:
   decision: "ivd_review_intent structure packet + assumption_status/review_signoff schema; no server LLM."
-  reasoning: "Fix 2 closes the human-gate break at the same cost profile as Fix 1. EIF DECLARE adapted as author-set fields."
-  evidence: "Red-team break 1.2; DESIGN_FIXES Fix 2 (2026-06-17)."
+  reasoning: "Structure-only review packet at same cost profile as provenance gating. Author-set assumption_status fields."
+  evidence: "IVD verification hardening — human review gate (2026-06)."
   date: "2026-06-18"
-  stakeholder: "Leo"
+  stakeholder: "IVD framework maintainer"
 
 alternatives:
   - name: "LLM auto-classify GUESSED in MCP server"
@@ -114,5 +114,5 @@ verification:
 changelog:
   - version: 1
     date: "2026-06-18"
-    change: "Fix 2 MVP: ivd_review_intent + assumption_status/review_signoff schema."
-    reason: "Red-team human gate remediation."
+    change: "Human review gate MVP: ivd_review_intent + assumption_status/review_signoff schema."
+    reason: "Human review gate for weak YAML skim passes."

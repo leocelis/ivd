@@ -134,6 +134,7 @@ def get_context_tool() -> str:
             "Use ivd_scaffold to create new intents (auto-links parent_intent)",
             "Use ivd_propose_inversions to brainstorm inversions (Principle 8)",
             "Use ivd_validate to check artifact compliance",
+            "Use ivd_run_constraint_tests in local/CI when IVD_TEST_RUNNER_ENABLED=true (opt-in; public servers default disabled)",
             "(v3.0) When real-world corrections start recurring: ivd_judgment_init to enable the Judgment phase, then ivd_judgment_capture / codify / detect_patterns / inject_context",
         ],
     }

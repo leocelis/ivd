@@ -1,12 +1,12 @@
 # external_oracle_unverified_intent.yaml
-# Task-Level Intent: Fix 1 completion — UNVERIFIED gating + execution_oracle schema
+# Task-Level Intent: External-oracle gating (UNVERIFIED)
 #
 # Co-located per IVD placement rules:
 #   mcp_server/intents/{task}_intent.yaml
 #
 # Builds on verification_oracle_gating_intent.yaml (v1.6 MVP: test_provenance +
-# NEEDS_EXTERNAL_ORACLE). This intent closes the remaining Fix 1 gaps from the
-# red-team remediation design without adding a server-side test runner.
+# NEEDS_EXTERNAL_ORACLE). Closes remaining external-oracle gating gaps without a server-side
+# test runner inside ivd_validate.
 
 parent_intent: "../mcp_server_intent.yaml"
 
@@ -18,7 +18,7 @@ scope:
 metadata:
   feature_id: "external_oracle_unverified"
   category: "verification"
-  tags: ["validate", "provenance", "unverified", "execution_oracle", "red-team", "principle-2"]
+  tags: ["validate", "provenance", "unverified", "execution_oracle", "principle-2"]
   status: "implemented"
   introduced_version: "1.7.0"
 
@@ -27,7 +27,7 @@ metadata:
 # ==============================================================================
 
 intent:
-  summary: "Complete Fix 1: gate constraints with missing or non-executable tests as UNVERIFIED; add execution_oracle schema for golden/property oracles; keep ivd_validate structure-only."
+  summary: "Complete external-oracle gating: gate constraints with missing or non-executable tests as UNVERIFIED; add execution_oracle schema for golden/property oracles; keep ivd_validate structure-only."
   goal: |
     The v1.6 MVP gated ai_generated-only evidence as NEEDS_EXTERNAL_ORACLE but left
     two bypasses open: (1) constraints with no test or prose-only "tests" could still
@@ -48,7 +48,7 @@ intent:
     - ZERO regressions: report-only gating, legacy intents stay valid:true.
   stakeholders:
     - "AI agents running the IVD verification protocol"
-    - "IVD framework maintainer (Leo)"
+    - "IVD framework maintainer"
 
 # ==============================================================================
 # CONSTRAINTS — most critical LAST
@@ -122,9 +122,9 @@ rationale:
     Signal hierarchy: ground-truth (golden fixture) > proxy (human test) > self-critique
     (ai_generated). v1.6 handled ai_generated. UNVERIFIED closes the no-test bypass.
     execution_oracle gives execution_derived a structural anchor without executing code.
-  evidence: "Red-team Fix 1 design (2026-06-17); arXiv 2511.21382 (LLM test circularity)."
+  evidence: "IVD verification hardening — external-oracle (2026-06); arXiv 2511.21382 (LLM test circularity)."
   date: "2026-06-18"
-  stakeholder: "Leo"
+  stakeholder: "IVD framework maintainer"
 
 alternatives:
   - name: "ivd_validate runs tests in sandbox"
@@ -155,5 +155,5 @@ verification:
 changelog:
   - version: 1
     date: "2026-06-18"
-    change: "Fix 1 completion: UNVERIFIED gating + execution_oracle schema."
-    reason: "Red-team remediation — close no-test and self-oracle bypasses."
+    change: "External-oracle gating completion: UNVERIFIED gating + execution_oracle schema."
+    reason: "Close no-test and self-oracle bypasses."

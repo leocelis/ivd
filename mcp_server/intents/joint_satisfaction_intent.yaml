@@ -1,12 +1,11 @@
 # joint_satisfaction_intent.yaml
-# Task-Level Intent: Fix 3 — Joint constraint satisfaction + constraint budget
+# Task-Level Intent: Joint satisfaction gating
 #
 # Co-located per IVD placement rules:
 #   mcp_server/intents/{task}_intent.yaml
 #
-# Closes red-team break 1.3 (constraint-density abandonment): models pass
-# constraints individually but violate them jointly. ivd_validate stays
-# structure_only — the agent runs joint_satisfaction_test in Rule 2.
+# Constraint-density abandonment: models pass constraints individually but violate jointly.
+# ivd_validate stays structure_only — the agent runs joint_satisfaction_test in Rule 2.
 
 parent_intent: "../mcp_server_intent.yaml"
 
@@ -18,12 +17,12 @@ scope:
 metadata:
   feature_id: "joint_satisfaction"
   category: "verification"
-  tags: ["validate", "joint_satisfaction", "constraint_budget", "red-team", "principle-6"]
+  tags: ["validate", "joint_satisfaction", "constraint_budget", "principle-6"]
   status: "implemented"
   introduced_version: "1.9.0"
 
 intent:
-  summary: "Fix 3: gate 3+ constraint intents on joint_satisfaction_test + constraint budget; agent report distinguishes each_constraint_pass vs joint_satisfaction_pass."
+  summary: "Joint satisfaction gating: gate 3+ constraint intents on joint_satisfaction_test + constraint budget; agent report distinguishes each_constraint_pass vs joint_satisfaction_pass."
   goal: |
     The v1.6 MVP nudged authors to add constraint_satisfiability for 3+ constraints
     but did not structurally require joint_satisfaction_test or surface joint gating
@@ -47,7 +46,7 @@ intent:
     - ZERO regressions: report-only, legacy intents stay valid:true
   stakeholders:
     - "AI agents running the IVD verification protocol"
-    - "IVD framework maintainer (Leo)"
+    - "IVD framework maintainer"
 
 constraints:
   - name: "constraint_budget_warning"
@@ -111,9 +110,9 @@ rationale:
     inter-constraint conflicts on the same output. Budget constant prevents packing
     too many constraints into one artifact (IFScale degradation). Server gates structure;
     agent runs tests and reports joint_satisfaction_pass.
-  evidence: "Red-team Fix 3 design (2026-06-17); UltraBench 2025; CMU 2025."
+  evidence: "IVD verification hardening — joint satisfaction (2026-06-17); UltraBench 2025; CMU 2025."
   date: "2026-06-18"
-  stakeholder: "Leo"
+  stakeholder: "IVD framework maintainer"
 
 alternatives:
   - name: "Make missing joint test a validator error"
@@ -144,5 +143,5 @@ verification:
 changelog:
   - version: 1
     date: "2026-06-18"
-    change: "Fix 3: joint_satisfaction_test, constraint budget, verification_gating.joint_satisfaction."
-    reason: "Red-team remediation — close constraint-density abandonment gap."
+    change: "Joint satisfaction gating: joint_satisfaction_test, constraint budget, verification_gating.joint_satisfaction."
+    reason: "Close constraint-density abandonment under joint violation."

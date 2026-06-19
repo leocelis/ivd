@@ -4,15 +4,13 @@
 # Co-located per IVD placement rules:
 #   mcp_server/intents/{task}_intent.yaml  (task-level intent for the module)
 #
-# Origin: Internal red-team remediation of IVD's core verification claim (2026-06-17).
+# Origin: IVD verification hardening (2026-06).
 #
-# Implements (scoped per the in-depth review):
-#   Fix 1 — test_provenance + ai_generated PASS-gating  (MVP, highest leverage)
-#   Fix 3 — joint-satisfaction nudge for 3+ constraints
-#   Fix 4 — conflict_prone flag + anti-pattern anchoring (manual flag; NO auto-detection)
-# Deferred: Fix 2 review-gate UX (human is the backstop there). The "worked
-#   examples" sub-part is folded in via the verification.test_cases convention,
-#   which already exists in the template.
+# Implements:
+#   External-oracle gating — test_provenance + ai_generated PASS-gating
+#   Human review gate — ivd_review_intent (ivd_review_intent; separate intent)
+#   Joint satisfaction — nudge for 3+ constraints
+#   Conflict-prone — manual flag + anti-pattern flag + anti-pattern anchoring (manual flag; NO auto-detection)
 
 parent_intent: "../mcp_server_intent.yaml"
 
@@ -24,7 +22,7 @@ scope:
 metadata:
   feature_id: "verification_oracle_gating"
   category: "verification"
-  tags: ["validate", "provenance", "red-team", "principle-2"]
+  tags: ["validate", "provenance", "principle-2"]
   status: "implemented"
   introduced_version: "1.6.0"
 
@@ -35,8 +33,7 @@ metadata:
 intent:
   summary: "Gate constraint PASS on external-oracle evidence: a constraint backed only by an AI-generated test can never be auto-marked PASS by ivd_validate; surface it as NEEDS_EXTERNAL_ORACLE."
   goal: |
-    Close the circular-self-verification hole identified by the red-team pass:
-    when the same AI writes the intent, the test, AND runs the test, a wrong
+    Close the circular-self-verification hole: when the same AI writes the intent, the test, AND runs the test, a wrong
     intent verifies green. The break is real and research-backed — LLM-written
     tests are frequently invalid (pass rates often <50%; incorrect assertions
     cause >85% of failures in some benchmarks: arXiv 2511.21382, 2305.00418),
@@ -60,8 +57,7 @@ intent:
       all new checks emit warnings/notes only, never errors.
   stakeholders:
     - "AI agents running the IVD verification protocol"
-    - "IVD framework maintainer (Leo)"
-    - "Anyone trusting an IVD 'PASS' to mean real verification"
+    - "IVD framework maintainer"
 
 # ==============================================================================
 # CONSTRAINTS
@@ -102,7 +98,7 @@ constraints:
     anti_pattern: "The common pattern is to treat any green test as proof. This system requires NOT-that: an AI-authored test alone is low-trust and cannot clear a constraint — the code-under-test must never be its own oracle."
     entropy: "near-zero"
     priority: 2
-    consequence_if_violated: "The exact circular-self-verification hole the red-team found stays open — a wrong intent verifies green."
+    consequence_if_violated: "The circular-self-verification hole stays open — a wrong intent verifies green."
 
   - name: "backward_compat_no_new_errors"
     requirement: "Every new check emits warnings/notes only; none add to the errors list. A previously-valid intent (no new fields) stays valid:true with zero errors."
@@ -138,16 +134,13 @@ constraint_satisfiability:
 rationale:
   decision: "Add provenance-based PASS-gating to ivd_validate (structure-only, no test execution) + agent-rule enforcement; defer a test runner."
   reasoning: |
-    The in-depth review found all four red-team topics are DOCUMENTED in the
-    framework but ENFORCED nowhere in code (ivd_validate is structure_only; no
-    tool executes or analyzes semantics). The cheapest, highest-leverage fix is
-    the provenance gate: a schema field + a gating rule, no sandbox. It delivers
-    ~80% of Fix 1's value at ~20% of the build and makes Fix 3/Fix 4(a) cheap
-    follow-ons. Auto-detecting "conflict with the model's prior" was rejected as
-    itself high-entropy/unreliable (Rule 6) — conflict_prone is a manual flag.
-  evidence: "Internal red-team remediation analysis (2026-06-17); arXiv 2511.21382, 2305.00418 (LLM test validity), 2409.08435 (knowledge conflict)."
+    ivd_validate is structure_only; test execution belongs in the agent loop or CI.
+    The provenance gate adds a schema field + gating signal without a sandbox.
+    Auto-detecting "conflict with the model's prior" was rejected as high-entropy
+    (Rule 6) — conflict_prone is a manual author-set flag.
+  evidence: "IVD verification hardening (2026-06); arXiv 2511.21382, 2305.00418 (LLM test validity), 2409.08435 (knowledge conflict)."
   date: "2026-06-17"
-  stakeholder: "Leo"
+  stakeholder: "IVD framework maintainer"
 
 # ==============================================================================
 # ALTERNATIVES
@@ -207,4 +200,4 @@ changelog:
   - version: 1
     date: "2026-06-17"
     change: "Initial intent: external-oracle gating, joint-satisfaction nudge, conflict_prone flag."
-    reason: "Red-team remediation Fix 1/3/4 (scoped)."
+    reason: "IVD verification hardening bundle (2026-06)."

@@ -4,7 +4,7 @@ recipe:
   version: "1.2"
   created: "2026-01-23"
   updated: "2026-01-26"
-  author: "Leo Celis / AI Assistant"
+  author: "IVD Project / AI Assistant"
   
   master_intent_alignment:
     supports_intent: "ivd_system_intent.yaml"

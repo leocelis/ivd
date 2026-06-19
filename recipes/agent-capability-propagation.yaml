@@ -301,4 +301,4 @@ changelog:
   - version: "1.0"
     date: "2026-02-09"
     change: "Initial recipe for agent capability propagation pattern — bottom-up routing surface updates when agent capabilities change"
-    reason: "Gap identified: framework had top-down intent propagation (coordinator → agents) but no pattern for bottom-up capability propagation (agent changes → coordinator routing surface). Building blocks existed (interface, roles, P6 multi-agent) but connective tissue was missing."
+    reason: "Issue identified: framework had top-down intent propagation (coordinator → agents) but no pattern for bottom-up capability propagation (agent changes → coordinator routing surface). Building blocks existed (interface, roles, P6 multi-agent) but connective tissue was missing."

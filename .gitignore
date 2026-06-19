@@ -12,6 +12,7 @@ venv/
 .pytest_cache/
 mcp_server/logs/*.log
 mcp_server/logs/*.log.*
+mcp_server/mcp_server/
 
 # ── OS & IDE ─────────────────────────────────────────────────────────────────
 .DS_Store
@@ -26,3 +27,4 @@ Thumbs.db
 gitleaks-report.json
 secrets.txt
 canon/validation/results/
+.ivd/

@@ -1,6 +1,6 @@
 # mcp_server/tests/unit/test_review_gate.py
 
-"""Unit tests for ivd_review_intent (Fix 2) and validate assumption_status nudges."""
+"""Unit tests for ivd_review_intent (human review gate)."""
 
 import json
 

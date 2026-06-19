@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "judgment"
   created: "2026-03-21"
-  author: "Leo Celis"
+  author: "IVD Project"
 
   description: |
     Pattern for converting an emergent Judgment-phase pattern into an
@@ -44,7 +44,7 @@ recipe:
   when_NOT_to_use:
     - "Single-occurrence corrections (no pattern yet)"
     - "Stale or expired patterns (re-validate before acting)"
-    - "Patterns whose members all have leo_domain_depth in {adjacent, novice} without external corroboration"
+    - "Patterns whose members all have domain_depth in {adjacent, novice} without external corroboration"
 
 # ------------------------------------------------------------------------------
 # WORKFLOW
@@ -231,4 +231,4 @@ changelog:
     date: "2026-03-21"
     change: "Initial recipe"
     reason: "Define the canonical pattern-to-recommendation distillation workflow with you as the approval gate"
-    author: "Leo Celis"
+    author: "IVD Project"

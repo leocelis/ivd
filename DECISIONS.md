@@ -373,7 +373,7 @@ One GitHub issue thread injects confirmed empirical knowledge into the contextua
 **Date:** 2026-02-09
 **Status:** Accepted — Canonical Extension
 
-**Gap identified:**
+**Issue identified:**
 Post-implementation audits against intent artifacts consistently surface missed requirements, even when the AI agent explicitly read and acknowledged all constraints before starting. The user-reported pattern: "when you ask to compare [output] with the intent and find gaps, always something comes up." The problem persists across model generations and enforcement hook counts (documented in production in anthropics/claude-code GitHub).
 
 **Evidence base:**
@@ -428,9 +428,9 @@ Introduce **Constraint-Segmented Implementation** as a canonical protocol:
 
 **Date:** 2026-03-21  
 **Status:** Fixed (Canonical, IVD v3.0)  
-**Identified by:** Leo Celis (architectural pivot during JFL design)  
+**Identified by:** IVD maintainers (architectural pivot during JFL design)  
 
-**Gap:** The Judgment Feedback Loop (JFL) — the structured way to capture, codify, cluster, and inject corrections back into agent context — was originally drafted as a standalone framework essay. The deployment question (standalone CLI? Cursor-only rule? separate `@leocelis/judgment-mcp` package? plugin?) had no good answer because JFL only matters once a project already has structured intent — i.e., once IVD is in use. Splitting it from IVD forced users to learn two systems, install two MCPs, and reason about two vocabularies for the same workflow.
+**Gap:** The Judgment Feedback Loop (JFL) — the structured way to capture, codify, cluster, and inject corrections back into agent context — was originally drafted as a standalone framework essay. The deployment question (standalone CLI? Cursor-only rule? separate judgment MCP package? plugin?) had no good answer because JFL only matters once a project already has structured intent — i.e., once IVD is in use. Splitting it from IVD forced users to learn two systems, install two MCPs, and reason about two vocabularies for the same workflow.
 
 **Analysis:**
 - **Cognitive cost:** A separate MCP doubles the install surface (two `mcp.json` entries, two version trains, two doc sets) for the same audience.
@@ -611,7 +611,7 @@ infrastructure (DigitalOcean + OpenAI); (3) scope and conditions of marketing cl
 (4) deployer responsibilities under EU AI Act, GDPR, CCPA/CPRA, and Colorado SB 24-205;
 (5) the architectural limitation that the hosted server cannot access local filesystems;
 (6) Judgment phase data handling risks (PII, retention, profiling). Gaps 1–6 in
-`_private/research/legal_risk_mapping.md` all required a public-facing disclosure.
+internal compliance review (FDR-024) all required a public-facing disclosure.
 
 **Analysis:** The absence of any legal notice constitutes a potential unfair practice under
 FTC Act § 5 (15 U.S.C. § 45) for the failure to disclose material facts about the hosted

@@ -250,7 +250,7 @@ def judgment_init_tool(
 def judgment_capture_tool(
     raw_correction: str,
     domain: str,
-    source: str = "leo_intuition",
+    source: str = "author_intuition",
     correction_type: str = "regression",
     project_root_arg: Optional[str] = None,
     agent: Optional[str] = None,
@@ -357,7 +357,7 @@ If you choose `capability_addition`, ALSO set `capability_subtype` to one of:
   build | buy | hire | partner
 
 Optionally set:
-  leo_domain_depth: expert | practitioner | adjacent | novice
+  domain_depth: expert | practitioner | adjacent | novice
 
 Then call `ivd_judgment_save_codified` with:
   entry_id: "{entry_id}"
@@ -435,10 +435,14 @@ def judgment_save_codified_tool(
 
     if "codified" in parsed and isinstance(parsed["codified"], dict):
         codified = parsed["codified"]
-        leo_depth = parsed.get("leo_domain_depth")
+        depth_val = parsed.get("domain_depth") or parsed.get("leo_domain_depth")
     else:
         codified = parsed
-        leo_depth = parsed.pop("leo_domain_depth", None) if isinstance(parsed, dict) else None
+        depth_val = None
+        if isinstance(parsed, dict):
+            depth_val = parsed.pop("domain_depth", None) or parsed.pop(
+                "leo_domain_depth", None
+            )
 
     missing = [f for f in REQUIRED_CODIFIED_FIELDS if not codified.get(f)]
     errors: List[str] = []
@@ -470,8 +474,8 @@ def judgment_save_codified_tool(
     raw_payload = read_yaml(raw_path) or {}
     raw_payload["state"] = "codified"
     raw_payload["codified"] = codified
-    if leo_depth in DEPTH_WEIGHT:
-        raw_payload["leo_domain_depth"] = leo_depth
+    if depth_val in DEPTH_WEIGHT:
+        raw_payload["domain_depth"] = depth_val
     raw_payload.setdefault("changelog", []).append({"date": _today(), "change": "codified"})
 
     target = store.ledger_path("codified", entry_id)
@@ -742,7 +746,7 @@ def judgment_propose_recommendation_tool(
                     "version": "0.1",
                     "category": "judgment",
                     "created": today,
-                    "author": "Leo Celis",
+                    "author": "IVD Project",
                 },
                 "description": (
                     f"Generated from IVD Judgment pattern `{pattern_id}` "
@@ -812,7 +816,7 @@ def judgment_propose_recommendation_tool(
         "fix_action_type": fix_action,
         "capability_subtype": capability_subtype,
         "draft_recipe_yaml": draft_recipe_yaml,
-        "awaiting": "leo_approval",
+        "awaiting": "user_approval",
     }
     return json.dumps(result, indent=2)
 

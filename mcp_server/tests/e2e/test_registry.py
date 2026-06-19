@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 28 tools are registered (15 core + 9 judgment + 4 canon)
+- All 30 tools are registered (16 core + 9 judgment + 4 canon + 1 opt-in test runner)
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -13,7 +13,7 @@ import json
 
 from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 
-EXPECTED_TOOL_COUNT = 28
+EXPECTED_TOOL_COUNT = 30
 
 
 class TestToolRegistry:
@@ -33,7 +33,9 @@ class TestToolRegistry:
         names = {t.name for t in tools}
         core = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
-            "ivd_list_recipes", "ivd_validate", "ivd_init", "ivd_scaffold",
+            "ivd_list_recipes", "ivd_validate", "ivd_review_intent",
+            "ivd_run_constraint_tests",
+            "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
             "ivd_assess_coverage",
             "ivd_propose_inversions", "ivd_discover_goal", "ivd_teach_concept",

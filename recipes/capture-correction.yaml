@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "judgment"
   created: "2026-03-21"
-  author: "Leo Celis"
+  author: "IVD Project"
 
   description: |
     Standard pattern for capturing a single correction or observation into
@@ -32,7 +32,7 @@ recipe:
     - "Domain expert spots an AI output that 'feels wrong'"
     - "Audience signal indicates a regression (downvote, low engagement, complaint)"
     - "Runtime exception or test failure traceable to an intent assumption"
-    - "Reviewer (e.g. Erik in ADA) flags structural non-conformance"
+    - "Reviewer (e.g. an AI reviewer agent) flags structural non-conformance"
 
   when_to_use:
     - "You can articulate what was wrong even if you can't yet articulate why"
@@ -57,8 +57,8 @@ workflow_pattern:
       inputs:
         - "raw_correction (free text — what was wrong, what was expected)"
         - "domain (must match a baseline.yaml domain)"
-        - "source (leo | audience | runtime | comparison)"
-        - "leo_domain_depth (expert | practitioner | adjacent | novice)"
+        - "source (author_intuition | audience | runtime | peer_review | automated_test)"
+        - "domain_depth (expert | practitioner | adjacent | novice)"
         - "originated_from_tool (optional — the tool/recipe that produced the artifact)"
       output: "ledger entry in state 'raw' under .judgment/ledger/"
       duration: "< 30 seconds"
@@ -115,7 +115,7 @@ best_practices:
     why: "Raw capture must take < 30s or capture rate collapses. Codify is where structure happens."
     example: "Use a Cursor keystroke or chat slash-command to invoke ivd_judgment_capture during review."
 
-  - practice: "Always set leo_domain_depth honestly"
+  - practice: "Always set domain_depth honestly"
     why: "Patterns are weighted by depth. Adjacent / novice corrections are recorded but down-weighted."
     example: "Tone in narrative writing = expert. Latency tuning of vector DB = adjacent."
 
@@ -156,4 +156,4 @@ changelog:
     date: "2026-03-21"
     change: "Initial recipe"
     reason: "Codify the capture-then-codify flow as the canonical Judgment-phase entry point"
-    author: "Leo Celis"
+    author: "IVD Project"

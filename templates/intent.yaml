@@ -630,7 +630,7 @@ constraints:
   - name: "constraint_id"
     requirement: "metric >= threshold (near-zero) OR qualitative with measurable proxy (low-qualitative)"
     test: "path/to/test.py::test_name OR human review checklist"
-    # test_provenance (Fix 1 — external-oracle gating): WHO authored the test that
+    # test_provenance: WHO authored the test that
     # clears this constraint. A green test is only as external as its author.
     #   human_authored    — a person wrote the assertion (ground-truth signal)
     #   execution_derived — a golden output, property test, or differential test
@@ -641,7 +641,7 @@ constraints:
     #                       constraint PASS; ivd_validate reports NEEDS_EXTERNAL_ORACLE.
     # Rule: never let the implementation-under-test be its own oracle.
     test_provenance: "human_authored | execution_derived | ai_generated"  # recommended
-    # execution_oracle (Fix 1 — ground-truth anchor): declare WHEN test_provenance is
+    # execution_oracle: declare WHEN test_provenance is
     # execution_derived OR the constraint exercises data/transform behaviour. Never let
     # the implementation-under-test be its own oracle.
     #   golden_fixture    — path + expected files (independent ground truth)
@@ -651,7 +651,7 @@ constraints:
     #   type: golden_fixture
     #   path: tests/fixtures/input.json
     #   expected: tests/fixtures/output.json
-    # conflict_prone (Fix 4): set true when this rule is UNUSUAL for the domain —
+    # conflict_prone: set true when this rule is UNUSUAL for the domain —
     # the model's training prior may ignore the loaded context and fall back on the
     # common pattern (knowledge-conflict inversion). Manual author-set flag ONLY —
     # ivd_validate never auto-detects conflict_prone (Rule 6 / high entropy).
@@ -659,12 +659,12 @@ constraints:
     # Agent MUST inject anti_pattern into the implementation prompt before codegen.
     conflict_prone: false                     # optional; manual flag, no auto-detection
     anti_pattern: "The common pattern is A; this system requires NOT-A because …"  # required when conflict_prone: true
-    # assumption_status (Fix 2 — EIF DECLARE borrow, author-set): how well-sourced is this constraint?
+    # assumption_status: how well-sourced is this constraint?
     #   KNOWN   — directly verified / human-specified ground truth
     #   ASSUMED — plausible but not directly verified
     #   GUESSED — specific claim with weak sourcing — REQUIRES review_signoff below
     assumption_status: "KNOWN | ASSUMED | GUESSED"  # recommended
-    # review_signoff (Fix 2): required when assumption_status is GUESSED
+    # review_signoff: required when assumption_status is GUESSED
     # review_signoff:
     #   concrete_example: "For input X, output is exactly Y"
     #   counter_example: "If we assumed wrong, we'd see Z instead"
@@ -684,7 +684,7 @@ constraints:
 #     - between: ["constraint_a", "constraint_b"]
 #       resolution: "When they conflict, do X (e.g., reduce Y before reducing Z)"
 #   simultaneous_satisfaction: "All satisfiable given known tensions resolved above"
-#   # Fix 3 — joint satisfaction: individual-pass does NOT imply joint-pass.
+#   # Joint satisfaction: individual-pass does NOT imply joint-pass.
 #   # Single executable test asserting ALL constraints on the SAME output.
 #   # joint_test is a legacy alias for joint_satisfaction_test.
 #   joint_satisfaction_test: "tests/test_joint.py::test_all_constraints_on_one_output"

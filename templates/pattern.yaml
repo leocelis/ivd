@@ -52,7 +52,7 @@ fix_action_type: ""                  # prompt_patch | intent_revision | capabili
 
 members:
   - entry_id: ""
-    weight: 1.0                      # adjusted by leo_domain_depth at compute time
+    weight: 1.0                      # adjusted by domain_depth at compute time
   - entry_id: ""
   - entry_id: ""
 

@@ -390,7 +390,7 @@ changelog:
     date: "2026-01-23"
     change: "Initial recipe creation"
     reason: "Pattern used successfully in 4 projects"
-    author: "Leo Celis"
+    author: "IVD Project"
 ```
 
 **Recipe versioning ensures:**

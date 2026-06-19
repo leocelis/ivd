@@ -118,8 +118,8 @@ capture step only requires:
 
 - `raw_correction` — free text
 - `domain` — must match a baseline
-- `source` — `leo | audience | runtime | comparison`
-- `leo_domain_depth` — `expert | practitioner | adjacent | novice`
+- `source` — `author_intuition | audience | runtime | peer_review | automated_test`
+- `domain_depth` — `expert | practitioner | adjacent | novice`
 - `originated_from_tool` — optional, but always set when known
 
 Template: `ivd/templates/ledger-entry.yaml`
@@ -196,7 +196,7 @@ existing one.
 
 ### Confidence math
 
-Each member contributes a weight derived from `leo_domain_depth`:
+Each member contributes a weight derived from `domain_depth`:
 
 | depth | weight |
 |---|---|
@@ -359,9 +359,9 @@ domains where you have expert depth. The depth ladder:
 | adjacent | you are fluent but not authoritative | 0.4 |
 | novice | you can spot obvious wrongs only | 0.2 |
 
-Erik (and any other AI reviewer) is **not a quality judge**; they are
+Any AI reviewer is **not a quality judge**; they are
 **structural conformance checkers**. Their corrections enter the ledger as
-`source: runtime` (not `leo`) and are not weighted by `leo_domain_depth`.
+`source: runtime` (not `author_intuition`) and are not weighted by `domain_depth`.
 
 This separation matters: pattern detection works because expert depth amplifies
 weak signals into reliable ones. Treating an AI reviewer's structural complaint

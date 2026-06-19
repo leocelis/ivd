@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "infrastructure_patterns"
   created: "2026-02-08"
-  author: "Leo Celis"
+  author: "IVD Project"
 
   description: |
     Standard pattern for adding structured, JSON-line logging to any service
@@ -462,5 +462,5 @@ changelog:
       reusable across any service with a dispatch layer. Based on research:
       Twelve-Factor App (stdout), Stripe (canonical log lines), structlog
       (best practices), OpenTelemetry MCP conventions (semantic fields).
-    author: "Leo Celis"
+    author: "IVD Project"
     evidence: "Research: structlog docs, OpenTelemetry MCP semconv, Twelve-Factor App"

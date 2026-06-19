@@ -12,19 +12,20 @@ from termcolor import colored
 
 from judgment import VALIDATORS as JUDGMENT_VALIDATORS
 from mcp_server.tools._paths import IVD_FRAMEWORK_ROOT
+from mcp_server.tools.client_enforcement import build_client_enforcement_from_gating
 from mcp_server.tools.review_gate import validate_assumption_fields
 
 LOG = "IVD Tools"
 
-# Fix 1 (red-team): executable test reference must look like a pytest node id.
+# External-oracle gating: executable test reference must look like a pytest node id.
 _EXECUTABLE_TEST_RE = re.compile(r"\.py::")
 
-# Fix 1: execution_oracle types (ground-truth anchors for execution_derived provenance).
+# External-oracle gating: execution_oracle types (ground-truth anchors for execution_derived provenance).
 _ALLOWED_ORACLE_TYPES = ("golden_fixture", "property_test", "differential_test")
 _ALLOWED_PROPERTY_TESTS = ("round_trip", "invariant", "idempotent")
 _REPO_PATH_PREFIXES = ("mcp_server/", "tests/", "judgment/", "examples/")
 
-# Fix 3 (red-team): joint satisfaction + constraint density.
+# Joint satisfaction: joint satisfaction + constraint density.
 _JOINT_SATISFACTION_THRESHOLD = 3
 _CONSTRAINT_BUDGET = 7
 
@@ -74,7 +75,7 @@ def _validate_execution_oracle(
     if not isinstance(oracle, dict):
         warnings.append(
             f"Constraint '{cname}' execution_oracle must be a mapping "
-            "(Fix 1: golden_fixture | property_test | differential_test)"
+            "(golden_fixture | property_test | differential_test)"
         )
         return
 
@@ -82,7 +83,7 @@ def _validate_execution_oracle(
     if otype not in _ALLOWED_ORACLE_TYPES:
         warnings.append(
             f"Constraint '{cname}' execution_oracle.type '{otype}' unrecognized — "
-            f"use one of {', '.join(_ALLOWED_ORACLE_TYPES)} (Fix 1)"
+            f"use one of {', '.join(_ALLOWED_ORACLE_TYPES)}"
         )
         return
 
@@ -104,13 +105,13 @@ def _validate_execution_oracle(
         if prop not in _ALLOWED_PROPERTY_TESTS:
             warnings.append(
                 f"Constraint '{cname}' execution_oracle.property '{prop}' unrecognized — "
-                f"use one of {', '.join(_ALLOWED_PROPERTY_TESTS)} (Fix 1)"
+                f"use one of {', '.join(_ALLOWED_PROPERTY_TESTS)}"
             )
     elif otype == "differential_test":
         if not oracle.get("reference") and not oracle.get("path"):
             warnings.append(
                 f"Constraint '{cname}' execution_oracle (differential_test) needs "
-                "'reference' or 'path' (Fix 1)"
+                "'reference' or 'path'"
             )
         ref = oracle.get("reference") or oracle.get("path")
         if isinstance(ref, str) and _looks_like_repo_test_path(ref):
@@ -134,7 +135,7 @@ def _evaluate_joint_satisfaction_gating(
     artifact: dict,
     root: Path,
 ) -> Optional[Dict]:
-    """Fix 3 gating report for 3+ constraints. Report-only — never affects valid."""
+    """Joint satisfaction gating report for 3+ constraints. Report-only — never affects valid."""
     if constraint_count < _JOINT_SATISFACTION_THRESHOLD:
         return None
 
@@ -153,7 +154,7 @@ def _evaluate_joint_satisfaction_gating(
             "note": (
                 "3+ constraints require a constraint_satisfiability block with "
                 "joint_satisfaction_test — a single pytest path asserting ALL constraints "
-                "hold on the SAME output. Individual-pass does not imply joint-pass (Fix 3)."
+                "hold on the SAME output. Individual-pass does not imply joint-pass."
             ),
         }
 
@@ -166,7 +167,7 @@ def _evaluate_joint_satisfaction_gating(
             "note": (
                 "constraint_satisfiability exists but joint_satisfaction_test is missing. "
                 "Add one executable pytest path that asserts ALL constraints on the SAME output. "
-                "Do not report joint_satisfaction_pass until that test passes (Fix 3)."
+                "Do not report joint_satisfaction_pass until that test passes."
             ),
         }
 
@@ -179,7 +180,7 @@ def _evaluate_joint_satisfaction_gating(
             "joint_satisfaction_test": joint_test,
             "note": (
                 "joint_satisfaction_test is missing, prose-only, or its repo file was not found. "
-                "Fix the path before reporting joint_satisfaction_pass (Fix 3)."
+                "Fix the path before reporting joint_satisfaction_pass."
             ),
         }
 
@@ -202,7 +203,7 @@ def _evaluate_conflict_prone_gating(
     needing_execution_derived: List[str],
     missing_anchor: List[str],
 ) -> Optional[Dict]:
-    """Fix 4 gating for manual conflict_prone constraints. Report-only."""
+    """Conflict-prone gating for manual conflict_prone constraints. Report-only."""
     if not needing_execution_derived and not missing_anchor:
         return None
 
@@ -219,20 +220,20 @@ def _evaluate_conflict_prone_gating(
         gating["note"] = (
             "conflict_prone constraints need execution_derived provenance with an "
             "execution_oracle AND an anti_pattern anchor injected into the implementation "
-            "prompt. Context alone may lose to the model's prior (Fix 4)."
+            "prompt. Context alone may lose to the model's prior."
         )
     elif needing_execution_derived:
         gating["status"] = "NEEDS_EXECUTION_DERIVED"
         gating["note"] = (
             "conflict_prone constraints require test_provenance: execution_derived and an "
             "execution_oracle block — unusual rules cannot rely on human_authored, ai_generated, "
-            "or undeclared provenance (Fix 4)."
+            "or undeclared provenance."
         )
     else:
         gating["status"] = "MISSING_ANCHOR"
         gating["note"] = (
             "conflict_prone constraints require an executable test and an anti_pattern field "
-            "naming the common pattern and why this system requires NOT-it (Fix 4)."
+            "naming the common pattern and why this system requires NOT-it."
         )
     return gating
 
@@ -326,10 +327,10 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     errors = []
     warnings = []
     suggestions = []
-    # Fix 1 (red-team remediation): constraints whose only verification evidence
+    # External-oracle gating: constraints whose only verification evidence
     # is an AI-authored test cannot clear on their own — reported, never PASS.
     needs_external_oracle = []
-    # Fix 1 (completion): missing / non-executable / absent test file → UNVERIFIED.
+    # External-oracle gating: missing / non-executable / absent test file → UNVERIFIED.
     constraints_unverified = []
     constraint_count = 0
     conflict_prone_needing_execution_derived: List[str] = []
@@ -435,15 +436,15 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                     elif not _test_reference_executable(c.get("test")):
                         warnings.append(
                             f"Constraint '{cname}' test is not an executable pytest reference "
-                            "(expected path/to/test.py::test_name) — treat as UNVERIFIED (Fix 1)"
+                            "(expected path/to/test.py::test_name) — treat as UNVERIFIED"
                         )
                     elif _repo_file_missing(_test_file_part(c["test"]), framework_root):
                         warnings.append(
                             f"Constraint '{cname}' test file not found on disk: "
-                            f"{_test_file_part(c['test'])} (Fix 1)"
+                            f"{_test_file_part(c['test'])}"
                         )
 
-                    # Fix 1: test provenance gating (external ground-truth signal).
+                    # External-oracle gating: test provenance gating (external ground-truth signal).
                     prov = c.get("test_provenance")
                     if prov is None:
                         if "test" in c:
@@ -451,7 +452,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                     elif prov not in ALLOWED_PROVENANCE:
                         warnings.append(
                             f"Constraint '{cname}' has unrecognized test_provenance '{prov}' — "
-                            f"use one of {', '.join(ALLOWED_PROVENANCE)} (Fix 1: external-oracle gating)"
+                            f"use one of {', '.join(ALLOWED_PROVENANCE)} (external-oracle gating)"
                         )
                     elif prov == "ai_generated":
                         # An AI-authored test alone is low-trust: it confirms the
@@ -461,13 +462,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                         warnings.append(
                             f"Constraint '{cname}' declares test_provenance execution_derived but "
                             "has no execution_oracle block — add golden_fixture, property_test, or "
-                            "differential_test so the oracle is structurally anchored (Fix 1)"
+                            "differential_test so the oracle is structurally anchored"
                         )
 
                     if "execution_oracle" in c:
                         _validate_execution_oracle(cname, c["execution_oracle"], framework_root, warnings)
 
-                    # Fix 4: conflict_prone constraints (idiosyncratic rules the
+                    # Conflict-prone: conflict_prone constraints (idiosyncratic rules the
                     # model's prior may ignore) need an executable test AND an
                     # anti-pattern anchor. Manual flag — no auto-detection.
                     if c.get("conflict_prone") is True:
@@ -476,13 +477,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                             anchor_missing = True
                             warnings.append(
                                 f"Constraint '{cname}' is conflict_prone but has no 'test' — "
-                                "conflict-prone constraints require an executable test (Fix 4)"
+                                "conflict-prone constraints require an executable test"
                             )
                         if not c.get("anti_pattern"):
                             anchor_missing = True
                             warnings.append(
                                 f"Constraint '{cname}' is conflict_prone but has no 'anti_pattern' anchor — "
-                                "name the common pattern and why this system requires NOT-it (Fix 4)"
+                                "name the common pattern and why this system requires NOT-it"
                             )
                         if anchor_missing:
                             conflict_prone_missing_anchor.append(cname)
@@ -497,13 +498,13 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                             if prov is None:
                                 warnings.append(
                                     f"Constraint '{cname}' is conflict_prone but has no test_provenance — "
-                                    "declare execution_derived with execution_oracle (Fix 4)"
+                                    "declare execution_derived with execution_oracle"
                                 )
                             elif prov != "execution_derived":
                                 warnings.append(
                                     f"Constraint '{cname}' is conflict_prone but test_provenance is "
                                     f"'{prov}' — conflict-prone constraints require execution_derived "
-                                    "with execution_oracle (Fix 4)"
+                                    "with execution_oracle"
                                 )
 
                     assumption_absent_count = validate_assumption_fields(
@@ -513,58 +514,58 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                 if missing_test_count > 0:
                     warnings.append(f"{missing_test_count}/{len(constraints)} constraints lack test fields — AI agents cannot execute the verification protocol without them. See recipes/agent-rules-ivd.yaml")
 
-                # Fix 1: nudge declaring provenance so the gate can apply.
+                # External-oracle gating: nudge declaring provenance so the gate can apply.
                 if provenance_absent_count > 0:
                     suggestions.append(
                         f"{provenance_absent_count}/{len(constraints)} constraints declare a test but no "
                         "'test_provenance' (human_authored | execution_derived | ai_generated). Declare it so "
-                        "ivd_validate can gate AI-only evidence (Fix 1). The code-under-test must never be its own oracle."
+                        "ivd_validate can gate AI-only evidence. The code-under-test must never be its own oracle."
                     )
 
                 if assumption_absent_count > 0:
                     suggestions.append(
                         f"{assumption_absent_count}/{len(constraints)} constraints have no 'assumption_status' "
                         "(KNOWN | ASSUMED | GUESSED). Declare during Rule 4 stress test so ivd_review_intent "
-                        "can rank review risk (Fix 2)."
+                        "can rank review risk."
                     )
 
-                # Fix 3: joint constraint satisfaction — individual-pass != joint-pass.
+                # Joint satisfaction: joint constraint satisfaction — individual-pass != joint-pass.
                 # 3+ constraints without a satisfiability block is the density-abandonment risk.
                 if constraint_count >= _JOINT_SATISFACTION_THRESHOLD and "constraint_satisfiability" not in artifact:
                     warnings.append(
                         "3+ constraints but no 'constraint_satisfiability' block — add one (conflicts_checked, "
                         "known_tensions, simultaneous_satisfaction, joint_satisfaction_test) that asserts ALL "
-                        "constraints hold on the SAME output. Individual-pass does not imply joint-pass (UltraBench 2025; Fix 3)."
+                        "constraints hold on the SAME output. Individual-pass does not imply joint-pass (UltraBench 2025)."
                     )
 
                 if constraint_count > _CONSTRAINT_BUDGET:
                     warnings.append(
                         f"{constraint_count} constraints exceeds budget {_CONSTRAINT_BUDGET} — split into "
-                        "sub-module intents rather than packing more constraints into one artifact (Fix 3)."
+                        "sub-module intents rather than packing more constraints into one artifact."
                     )
 
-        # Fix 3: when a constraint_satisfiability block exists, check joint satisfaction fields.
+        # Joint satisfaction: when a constraint_satisfiability block exists, check joint satisfaction fields.
         if artifact_type == "intent" and "constraint_satisfiability" in artifact:
             cs = artifact["constraint_satisfiability"]
             if isinstance(cs, dict):
                 for field in ("conflicts_checked", "simultaneous_satisfaction"):
                     if field not in cs:
-                        warnings.append(f"constraint_satisfiability missing '{field}' (Fix 3: joint satisfaction)")
+                        warnings.append(f"constraint_satisfiability missing '{field}'")
                 if constraint_count >= _JOINT_SATISFACTION_THRESHOLD:
                     joint_test = _extract_joint_satisfaction_test(cs)
                     if not joint_test:
                         warnings.append(
                             "constraint_satisfiability missing 'joint_satisfaction_test' — add an executable "
-                            "pytest path asserting ALL constraints on the SAME output (Fix 3)."
+                            "pytest path asserting ALL constraints on the SAME output."
                         )
                     elif not _test_reference_executable(joint_test):
                         warnings.append(
-                            f"joint_satisfaction_test '{joint_test}' is not an executable pytest path (Fix 3)."
+                            f"joint_satisfaction_test '{joint_test}' is not an executable pytest path."
                         )
                     elif _repo_file_missing(_test_file_part(joint_test), framework_root):
                         warnings.append(
                             f"joint_satisfaction_test file not found on disk: "
-                            f"{_test_file_part(joint_test)} (Fix 3)."
+                            f"{_test_file_part(joint_test)}."
                         )
 
         # Validate interface section (optional — for agents, MCP servers, APIs, CLIs, services)
@@ -693,7 +694,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
 
-    # Fix 1 + Fix 3 + Fix 4: verification gating reports. Structure-only — does NOT affect valid.
+    # Verification gating reports: verification gating reports. Structure-only — does NOT affect valid.
     joint_gating = None
     conflict_gating = None
     if artifact_type == "intent":
@@ -712,6 +713,9 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     )
     if gating:
         result["verification_gating"] = gating
+        client_enforcement = build_client_enforcement_from_gating(gating)
+        if client_enforcement:
+            result["client_enforcement"] = client_enforcement
 
     status = "passed" if valid else "failed"
     color = "green" if valid else "red"

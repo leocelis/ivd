@@ -11,7 +11,7 @@ recipe:
   version: "1.0"
   category: "judgment"
   created: "2026-03-21"
-  author: "Leo Celis"
+  author: "IVD Project"
 
   description: |
     Pattern for capturing two real runs of the same workflow as a paired
@@ -59,7 +59,7 @@ workflow_pattern:
         - "run_a (ref + observed_outcome + inputs_summary + context_summary)"
         - "run_b (same shape)"
         - "domain (must match a baseline.yaml domain)"
-        - "leo_domain_depth"
+        - "domain_depth"
       output: "comparison_pair entry in state 'raw' under .judgment/ledger/"
 
     - step: 2
@@ -194,4 +194,4 @@ changelog:
     date: "2026-03-21"
     change: "Initial recipe"
     reason: "Establish the IVD-canonical alternative to A/B testing for low-volume creative pipelines"
-    author: "Leo Celis"
+    author: "IVD Project"

@@ -126,6 +126,19 @@ ENGINE_VERSION: str = "0.1.0"
 # Helpers (used by dataclasses' to_yaml / from_yaml round-trips)
 # ---------------------------------------------------------------------------
 
+def _resolve_domain_depth(
+    data: Dict[str, Any],
+    default: Optional[str] = None,
+) -> Optional[str]:
+    """Read domain_depth; accept legacy on-disk key for backward compatibility."""
+    val = data.get("domain_depth")
+    if val is None:
+        val = data.get("leo_domain_depth")
+    if val is None:
+        return default
+    return val
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -244,7 +257,7 @@ class LedgerEntry:
     state: str
     classification: Classification
     raw_correction: str
-    leo_domain_depth: Optional[str] = None
+    domain_depth: Optional[str] = None
     originated_from_tool: Optional[str] = None
     codified: Optional[CodifiedFields] = None
     pattern_membership: Optional[PatternMembership] = None
@@ -257,7 +270,7 @@ class LedgerEntry:
             "created": self.created,
             "state": self.state,
             "classification": self.classification.to_dict(),
-            "leo_domain_depth": self.leo_domain_depth,
+            "domain_depth": self.domain_depth,
             "originated_from_tool": self.originated_from_tool,
             "raw_correction": self.raw_correction,
             "codified": self.codified.to_dict() if self.codified else None,
@@ -277,7 +290,7 @@ class LedgerEntry:
             state=data.get("state", "raw"),
             classification=Classification.from_dict(data.get("classification")),
             raw_correction=data.get("raw_correction", ""),
-            leo_domain_depth=data.get("leo_domain_depth"),
+            domain_depth=_resolve_domain_depth(data),
             originated_from_tool=data.get("originated_from_tool"),
             codified=CodifiedFields.from_dict(data.get("codified")),
             pattern_membership=(
@@ -478,7 +491,7 @@ class Baseline:
     domain_id: str
     created: str
     updated: str
-    leo_domain_depth: str = DomainDepth.PRACTITIONER.value
+    domain_depth: str = DomainDepth.PRACTITIONER.value
     goal_calibration: Dict[str, Any] = dataclasses.field(
         default_factory=lambda: {"qualitative": "", "measurable": [], "out_of_scope": []}
     )
@@ -510,7 +523,7 @@ class Baseline:
             "created": self.created,
             "updated": self.updated,
             "version": self.version,
-            "leo_domain_depth": self.leo_domain_depth,
+            "domain_depth": self.domain_depth,
             "goal_calibration": self.goal_calibration,
             "risk_hypotheses": self.risk_hypotheses,
             "pattern_half_life_policy": self.pattern_half_life_policy,
@@ -526,7 +539,9 @@ class Baseline:
             created=data.get("created", _now_iso()),
             updated=data.get("updated", _now_iso()),
             version=data.get("version", "0.1"),
-            leo_domain_depth=data.get("leo_domain_depth", DomainDepth.PRACTITIONER.value),
+            domain_depth=_resolve_domain_depth(
+                data, default=DomainDepth.PRACTITIONER.value
+            ),
             goal_calibration=data.get("goal_calibration")
             or {"qualitative": "", "measurable": [], "out_of_scope": []},
             risk_hypotheses=list(data.get("risk_hypotheses") or []),

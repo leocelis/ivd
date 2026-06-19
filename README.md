@@ -460,4 +460,4 @@ responsibilities as a deployer under the EU AI Act, GDPR, and US law.
 
 ## License
 
-[MIT](LICENSE) · Created by [Leo Celis](https://github.com/leocelis)
+[MIT](LICENSE) · Maintained by [IVD Project](https://github.com/leocelis/ivd)

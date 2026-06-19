@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.10
+# Version: 1.11
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.10"
+  version: "1.11"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -105,13 +105,13 @@ verification_protocol:
         - Does the test path exist?
         - Can the test be run?
         - Does the implementation pass the test?
-        - PROVENANCE GATE (Fix 1): who authored the test (test_provenance)?
+        - PROVENANCE GATE: who authored the test (test_provenance)?
           An `ai_generated` test ALONE cannot clear a constraint — a green
           AI-written test tends to confirm the code/intent rather than catch it
           ("circularity of error"). Such a constraint is NEEDS_EXTERNAL_ORACLE
           until a human_authored assertion or an execution_derived oracle
           (golden output, property test, differential test) clears it.
-        - UNVERIFIED GATE (Fix 1): if the constraint has no test, a prose-only
+        - UNVERIFIED GATE: if the constraint has no test, a prose-only
           test, or a repo test file that does not exist, report UNVERIFIED — never
           PASS until an executable test with appropriate provenance clears it.
         - Never let the implementation-under-test be its own oracle.
@@ -126,12 +126,12 @@ verification_protocol:
         - For each constraint: PASS / FAIL / NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED
         - For each FAIL: what specifically doesn't match and what to fix
         - For each NEEDS_REVIEW: what a human should verify
-        - For each NEEDS_EXTERNAL_ORACLE (Fix 1): the constraint's only evidence
+        - For each NEEDS_EXTERNAL_ORACLE: the constraint's only evidence
           is an AI-authored test — name what human assertion or execution-derived
           oracle is required before it can become PASS.
-        - For each UNVERIFIED (Fix 1): missing or non-executable test — add an
+        - For each UNVERIFIED: missing or non-executable test — add an
           executable test path and declare test_provenance / execution_oracle before PASS.
-        REPORT SHAPE (Fix 3): produce two sections:
+        REPORT SHAPE: produce two sections:
         - each_constraint_pass: {constraint_name: PASS|FAIL|NEEDS_REVIEW|NEEDS_EXTERNAL_ORACLE|UNVERIFIED}
         - joint_satisfaction_pass: true|false|NEEDS_JOINT_TEST (required when 3+ constraints)
         For 3+ constraints, joint_satisfaction_pass is the gating metric — individual-pass
@@ -180,8 +180,7 @@ agent_rules_block:
             error handling | security
          b. IMPLEMENT one segment ONLY — do NOT single-pass the full intent
          c. Before implementing any constraint with conflict_prone: true, inject
-            its anti_pattern text into the active implementation context (Fix 4 —
-            the common-pattern-vs-NOT-it anchor must be in the prompt, not only YAML)
+            its anti_pattern text into the active implementation context
          d. RE-READ the intent constraints for that segment from disk
             (not from memory — forces attention reset; counters lost-in-the-middle)
          e. VERIFY the segment satisfies its constraints before proceeding
@@ -226,11 +225,15 @@ agent_rules_block:
        its own oracle.
        UNVERIFIED GATE: no test, prose-only test, or missing repo test file →
        report UNVERIFIED, never PASS, until an executable test clears it.
-       CONFLICT-PRONE GATE (Fix 4): conflict_prone constraints require
+       CONFLICT-PRONE GATE: conflict_prone constraints require
        test_provenance: execution_derived + execution_oracle; inject anti_pattern
        into implementation context. ivd_validate surfaces insufficient anchors in
        verification_gating.conflict_prone — do not report PASS until cleared.
-    4. REPORT in two sections (Fix 3 report shape):
+       OPTIONAL (local/CI): when IVD_TEST_RUNNER_ENABLED=true, call
+       ivd_run_constraint_tests to run allowlisted pytest nodes from the intent.
+       Public MCP servers keep this disabled; run pytest directly when the tool
+       returns enabled:false.
+    4. REPORT in two sections:
        each_constraint_pass: for each constraint, PASS / FAIL / NEEDS_REVIEW /
        NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
        joint_satisfaction_pass: true | false | NEEDS_JOINT_TEST — required when the
@@ -241,6 +244,12 @@ agent_rules_block:
     Do not declare implementation complete until each_constraint_pass are all PASS or
     explicitly acknowledged AND joint_satisfaction_pass is true when 3+ constraints
     (or NEEDS_JOINT_TEST is cleared by adding/running the joint test).
+
+    CLIENT ENFORCEMENT: After ivd_validate or ivd_review_intent, inspect
+    client_enforcement in the tool JSON. When implementation_complete_blocked
+    is true, do not declare implementation complete until all active_gates clear
+    and a fresh ivd_validate shows no verification_gating / client_enforcement.
+    External monitors and Cursor project hooks may enforce this at agent stop.
 
     ## IVD Rule 3: Constraint Tests Are Mandatory — and Externally Sourced
 
@@ -269,7 +278,7 @@ agent_rules_block:
     or anti_pattern anchors are missing. `ivd_review_intent` ranks constraints
     for human review and lists GUESSED constraints pending sign-off (review_gate block).
 
-    ## IVD Rule 3b: Human Review Gate (Fix 2)
+    ## IVD Rule 3b: Human Review Gate
 
     After Rule 4 stress test updates the intent (assumption_status set on each
     constraint) and BEFORE implementing:
@@ -310,9 +319,9 @@ agent_rules_block:
        constraint_satisfiability block before implementing. For 3+ constraints,
        also specify joint_satisfaction_test — a single executable pytest path that
        asserts ALL constraints hold on the SAME output (joint_test is a legacy alias).
-       Individual-pass != joint-pass (Fix 3). Above 7 constraints per intent, split
+       Individual-pass != joint-pass. Above 7 constraints per intent, split
        into sub-module intents rather than packing more constraints into one artifact.
-    5. KNOWLEDGE-CONFLICT CHECK (Fix 4): Does any constraint encode a rule that
+    5. KNOWLEDGE-CONFLICT CHECK: Does any constraint encode a rule that
        is UNUSUAL for the domain — i.e., it contradicts the model's typical
        training prior (your idiosyncratic business logic)? Research shows models
        frequently ignore loaded context and fall back on the parametric prior
@@ -322,6 +331,14 @@ agent_rules_block:
        with an execution_oracle block, and (b) an `anti_pattern` anchor injected
        into the implementation prompt (not YAML storage alone). Context alone may lose
        to the prior; the anti-pattern anchor and a hard test are the backstop.
+
+    PROPOSAL PACKET (human confirms before YAML write): When Probe 3
+    or Probe 5 recommends assumption_status or conflict_prone values, present
+    a structured recommendation to the human FIRST. Do not write flags until
+    confirmed. Include per constraint: name, proposed assumption_status and/or
+    conflict_prone: true, rationale, and proposed anti_pattern text when
+    conflict_prone. After confirmation, update the intent on disk and call
+    ivd_review_intent before implementation.
 
     If gaps are found, update the intent (add constraints, test paths, or
     clarifying notes) BEFORE implementing. For significant changes, flag
@@ -407,7 +424,7 @@ agent_rules_block:
     constraint set has 3+ constraints, add a constraint_satisfiability block
     documenting conflicts checked, known tensions, resolution strategy, and
     joint_satisfaction_test (single test for ALL constraints on the SAME output).
-    Above 7 constraints, split into sub-module intents (Fix 3 constraint budget).
+    Above 7 constraints, split into sub-module intents.
 
   clinerules_format: |
     # IVD Verification Rules
@@ -598,50 +615,65 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.11"
+    date: "2026-06-18"
+    change: |
+      Verification enforcement bundle. Rule 2: ivd_run_constraint_tests opt-in (local/CI);
+      client_enforcement contract after ivd_validate / ivd_review_intent. Rule 4:
+      PROPOSAL PACKET — agent proposes conflict_prone / assumption_status; human
+      confirms before YAML write. validate.py + review_gate.py emit client_enforcement;
+      Cursor project hooks (.cursor/hooks.json) block agent stop while gating active.
+    reason: |
+      Complete verification enforcement: canonical test runner (opt-in), human confirmation
+      for conflict_prone / assumption_status, client_enforcement signals, Cursor hooks.
+    evidence: |
+      IVD verification hardening (2026-06). Intents: run_constraint_tests_intent.yaml;
+      existing verification gating intents. ivd_validate stays structure_only.
+
   - version: "1.10"
     date: "2026-06-18"
     change: |
-      Fix 4 completion. Rule 1: inject anti_pattern into implementation context
+      Conflict-prone gating completion. Rule 1: inject anti_pattern into implementation context
       for conflict_prone constraints before codegen. Rule 2/3: CONFLICT-PRONE GATE —
       execution_derived + execution_oracle required; verification_gating.conflict_prone
       report block. Manual flag only — auto-detect permanently rejected (Rule 6).
     reason: |
-      Red-team break 1.4 — knowledge-conflict inversion. MVP warnings were insufficient;
+      Knowledge-conflict inversion risk. MVP warnings were insufficient;
       unusual rules need execution-derived evidence and prompt-level NOT-A anchoring.
     evidence: |
-      DESIGN_FIXES Fix 4 (2026-06-17). Intent: mcp_server/intents/conflict_prone_intent.yaml.
+      IVD verification hardening — conflict-prone gating (2026-06). Intent: mcp_server/intents/conflict_prone_intent.yaml.
 
   - version: "1.9"
     date: "2026-06-18"
     change: |
-      Fix 3 joint satisfaction. Rule 1: mandatory segmentation for 3+ constraints
+      Joint satisfaction. Rule 1: mandatory segmentation for 3+ constraints
       (no single-pass). Rule 2/4: two-section report (each_constraint_pass +
       joint_satisfaction_pass); latter gates when 3+ constraints. Template field
       joint_satisfaction_test in constraint_satisfiability. validate.py:
       CONSTRAINT_BUDGET=7, verification_gating.joint_satisfaction block.
     reason: |
-      Red-team break 1.3 — models pass constraints individually but violate jointly.
+      Joint constraint violation risk — models pass constraints individually but violate jointly.
       v1.6 nudge was insufficient; structural joint test + agent report shape closes gap.
     evidence: |
-      DESIGN_FIXES Fix 3 (2026-06-17). Intent: mcp_server/intents/joint_satisfaction_intent.yaml.
+      IVD verification hardening — joint satisfaction (2026-06). Intent: mcp_server/intents/joint_satisfaction_intent.yaml.
 
   - version: "1.8"
     date: "2026-06-18"
     change: |
-      Fix 2 review gate. New Rule 3b: call ivd_review_intent after Rule 4, present
+      Human review gate. New Rule 3b: call ivd_review_intent after Rule 4, present
       ranked_constraints + worked_examples, clear pending_signoffs before implement.
       Rule 4 probe 3 sets assumption_status (KNOWN|ASSUMED|GUESSED). Schema:
       review_signoff for GUESSED constraints.
     reason: |
-      Red-team break 1.2 — weak human gate. YAML skim passes wrong intents.
+      Weak human review gate — YAML skim passes wrong intents.
       Structure-only ivd_review_intent + author-set assumption_status (no server LLM).
     evidence: |
-      DESIGN_FIXES Fix 2 (2026-06-17). Intent: mcp_server/intents/review_gate_intent.yaml.
+      IVD verification hardening — human review gate (2026-06). Intent: mcp_server/intents/review_gate_intent.yaml.
 
   - version: "1.7"
     date: "2026-06-18"
     change: |
-      Fix 1 completion. Rule 2: UNVERIFIED gate — no test, prose-only test, or
+      External-oracle gating completion. Rule 2: UNVERIFIED gate — no test, prose-only test, or
       missing repo test file → never PASS. Rule 3: execution_oracle block for
       execution_derived (golden_fixture, property_test, differential_test).
       ivd_validate verification_gating now includes constraints_unverified and
@@ -649,15 +681,15 @@ changelog:
     reason: |
       v1.6 gated ai_generated-only evidence but left bypasses: constraints with
       no executable test could still be reported PASS; execution_derived had no
-      structural oracle anchor. Closes red-team Fix 1 gaps without a test runner.
+      structural oracle anchor. Closes external-oracle gating gaps without a test runner.
     evidence: |
-      Red-team Fix 1 design (2026-06-17). Intent:
+      IVD verification hardening — external-oracle gating (2026-06). Intent:
       mcp_server/intents/external_oracle_unverified_intent.yaml.
 
   - version: "1.6"
     date: "2026-06-17"
     change: |
-      Red-team remediation (Fix 1/3/4). Rule 2 step 3/4: added the PROVENANCE
+      External-oracle gating. Rule 2 step 3/4: added the PROVENANCE
       GATE — an ai_generated test alone cannot mark a constraint PASS; report
       NEEDS_EXTERNAL_ORACLE; never let the code-under-test be its own oracle.
       Rule 3 renamed "…and Externally Sourced"; added test_provenance tiers.
@@ -675,10 +707,9 @@ changelog:
       the agent instructions. Architecture preserved: validate stays structure-
       only (no test execution); the agent runs tests in the verification protocol.
     evidence: |
-      Internal red-team remediation analysis (2026-06-17); arXiv 2511.21382 &
-      2305.00418 (LLM test validity); arXiv 2409.08435 (knowledge conflict);
-      UltraBench 2025 / CMU 2025 (joint satisfaction). Intent: mcp_server/intents/
-      verification_oracle_gating_intent.yaml.
+      IVD verification hardening analysis (2026-06); arXiv 2511.21382 &
+      2305.00418 (LLM test validity); arXiv 2409.08435 (knowledge conflict).
+      Intent: mcp_server/intents/verification_oracle_gating_intent.yaml.
 
   - version: "1.5"
     date: "2026-02-09"
@@ -728,7 +759,7 @@ changelog:
     date: "2026-02-09"
     change: "Added IVD Rule 5: empirical refinement during implementation. Updated clinerules and Copilot formats."
     reason: |
-      Gap identified: when implementation reveals that the intent's assumptions don't match
+      Issue identified: when implementation reveals that the intent's assumptions don't match
       reality (API returns different format, model accuracy differs, latency exceeds limits),
       no agent rule existed to stop, update the intent, and continue from the corrected
       version. Rule 4 (stress test) anticipates gaps before implementation; Rule 5 catches
@@ -738,7 +769,7 @@ changelog:
     date: "2026-02-09"
     change: "Added IVD Rule 4: stress-test intent before implementing. Updated clinerules and Copilot formats."
     reason: |
-      Gap identified: implementation reveals gaps not covered by intent, and adversarial
+      Issue identified: implementation reveals gaps not covered by intent, and adversarial
       stress-testing of intent surfaces flaws cheaply. The P6 workflow now includes a
       stress-test step between human review and implementation. Rule 4 enforces this
       at the agent level.
@@ -747,7 +778,7 @@ changelog:
     date: "2026-02-09"
     change: "Initial recipe for IVD agent rules and post-implementation verification protocol"
     reason: |
-      Gap identified by developer: AI agent implemented from intent artifact but skipped
+      Issue identified by developer: AI agent implemented from intent artifact but skipped
       verification. Constraints existed with test paths but agent never checked them.
       Root cause: IVD Principle 4 says "continuous verification" but doesn't prescribe
       a concrete mechanism. The agent instruction file is the enforcement point, but

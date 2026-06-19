@@ -200,17 +200,19 @@ class JudgmentStore:
     def depth_for_entry(
         entry: Dict[str, Any], baseline: Optional[Dict[str, Any]]
     ) -> str:
-        """Resolve the leo_domain_depth for an entry, falling back to the baseline.
+        """Resolve the domain_depth for an entry, falling back to the baseline.
 
-        Order:  entry.leo_domain_depth → baseline.leo_domain_depth → 'practitioner'.
+        Order:  entry.domain_depth → baseline.domain_depth → 'practitioner'.
         """
         from judgment.schema import DEPTH_WEIGHT  # local to avoid cycle
 
-        depth = entry.get("leo_domain_depth")
+        depth = entry.get("domain_depth") or entry.get("leo_domain_depth")
         if depth in DEPTH_WEIGHT:
             return depth
-        if baseline and baseline.get("leo_domain_depth") in DEPTH_WEIGHT:
-            return baseline["leo_domain_depth"]
+        if baseline:
+            bdepth = baseline.get("domain_depth") or baseline.get("leo_domain_depth")
+            if bdepth in DEPTH_WEIGHT:
+                return bdepth
         return DomainDepth.PRACTITIONER.value
 
     # ----- Ledger writes ------------------------------------------------

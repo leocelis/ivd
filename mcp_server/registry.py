@@ -1,9 +1,9 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 29 tools.
+IVD MCP Tool Registry — registration and dispatch for all 30 tools.
 
-  - 15 core tools (Intent, Implementation, Verification phases)
+  - 16 core tools (Intent, Implementation, Verification phases)
   - 9  judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
                        server-level opt-out: `IVD_JUDGMENT_TOOLS_ENABLED=false`.
                        See ivd/judgment_layer.md and ivd/judgment/ engine
@@ -32,6 +32,7 @@ from mcp_server.tools import (
     load_template_tool,
     validate_artifact_tool,
     review_intent_tool,
+    run_constraint_tests_tool,
     init_project_tool,
     scaffold_artifact_tool,
     find_artifacts_tool,
@@ -63,7 +64,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 29 IVD MCP tools (16 core + 9 judgment-phase + 4 Canon-phase, IVD v3.1)."""
+    """Return all 30 IVD MCP tools (16 core + 9 judgment-phase + 4 Canon-phase + 1 opt-in test runner, IVD v3.1)."""
     return [
         Tool(
             name="ivd_get_context",
@@ -99,9 +100,18 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="ivd_review_intent",
-            description="Build a human review gate packet for an intent (Fix 2). Ranks constraints by risk, surfaces verification.test_cases as worked examples, lists GUESSED constraints pending sign-off. Structure-only — does not auto-approve.",
+            description="Build a human review gate packet for an intent (human review gate). Ranks constraints by risk, surfaces verification.test_cases as worked examples, lists GUESSED constraints pending sign-off. Structure-only — does not auto-approve.",
             inputSchema={"type": "object", "properties": {
                 "artifact_yaml": {"type": "string", "description": "YAML content of the intent artifact"},
+            }, "required": ["artifact_yaml"]},
+        ),
+        Tool(
+            name="ivd_run_constraint_tests",
+            description="Opt-in pytest runner for intent-linked tests (local/CI only). Runs ONLY pytest node ids declared in constraints[].test and constraint_satisfiability.joint_satisfaction_test. Disabled unless IVD_TEST_RUNNER_ENABLED=true. Never runs inside ivd_validate.",
+            inputSchema={"type": "object", "properties": {
+                "artifact_yaml": {"type": "string", "description": "YAML content of the intent artifact"},
+                "project_root": {"type": "string", "description": "Path to repo root where tests live (defaults to IVD framework root when omitted)."},
+                "timeout_sec": {"type": "integer", "description": "Total timeout budget in seconds (default 120).", "default": 120},
             }, "required": ["artifact_yaml"]},
         ),
         Tool(
@@ -213,7 +223,7 @@ def get_all_tools() -> List[Tool]:
             inputSchema={"type": "object", "properties": {
                 "raw_correction": {"type": "string", "description": "Raw correction text — what was wrong, paste verbatim."},
                 "domain": {"type": "string", "description": "Domain id (must match a baseline if you want depth weighting)."},
-                "source": {"type": "string", "description": "leo_intuition | audience | runtime | peer_review | automated_test", "default": "leo_intuition"},
+                "source": {"type": "string", "description": "author_intuition | audience | runtime | peer_review | automated_test", "default": "author_intuition"},
                 "correction_type": {"type": "string", "description": "regression | wrong_output | missing_feature | hallucination | other", "default": "regression"},
                 "agent": {"type": "string", "description": "Optional agent name (e.g. 'gaming_agent')."},
                 "model": {"type": "string", "description": "Optional model identifier (e.g. 'gpt-5-codex')."},
@@ -235,7 +245,7 @@ def get_all_tools() -> List[Tool]:
             description="Persist the agent-filled codified fields. Validates the 5 required fields and capability_subtype (when fix_action_type=capability_addition), then transitions the ledger entry from raw → codified. Dormant unless `.judgment/` exists. (IVD v3.0)",
             inputSchema={"type": "object", "properties": {
                 "entry_id": {"type": "string", "description": "Ledger entry id."},
-                "codified_yaml": {"type": "string", "description": "YAML containing a `codified:` block with the 5 required fields, optionally a top-level `leo_domain_depth`."},
+                "codified_yaml": {"type": "string", "description": "YAML containing a `codified:` block with the 5 required fields, optionally a top-level `domain_depth`."},
                 "project_root": {"type": "string", "description": "Optional path to repo root."},
             }, "required": ["entry_id", "codified_yaml"]},
         ),
@@ -254,7 +264,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="ivd_judgment_detect_patterns",
-            description="Cluster codified ledger entries by (domain, normalized diagnosed_cause). Promotes any cluster with 3+ members (configurable via min_members) to a pattern file under `.judgment/patterns/`. Computes weighted_confidence using leo_domain_depth and freshness using the domain baseline's pattern_half_life_days. Dormant unless `.judgment/` exists. (IVD v3.0)",
+            description="Cluster codified ledger entries by (domain, normalized diagnosed_cause). Promotes any cluster with 3+ members (configurable via min_members) to a pattern file under `.judgment/patterns/`. Computes weighted_confidence using domain_depth and freshness using the domain baseline's pattern_half_life_days. Dormant unless `.judgment/` exists. (IVD v3.0)",
             inputSchema={"type": "object", "properties": {
                 "domain": {"type": "string", "description": "Optional: limit to one domain."},
                 "min_members": {"type": "integer", "description": "Promotion threshold (default 3)."},
@@ -349,6 +359,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_list_recipes": lambda **_: list_recipes_tool(),
     "ivd_validate": lambda artifact_yaml, artifact_type="intent", **_: validate_artifact_tool(artifact_yaml, artifact_type),
     "ivd_review_intent": lambda artifact_yaml, **_: review_intent_tool(artifact_yaml),
+    "ivd_run_constraint_tests": lambda artifact_yaml, project_root=None, timeout_sec=120, **_: run_constraint_tests_tool(artifact_yaml, project_root, timeout_sec),
     "ivd_init": lambda project_root, auto_fill=True, **_: init_project_tool(project_root, auto_fill),
     "ivd_scaffold": lambda level, name, module_path=None, coordinator_path=None, project_root=None, **_: scaffold_artifact_tool(level, name, module_path, coordinator_path, project_root),
     "ivd_find_artifacts": lambda scope="all", project_root=None, **_: find_artifacts_tool(scope, project_root),
@@ -361,7 +372,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_assess_coverage": lambda project_root, depth="module", include_suggestions=True, **_: assess_coverage_tool(project_root, depth, include_suggestions),
     # Judgment phase (IVD v3.0) — opt-in via `.judgment/` folder
     "ivd_judgment_init": lambda project_root=None, domains=None, **_: judgment_init_tool(project_root, domains),
-    "ivd_judgment_capture": lambda raw_correction, domain, source="leo_intuition", correction_type="regression", agent=None, model=None, scope=None, originated_from_tool=None, project_root=None, **_: judgment_capture_tool(raw_correction, domain, source, correction_type, project_root, agent, model, scope, originated_from_tool),
+    "ivd_judgment_capture": lambda raw_correction, domain, source="author_intuition", correction_type="regression", agent=None, model=None, scope=None, originated_from_tool=None, project_root=None, **_: judgment_capture_tool(raw_correction, domain, source, correction_type, project_root, agent, model, scope, originated_from_tool),
     "ivd_judgment_codify": lambda entry_id, project_root=None, **_: judgment_codify_tool(entry_id, project_root),
     "ivd_judgment_save_codified": lambda entry_id, codified_yaml, project_root=None, **_: judgment_save_codified_tool(entry_id, codified_yaml, project_root),
     "ivd_judgment_pair": lambda domain, run_a, run_b, observed_differences, diagnostic_hypotheses, notes=None, project_root=None, **_: judgment_pair_tool(domain, run_a, run_b, observed_differences, diagnostic_hypotheses, project_root, notes),

@@ -923,8 +923,8 @@ principles:
         example: "What Works injection layer only surfaces 'corroborated' hypotheses"
         
       - name: "Expert intuition is weighted, not equal"
-        rule: "leo_domain_depth weights pattern confidence: expert 1.0, practitioner 0.7, adjacent 0.4, novice 0.2"
-        example: "AI reviewer (Erik) corrections enter as source: runtime; not weighted by leo_domain_depth"
+        rule: "domain_depth weights pattern confidence: expert 1.0, practitioner 0.7, adjacent 0.4, novice 0.2"
+        example: "AI reviewer agent corrections enter as source: runtime; not weighted by domain_depth"
         
       - name: "Patterns age; freshness is enforced"
         rule: "Patterns past 3x half_life_days are 'expired' — not injected, not promotable to recommendations"
@@ -2365,7 +2365,7 @@ changelog:
     date: "2026-02-09"
     change: "Added empirical refinement as canonical extension under Principle 3"
     reason: |
-      Gap identified: when implementation reveals that the intent's assumptions are wrong
+      Issue identified: when implementation reveals that the intent's assumptions are wrong
       (API returns different format, model accuracy differs from benchmarks, latency exceeds
       documented limits), no protocol existed for updating the intent with empirical evidence
       before continuing. This is distinct from code drift (P3 already covers code → intent sync)
@@ -2395,7 +2395,7 @@ changelog:
     date: "2026-02-09"
     change: "Added intent stress test as step 4 in P6 workflow"
     reason: |
-      Gap identified: intent written and approved, but implementation reveals gaps not
+      Issue identified: intent written and approved, but implementation reveals gaps not
       covered by any constraint. Also: adversarial stress-testing of intent before
       implementation reveals flaws cheaper than implementation does. Root cause: the P6
       workflow went directly from human review to implementation — no step to check
@@ -2411,7 +2411,7 @@ changelog:
     date: "2026-02-09"
     change: "Added post-implementation verification protocol and agent rules integration surface"
     reason: |
-      Gap identified by developer: AI agent implemented from intent artifact but skipped
+      Issue identified by developer: AI agent implemented from intent artifact but skipped
       verification step. Constraints existed with test paths but agent never checked them.
       Root cause: Principle 4 says "verify continuously" but doesn't prescribe what verification
       means at the agent level. Agent instruction files (.cursorrules) are the runtime enforcement
@@ -2426,7 +2426,7 @@ changelog:
     date: "2026-02-09"
     change: "Added interface.routing sub-field and agent-capability-propagation recipe"
     reason: |
-      Gap identified: framework had top-down intent propagation (coordinator → agents via
+      Issue identified: framework had top-down intent propagation (coordinator → agents via
       coordinator-intent-propagation recipe) but no pattern for bottom-up capability propagation
       (agent changes → coordinator routing surface). The routing surface — description strings
       the coordinator LLM reads to make routing decisions — was unverifiable. Added:

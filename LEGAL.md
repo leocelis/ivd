@@ -270,7 +270,7 @@ personal data to a third-country server.
 | OpenAI, L.L.C. | Embedding generation (`ivd_search`) | <https://openai.com/policies/data-processing-addendum/> |
 
 No signed DPA between IVD and its users currently covers these sub-processors. This is
-a known compliance gap (see legal_risk_mapping.md Gap 5 / FDR-024). Until a formal DPA
+a known compliance gap (see internal compliance review FDR-024). Until a formal DPA
 is published, enterprise and EU-based users should use self-hosted deployments for any
 work involving personal data.
 

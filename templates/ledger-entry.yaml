@@ -61,7 +61,7 @@ state: "raw"                         # REQUIRED
 
 classification:                      # REQUIRED
   type: "single_run"                 # single_run | comparison_pair
-  source: "leo"                      # leo | audience | runtime | comparison
+  source: "author_intuition"         # author_intuition | audience | runtime | peer_review | automated_test
   domain: ""                         # REQUIRED — must match a baseline domain_id
   agent: ""                          # OPTIONAL — e.g. "script-writer", "lead-qualifier"
   model: ""                          # OPTIONAL — e.g. "claude-4-opus", "gpt-5"
@@ -71,11 +71,11 @@ classification:                      # REQUIRED
 # JUDGMENT WEIGHT
 # ----------------------------------------------------------------------------
 # your depth in this domain governs how much the entry weights the pattern.
-# Filled at codify time; falls back to the domain baseline's leo_domain_depth.
-# Erik (or any AI agent reviewer) is a STRUCTURAL conformance checker, not a
+# Filled at codify time; falls back to the domain baseline's domain_depth.
+# Any AI agent reviewer is a STRUCTURAL conformance checker, not a
 # quality judge — see ivd/judgment_layer.md § "Expert Intuition Principle."
 
-leo_domain_depth: null               # null until codified; expert | practitioner | adjacent | novice
+domain_depth: null               # null until codified; expert | practitioner | adjacent | novice
 
 # ----------------------------------------------------------------------------
 # PROVENANCE — was this caused by a tool we built?

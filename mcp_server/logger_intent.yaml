@@ -206,7 +206,7 @@ rationale:
     - OpenTelemetry MCP semantic conventions: https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/
 
   date: "2026-02-08"
-  stakeholder: "Leo Celis"
+  stakeholder: "IVD framework maintainer"
 
 # ==============================================================================
 # ALTERNATIVES

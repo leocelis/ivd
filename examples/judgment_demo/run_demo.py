@@ -350,7 +350,7 @@ def capture_incident(project_root: Path, incident: Dict[str, Any], num: int) -> 
                 "proposed_fix": CANONICAL_FIX,
                 "fix_action_type": incident["fix_action_type"],
             },
-            "leo_domain_depth": incident["depth"],
+            "domain_depth": incident["depth"],
         }),
         project_root_arg=str(project_root),
     ))

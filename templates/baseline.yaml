@@ -8,7 +8,7 @@
 #
 # SCHEMA NOTE: This template matches the runtime schema used by
 # `ivd_judgment_init` (seeder) and `validate_baseline` (validator).
-# Required fields: domain_id, leo_domain_depth, goal_calibration,
+# Required fields: domain_id, domain_depth, goal_calibration,
 #                  pattern_half_life_policy
 #
 # WORKFLOW:
@@ -36,7 +36,7 @@ version: "0.1"
 # Records your self-rated depth in this domain. Used to weight ledger entries
 # captured against this domain — see judgment_layer.md § "Expert Intuition Principle."
 
-leo_domain_depth: "expert"           # REQUIRED — expert | practitioner | adjacent | novice
+domain_depth: "expert"           # REQUIRED — expert | practitioner | adjacent | novice
 depth_rationale: ""                  # one-line justification (optional but recommended)
 
 # ----------------------------------------------------------------------------

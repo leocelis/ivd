@@ -134,7 +134,7 @@ def _seed_codified(
     raw = raw_correction or f"raw {cause} #{_SEED_COUNTER['n']}"
     cap = json.loads(
         judgment_capture_tool(
-            raw_correction=raw, source="leo", domain="t",
+            raw_correction=raw, source="author_intuition", domain="t",
             project_root_arg=str(project),
         )
     )
@@ -146,7 +146,7 @@ def _seed_codified(
             "proposed_fix": fix,
             "fix_action_type": fix_action,
         },
-        "leo_domain_depth": depth,
+        "domain_depth": depth,
     }
     judgment_save_codified_tool(
         entry_id=cap["entry_id"],
@@ -230,11 +230,11 @@ class TestJudgmentTypedArtifactsRoundTrip:
             created="2026-04-24T20:00:00Z",
             state="codified",
             classification=Classification(
-                type="regression", source="leo_intuition", domain="gaming",
+                type="regression", source="author_intuition", domain="gaming",
                 agent="g", model="m", scope="s",
             ),
             raw_correction="raw text",
-            leo_domain_depth="expert",
+            domain_depth="expert",
             originated_from_tool="some_tool",
             codified=CodifiedFields(
                 expected_result="ok", detected_via="user_review",
@@ -582,7 +582,7 @@ class TestJudgmentEndToEndLoop:
         ))
         assert rec["fix_action_type"] == "prompt_patch"
         assert rec["draft_recipe_yaml"] is not None
-        assert rec["awaiting"] == "leo_approval"
+        assert rec["awaiting"] == "user_approval"
 
 
 # ===========================================================================
@@ -814,9 +814,11 @@ class TestJudgmentIVDRepoActivation:
     """Verify that the IVD framework repository itself has the Judgment phase
     activated (i.e., .judgment/ exists at the repo root).
 
-    Gap closure: the IVD repo was previously the only IVD-managed repo that
-    had *not* bootstrapped the Judgment loop — it could capture corrections
-    about client projects but not about its own engine. This class guards
+    Self-activation gate: the IVD framework repository must have the Judgment phase
+    activated (i.e., .judgment/ exists at the repo root).
+
+    The IVD repo previously had not bootstrapped the Judgment loop — it could capture
+    corrections about client projects but not about its own engine. This class guards
     against regressing that state.
 
     If this test fails it means .judgment/ was deleted from the IVD repo root.

@@ -2,7 +2,7 @@ domain_id: ivd-framework
 created: '2026-04-28T21:00:01Z'
 updated: '2026-04-28T21:00:01Z'
 version: '0.1'
-leo_domain_depth: practitioner
+domain_depth: practitioner
 goal_calibration:
   qualitative: TODO — describe what 'good' looks like in this domain
   measurable: []

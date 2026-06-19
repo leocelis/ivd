@@ -1,0 +1,117 @@
+# run_constraint_tests_intent.yaml
+# Task-Level Intent: opt-in pytest runner for intent-linked constraint tests
+#
+# Co-located per IVD placement rules:
+#   mcp_server/intents/{task}_intent.yaml
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "run_constraint_tests"
+  category: "verification"
+  tags: ["validate", "pytest", "test_runner", "principle-2"]
+  status: "implemented"
+  introduced_version: "1.11.0"
+
+# ==============================================================================
+# INTENT
+# ==============================================================================
+
+intent:
+  summary: "Add ivd_run_constraint_tests — opt-in local/CI pytest runner for intent-declared test nodes only."
+  goal: |
+    ivd_validate stays structure_only and never executes tests. Agents and CI still
+    need a canonical, allowlisted way to run constraint-linked pytest nodes without
+    inventing ad-hoc shell commands.
+
+    ivd_run_constraint_tests runs ONLY pytest node ids from constraints[].test and
+    constraint_satisfiability.joint_satisfaction_test when the repo files exist.
+    Disabled by default on public MCP servers (IVD_TEST_RUNNER_ENABLED=false).
+  success_metric: |
+    - Tool registered; returns enabled:false when opt-in env is unset.
+    - When enabled, runs allowlisted nodes only; never arbitrary paths.
+    - ivd_validate unchanged (structure_only; no subprocess test runner).
+  stakeholders:
+    - "AI agents running the IVD verification protocol"
+    - "IVD framework maintainer"
+
+# ==============================================================================
+# CONSTRAINTS — most critical LAST
+# ==============================================================================
+
+constraints:
+  - name: "opt_in_default_disabled"
+    requirement: |
+      When IVD_TEST_RUNNER_ENABLED is not true, ivd_run_constraint_tests returns
+      ok:false, enabled:false with a clear message. Public hosted servers stay
+      disabled unless explicitly configured.
+    test: "mcp_server/tests/unit/test_run_constraint_tests.py::TestOptIn::test_disabled_by_default"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 3
+    consequence_if_violated: "Public MCP server executes arbitrary project tests without operator consent."
+
+  - name: "allowlist_only_from_intent"
+    requirement: |
+      collect_test_nodes gathers pytest paths only from the parsed intent artifact.
+      Skips non-executable references and missing repo files. Hard cap of 20 nodes
+      per invocation.
+    test: "mcp_server/tests/unit/test_run_constraint_tests.py::TestAllowlist::test_collects_only_executable_nodes"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 2
+    consequence_if_violated: "Tool becomes a generic pytest launcher — security and scope violation."
+
+  - name: "validate_unchanged"
+    requirement: "ivd_validate does not import or call ivd_run_constraint_tests; structure_only contract preserved."
+    test: "mcp_server/tests/unit/test_run_constraint_tests.py::TestValidateIsolation::test_validate_has_no_runner_import"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 1
+    consequence_if_violated: "Structure validation silently becomes test execution — breaks backward compat."
+
+rationale:
+  decision: "Separate opt-in test runner tool; default disabled on public servers."
+  reasoning: |
+    Test execution belongs in the agent loop or CI, not in structure validation.
+    A registered but disabled tool gives clients a stable contract and env knob.
+  evidence: "IVD verification hardening (2026-06); Principle 2 executable tests."
+  date: "2026-06-18"
+  stakeholder: "IVD framework maintainer"
+
+alternatives:
+  - name: "Run pytest inside ivd_validate"
+    rejected_because: "Violates structure_only contract and public-server security model."
+    when_it_works: "Dedicated isolated test-runner service with sandboxing."
+
+risks:
+  - condition: "Operator enables runner on shared MCP without sandbox"
+    action: "Document IVD_TEST_RUNNER_ENABLED for local/CI only; default false."
+    monitor: "enabled:false rate on public endpoint"
+    severity: "medium"
+
+implementation:
+  current: "mcp_server/tools/run_constraint_tests.py"
+  function: "run_constraint_tests_tool"
+  version: 1
+  tests: "mcp_server/tests/unit/test_run_constraint_tests.py"
+  documentation: "recipes/agent-rules-ivd.yaml, framework.md, cookbook.md"
+
+verification:
+  test_cases:
+    - name: "disabled_payload"
+      description: "Default env returns enabled false."
+      input: "artifact with executable tests, env unset"
+      expected_output: "enabled false, ok false"
+      validates_constraint: "opt_in_default_disabled"
+
+changelog:
+  - version: 1
+    date: "2026-06-18"
+    change: "Opt-in test runner — ivd_run_constraint_tests opt-in pytest runner."
+    reason: "Canonical local/CI test execution without coupling to ivd_validate."

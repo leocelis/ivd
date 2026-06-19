@@ -33,13 +33,13 @@ FRESHNESS_STATES = tuple(f.value for f in Freshness)
 def validate_baseline(artifact: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     errors: List[str] = []
     warnings: List[str] = []
-    for f in ("domain_id", "leo_domain_depth", "goal_calibration", "pattern_half_life_policy"):
+    for f in ("domain_id", "domain_depth", "goal_calibration", "pattern_half_life_policy"):
         if f not in artifact:
             errors.append(f"baseline missing required field '{f}'")
-    depth = artifact.get("leo_domain_depth")
+    depth = artifact.get("domain_depth") or artifact.get("leo_domain_depth")
     if depth and depth not in DEPTH_WEIGHT:
         warnings.append(
-            f"baseline.leo_domain_depth '{depth}' invalid; expected {list(DEPTH_WEIGHT.keys())}"
+            f"baseline.domain_depth '{depth}' invalid; expected {list(DEPTH_WEIGHT.keys())}"
         )
     gc = artifact.get("goal_calibration") or {}
     if not gc.get("qualitative"):
@@ -74,9 +74,9 @@ def validate_ledger_entry(artifact: Dict[str, Any]) -> Tuple[List[str], List[str
                 "codified.fix_action_type=capability_addition requires capability_subtype "
                 f"∈ {list(VALID_CAPABILITY_SUBTYPES)}"
             )
-    depth = artifact.get("leo_domain_depth")
+    depth = artifact.get("domain_depth")
     if depth and depth not in DEPTH_WEIGHT:
-        warnings.append(f"leo_domain_depth '{depth}' invalid; expected {list(DEPTH_WEIGHT.keys())}")
+        warnings.append(f"domain_depth '{depth}' invalid; expected {list(DEPTH_WEIGHT.keys())}")
     return errors, warnings
 
 

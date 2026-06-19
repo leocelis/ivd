@@ -103,7 +103,7 @@ def _j(raw: str) -> Dict[str, Any]:
 
 PROJECT_DOMAINS = ["code", "security"]
 
-# Each incident is a tuple: (raw_correction, codified_fields, leo_domain_depth)
+# Each incident is a tuple: (raw_correction, codified_fields, domain_depth)
 #
 # The key design rule: ``diagnosed_cause`` is the CANONICAL ROOT-CAUSE LABEL —
 # identical across all three incidents.  The engine clusters by the slugified
@@ -235,7 +235,7 @@ class TestJwtExpiryScenario:
         ))
         save = _j(judgment_save_codified_tool(
             entry_id=cap["entry_id"],
-            codified_yaml=yaml.safe_dump({"codified": codified, "leo_domain_depth": depth}),
+            codified_yaml=yaml.safe_dump({"codified": codified, "domain_depth": depth}),
             project_root_arg=str(tmp_path),
         ))
         assert save["ok"], save
@@ -262,7 +262,7 @@ class TestJwtExpiryScenario:
             ))
             _j(judgment_save_codified_tool(
                 entry_id=cap["entry_id"],
-                codified_yaml=yaml.safe_dump({"codified": codified, "leo_domain_depth": depth}),
+                codified_yaml=yaml.safe_dump({"codified": codified, "domain_depth": depth}),
                 project_root_arg=str(tmp_path),
             ))
 
@@ -291,7 +291,7 @@ class TestJwtExpiryScenario:
             ))
             _j(judgment_save_codified_tool(
                 entry_id=cap["entry_id"],
-                codified_yaml=yaml.safe_dump({"codified": codified, "leo_domain_depth": depth}),
+                codified_yaml=yaml.safe_dump({"codified": codified, "domain_depth": depth}),
                 project_root_arg=str(project),
             ))
 
@@ -325,7 +325,7 @@ class TestJwtExpiryScenario:
 
     def test_step4_pattern_confidence_reflects_expert_depth(self, tmp_path):
         """
-        All 3 incidents were coded as ``leo_domain_depth=expert``.
+        All 3 incidents were coded as ``domain_depth=expert``.
         Expert entries have the highest weight (1.0) so weighted_confidence
         should equal 1.0 — the signal is maximally strong.
         """
@@ -446,7 +446,7 @@ class TestJwtExpiryScenario:
         ))
         assert rec["ok"], rec
         assert rec["fix_action_type"] == "prompt_patch"
-        assert rec["awaiting"] == "leo_approval"
+        assert rec["awaiting"] == "user_approval"
 
         # Verify the YAML on disk
         rec_dir = tmp_path / JUDGMENT_DIRNAME / "recommendations"
@@ -515,7 +515,7 @@ class TestJwtExpiryScenario:
             assert cap["ok"]
             save = _j(judgment_save_codified_tool(
                 entry_id=cap["entry_id"],
-                codified_yaml=yaml.safe_dump({"codified": codified, "leo_domain_depth": depth}),
+                codified_yaml=yaml.safe_dump({"codified": codified, "domain_depth": depth}),
                 project_root_arg=str(tmp_path),
             ))
             assert save["ok"]
