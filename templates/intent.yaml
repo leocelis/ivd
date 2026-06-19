@@ -683,9 +683,9 @@ constraints:
 #       resolution: "When they conflict, do X (e.g., reduce Y before reducing Z)"
 #   simultaneous_satisfaction: "All satisfiable given known tensions resolved above"
 #   # Fix 3 — joint satisfaction: individual-pass does NOT imply joint-pass.
-#   # Point to a single test that asserts ALL constraints hold on the SAME output
-#   # (not N separate checks). This is the gating verification when 3+ constraints.
-#   joint_test: "tests/test_joint.py::test_all_constraints_on_one_output"
+#   # Single executable test asserting ALL constraints on the SAME output.
+#   # joint_test is a legacy alias for joint_satisfaction_test.
+#   joint_satisfaction_test: "tests/test_joint.py::test_all_constraints_on_one_output"
 
 # WHY this approach?
 rationale:

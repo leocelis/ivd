@@ -271,6 +271,15 @@ own. Declare `execution_oracle` when using `execution_derived` provenance
 (golden fixture, property test, or differential test). A green test is only as
 external as its author; the code-under-test must never be its own oracle.
 
+**Joint satisfaction (Fix 3 — 3+ constraints):** individual constraint tests can
+all pass while inter-constraint violations remain. Add `constraint_satisfiability`
+with `joint_satisfaction_test` — one pytest path asserting ALL constraints on the
+SAME output. The Post-Implementation report must include `each_constraint_pass`
+(per constraint) and `joint_satisfaction_pass` (gates completion for 3+).
+`ivd_validate` surfaces `verification_gating.joint_satisfaction` when the joint
+test is missing or unverified. Above **7 constraints** per intent, split into
+sub-module intents rather than packing more into one artifact.
+
 ---
 
 ### 3b. Empirical Refinement — When Implementation Reveals New Reality

@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.8
+# Version: 1.9
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.8"
+  version: "1.9"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -131,11 +131,14 @@ verification_protocol:
           oracle is required before it can become PASS.
         - For each UNVERIFIED (Fix 1): missing or non-executable test — add an
           executable test path and declare test_provenance / execution_oracle before PASS.
-        JOINT SATISFACTION (Fix 3): for intents with 3+ constraints, also report
-        whether ALL constraints hold on the SAME output (joint_satisfaction_pass),
-        not just each in isolation. Individual-pass does not imply joint-pass.
-        Do not declare implementation complete until all constraints are PASS
-        or explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
+        REPORT SHAPE (Fix 3): produce two sections:
+        - each_constraint_pass: {constraint_name: PASS|FAIL|NEEDS_REVIEW|NEEDS_EXTERNAL_ORACLE|UNVERIFIED}
+        - joint_satisfaction_pass: true|false|NEEDS_JOINT_TEST (required when 3+ constraints)
+        For 3+ constraints, joint_satisfaction_pass is the gating metric — individual-pass
+        does not imply joint-pass. Run constraint_satisfiability.joint_satisfaction_test
+        (single test asserting ALL constraints on the SAME output).
+        Do not declare implementation complete until each_constraint_pass are all PASS
+        (or explicitly acknowledged) AND joint_satisfaction_pass is true when 3+ constraints.
       why: "Structured reporting makes verification visible and auditable; joint satisfaction catches inter-constraint violations individual checks miss."
 
   failure_mode: |
@@ -170,16 +173,18 @@ agent_rules_block:
     3. IMPLEMENT using constraint-segmented approach:
 
        FOR INTENTS WITH 3+ CONSTRAINTS (threshold based on IFScale 2025 degradation
-       data and Liu et al. 2023 lost-in-the-middle effect):
+       data and Liu et al. 2023 lost-in-the-middle effect) — MANDATORY, not optional:
 
          a. GROUP constraints into functional segments after the stress test.
             Example groups: input validation | core logic / output | performance |
             error handling | security
-         b. IMPLEMENT one segment
+         b. IMPLEMENT one segment ONLY — do NOT single-pass the full intent
          c. RE-READ the intent constraints for that segment from disk
             (not from memory — forces attention reset; counters lost-in-the-middle)
          d. VERIFY the segment satisfies its constraints before proceeding
          e. Repeat steps b–d for each segment
+
+       Single-pass implementation against 3+ constraints violates Rule 1.
 
        FOR INTENTS WITH 1–2 CONSTRAINTS:
          Single-pass implementation is acceptable. Proceed directly to Rule 2.
@@ -218,13 +223,17 @@ agent_rules_block:
        its own oracle.
        UNVERIFIED GATE: no test, prose-only test, or missing repo test file →
        report UNVERIFIED, never PASS, until an executable test clears it.
-    4. REPORT structured results: for each constraint, PASS / FAIL /
-       NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED. For 3+ constraints, also report
-       joint_satisfaction_pass — do ALL constraints hold on the SAME output?
-       (Individual-pass does not imply joint-pass.)
+    4. REPORT in two sections (Fix 3 report shape):
+       each_constraint_pass: for each constraint, PASS / FAIL / NEEDS_REVIEW /
+       NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
+       joint_satisfaction_pass: true | false | NEEDS_JOINT_TEST — required when the
+       intent has 3+ constraints. Run constraint_satisfiability.joint_satisfaction_test
+       (one test asserting ALL constraints on the SAME output). Individual-pass does
+       NOT imply joint-pass — joint_satisfaction_pass is the gating metric for 3+.
 
-    Do not declare implementation complete until all constraints are PASS or
-    explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED with justification.
+    Do not declare implementation complete until each_constraint_pass are all PASS or
+    explicitly acknowledged AND joint_satisfaction_pass is true when 3+ constraints
+    (or NEEDS_JOINT_TEST is cleared by adding/running the joint test).
 
     ## IVD Rule 3: Constraint Tests Are Mandatory — and Externally Sourced
 
@@ -247,8 +256,9 @@ agent_rules_block:
       returns what the function returns" is not verification).
     `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE
     and missing/non-executable tests as UNVERIFIED (verification_gating block).
-    `ivd_review_intent` ranks constraints for human review and lists GUESSED
-    constraints pending sign-off (review_gate block).
+    For 3+ constraints it also surfaces joint_satisfaction gating when
+    joint_satisfaction_test is missing or unverified. `ivd_review_intent` ranks constraints
+    for human review and lists GUESSED constraints pending sign-off (review_gate block).
 
     ## IVD Rule 3b: Human Review Gate (Fix 2)
 
@@ -289,8 +299,10 @@ agent_rules_block:
        cause 20%+ accuracy drops even when all are individually explicit.
        If conflicts exist, resolve them NOW: add priority ordering and a
        constraint_satisfiability block before implementing. For 3+ constraints,
-       also specify a joint-satisfaction test (joint_test) that asserts ALL
-       constraints hold on the SAME output — individual-pass != joint-pass (Fix 3).
+       also specify joint_satisfaction_test — a single executable pytest path that
+       asserts ALL constraints hold on the SAME output (joint_test is a legacy alias).
+       Individual-pass != joint-pass (Fix 3). Above 7 constraints per intent, split
+       into sub-module intents rather than packing more constraints into one artifact.
     5. KNOWLEDGE-CONFLICT CHECK (Fix 4): Does any constraint encode a rule that
        is UNUSUAL for the domain — i.e., it contradicts the model's typical
        training prior (your idiosyncratic business logic)? Research shows models
@@ -384,7 +396,9 @@ agent_rules_block:
 
     SATISFIABILITY CHECK — Already covered in Rule 4 Probe 4 above. If the
     constraint set has 3+ constraints, add a constraint_satisfiability block
-    documenting conflicts checked, known tensions, and resolution strategy.
+    documenting conflicts checked, known tensions, resolution strategy, and
+    joint_satisfaction_test (single test for ALL constraints on the SAME output).
+    Above 7 constraints, split into sub-module intents (Fix 3 constraint budget).
 
   clinerules_format: |
     # IVD Verification Rules
@@ -575,6 +589,20 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.9"
+    date: "2026-06-18"
+    change: |
+      Fix 3 joint satisfaction. Rule 1: mandatory segmentation for 3+ constraints
+      (no single-pass). Rule 2/4: two-section report (each_constraint_pass +
+      joint_satisfaction_pass); latter gates when 3+ constraints. Template field
+      joint_satisfaction_test in constraint_satisfiability. validate.py:
+      CONSTRAINT_BUDGET=7, verification_gating.joint_satisfaction block.
+    reason: |
+      Red-team break 1.3 — models pass constraints individually but violate jointly.
+      v1.6 nudge was insufficient; structural joint test + agent report shape closes gap.
+    evidence: |
+      DESIGN_FIXES Fix 3 (2026-06-17). Intent: mcp_server/intents/joint_satisfaction_intent.yaml.
+
   - version: "1.8"
     date: "2026-06-18"
     change: |

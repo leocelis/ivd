@@ -5,6 +5,7 @@
 import json
 import re
 from pathlib import Path
+from typing import Dict, List, Optional
 
 import yaml
 from termcolor import colored
@@ -22,6 +23,10 @@ _EXECUTABLE_TEST_RE = re.compile(r"\.py::")
 _ALLOWED_ORACLE_TYPES = ("golden_fixture", "property_test", "differential_test")
 _ALLOWED_PROPERTY_TESTS = ("round_trip", "invariant", "idempotent")
 _REPO_PATH_PREFIXES = ("mcp_server/", "tests/", "judgment/", "examples/")
+
+# Fix 3 (red-team): joint satisfaction + constraint density.
+_JOINT_SATISFACTION_THRESHOLD = 3
+_CONSTRAINT_BUDGET = 7
 
 
 def _test_reference_executable(test: object) -> bool:
@@ -115,38 +120,125 @@ def _validate_execution_oracle(
                 )
 
 
+def _extract_joint_satisfaction_test(cs: dict) -> Optional[str]:
+    """Return joint test path from constraint_satisfiability (alias: joint_test)."""
+    for key in ("joint_satisfaction_test", "joint_test"):
+        val = cs.get(key)
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+    return None
+
+
+def _evaluate_joint_satisfaction_gating(
+    constraint_count: int,
+    artifact: dict,
+    root: Path,
+) -> Optional[Dict]:
+    """Fix 3 gating report for 3+ constraints. Report-only — never affects valid."""
+    if constraint_count < _JOINT_SATISFACTION_THRESHOLD:
+        return None
+
+    base = {
+        "constraint_count": constraint_count,
+        "budget": _CONSTRAINT_BUDGET,
+        "required_report_fields": ["each_constraint_pass", "joint_satisfaction_pass"],
+    }
+    cs = artifact.get("constraint_satisfiability")
+
+    if not isinstance(cs, dict):
+        return {
+            **base,
+            "status": "MISSING_SATISFIABILITY_BLOCK",
+            "joint_satisfaction_test": None,
+            "note": (
+                "3+ constraints require a constraint_satisfiability block with "
+                "joint_satisfaction_test — a single pytest path asserting ALL constraints "
+                "hold on the SAME output. Individual-pass does not imply joint-pass (Fix 3)."
+            ),
+        }
+
+    joint_test = _extract_joint_satisfaction_test(cs)
+    if not joint_test:
+        return {
+            **base,
+            "status": "MISSING_JOINT_TEST",
+            "joint_satisfaction_test": None,
+            "note": (
+                "constraint_satisfiability exists but joint_satisfaction_test is missing. "
+                "Add one executable pytest path that asserts ALL constraints on the SAME output. "
+                "Do not report joint_satisfaction_pass until that test passes (Fix 3)."
+            ),
+        }
+
+    if not _test_reference_executable(joint_test) or _repo_file_missing(
+        _test_file_part(joint_test), root
+    ):
+        return {
+            **base,
+            "status": "JOINT_TEST_UNVERIFIED",
+            "joint_satisfaction_test": joint_test,
+            "note": (
+                "joint_satisfaction_test is missing, prose-only, or its repo file was not found. "
+                "Fix the path before reporting joint_satisfaction_pass (Fix 3)."
+            ),
+        }
+
+    if constraint_count > _CONSTRAINT_BUDGET:
+        return {
+            **base,
+            "status": "CONSTRAINT_BUDGET_EXCEEDED",
+            "joint_satisfaction_test": joint_test,
+            "note": (
+                f"Intent has {constraint_count} constraints (budget {_CONSTRAINT_BUDGET}). "
+                "Split into sub-module intents rather than packing more constraints into one "
+                "artifact. Joint test is declared; still run it for joint_satisfaction_pass."
+            ),
+        }
+
+    return None
+
+
 def _build_verification_gating(
     needs_external_oracle: list,
     constraints_unverified: list,
-) -> dict:
-    gating = {}
+    joint_satisfaction: Optional[Dict] = None,
+) -> Optional[Dict]:
+    if not needs_external_oracle and not constraints_unverified and not joint_satisfaction:
+        return None
+
+    gating: dict = {}
     if needs_external_oracle:
         gating["constraints_needing_external_oracle"] = needs_external_oracle
     if constraints_unverified:
         gating["constraints_unverified"] = constraints_unverified
 
-    if needs_external_oracle and constraints_unverified:
-        gating["status"] = "MIXED"
-        gating["note"] = (
-            "Some constraints need an external oracle (AI-only test evidence); others are "
-            "UNVERIFIED (missing or non-executable test). Do not report PASS on either until "
-            "cleared. The code-under-test must never be its own oracle."
-        )
-    elif needs_external_oracle:
-        gating["status"] = "NEEDS_EXTERNAL_ORACLE"
-        gating["note"] = (
-            "These constraints declare an AI-generated test as their only evidence. "
-            "An AI-authored test is low-trust (it tends to confirm the code/intent rather "
-            "than catch it). Do not report PASS until a human-authored assertion or an "
-            "execution-derived oracle clears them. The code-under-test must never be its own oracle."
-        )
-    else:
-        gating["status"] = "UNVERIFIED"
-        gating["note"] = (
-            "These constraints have no executable test reference (missing test, prose-only test, "
-            "or repo test file not found). Do not report PASS until an executable test with "
-            "appropriate provenance clears them."
-        )
+    if needs_external_oracle or constraints_unverified:
+        if needs_external_oracle and constraints_unverified:
+            gating["status"] = "MIXED"
+            gating["note"] = (
+                "Some constraints need an external oracle (AI-only test evidence); others are "
+                "UNVERIFIED (missing or non-executable test). Do not report PASS on either until "
+                "cleared. The code-under-test must never be its own oracle."
+            )
+        elif needs_external_oracle:
+            gating["status"] = "NEEDS_EXTERNAL_ORACLE"
+            gating["note"] = (
+                "These constraints declare an AI-generated test as their only evidence. "
+                "An AI-authored test is low-trust (it tends to confirm the code/intent rather "
+                "than catch it). Do not report PASS until a human-authored assertion or an "
+                "execution-derived oracle clears them. The code-under-test must never be its own oracle."
+            )
+        else:
+            gating["status"] = "UNVERIFIED"
+            gating["note"] = (
+                "These constraints have no executable test reference (missing test, prose-only test, "
+                "or repo test file not found). Do not report PASS until an executable test with "
+                "appropriate provenance clears them."
+            )
+
+    if joint_satisfaction:
+        gating["joint_satisfaction"] = joint_satisfaction
+
     return gating
 
 # IVD v3.0: Judgment phase artifact types (opt-in via `.judgment/`)
@@ -191,6 +283,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     needs_external_oracle = []
     # Fix 1 (completion): missing / non-executable / absent test file → UNVERIFIED.
     constraints_unverified = []
+    constraint_count = 0
     framework_root = IVD_FRAMEWORK_ROOT
 
     # Allowed test provenance tiers (signal hierarchy: ground-truth > proxy > self).
@@ -275,6 +368,7 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         if artifact_type == "intent" and "constraints" in artifact:
             constraints = artifact["constraints"]
             if isinstance(constraints, list):
+                constraint_count = len(constraints)
                 missing_test_count = 0
                 provenance_absent_count = 0
                 assumption_absent_count = 0
@@ -362,21 +456,42 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
 
                 # Fix 3: joint constraint satisfaction — individual-pass != joint-pass.
                 # 3+ constraints without a satisfiability block is the density-abandonment risk.
-                if len(constraints) >= 3 and "constraint_satisfiability" not in artifact:
+                if constraint_count >= _JOINT_SATISFACTION_THRESHOLD and "constraint_satisfiability" not in artifact:
                     warnings.append(
                         "3+ constraints but no 'constraint_satisfiability' block — add one (conflicts_checked, "
-                        "known_tensions, simultaneous_satisfaction) and a joint-satisfaction test that asserts ALL "
+                        "known_tensions, simultaneous_satisfaction, joint_satisfaction_test) that asserts ALL "
                         "constraints hold on the SAME output. Individual-pass does not imply joint-pass (UltraBench 2025; Fix 3)."
                     )
 
-        # Fix 3: when a constraint_satisfiability block exists, check it carries the
-        # fields that make joint satisfaction reviewable (report-only — never an error).
+                if constraint_count > _CONSTRAINT_BUDGET:
+                    warnings.append(
+                        f"{constraint_count} constraints exceeds budget {_CONSTRAINT_BUDGET} — split into "
+                        "sub-module intents rather than packing more constraints into one artifact (Fix 3)."
+                    )
+
+        # Fix 3: when a constraint_satisfiability block exists, check joint satisfaction fields.
         if artifact_type == "intent" and "constraint_satisfiability" in artifact:
             cs = artifact["constraint_satisfiability"]
             if isinstance(cs, dict):
                 for field in ("conflicts_checked", "simultaneous_satisfaction"):
                     if field not in cs:
                         warnings.append(f"constraint_satisfiability missing '{field}' (Fix 3: joint satisfaction)")
+                if constraint_count >= _JOINT_SATISFACTION_THRESHOLD:
+                    joint_test = _extract_joint_satisfaction_test(cs)
+                    if not joint_test:
+                        warnings.append(
+                            "constraint_satisfiability missing 'joint_satisfaction_test' — add an executable "
+                            "pytest path asserting ALL constraints on the SAME output (Fix 3)."
+                        )
+                    elif not _test_reference_executable(joint_test):
+                        warnings.append(
+                            f"joint_satisfaction_test '{joint_test}' is not an executable pytest path (Fix 3)."
+                        )
+                    elif _repo_file_missing(_test_file_part(joint_test), framework_root):
+                        warnings.append(
+                            f"joint_satisfaction_test file not found on disk: "
+                            f"{_test_file_part(joint_test)} (Fix 3)."
+                        )
 
         # Validate interface section (optional — for agents, MCP servers, APIs, CLIs, services)
         if artifact_type == "intent" and "interface" in artifact:
@@ -504,14 +619,17 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
 
-    # Fix 1: external-oracle + UNVERIFIED gating report. Structure-only validation
-    # cannot RUN tests, but it can flag constraints whose evidence is insufficient.
-    # Report-only: does NOT affect `valid` (backward compatibility).
-    if needs_external_oracle or constraints_unverified:
-        result["verification_gating"] = _build_verification_gating(
-            needs_external_oracle,
-            constraints_unverified,
+    # Fix 1 + Fix 3: verification gating reports. Structure-only — does NOT affect valid.
+    joint_gating = None
+    if artifact_type == "intent":
+        joint_gating = _evaluate_joint_satisfaction_gating(
+            constraint_count, artifact, framework_root
         )
+    gating = _build_verification_gating(
+        needs_external_oracle, constraints_unverified, joint_gating
+    )
+    if gating:
+        result["verification_gating"] = gating
 
     status = "passed" if valid else "failed"
     color = "green" if valid else "red"

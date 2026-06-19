@@ -288,34 +288,58 @@ class TestConflictProne:
 class TestJointSatisfaction:
     """Fix 3 (red-team remediation): individual-pass != joint-pass."""
 
+    _THREE_CONSTRAINTS = (
+        "constraints:\n"
+        "  - name: a\n    requirement: x\n    test: t.py::a\n"
+        "  - name: b\n    requirement: y\n    test: t.py::b\n"
+        "  - name: c\n    requirement: z\n    test: t.py::c\n"
+    )
+
+    _SATISFIABILITY_BASE = (
+        "constraint_satisfiability:\n"
+        "  conflicts_checked: true\n"
+        "  simultaneous_satisfaction: all good\n"
+    )
+
+    _JOINT_TEST = (
+        "mcp_server/tests/unit/test_validate.py::"
+        "TestJointSatisfaction::test_three_constraints_without_satisfiability_warns"
+    )
+
     def test_three_constraints_without_satisfiability_warns(self):
-        yaml_str = _intent_with(
-            "constraints:\n"
-            "  - name: a\n    requirement: x\n    test: t.py::a\n"
-            "  - name: b\n    requirement: y\n    test: t.py::b\n"
-            "  - name: c\n    requirement: z\n    test: t.py::c\n"
-        )
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS)
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert any("constraint_satisfiability" in w for w in result["warnings"])
 
-    def test_three_constraints_with_block_no_warn(self):
-        extra = (
-            "constraint_satisfiability:\n"
-            "  conflicts_checked: true\n"
-            "  simultaneous_satisfaction: all good\n"
-        )
-        yaml_str = _intent_with(
-            "constraints:\n"
-            "  - name: a\n    requirement: x\n    test: t.py::a\n"
-            "  - name: b\n    requirement: y\n    test: t.py::b\n"
-            "  - name: c\n    requirement: z\n    test: t.py::c\n",
-            extra=extra,
-        )
+    def test_three_constraints_without_satisfiability_gates(self):
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS)
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
-        assert not any(
-            "3+ constraints but no 'constraint_satisfiability'" in w
-            for w in result["warnings"]
+        js = result["verification_gating"]["joint_satisfaction"]
+        assert js["status"] == "MISSING_SATISFIABILITY_BLOCK"
+        assert js["constraint_count"] == 3
+        assert "each_constraint_pass" in js["required_report_fields"]
+
+    def test_block_without_joint_test_warns_and_gates(self):
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS, extra=self._SATISFIABILITY_BASE)
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert any("joint_satisfaction_test" in w for w in result["warnings"])
+        assert result["verification_gating"]["joint_satisfaction"]["status"] == "MISSING_JOINT_TEST"
+
+    def test_three_constraints_with_joint_test_no_joint_gating(self):
+        extra = self._SATISFIABILITY_BASE + f"  joint_satisfaction_test: \"{self._JOINT_TEST}\"\n"
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS, extra=extra)
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "joint_satisfaction" not in result.get("verification_gating", {})
+
+    def test_joint_test_alias_accepted(self):
+        extra = (
+            self._SATISFIABILITY_BASE
+            + f"  joint_test: \"{self._JOINT_TEST}\"\n"
         )
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS, extra=extra)
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert not any("joint_satisfaction_test" in w and "missing" in w.lower() for w in result["warnings"])
+        assert "joint_satisfaction" not in result.get("verification_gating", {})
 
     def test_two_constraints_no_joint_warning(self):
         """The joint-satisfaction nudge must not fire below the 3-constraint threshold."""
@@ -326,6 +350,7 @@ class TestJointSatisfaction:
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert not any("constraint_satisfiability" in w for w in result["warnings"])
+        assert "verification_gating" not in result
 
     def test_satisfiability_block_missing_field_warns(self):
         extra = "constraint_satisfiability:\n  conflicts_checked: true\n"
@@ -336,6 +361,28 @@ class TestJointSatisfaction:
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert any("simultaneous_satisfaction" in w for w in result["warnings"])
+
+    def test_constraint_budget_exceeded_warns_and_gates(self):
+        constraints = "".join(
+            f"  - name: c{i}\n    requirement: x\n    test: t.py::c{i}\n"
+            for i in range(8)
+        )
+        extra = self._SATISFIABILITY_BASE + f"  joint_satisfaction_test: \"{self._JOINT_TEST}\"\n"
+        yaml_str = _intent_with(f"constraints:\n{constraints}", extra=extra)
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert any("exceeds budget" in w for w in result["warnings"])
+        js = result["verification_gating"]["joint_satisfaction"]
+        assert js["status"] == "CONSTRAINT_BUDGET_EXCEEDED"
+        assert js["constraint_count"] == 8
+
+    def test_joint_test_unverified_gates(self):
+        extra = (
+            self._SATISFIABILITY_BASE
+            + "  joint_satisfaction_test: \"missing/path.py::test_joint\"\n"
+        )
+        yaml_str = _intent_with(self._THREE_CONSTRAINTS, extra=extra)
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert result["verification_gating"]["joint_satisfaction"]["status"] == "JOINT_TEST_UNVERIFIED"
 
 
 class TestBackwardCompatibility:

@@ -1,0 +1,148 @@
+# joint_satisfaction_intent.yaml
+# Task-Level Intent: Fix 3 — Joint constraint satisfaction + constraint budget
+#
+# Co-located per IVD placement rules:
+#   mcp_server/intents/{task}_intent.yaml
+#
+# Closes red-team break 1.3 (constraint-density abandonment): models pass
+# constraints individually but violate them jointly. ivd_validate stays
+# structure_only — the agent runs joint_satisfaction_test in Rule 2.
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "joint_satisfaction"
+  category: "verification"
+  tags: ["validate", "joint_satisfaction", "constraint_budget", "red-team", "principle-6"]
+  status: "implemented"
+  introduced_version: "1.9.0"
+
+intent:
+  summary: "Fix 3: gate 3+ constraint intents on joint_satisfaction_test + constraint budget; agent report distinguishes each_constraint_pass vs joint_satisfaction_pass."
+  goal: |
+    The v1.6 MVP nudged authors to add constraint_satisfiability for 3+ constraints
+    but did not structurally require joint_satisfaction_test or surface joint gating
+    in verification_gating. Agents could report per-constraint PASS while inter-
+    constraint violations remained (UltraBench 2025: individual-pass != joint-pass).
+
+    This intent adds:
+    - joint_satisfaction_test field in constraint_satisfiability (joint_test alias)
+    - CONSTRAINT_BUDGET constant with split recommendation above budget
+    - verification_gating.joint_satisfaction report block
+    - Agent Rule 1 mandatory segmentation + Rule 2 two-section report shape
+
+    ivd_validate still does NOT run tests. The agent runs joint_satisfaction_test
+    during Post-Implementation Verification and reports joint_satisfaction_pass.
+  success_metric: |
+    - 3+ constraints without satisfiability block → verification_gating.joint_satisfaction
+    - 3+ constraints without joint_satisfaction_test → MISSING_JOINT_TEST gating
+    - Non-executable joint test → JOINT_TEST_UNVERIFIED gating
+    - >7 constraints → CONSTRAINT_BUDGET_EXCEEDED advisory gating + warning
+    - Agent Rule 2 report uses each_constraint_pass AND joint_satisfaction_pass
+    - ZERO regressions: report-only, legacy intents stay valid:true
+  stakeholders:
+    - "AI agents running the IVD verification protocol"
+    - "IVD framework maintainer (Leo)"
+
+constraints:
+  - name: "constraint_budget_warning"
+    requirement: |
+      When an intent has more than 7 constraints, emit a warning recommending split
+      into sub-module intents. When joint_satisfaction_test is valid, also emit
+      verification_gating.joint_satisfaction with status CONSTRAINT_BUDGET_EXCEEDED.
+    test: "mcp_server/tests/unit/test_validate.py::TestJointSatisfaction::test_constraint_budget_exceeded_warns_and_gates"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 4
+    consequence_if_violated: "High-density intents abandon constraints silently."
+
+  - name: "joint_satisfaction_test_structural_check"
+    requirement: |
+      For 3+ constraints with a constraint_satisfiability block, require
+      joint_satisfaction_test (or legacy joint_test alias) as an executable pytest
+      path. Missing or non-executable paths yield warnings and verification_gating.
+    test: "mcp_server/tests/unit/test_validate.py::TestJointSatisfaction::test_block_without_joint_test_warns_and_gates"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    priority: 3
+    consequence_if_violated: "Authors declare satisfiability without a joint check."
+
+  - name: "joint_satisfaction_gating_block"
+    requirement: |
+      For 3+ constraints, verification_gating includes joint_satisfaction sub-block
+      with status, constraint_count, budget, required_report_fields
+      [each_constraint_pass, joint_satisfaction_pass], and note when joint evidence
+      is insufficient. Report-only — never adds errors.
+    test: "mcp_server/tests/unit/test_validate.py::TestJointSatisfaction::test_three_constraints_without_satisfiability_gates"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "property_test"
+      property: "invariant"
+    entropy: "near-zero"
+    priority: 2
+    consequence_if_violated: "Agents skip joint verification — density abandonment persists."
+
+  - name: "backward_compat_no_new_errors"
+    requirement: "All new checks emit warnings/gating only; none add to errors. Legacy intents stay valid:true."
+    test: "mcp_server/tests/unit/test_validate.py::TestBackwardCompatibility::test_new_fields_never_produce_errors"
+    test_provenance: "execution_derived"
+    entropy: "near-zero"
+    priority: 1
+    consequence_if_violated: "Existing IVD users' intents break on upgrade."
+
+constraint_satisfiability:
+  conflicts_checked: true
+  known_tensions:
+    - between: ["joint_satisfaction_gating_block", "backward_compat_no_new_errors"]
+      resolution: |
+        Joint gating is a verification_gating sub-block, never an error. valid stays True.
+  simultaneous_satisfaction: "All four satisfiable: gating + warnings are report-only."
+  joint_satisfaction_test: "mcp_server/tests/unit/test_validate.py::TestJointSatisfaction::test_three_constraints_without_satisfiability_warns"
+
+rationale:
+  decision: "Joint satisfaction gating in validate + mandatory segmentation + two-section agent report."
+  reasoning: |
+    Individual constraint tests catch local violations; joint_satisfaction_test catches
+    inter-constraint conflicts on the same output. Budget constant prevents packing
+    too many constraints into one artifact (IFScale degradation). Server gates structure;
+    agent runs tests and reports joint_satisfaction_pass.
+  evidence: "Red-team Fix 3 design (2026-06-17); UltraBench 2025; CMU 2025."
+  date: "2026-06-18"
+  stakeholder: "Leo"
+
+alternatives:
+  - name: "Make missing joint test a validator error"
+    rejected_because: "Breaks backward compatibility for legacy multi-constraint intents."
+    when_it_works: "Major version bump with migration path."
+
+risks:
+  - condition: "Authors point joint_satisfaction_test at a stub that always passes"
+    action: "Agent Rule 2 requires running the test; execution_derived provenance encouraged."
+    monitor: "verification report joint_satisfaction_pass field"
+    severity: "medium"
+
+implementation:
+  current: "mcp_server/tools/validate.py"
+  function: "validate_artifact_tool"
+  version: 1
+  tests: "mcp_server/tests/unit/test_validate.py"
+  documentation: "templates/intent.yaml, recipes/agent-rules-ivd.yaml, cookbook.md"
+
+verification:
+  test_cases:
+    - name: "missing_joint_test_gated"
+      description: "3+ constraints, satisfiability block, no joint test → MISSING_JOINT_TEST."
+      input: "intent with 3 constraints + constraint_satisfiability without joint_satisfaction_test"
+      expected_output: "verification_gating.joint_satisfaction.status MISSING_JOINT_TEST"
+      validates_constraint: "joint_satisfaction_gating_block"
+
+changelog:
+  - version: 1
+    date: "2026-06-18"
+    change: "Fix 3: joint_satisfaction_test, constraint budget, verification_gating.joint_satisfaction."
+    reason: "Red-team remediation — close constraint-density abandonment gap."
