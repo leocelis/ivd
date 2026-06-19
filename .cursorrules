@@ -3,13 +3,17 @@
 # Both blocks below also serve as the canonical example of what
 # users should install in their own projects when adopting IVD.
 
-# <BEGIN-IVD v1.5>
+# <BEGIN-IVD v1.11>
+# ==============================================================================
+# Source: leocelis/ivd/recipes/agent-rules-ivd.yaml v1.11
+# Reference: ivd_system_intent.yaml, framework.md, recipes/agent-rules-ivd.yaml
+# Do not modify by hand — reload from recipe to refresh.
+
 # ==============================================================================
 # IVD: Intent-Verified Development Rules
 # ==============================================================================
-# Source: ivd/recipes/agent-rules-ivd.yaml v1.5
+# These rules enforce the IVD verification loop. Do not remove them.
 # Reference: ivd_system_intent.yaml, framework.md (Principle 4, Principle 6)
-# Do not modify by hand — reload from recipes/agent-rules-ivd.yaml to refresh.
 
 ## IVD Rule 1: Intent Before Implementation
 
@@ -20,16 +24,20 @@ intent artifact (*_intent.yaml):
 3. IMPLEMENT using constraint-segmented approach:
 
    FOR INTENTS WITH 3+ CONSTRAINTS (threshold based on IFScale 2025 degradation
-   data and Liu et al. 2023 lost-in-the-middle effect):
+   data and Liu et al. 2023 lost-in-the-middle effect) — MANDATORY, not optional:
 
      a. GROUP constraints into functional segments after the stress test.
         Example groups: input validation | core logic / output | performance |
         error handling | security
-     b. IMPLEMENT one segment
-     c. RE-READ the intent constraints for that segment from disk
+     b. IMPLEMENT one segment ONLY — do NOT single-pass the full intent
+     c. Before implementing any constraint with conflict_prone: true, inject
+        its anti_pattern text into the active implementation context
+     d. RE-READ the intent constraints for that segment from disk
         (not from memory — forces attention reset; counters lost-in-the-middle)
-     d. VERIFY the segment satisfies its constraints before proceeding
-     e. Repeat steps b–d for each segment
+     e. VERIFY the segment satisfies its constraints before proceeding
+     f. Repeat steps b–e for each segment
+
+   Single-pass implementation against 3+ constraints violates Rule 1.
 
    FOR INTENTS WITH 1–2 CONSTRAINTS:
      Single-pass implementation is acceptable. Proceed directly to Rule 2.
@@ -61,17 +69,80 @@ After ANY implementation derived from an intent artifact, execute this
    not affect the constraint?
 3. CHECK every constraint that has a 'test' field — does the implementation
    pass? If the test can't be run, note what a reviewer should verify.
-4. REPORT structured results: for each constraint, PASS / FAIL / NEEDS_REVIEW
+   PROVENANCE GATE: an `ai_generated` test alone cannot mark a constraint
+   PASS (an AI-written test tends to confirm the code rather than catch it).
+   Report such a constraint as NEEDS_EXTERNAL_ORACLE until a human_authored
+   or execution_derived oracle clears it. Never let the code-under-test be
+   its own oracle.
+   UNVERIFIED GATE: no test, prose-only test, or missing repo test file →
+   report UNVERIFIED, never PASS, until an executable test clears it.
+   CONFLICT-PRONE GATE: conflict_prone constraints require
+   test_provenance: execution_derived + execution_oracle; inject anti_pattern
+   into implementation context. ivd_validate surfaces insufficient anchors in
+   verification_gating.conflict_prone — do not report PASS until cleared.
+   OPTIONAL (local/CI): when IVD_TEST_RUNNER_ENABLED=true, call
+   ivd_run_constraint_tests to run allowlisted pytest nodes from the intent.
+   Public MCP servers keep this disabled; run pytest directly when the tool
+   returns enabled:false.
+4. REPORT in two sections:
+   each_constraint_pass: for each constraint, PASS / FAIL / NEEDS_REVIEW /
+   NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
+   joint_satisfaction_pass: true | false | NEEDS_JOINT_TEST — required when the
+   intent has 3+ constraints. Run constraint_satisfiability.joint_satisfaction_test
+   (one test asserting ALL constraints on the SAME output). Individual-pass does
+   NOT imply joint-pass — joint_satisfaction_pass is the gating metric for 3+.
 
-Do not declare implementation complete until all constraints are PASS or
-explicitly acknowledged as NEEDS_REVIEW with justification.
+Do not declare implementation complete until each_constraint_pass are all PASS or
+explicitly acknowledged AND joint_satisfaction_pass is true when 3+ constraints
+(or NEEDS_JOINT_TEST is cleared by adding/running the joint test).
 
-## IVD Rule 3: Constraint Tests Are Mandatory
+CLIENT ENFORCEMENT: After ivd_validate or ivd_review_intent, inspect
+client_enforcement in the tool JSON. When implementation_complete_blocked
+is true, do not declare implementation complete until all active_gates clear
+and a fresh ivd_validate shows no verification_gating / client_enforcement.
+External monitors and Cursor project hooks may enforce this at agent stop.
+
+## IVD Rule 3: Constraint Tests Are Mandatory — and Externally Sourced
 
 Every constraint in an intent artifact MUST have a 'test' field. If you
 encounter a constraint without a test, add one before implementing.
 A constraint without a test is an unverifiable claim — it violates
 Principle 2 (Understanding Must Be Executable).
+
+Every test SHOULD declare 'test_provenance' (human_authored |
+execution_derived | ai_generated). When provenance is execution_derived,
+declare an 'execution_oracle' block (golden_fixture, property_test, or
+differential_test) so the ground-truth anchor is structural, not prose.
+This matters because LLM-written tests
+are frequently invalid and exhibit a circularity of error — they ratify the
+code/intent instead of catching it. Therefore:
+- An `ai_generated` test alone can NEVER mark a constraint PASS. It requires
+  a human-authored assertion or an execution-derived oracle (golden output,
+  property test, or differential test against real behaviour/data).
+- Never let the implementation-under-test be its own oracle ("the function
+  returns what the function returns" is not verification).
+`ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE
+and missing/non-executable tests as UNVERIFIED (verification_gating block).
+For 3+ constraints it also surfaces joint_satisfaction gating when
+joint_satisfaction_test is missing or unverified. For conflict_prone constraints
+it surfaces verification_gating.conflict_prone when execution_derived evidence
+or anti_pattern anchors are missing. `ivd_review_intent` ranks constraints
+for human review and lists GUESSED constraints pending sign-off (review_gate block).
+
+## IVD Rule 3b: Human Review Gate
+
+After Rule 4 stress test updates the intent (assumption_status set on each
+constraint) and BEFORE implementing:
+
+1. CALL `ivd_review_intent` on the intent YAML
+2. PRESENT to the human: ranked_constraints (highest risk first) and
+   worked_examples from verification.test_cases (input → expected output)
+3. For each entry in pending_signoffs (GUESSED constraints): obtain
+   concrete_example + counter_example + set human_acknowledged: true on disk
+4. DO NOT implement while review_gate.status is PENDING_SIGNOFF
+
+During Rule 4 probe 3 (assumption challenge), set assumption_status on each
+constraint (KNOWN | ASSUMED | GUESSED). GUESSED requires review_signoff.
 
 ## IVD Rule 4: Stress-Test Intent Before Implementing
 
@@ -85,6 +156,9 @@ implementing, adversarially probe the intent for completeness:
    paths? Ordering dependencies?
 3. ASSUMPTION CHALLENGE: What am I assuming about the environment, data,
    dependencies, or user behavior that isn't documented in the intent?
+   Set `assumption_status` (KNOWN | ASSUMED | GUESSED) on each constraint.
+   GUESSED constraints need review_signoff (concrete_example, counter_example,
+   human_acknowledged) — see Rule 3b.
 4. CONSTRAINT SATISFIABILITY: Do any two constraints conflict? Can ALL
    constraints be satisfied simultaneously? Are critical constraints listed
    LAST (position bias — models weight later constraints more heavily;
@@ -93,7 +167,29 @@ implementing, adversarially probe the intent for completeness:
    failure at simultaneous satisfaction. CMU 2025 — conflicting constraints
    cause 20%+ accuracy drops even when all are individually explicit.
    If conflicts exist, resolve them NOW: add priority ordering and a
-   constraint_satisfiability block before implementing.
+   constraint_satisfiability block before implementing. For 3+ constraints,
+   also specify joint_satisfaction_test — a single executable pytest path that
+   asserts ALL constraints hold on the SAME output (joint_test is a legacy alias).
+   Individual-pass != joint-pass. Above 7 constraints per intent, split
+   into sub-module intents rather than packing more constraints into one artifact.
+5. KNOWLEDGE-CONFLICT CHECK: Does any constraint encode a rule that
+   is UNUSUAL for the domain — i.e., it contradicts the model's typical
+   training prior (your idiosyncratic business logic)? Research shows models
+   frequently ignore loaded context and fall back on the parametric prior
+   exactly when the rule is unusual/familiar-but-wrong (arXiv 2409.08435;
+   knowledge-conflict literature). Mark such constraints `conflict_prone: true`.
+   Each conflict_prone constraint REQUIRES (a) test_provenance: execution_derived
+   with an execution_oracle block, and (b) an `anti_pattern` anchor injected
+   into the implementation prompt (not YAML storage alone). Context alone may lose
+   to the prior; the anti-pattern anchor and a hard test are the backstop.
+
+PROPOSAL PACKET (human confirms before YAML write): When Probe 3
+or Probe 5 recommends assumption_status or conflict_prone values, present
+a structured recommendation to the human FIRST. Do not write flags until
+confirmed. Include per constraint: name, proposed assumption_status and/or
+conflict_prone: true, rationale, and proposed anti_pattern text when
+conflict_prone. After confirmation, update the intent on disk and call
+ivd_review_intent before implementation.
 
 If gaps are found, update the intent (add constraints, test paths, or
 clarifying notes) BEFORE implementing. For significant changes, flag
@@ -108,41 +204,114 @@ When implementation reveals that the intent's assumptions are wrong (API
 returns a different format, model accuracy differs from benchmarks, latency
 exceeds documented limits, edge cases the research didn't cover):
 
-1. STOP — do not continue implementing against a stale assumption.
-2. RECORD — document what the intent assumed vs. what you observed.
+1. STOP — do not continue implementing against a stale assumption. The intent
+   is the contextual knowledge spine; if it's wrong, everything built on it
+   will be wrong.
+2. RECORD — document what the intent assumed vs. what you observed. This is
+   new contextual knowledge.
 3. UPDATE — revise the intent artifact on disk: fix the constraint, adjust the
-   threshold, add a new constraint for the discovered edge case.
-4. ENRICH — pull more contextual knowledge into the session:
+   threshold, add a new constraint for the discovered edge case, update the
+   rationale with empirical evidence.
+4. ENRICH — if the discovery reveals a knowledge gap, pull more contextual
+   knowledge into the session. Not all sources are equal — use the highest-
+   signal source available:
 
    Source hierarchy for code failures (ranked by signal):
    (a) Actual error message/stack trace — paste verbatim into context
-   (b) GitHub issues and PRs matching the error — highest-value enrichment
-   (c) Library changelogs/release notes
-   (d) Official documentation
-   (e) Model's parametric knowledge — lowest signal
+   (b) GitHub issues and PRs matching the error — maintainer-confirmed,
+       version-specific, real workarounds. This is the single highest-value
+       enrichment channel for code failures.
+   (c) Library changelogs/release notes — what changed between versions
+   (d) Official documentation — authoritative but may lag implementation
+   (e) Model's parametric knowledge — lowest signal; already proven
+       insufficient (you're in the ENRICH step because it failed)
 
-   THE 2-ATTEMPT TRIGGER RULE: if the same error persists after two attempts
-   without new external data, STOP and ENRICH before attempting again.
+   THE 2-ATTEMPT TRIGGER RULE: if the same error or failure pattern persists
+   after two implementation attempts without new external data, you MUST stop
+   and ENRICH before attempting again. Repeated iteration without enrichment
+   is drawing from the same parametric well — each attempt is a variation of
+   the same wrong pattern. Search GitHub, read the changelog, find the actual
+   error in an issue thread. One confirmed fix replaces many wasted turns.
 
-5. CONTINUE — re-read the updated intent and continue from the corrected version.
+5. CONTINUE — re-read the updated intent (Rule 2, Step 1) and continue
+   implementing from the corrected version.
+
+If the discovery changes scope significantly (what was a simple API call now
+requires retry logic, circuit breakers, and fallback handling), flag for human
+review before continuing.
+
+The stress test (Rule 4) anticipates. Empirical refinement discovers. Together
+they close the loop.
 
 ## IVD Rule 6: Constraint Quality — Entropy and Satisfiability
 
-WHEN TO APPLY: During intent writing — BEFORE the stress test (Rule 4).
+WHEN TO APPLY: During intent writing — BEFORE the stress test (Rule 4)
+and before implementation. Run this check immediately after writing the
+constraints block, as part of intent authoring (Principle 6, Step 2).
+
+Before finalizing any intent, verify constraints meet quality standards:
 
 ENTROPY CHECK — Every constraint must be on the spectrum toward near-zero
 interpretive entropy. High-entropy constraints are REJECTED:
-  ❌ "write well" / "be creative" / "sound professional"
-  ✅ "melancholic tone: no emotional resolution in final paragraph"
+  ❌ "write well" / "be creative" / "sound professional" / "use appropriate tone"
+  ✅ "melancholic tone: no emotional resolution in final paragraph; protagonist does not cry"
   ✅ "1,200–1,400 words" / "three scenes, different rooms, no flashbacks"
+For creative/narrative artifacts: decompose tone, voice, and style into
+measurable proxies. Include a human-review checklist as the test.
+Research: CMU 2025 — high-entropy prompts 2x regression rate; CS4 2024 —
+constraint specificity measurably improves creative output quality.
 
-HOMOGENIZATION CHECK — For creative/narrative artifacts, add a
-distinctiveness constraint: what makes this NOT the parametric average?
-Prohibitions are often more effective than requirements.
+HOMOGENIZATION CHECK — For creative, documentary, and narrative artifacts,
+ask: "Does this output, if produced from these constraints, risk being the
+parametric average?" If yes, add a distinctiveness constraint:
+  - Reference a specific style, voice, or existing work as the target
+  - Explicitly prohibit the generic pattern ("no inspirational ending",
+    "no summary paragraph", "no em-dash overuse")
+Research: 'We're Different, We're the Same' arXiv 2501.19361, 2025 —
+LLM outputs are significantly more similar to each other than human outputs
+are to each other, even across models from different organizations.
 
-SATISFIABILITY CHECK — If the constraint set has 3+ constraints, add a
-constraint_satisfiability block documenting conflicts and resolution strategy.
-# <END-IVD v1.5>
+SATISFIABILITY CHECK — Already covered in Rule 4 Probe 4 above. If the
+constraint set has 3+ constraints, add a constraint_satisfiability block
+documenting conflicts checked, known tensions, resolution strategy, and
+joint_satisfaction_test (single test for ALL constraints on the SAME output).
+Above 7 constraints, split into sub-module intents.
+
+## IVD MCP Tools (user-ivd) — when to call
+
+MCP server: **user-ivd**. For hosted MCP, `project_root` must be a path the server can read (use the target repo's path when self-hosting; on mcp.ivdframework.dev use `.` only for the IVD framework tree).
+
+| When | Tool |
+|------|------|
+| Start / unfamiliar with IVD | `ivd_get_context` |
+| Pick a pattern | `ivd_list_recipes` → `ivd_load_recipe` |
+| Blank artifact | `ivd_load_template` |
+| Brownfield adopt | `ivd_init` |
+| New intent | `ivd_scaffold` |
+| Find intents | `ivd_find_artifacts` |
+| Placement check | `ivd_check_placement` |
+| Feature inventory | `ivd_list_features` |
+| Coverage gaps | `ivd_assess_coverage` |
+| Goal unclear | `ivd_discover_goal` |
+| Teach concept | `ivd_teach_concept` |
+| Inversion brainstorm | `ivd_propose_inversions` |
+| Framework search | `ivd_search` |
+| Structure + gating signals | `ivd_validate` — read `verification_gating` and `client_enforcement` |
+| Human review before implement | `ivd_review_intent` |
+| Run intent-linked pytest (local/CI) | `ivd_run_constraint_tests` when `enabled:true` |
+| Record correction | `ivd_judgment_capture` → `ivd_judgment_codify` → `ivd_judgment_save_codified` |
+| Comparison pair | `ivd_judgment_pair` |
+| Promote patterns | `ivd_judgment_detect_patterns` |
+| Inject judgment context | `ivd_judgment_inject_context` |
+| Draft fix from pattern | `ivd_judgment_propose_recommendation` |
+| Judgment installed? | `ivd_judgment_check_installed` |
+| Bootstrap judgment | `ivd_judgment_init` |
+| Canon render / audit | `canon_render`, `canon_check`, `canon_diff` |
+| IVD+Canon blocks installed? | `canon_check_rules_installed` |
+
+If `client_enforcement.implementation_complete_blocked` is true after validate/review, clear all gates before declaring implementation complete.
+# <END-IVD v1.11>
+
 
 # <BEGIN-CANON v1.0>
 # ==============================================================================
