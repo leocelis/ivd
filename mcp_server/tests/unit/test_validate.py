@@ -70,6 +70,10 @@ class TestValidateArtifact:
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         # Should warn about missing test field on constraint
         assert any("test" in w.lower() for w in result["warnings"])
+        gating = result.get("verification_gating")
+        assert gating is not None
+        assert "c1" in gating["constraints_unverified"]
+        assert gating["status"] == "UNVERIFIED"
 
     def test_returns_artifact_type(self, sample_intent_yaml):
         result = json.loads(validate_artifact_tool(sample_intent_yaml, "intent"))
@@ -137,6 +141,115 @@ class TestExternalOracleGating:
         )
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert any("test_provenance" in s for s in result["suggestions"])
+        assert "verification_gating" not in result
+
+
+class TestUnverifiedGating:
+    """Fix 1 completion: UNVERIFIED constraints in verification_gating."""
+
+    def test_missing_test_is_unverified(self):
+        yaml_str = _intent_with(
+            "constraints:\n  - name: no_test\n    requirement: x\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        gating = result["verification_gating"]
+        assert "no_test" in gating["constraints_unverified"]
+        assert gating["status"] == "UNVERIFIED"
+        assert result["valid"] is True
+
+    def test_prose_test_is_unverified(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: prose\n    requirement: x\n"
+            "    test: manually verify the output looks correct\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "prose" in result["verification_gating"]["constraints_unverified"]
+
+    def test_missing_repo_test_file_is_unverified(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: ghost\n    requirement: x\n"
+            "    test: mcp_server/tests/unit/no_such_test_file.py::test_x\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "ghost" in result["verification_gating"]["constraints_unverified"]
+
+    def test_valid_repo_test_not_unverified(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: real\n    requirement: x\n"
+            "    test: mcp_server/tests/unit/test_validate.py::TestValidateArtifact::test_valid_intent_passes\n"
+            "    test_provenance: human_authored\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "verification_gating" not in result
+
+    def test_bare_pytest_stub_not_unverified(self):
+        """Fixture-style t.py::t paths skip repo existence check."""
+        yaml_str = _intent_with(
+            "constraints:\n  - name: stub\n    requirement: x\n    test: t.py::t\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "verification_gating" not in result
+
+    def test_mixed_gating_status(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: no_test\n    requirement: x\n"
+            "  - name: ai_only\n    requirement: y\n    test: t.py::t\n"
+            "    test_provenance: ai_generated\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        gating = result["verification_gating"]
+        assert gating["status"] == "MIXED"
+        assert "no_test" in gating["constraints_unverified"]
+        assert "ai_only" in gating["constraints_needing_external_oracle"]
+
+
+class TestExecutionOracle:
+    """Fix 1 completion: execution_oracle schema validation."""
+
+    def test_execution_derived_without_oracle_warns(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: c1\n    requirement: x\n    test: t.py::t\n"
+            "    test_provenance: execution_derived\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert any("execution_oracle" in w for w in result["warnings"])
+
+    def test_invalid_oracle_type_warns(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: c1\n    requirement: x\n    test: t.py::t\n"
+            "    execution_oracle:\n      type: bogus\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert any("execution_oracle.type" in w for w in result["warnings"])
+
+    def test_golden_fixture_valid(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: c1\n    requirement: x\n    test: t.py::t\n"
+            "    test_provenance: execution_derived\n"
+            "    execution_oracle:\n"
+            "      type: golden_fixture\n"
+            "      path: mcp_server/tests/fixtures/sample_intent.yaml\n"
+            "      expected: mcp_server/tests/fixtures/sample_intent.yaml\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert not any("execution_oracle" in w and "not found" in w for w in result["warnings"])
+
+    def test_property_test_valid(self):
+        yaml_str = _intent_with(
+            "constraints:\n"
+            "  - name: c1\n    requirement: x\n    test: t.py::t\n"
+            "    execution_oracle:\n      type: property_test\n      property: round_trip\n"
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert not any("property" in w and "unrecognized" in w for w in result["warnings"])
+
 
 
 class TestConflictProne:

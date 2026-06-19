@@ -263,11 +263,13 @@ constraints:
 
 **The constraint links to an executable test. During the Post-Implementation
 Verification Protocol the agent *runs* that test and reports PASS / FAIL /
-NEEDS_REVIEW.** `ivd_validate` does structure-only validation — it does not
+NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED.** `ivd_validate` does structure-only validation — it does not
 execute tests — but it gates the claim: a constraint whose only evidence is an
-`ai_generated` test is reported `NEEDS_EXTERNAL_ORACLE` and can never be marked
-PASS on its own. A green test is only as external as its author; the
-code-under-test must never be its own oracle.
+`ai_generated` test is reported `NEEDS_EXTERNAL_ORACLE`; a constraint with no
+executable test is reported `UNVERIFIED`. Both can never be marked PASS on their
+own. Declare `execution_oracle` when using `execution_derived` provenance
+(golden fixture, property test, or differential test). A green test is only as
+external as its author; the code-under-test must never be its own oracle.
 
 ---
 

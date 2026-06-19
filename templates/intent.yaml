@@ -641,6 +641,16 @@ constraints:
     #                       constraint PASS; ivd_validate reports NEEDS_EXTERNAL_ORACLE.
     # Rule: never let the implementation-under-test be its own oracle.
     test_provenance: "human_authored | execution_derived | ai_generated"  # recommended
+    # execution_oracle (Fix 1 — ground-truth anchor): declare WHEN test_provenance is
+    # execution_derived OR the constraint exercises data/transform behaviour. Never let
+    # the implementation-under-test be its own oracle.
+    #   golden_fixture    — path + expected files (independent ground truth)
+    #   property_test     — round_trip | invariant | idempotent
+    #   differential_test — reference output or path to compare against
+    # execution_oracle:
+    #   type: golden_fixture
+    #   path: tests/fixtures/input.json
+    #   expected: tests/fixtures/output.json
     # conflict_prone (Fix 4): set true when this rule is UNUSUAL for the domain —
     # the model's training prior may ignore the loaded context and fall back on the
     # common pattern (knowledge-conflict inversion). Conflict-prone constraints

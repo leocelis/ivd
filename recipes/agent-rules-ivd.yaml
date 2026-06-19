@@ -9,13 +9,13 @@
 # but skip the verification step — silently breaking the IVD loop.
 #
 # Status: Canonical
-# Version: 1.6
+# Version: 1.7
 # Created: 2026-02-09
 # ==============================================================================
 
 recipe:
   name: "Agent Rules for IVD Enforcement"
-  version: "1.6"
+  version: "1.7"
   category: "agent_patterns"
   status: "canonical"
   created: "2026-02-09"
@@ -111,6 +111,9 @@ verification_protocol:
           ("circularity of error"). Such a constraint is NEEDS_EXTERNAL_ORACLE
           until a human_authored assertion or an execution_derived oracle
           (golden output, property test, differential test) clears it.
+        - UNVERIFIED GATE (Fix 1): if the constraint has no test, a prose-only
+          test, or a repo test file that does not exist, report UNVERIFIED — never
+          PASS until an executable test with appropriate provenance clears it.
         - Never let the implementation-under-test be its own oracle.
         If the test can't be run (e.g., manual review), note it and describe
         what a reviewer should check.
@@ -120,17 +123,19 @@ verification_protocol:
       name: "Report results"
       action: |
         Produce a structured report:
-        - For each constraint: PASS / FAIL / NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE
+        - For each constraint: PASS / FAIL / NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED
         - For each FAIL: what specifically doesn't match and what to fix
         - For each NEEDS_REVIEW: what a human should verify
         - For each NEEDS_EXTERNAL_ORACLE (Fix 1): the constraint's only evidence
           is an AI-authored test — name what human assertion or execution-derived
           oracle is required before it can become PASS.
+        - For each UNVERIFIED (Fix 1): missing or non-executable test — add an
+          executable test path and declare test_provenance / execution_oracle before PASS.
         JOINT SATISFACTION (Fix 3): for intents with 3+ constraints, also report
         whether ALL constraints hold on the SAME output (joint_satisfaction_pass),
         not just each in isolation. Individual-pass does not imply joint-pass.
         Do not declare implementation complete until all constraints are PASS
-        or explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE.
+        or explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED.
       why: "Structured reporting makes verification visible and auditable; joint satisfaction catches inter-constraint violations individual checks miss."
 
   failure_mode: |
@@ -211,13 +216,15 @@ agent_rules_block:
        Report such a constraint as NEEDS_EXTERNAL_ORACLE until a human_authored
        or execution_derived oracle clears it. Never let the code-under-test be
        its own oracle.
+       UNVERIFIED GATE: no test, prose-only test, or missing repo test file →
+       report UNVERIFIED, never PASS, until an executable test clears it.
     4. REPORT structured results: for each constraint, PASS / FAIL /
-       NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE. For 3+ constraints, also report
+       NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED. For 3+ constraints, also report
        joint_satisfaction_pass — do ALL constraints hold on the SAME output?
        (Individual-pass does not imply joint-pass.)
 
     Do not declare implementation complete until all constraints are PASS or
-    explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE with justification.
+    explicitly acknowledged as NEEDS_REVIEW / NEEDS_EXTERNAL_ORACLE / UNVERIFIED with justification.
 
     ## IVD Rule 3: Constraint Tests Are Mandatory — and Externally Sourced
 
@@ -227,7 +234,10 @@ agent_rules_block:
     Principle 2 (Understanding Must Be Executable).
 
     Every test SHOULD declare 'test_provenance' (human_authored |
-    execution_derived | ai_generated). This matters because LLM-written tests
+    execution_derived | ai_generated). When provenance is execution_derived,
+    declare an 'execution_oracle' block (golden_fixture, property_test, or
+    differential_test) so the ground-truth anchor is structural, not prose.
+    This matters because LLM-written tests
     are frequently invalid and exhibit a circularity of error — they ratify the
     code/intent instead of catching it. Therefore:
     - An `ai_generated` test alone can NEVER mark a constraint PASS. It requires
@@ -235,7 +245,8 @@ agent_rules_block:
       property test, or differential test against real behaviour/data).
     - Never let the implementation-under-test be its own oracle ("the function
       returns what the function returns" is not verification).
-    `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE.
+    `ivd_validate` surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE
+    and missing/non-executable tests as UNVERIFIED (verification_gating block).
 
     ## IVD Rule 4: Stress-Test Intent Before Implementing
 
@@ -450,7 +461,7 @@ integration:
     action: "Append IVD rules block to scan summary and next_steps"
 
   ivd_validate:
-    description: "ivd_validate checks for constraints without test fields AND gates provenance: it surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE (verification_gating block), nudges a constraint_satisfiability block + joint test at 3+ constraints, and flags conflict_prone constraints missing a test or anti_pattern anchor. All report-only — never errors."
+    description: "ivd_validate checks for constraints without test fields AND gates provenance: it surfaces ai_generated-only constraints as NEEDS_EXTERNAL_ORACLE, missing/non-executable tests as UNVERIFIED (verification_gating block), nudges execution_oracle for execution_derived, nudges a constraint_satisfiability block + joint test at 3+ constraints, and flags conflict_prone constraints missing a test or anti_pattern anchor. All report-only — never errors."
     relationship: "Validation ensures the intent is verifiable AND that its evidence is externally sourced; the protocol ensures the agent actually verifies and honors the provenance gate."
 
   ivd_scaffold:
@@ -544,6 +555,22 @@ relationships:
 # ==============================================================================
 
 changelog:
+  - version: "1.7"
+    date: "2026-06-18"
+    change: |
+      Fix 1 completion. Rule 2: UNVERIFIED gate — no test, prose-only test, or
+      missing repo test file → never PASS. Rule 3: execution_oracle block for
+      execution_derived (golden_fixture, property_test, differential_test).
+      ivd_validate verification_gating now includes constraints_unverified and
+      status MIXED when combined with NEEDS_EXTERNAL_ORACLE.
+    reason: |
+      v1.6 gated ai_generated-only evidence but left bypasses: constraints with
+      no executable test could still be reported PASS; execution_derived had no
+      structural oracle anchor. Closes red-team Fix 1 gaps without a test runner.
+    evidence: |
+      Red-team Fix 1 design (2026-06-17). Intent:
+      mcp_server/intents/external_oracle_unverified_intent.yaml.
+
   - version: "1.6"
     date: "2026-06-17"
     change: |

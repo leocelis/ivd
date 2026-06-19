@@ -3,13 +3,150 @@
 """Tool: ivd_validate — structure validation for IVD artifacts."""
 
 import json
+import re
+from pathlib import Path
 
 import yaml
 from termcolor import colored
 
 from judgment import VALIDATORS as JUDGMENT_VALIDATORS
+from mcp_server.tools._paths import IVD_FRAMEWORK_ROOT
 
 LOG = "IVD Tools"
+
+# Fix 1 (red-team): executable test reference must look like a pytest node id.
+_EXECUTABLE_TEST_RE = re.compile(r"\.py::")
+
+# Fix 1: execution_oracle types (ground-truth anchors for execution_derived provenance).
+_ALLOWED_ORACLE_TYPES = ("golden_fixture", "property_test", "differential_test")
+_ALLOWED_PROPERTY_TESTS = ("round_trip", "invariant", "idempotent")
+_REPO_PATH_PREFIXES = ("mcp_server/", "tests/", "judgment/", "examples/")
+
+
+def _test_reference_executable(test: object) -> bool:
+    """True when test looks like a pytest path (structure-only — does not run tests)."""
+    if not isinstance(test, str):
+        return False
+    text = test.strip()
+    if not text or not _EXECUTABLE_TEST_RE.search(text):
+        return False
+    # Prose disguised as a test: spaces but no repo path segment.
+    if " " in text and "/" not in text and not text.startswith(_REPO_PATH_PREFIXES):
+        return False
+    return True
+
+
+def _test_file_part(test: str) -> str:
+    return test.split("::", 1)[0].strip()
+
+
+def _looks_like_repo_test_path(file_part: str) -> bool:
+    return "/" in file_part or file_part.startswith(_REPO_PATH_PREFIXES)
+
+
+def _repo_file_missing(file_part: str, root: Path) -> bool:
+    if not _looks_like_repo_test_path(file_part):
+        return False
+    return not (root / file_part).is_file()
+
+
+def _constraint_is_unverified(constraint: dict, root: Path) -> bool:
+    if "test" not in constraint:
+        return True
+    test = constraint.get("test")
+    if not _test_reference_executable(test):
+        return True
+    return _repo_file_missing(_test_file_part(test), root)
+
+
+def _validate_execution_oracle(
+    cname: str,
+    oracle: object,
+    root: Path,
+    warnings: list,
+) -> None:
+    if not isinstance(oracle, dict):
+        warnings.append(
+            f"Constraint '{cname}' execution_oracle must be a mapping "
+            "(Fix 1: golden_fixture | property_test | differential_test)"
+        )
+        return
+
+    otype = oracle.get("type")
+    if otype not in _ALLOWED_ORACLE_TYPES:
+        warnings.append(
+            f"Constraint '{cname}' execution_oracle.type '{otype}' unrecognized — "
+            f"use one of {', '.join(_ALLOWED_ORACLE_TYPES)} (Fix 1)"
+        )
+        return
+
+    if otype == "golden_fixture":
+        for field in ("path", "expected"):
+            if field not in oracle:
+                warnings.append(
+                    f"Constraint '{cname}' execution_oracle (golden_fixture) missing '{field}'"
+                )
+        for field in ("path", "expected"):
+            val = oracle.get(field)
+            if isinstance(val, str) and _looks_like_repo_test_path(val):
+                if not (root / val).is_file():
+                    warnings.append(
+                        f"Constraint '{cname}' execution_oracle.{field} not found on disk: {val}"
+                    )
+    elif otype == "property_test":
+        prop = oracle.get("property")
+        if prop not in _ALLOWED_PROPERTY_TESTS:
+            warnings.append(
+                f"Constraint '{cname}' execution_oracle.property '{prop}' unrecognized — "
+                f"use one of {', '.join(_ALLOWED_PROPERTY_TESTS)} (Fix 1)"
+            )
+    elif otype == "differential_test":
+        if not oracle.get("reference") and not oracle.get("path"):
+            warnings.append(
+                f"Constraint '{cname}' execution_oracle (differential_test) needs "
+                "'reference' or 'path' (Fix 1)"
+            )
+        ref = oracle.get("reference") or oracle.get("path")
+        if isinstance(ref, str) and _looks_like_repo_test_path(ref):
+            if not (root / ref).is_file():
+                warnings.append(
+                    f"Constraint '{cname}' execution_oracle reference not found on disk: {ref}"
+                )
+
+
+def _build_verification_gating(
+    needs_external_oracle: list,
+    constraints_unverified: list,
+) -> dict:
+    gating = {}
+    if needs_external_oracle:
+        gating["constraints_needing_external_oracle"] = needs_external_oracle
+    if constraints_unverified:
+        gating["constraints_unverified"] = constraints_unverified
+
+    if needs_external_oracle and constraints_unverified:
+        gating["status"] = "MIXED"
+        gating["note"] = (
+            "Some constraints need an external oracle (AI-only test evidence); others are "
+            "UNVERIFIED (missing or non-executable test). Do not report PASS on either until "
+            "cleared. The code-under-test must never be its own oracle."
+        )
+    elif needs_external_oracle:
+        gating["status"] = "NEEDS_EXTERNAL_ORACLE"
+        gating["note"] = (
+            "These constraints declare an AI-generated test as their only evidence. "
+            "An AI-authored test is low-trust (it tends to confirm the code/intent rather "
+            "than catch it). Do not report PASS until a human-authored assertion or an "
+            "execution-derived oracle clears them. The code-under-test must never be its own oracle."
+        )
+    else:
+        gating["status"] = "UNVERIFIED"
+        gating["note"] = (
+            "These constraints have no executable test reference (missing test, prose-only test, "
+            "or repo test file not found). Do not report PASS until an executable test with "
+            "appropriate provenance clears them."
+        )
+    return gating
 
 # IVD v3.0: Judgment phase artifact types (opt-in via `.judgment/`)
 JUDGMENT_ARTIFACT_TYPES = ("baseline", "ledger_entry", "comparison_pair", "pattern")
@@ -51,6 +188,9 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     # Fix 1 (red-team remediation): constraints whose only verification evidence
     # is an AI-authored test cannot clear on their own — reported, never PASS.
     needs_external_oracle = []
+    # Fix 1 (completion): missing / non-executable / absent test file → UNVERIFIED.
+    constraints_unverified = []
+    framework_root = IVD_FRAMEWORK_ROOT
 
     # Allowed test provenance tiers (signal hierarchy: ground-truth > proxy > self).
     ALLOWED_PROVENANCE = ("human_authored", "execution_derived", "ai_generated")
@@ -140,9 +280,22 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                     if not isinstance(c, dict):
                         continue
                     cname = c.get("name", f"#{i+1}")
+                    if _constraint_is_unverified(c, framework_root):
+                        constraints_unverified.append(cname)
+
                     if "test" not in c:
                         missing_test_count += 1
                         warnings.append(f"Constraint #{i+1} missing 'test' field — the Post-Implementation Verification Protocol cannot verify this constraint (Principle 2 + Principle 4)")
+                    elif not _test_reference_executable(c.get("test")):
+                        warnings.append(
+                            f"Constraint '{cname}' test is not an executable pytest reference "
+                            "(expected path/to/test.py::test_name) — treat as UNVERIFIED (Fix 1)"
+                        )
+                    elif _repo_file_missing(_test_file_part(c["test"]), framework_root):
+                        warnings.append(
+                            f"Constraint '{cname}' test file not found on disk: "
+                            f"{_test_file_part(c['test'])} (Fix 1)"
+                        )
 
                     # Fix 1: test provenance gating (external ground-truth signal).
                     prov = c.get("test_provenance")
@@ -158,6 +311,15 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
                         # An AI-authored test alone is low-trust: it confirms the
                         # code/intent rather than catches it (circularity of error).
                         needs_external_oracle.append(cname)
+                    elif prov == "execution_derived" and "execution_oracle" not in c:
+                        warnings.append(
+                            f"Constraint '{cname}' declares test_provenance execution_derived but "
+                            "has no execution_oracle block — add golden_fixture, property_test, or "
+                            "differential_test so the oracle is structurally anchored (Fix 1)"
+                        )
+
+                    if "execution_oracle" in c:
+                        _validate_execution_oracle(cname, c["execution_oracle"], framework_root, warnings)
 
                     # Fix 4: conflict_prone constraints (idiosyncratic rules the
                     # model's prior may ignore) need an executable test AND an
@@ -329,23 +491,14 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
 
-    # Fix 1: external-oracle gating report. Structure-only validation cannot RUN
-    # tests, but it can flag constraints whose only declared evidence is an
-    # AI-authored test — those can never be auto-marked PASS by the verification
-    # protocol; they need a human-authored assertion or an execution-derived
-    # oracle (golden output, property/differential test). Report-only: this does
-    # NOT affect `valid` (backward compatibility).
-    if needs_external_oracle:
-        result["verification_gating"] = {
-            "constraints_needing_external_oracle": needs_external_oracle,
-            "status": "NEEDS_EXTERNAL_ORACLE",
-            "note": (
-                "These constraints declare an AI-generated test as their only evidence. "
-                "An AI-authored test is low-trust (it tends to confirm the code/intent rather "
-                "than catch it). Do not report PASS until a human-authored assertion or an "
-                "execution-derived oracle clears them. The code-under-test must never be its own oracle."
-            ),
-        }
+    # Fix 1: external-oracle + UNVERIFIED gating report. Structure-only validation
+    # cannot RUN tests, but it can flag constraints whose evidence is insufficient.
+    # Report-only: does NOT affect `valid` (backward compatibility).
+    if needs_external_oracle or constraints_unverified:
+        result["verification_gating"] = _build_verification_gating(
+            needs_external_oracle,
+            constraints_unverified,
+        )
 
     status = "passed" if valid else "failed"
     color = "green" if valid else "red"
