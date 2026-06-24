@@ -7,6 +7,12 @@
         "matcher": "ivd_validate|ivd_review_intent"
       }
     ],
+    "afterMCPExecution": [
+      {
+        "command": ".cursor/hooks/ivd_capture_gating.py",
+        "matcher": "ivd_validate|ivd_review_intent"
+      }
+    ],
     "stop": [
       {
         "command": ".cursor/hooks/ivd_stop_gating.py",

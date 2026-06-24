@@ -295,6 +295,15 @@ execution-derived evidence or anchors are missing.
 `implementation_complete_blocked: true` and `active_gates`. IDE hooks or custom
 monitors can enforce this at agent stop. Clear by fixing the intent and re-validating.
 
+**Cursor hooks (optional):** This repo ships `.cursor/hooks.json` plus
+`ivd_capture_gating.py` (persists `client_enforcement` after validate/review) and
+`ivd_stop_gating.py` (blocks agent stop while gating is active). Open the **ivd**
+repo as the Cursor project root and hooks load automatically. In a **monorepo** where
+ivd is a subdirectory (e.g. `workspace/ivd/`), add a sibling `.cursor/hooks.json`
+at the workspace root with commands pointing at `ivd/.cursor/hooks/…` — same scripts,
+no duplication. Runtime state: `.ivd/client_gating_state.json` (gitignored under ivd;
+created at whichever root Cursor uses). Reload Cursor after adding hooks.
+
 **Opt-in test runner:** Call `ivd_run_constraint_tests` in local/CI when
 `IVD_TEST_RUNNER_ENABLED=true` to run pytest nodes declared in the intent only.
 
