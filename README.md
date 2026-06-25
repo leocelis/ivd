@@ -38,8 +38,10 @@ AI:  [builds with wrong columns]         AI:  [writes intent.yaml with constrain
 You: "No, these columns, ISO dates"      You:  "Yes, that's what I meant"
 AI:  [rewrites, still wrong]             AI:  [implements, verifies against constraints]
 You: "Still not right..."                You:  "Done. First try."
-  Many turns. Many hallucinations.         One turn. Zero hallucinations.
+  Many turns. Many hallucinations.         One turn. Zero hallucinations.*
 ```
+
+\* Conditions apply — see [LEGAL.md §4](LEGAL.md#4-marketing-claims--scope-and-limits).
 
 **IVD saturates the contextual channel** with structured, verifiable intent — so the model has nothing to guess.
 
