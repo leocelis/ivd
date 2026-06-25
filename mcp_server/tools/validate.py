@@ -294,12 +294,19 @@ def _build_verification_gating(
 JUDGMENT_ARTIFACT_TYPES = ("baseline", "ledger_entry", "comparison_pair", "pattern")
 
 
-def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") -> str:
+def validate_artifact_tool(
+    artifact_yaml: str,
+    artifact_type: str = "intent",
+    project_root: Optional[str] = None,
+) -> str:
     """Validate an IVD artifact (structure and required section checks).
 
     Supported artifact_type values:
       - intent | recipe | workflow                   (core IVD)
       - baseline | ledger_entry | comparison_pair | pattern  (Judgment phase, v3.0)
+
+    When ``project_root`` is set, constraint test paths and execution_oracle
+    fixtures resolve against that repo root instead of the IVD framework tree.
     """
     print(colored(f"[{LOG}] ivd_validate: type={artifact_type}", "cyan"))
 
@@ -335,7 +342,16 @@ def validate_artifact_tool(artifact_yaml: str, artifact_type: str = "intent") ->
     constraint_count = 0
     conflict_prone_needing_execution_derived: List[str] = []
     conflict_prone_missing_anchor: List[str] = []
-    framework_root = IVD_FRAMEWORK_ROOT
+    if project_root:
+        framework_root = Path(project_root).expanduser().resolve()
+        if not framework_root.is_dir():
+            warnings.append(
+                f"project_root is not a directory: {framework_root} — "
+                "falling back to IVD framework root for test-path checks"
+            )
+            framework_root = IVD_FRAMEWORK_ROOT
+    else:
+        framework_root = IVD_FRAMEWORK_ROOT
 
     # Allowed test provenance tiers (signal hierarchy: ground-truth > proxy > self).
     ALLOWED_PROVENANCE = ("human_authored", "execution_derived", "ai_generated")

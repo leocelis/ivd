@@ -96,6 +96,7 @@ def get_all_tools() -> List[Tool]:
             inputSchema={"type": "object", "properties": {
                 "artifact_yaml": {"type": "string", "description": "YAML content of the artifact to validate"},
                 "artifact_type": {"type": "string", "description": "Type of artifact", "enum": ["intent", "recipe", "workflow", "baseline", "ledger_entry", "comparison_pair", "pattern"], "default": "intent"},
+                "project_root": {"type": "string", "description": "Path to repo root where constraint tests live (defaults to IVD framework root when omitted)."},
             }, "required": ["artifact_yaml"]},
         ),
         Tool(
@@ -357,7 +358,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_load_recipe": lambda recipe_name, **_: load_recipe_tool(recipe_name),
     "ivd_load_template": lambda template_type, **_: load_template_tool(template_type),
     "ivd_list_recipes": lambda **_: list_recipes_tool(),
-    "ivd_validate": lambda artifact_yaml, artifact_type="intent", **_: validate_artifact_tool(artifact_yaml, artifact_type),
+    "ivd_validate": lambda artifact_yaml, artifact_type="intent", project_root=None, **_: validate_artifact_tool(artifact_yaml, artifact_type, project_root),
     "ivd_review_intent": lambda artifact_yaml, **_: review_intent_tool(artifact_yaml),
     "ivd_run_constraint_tests": lambda artifact_yaml, project_root=None, timeout_sec=120, **_: run_constraint_tests_tool(artifact_yaml, project_root, timeout_sec),
     "ivd_init": lambda project_root, auto_fill=True, **_: init_project_tool(project_root, auto_fill),

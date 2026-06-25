@@ -474,3 +474,23 @@ class TestBackwardCompatibility:
         yaml_str = _intent_with("constraints:\n  - just a string\n  - 42\n")
         result = json.loads(validate_artifact_tool(yaml_str, "intent"))
         assert "valid" in result  # did not raise
+
+    def test_project_root_resolves_constraint_test_paths(self, tmp_path):
+        test_file = tmp_path / "test" / "unit" / "sample.py"
+        test_file.parent.mkdir(parents=True)
+        test_file.write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+        rel_test = "test/unit/sample.py::test_ok"
+        yaml_str = _intent_with(
+            "constraints:\n"
+            f"  - name: c\n    requirement: r\n    test: {rel_test}\n"
+            "    test_provenance: human_authored\n"
+        )
+        without_root = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert "constraints_unverified" in (without_root.get("verification_gating") or {})
+
+        with_root = json.loads(
+            validate_artifact_tool(yaml_str, "intent", project_root=str(tmp_path))
+        )
+        gating = with_root.get("verification_gating") or {}
+        unverified = gating.get("constraints_unverified") or []
+        assert "c" not in unverified
