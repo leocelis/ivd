@@ -31,10 +31,11 @@ The `scan_directory` function in `mcp_server/knowledge/brain.py` is the authorit
 
 | Layer | Mechanism | Excludes |
 |-------|-----------|----------|
-| Git | `.gitignore` | `_private/`, `mcp_server/brain/`, `temp/`, `.env` — never even pushed |
-| Embeddings | `brain.SKIP_DIRS` + `PRIVATE_PREFIX = "_"` + dotfile rule | `_private/`, any `_*` dir, any `.*` dir, `mcp_server/`, `deploy/`, `temp/`, etc. |
+| Git | `.gitignore` | `mcp_server/brain/`, `temp/`, `.env` — never even pushed |
+| Embeddings | `brain.SKIP_DIRS` + `PRIVATE_PREFIX = "_"` + dotfile rule | any `_*` dir, any `.*` dir, `mcp_server/`, `deploy/`, `temp/`, etc. |
 
-The `_private/` exclusion is locked in by `mcp_server/tests/unit/test_brain_scan.py::test_real_repo_excludes_private`, which runs as part of the standard pytest suite (and is therefore enforced in CI on every PR).
+Private maintainer docs belong in a separate private repository (not in this OSS repo).
+The `_private/` convention in `SKIP_DIRS` remains for underscore-prefixed dirs if present.
 
 ## Prerequisites
 

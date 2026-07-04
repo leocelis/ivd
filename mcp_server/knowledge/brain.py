@@ -26,7 +26,8 @@ def get_brain_root() -> str:
 
 # Convention: any directory whose name starts with PRIVATE_PREFIX is treated
 # as private content and excluded from embedding scans. The canonical example
-# is `_private/` (also gitignored at repo root, see `.gitignore`). Underscore
+# Private maintainer content belongs outside this OSS repo (separate private git repo).
+# SKIP_DIRS still lists "_private" for underscore-prefix dirs if present.
 # prefix is the single source of truth for "do not embed".
 PRIVATE_PREFIX = "_"
 

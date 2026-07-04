@@ -135,7 +135,7 @@ risks_template:
 
 implementation_pattern:
   structure: |
-    [project]/_private/
+    [private-repo]/
     ├── meetings.md                          # Raw meeting transcripts/notes
     ├── [KNOWLEDGE_BASE].md                  # Extracted insights (living document)
     ├── meetings_index.md                    # Processing tracker
@@ -221,7 +221,7 @@ verification_pattern:
 
 examples:
   - name: "Development Guide from Training Sessions"
-    location: "[project]/_private/"
+    location: "[private-repo]/meetings/"
     domain: "Software Development / AI Integration"
     meetings_processed: "20+"
     concepts_extracted: "~150+"

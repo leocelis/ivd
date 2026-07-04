@@ -452,9 +452,9 @@ rules. **IVD's default convention places intent artifacts at the repository root
 module directories, directly alongside code.** If your repository is public, this
 information is public.
 
-For sensitive projects: keep system-level and workflow-level intents in a gitignored
-`_private/` directory or a separate private repository. The `.gitignore` in the IVD
-public repo provides a template; ensure it is carried into forked or derivative repos.
+For sensitive projects: keep system-level and workflow-level intents in a
+**separate private repository** or another gitignored location outside this
+public repo. Do not store maintainer-only material in the OSS tree.
 
 ### 9.2 Credentials and .env files (R-031)
 
