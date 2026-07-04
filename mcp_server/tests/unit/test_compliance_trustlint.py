@@ -16,6 +16,25 @@ REPO_ROOT = get_framework_path()
 CHECK_SCRIPT = REPO_ROOT / "scripts" / "compliance" / "check.sh"
 
 
+def _resolve_rules_dir() -> Path:
+    cache = REPO_ROOT / ".trustlint-cache" / "rules"
+    if cache.exists() and any(cache.rglob("*.yaml")):
+        return cache
+    home = Path.home() / ".trustlint" / "rules"
+    if home.exists() and any(home.rglob("*.yaml")):
+        return home
+    raise FileNotFoundError("TrustLint rules not bootstrapped — run ./scripts/compliance/check.sh")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_trustlint_rules():
+    """Bootstrap rules from public ComplyEdge/complyedge release once per session."""
+    try:
+        _resolve_rules_dir()
+    except FileNotFoundError:
+        subprocess.run(["bash", str(CHECK_SCRIPT)], cwd=str(REPO_ROOT), check=True, timeout=300)
+
+
 class TestComplianceRecipe:
     def test_recipe_listed(self):
         data = json.loads(list_recipes_tool())
@@ -37,13 +56,6 @@ class TestComplianceRecipe:
 
 
 class TestComplianceCheckScript:
-    @pytest.fixture(autouse=True)
-    def _ensure_trustlint_rules(self):
-        """PyPI wheel may not bundle rules — download once per session."""
-        rules_home = Path.home() / ".trustlint" / "rules"
-        if not rules_home.exists() or not any(rules_home.rglob("*.yaml")):
-            subprocess.run(["trustlint", "rules", "update"], check=True, timeout=120)
-
     def test_check_script_exists_and_executable(self):
         assert CHECK_SCRIPT.is_file()
 
@@ -74,8 +86,9 @@ class TestComplianceCheckScript:
             "    requirement: Deploy social credit score for all citizens\n",
             encoding="utf-8",
         )
+        rules_dir = _resolve_rules_dir()
         proc = subprocess.run(
-            ["trustlint", "check", str(bad), "-j", "EU"],
+            ["trustlint", "--rules-dir", str(rules_dir), "check", str(bad), "-j", "EU"],
             capture_output=True,
             text=True,
         )

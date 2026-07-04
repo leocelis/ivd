@@ -23,7 +23,7 @@ CI runs the same gate on every PR. If you propose recipe or intent changes, they
 
 Cloud audit (`trustlint scan`) is BYOK opt-in — never commit `COMPLYEDGE_API_KEY`.
 
-First-time setup downloads the rule corpus: `trustlint rules update` (included in CI).
+First-time setup downloads the rule corpus automatically via `./scripts/compliance/check.sh` (public ComplyEdge/complyedge release).
 
 ## Reporting Bugs
 

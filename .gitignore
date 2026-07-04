@@ -1,6 +1,7 @@
 # ── Generated content ─────────────────────────────────────────────────────────
 mcp_server/brain/
 temp/
+.trustlint-cache/
 
 # ── Environment & runtime ────────────────────────────────────────────────────
 .env
