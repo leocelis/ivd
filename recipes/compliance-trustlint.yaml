@@ -1,0 +1,151 @@
+# ==============================================================================
+# IVD Recipe: ComplyEdge TrustLint — EU AI Act Compliance Gate (Offline)
+# ==============================================================================
+# Embeds ComplyEdge TrustLint (free tier) into the IVD workflow: offline
+# `trustlint check` on LLM-facing YAML after scaffold/edit, plus CI gate.
+#
+# Pattern: FSFE REUSE (CLI + CI) + OpenSSF automated gates + optional pre-commit.
+# Agent rules = ergonomics; CI = auditable gate.
+#
+# Status: Canonical
+# Version: 1.0
+# Created: 2026-07-04
+# ==============================================================================
+
+recipe:
+  name: "ComplyEdge TrustLint — EU AI Act Compliance Gate"
+  version: "1.0"
+  category: "compliance"
+  status: "canonical"
+  complexity: "low"
+  created: "2026-07-04"
+
+  description: |
+    IVD scaffolds intent artifacts and recipes that AI agents read at runtime.
+    Those artifacts can accidentally encode EU AI Act Article 5(1)
+    prohibited practices — violations that IVD constraint validation does not catch.
+
+    This recipe wires ComplyEdge **TrustLint** (offline, free tier) into IVD:
+    - Local: `trustlint check` on recipes, intents, templates after scaffold/edit
+    - CI: same command blocks merge on critical/high EU violations
+    - Optional: pre-commit hook via `.pre-commit-config.yaml`
+
+    No `COMPLYEDGE_API_KEY` in the repo. Cloud API (`trustlint scan`) is BYOK opt-in.
+
+  problem_solved: |
+    IVD validates constraint structure and test paths — not regulatory content
+    in the YAML the LLM consumes. A well-formed intent can still instruct an
+    agent to build prohibited AI practices. TrustLint closes that gap with
+    deterministic Tier 1 regex against the ComplyEdge rule corpus.
+
+  applies_to:
+    - "IVD framework repos shipping recipes and *_intent.yaml artifacts"
+    - "Any IVD adopter who wants EU AI Act Article 5 screening on LLM-facing YAML"
+    - "CI pipelines gating merge on compliance (OpenSSF / REUSE pattern)"
+
+  when_to_use:
+    - "After ivd_scaffold or editing recipes / intent artifacts"
+    - "Before declaring scaffold work complete (agent rule)"
+    - "On every PR touching recipes/, templates/, or *_intent.yaml (CI)"
+
+  when_NOT_to_use:
+    - "Runtime enforcement in production agents (use ComplyEdge API/SDK instead)"
+    - "Non-LLM-facing code paths (use domain-specific linters)"
+    - "When cloud audit trail is required (use trustlint scan + BYOK)"
+
+# ==============================================================================
+# WORKFLOW INSERTION POINT
+# ==============================================================================
+
+workflow:
+  name: "IVD + TrustLint loop"
+  steps:
+    - step: 1
+      action: "ivd_scaffold / edit intent or recipe"
+    - step: 2
+      action: "ivd_validate — structure, constraints, gating signals"
+    - step: 3
+      action: "trustlint check (or ./scripts/compliance/check.sh) on changed LLM-facing YAML"
+    - step: 4
+      action: "Fix violations before declaring done; CI repeats on push/PR"
+
+  acceptance: |
+    Merge blocked if TrustLint reports critical/high EU violations on
+    recipes/**/*.yaml, templates/**/*.yaml, or *_intent.yaml.
+
+# ==============================================================================
+# AGENT RULES BLOCK — COPY INTO YOUR AGENT INSTRUCTION FILE
+# ==============================================================================
+
+agent_rules_block:
+  description: |
+    Append after the IVD rules block (or load via ivd_load_recipe compliance-trustlint).
+    Fence markers allow future detection/version bumps.
+
+  cursorrules_format: |
+    # <BEGIN-COMPLYEDGE v1.0>
+    # ==============================================================================
+    # ComplyEdge TrustLint — EU AI Act compliance gate (offline / free tier)
+    # ==============================================================================
+    # Source: ivd/recipes/compliance-trustlint.yaml v1.0
+    # Tool: pip install 'trustlint>=2.0.0' · https://complyedge.io
+    # Do not modify by hand — reload from recipe to refresh.
+
+    ## ComplyEdge Rule CE-1: TrustLint after scaffold
+
+    After `ivd_scaffold`, editing any `*_intent.yaml`, or changing files under
+    `recipes/` or `templates/` that an LLM agent reads:
+
+    1. RUN `./scripts/compliance/check.sh` (or `trustlint check <file> -j EU`)
+       on every changed LLM-facing artifact BEFORE declaring the work done.
+    2. If TrustLint reports critical/high violations — FIX the YAML content
+       (remove or rephrase prohibited practices), re-run until clean.
+    3. Do NOT embed `COMPLYEDGE_API_KEY` or call `trustlint scan` unless the
+       user explicitly opts into BYOK cloud audit.
+
+    IVD constraint validation and TrustLint are complementary:
+    - `ivd_validate` → structure, tests, verification gating
+    - TrustLint → EU AI Act / regulatory content in LLM-facing text
+
+    CI enforces the same gate on push/PR — local check is not optional ergonomics.
+    # <END-COMPLYEDGE v1.0>
+
+  clinerules_format: |
+    # <BEGIN-COMPLYEDGE v1.0>
+    # ComplyEdge TrustLint — after ivd_scaffold or recipe/intent edits:
+    # run ./scripts/compliance/check.sh (offline, EU jurisdiction) before done.
+    # Fix critical/high violations. No API key in repo. Source: compliance-trustlint.yaml v1.0
+    # <END-COMPLYEDGE v1.0>
+
+block_markers:
+  begin: "<BEGIN-COMPLYEDGE v1.0>"
+  end: "<END-COMPLYEDGE v1.0>"
+
+install_targets:
+  cursor: ".cursorrules"
+  cline: ".clinerules"
+  claude_code: "CLAUDE.md"
+  copilot: ".github/instructions/complyedge-trustlint.md"
+  codex: "AGENTS.md"
+  windsurf: ".windsurf/rules/complyedge-trustlint.md"
+
+repo_files:
+  config: ".trustlint.yaml"
+  check_script: "scripts/compliance/check.sh"
+  pre_commit: ".pre-commit-config.yaml"
+  ci_workflow: ".github/workflows/ci.yml"
+
+integrations:
+  - pattern: "agent-rules-ivd recipe"
+    relationship: "TrustLint runs AFTER ivd_validate in the IVD loop; does not replace Rule 2 verification protocol."
+
+  - pattern: "canon-rules recipe"
+    relationship: "Canon governs reply format; TrustLint governs regulatory content in artifacts the agent loads."
+
+  - pattern: "OpenSSF / REUSE CI gates"
+    relationship: "Same architecture: offline CLI + identical CI command + optional pre-commit."
+
+changelog:
+  - version: "1.0"
+    date: "2026-07-04"
+    change: "Initial recipe — IVD Customer #0 path. Offline TrustLint on LLM-facing YAML; CI + pre-commit; no API key."

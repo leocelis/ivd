@@ -56,6 +56,11 @@ RECIPE_INFO = {
         "use_cases": ["make any AI agent's replies legible to humans", "calibrate trust on AI output", "enforce verification beats before irreversible actions", "ship Canon's R-invariants with zero install"],
         "complexity": "low",
     },
+    "compliance-trustlint": {
+        "description": "ComplyEdge TrustLint — EU AI Act offline compliance gate for IVD. Scans recipes, intents, and templates with `trustlint check` (free tier, no API key). CI + pre-commit mirror local gate.",
+        "use_cases": ["EU AI Act Article 5 screening on LLM-facing YAML", "CI merge gate for regulatory content", "post-scaffold compliance check after ivd_scaffold"],
+        "complexity": "low",
+    },
 }
 
 

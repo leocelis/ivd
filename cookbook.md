@@ -4,7 +4,7 @@
 
 **Version:** 3.1  
 **Date:** January 23, 2026  
-**Updated:** April 23, 2026 (v3.0: Judgment phase — see [`judgment_layer.md`](judgment_layer.md); v3.1: Canon phase — see [`canon_layer.md`](canon_layer.md))
+**Updated:** July 4, 2026 (ComplyEdge TrustLint — EU AI Act offline gate on LLM-facing artifacts)
 
 ---
 
@@ -82,6 +82,38 @@ AI: "I'll create a data export feature for users..."
 ```
 
 **The rule:** Echoing = understanding. Substitution = hallucination risk.
+
+---
+
+## EU AI Act Compliance (ComplyEdge TrustLint)
+
+IVD scaffolds YAML that AI agents **read at runtime**. Constraint validation (`ivd_validate`) checks structure — not whether the content violates EU AI Act Article 5 (social scoring, subliminal manipulation, etc.).
+
+**ComplyEdge TrustLint** closes that gap — offline, free tier, no API key:
+
+```bash
+pip install 'trustlint>=2.0.0'
+./scripts/compliance/check.sh
+```
+
+**When to run:** after `ivd_scaffold`, after editing `recipes/`, `templates/`, or any `*_intent.yaml`.
+
+**Workflow:**
+
+```
+ivd_scaffold → ivd_validate → trustlint check → fix violations → CI green
+```
+
+| Gate | Command |
+|------|---------|
+| Local | `./scripts/compliance/check.sh` |
+| CI | `.github/workflows/ci.yml` job `compliance` |
+| Pre-commit | `pre-commit install` (optional) |
+| Agent rule | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` |
+
+Recipe: [`recipes/compliance-trustlint.yaml`](recipes/compliance-trustlint.yaml). Product: [complyedge.io](https://complyedge.io).
+
+Cloud audit (`trustlint scan`) requires BYOK — never commit `COMPLYEDGE_API_KEY` to the repo.
 
 ---
 

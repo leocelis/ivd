@@ -9,6 +9,7 @@
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
   <a href="https://github.com/leocelis/ivd/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/leocelis/ivd/ci.yml?branch=main&style=flat-square&label=tests" alt="Tests"></a>
+  <a href="https://complyedge.io"><img src="https://img.shields.io/badge/EU%20AI%20Act-TrustLint%20protected-2563eb?style=flat-square" alt="EU AI Act protected by ComplyEdge TrustLint"></a>
 </p>
 
 <p align="center">
@@ -269,6 +270,28 @@ Full prompt list, methodology, per-prompt side-by-sides, and expected output:
 
 Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine source: [`canon/`](canon/).
 
+### ComplyEdge TrustLint — EU AI Act protection (offline)
+
+IVD's own recipes, intents, and templates are scanned by **[ComplyEdge TrustLint](https://complyedge.io)** — offline, free tier, no API key. Every LLM-facing YAML is checked against EU AI Act Article 5 and related rules before merge.
+
+```
+ivd_scaffold → ivd_validate → trustlint check → fix → CI green
+```
+
+| Layer | What |
+|-------|------|
+| **Local** | `./scripts/compliance/check.sh` after scaffold or recipe/intent edits |
+| **CI** | Same gate in `.github/workflows/ci.yml` — merge blocked on critical/high EU violations |
+| **Agent rule** | `<BEGIN-COMPLYEDGE v1.0>` block in `.cursorrules` (recipe [`compliance-trustlint`](recipes/compliance-trustlint.yaml)) |
+| **Opt-in cloud** | `trustlint scan` + BYOK — not required for OSS |
+
+```bash
+pip install 'trustlint>=2.0.0'
+./scripts/compliance/check.sh
+```
+
+Pattern follows canonical OSS compliance gates (REUSE CLI + CI, OpenSSF automated checks). IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
+
 ---
 
 ## The Nine Principles
@@ -291,11 +314,12 @@ Deep dive: [purpose.md](purpose.md) · [framework.md](framework.md) · [cheatshe
 
 ## Recipes
 
-17 reusable patterns that encode proven solutions (14 general + 3 Judgment-phase, listed in full in the [recipes README](recipes/README.md)):
+18 reusable patterns (see [recipes README](recipes/README.md)):
 
 | Recipe | Pattern |
 |--------|---------|
 | [agent-rules-ivd](recipes/agent-rules-ivd.yaml) | Embed IVD verification in `.cursorrules` or any agent config |
+| [compliance-trustlint](recipes/compliance-trustlint.yaml) | ComplyEdge TrustLint — EU AI Act offline gate on recipes, intents, templates (CI + pre-commit) |
 | [canon-rules](recipes/canon-rules.yaml) | Canon Phase 0a — pasteable Human-Translation-Layer rules block (R1/R2/R5/R10/R14) for Cursor / Cline / Claude Code / Copilot / Codex / Windsurf. Composes with the four `canon_*` MCP tools. |
 | [workflow-orchestration](recipes/workflow-orchestration.yaml) | Multi-step process orchestration |
 | [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |

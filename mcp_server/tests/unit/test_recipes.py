@@ -37,6 +37,9 @@ class TestListRecipes:
             "canon-rules recipe missing from ivd_list_recipes — "
             "agents cannot discover the Phase 0a rules block via IVD tooling."
         )
+        assert "compliance-trustlint" in names, (
+            "compliance-trustlint recipe missing — EU AI Act gate not discoverable via IVD tooling."
+        )
 
     def test_canon_rules_recipe_has_description(self):
         data = json.loads(list_recipes_tool())

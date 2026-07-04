@@ -606,6 +606,7 @@
       <li><a href="#how-it-works">how it works</a></li>
       <li><a href="#mcp">tools</a></li>
       <li><a href="#canon">canon</a></li>
+      <li><a href="#complyedge">complyedge</a></li>
       <li><a href="#judgment">judgment</a></li>
       <li><a href="#quickstart">quickstart</a></li>
       <li><a href="https://github.com/leocelis/ivd" target="_blank">github</a></li>
@@ -622,6 +623,8 @@
       Hallucinations happen because vague prompts leave the AI with gaps to fill.
       IVD fixes this: the AI writes a <strong>structured intent artifact</strong> with constraints
       and tests, implements against it, and verifies — before you see a single line of code.
+      <strong style="color:#60a5fa;font-weight:500">EU AI Act protected</strong> — every LLM-facing
+      recipe and intent is scanned by <a href="https://complyedge.io" target="_blank" style="color:#60a5fa;text-decoration:none;">ComplyEdge TrustLint</a> before merge.
     </p>
     <div class="btn-row">
       <a href="#quickstart" class="btn btn-primary">Get started →</a>
@@ -988,6 +991,79 @@ If you approve, the command will be: rm -rf ...
   </div>
 </section>
 
+<!-- COMPLYEDGE -->
+<section class="section" id="complyedge">
+  <div class="wrap">
+    <p class="section-label">// complyedge · trustlint · eu ai act gate</p>
+    <h2>EU AI Act protection on every artifact the LLM reads</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
+      IVD validates <em>structure</em> — constraints, tests, gating signals.
+      It does not catch prohibited regulatory content inside the YAML your agent loads.
+      <strong style="color:#60a5fa;font-weight:500"><a href="https://complyedge.io" target="_blank" style="color:inherit;text-decoration:none;">ComplyEdge TrustLint</a></strong>
+      scans recipes, intents, and templates against EU AI Act Article 5 and related rules —
+      offline, free tier, no API key, same gate in CI.
+    </p>
+
+    <div class="contrast-grid" style="margin-bottom:32px;">
+      <div class="contrast-col">
+        <span class="contrast-label bad">Without TrustLint</span>
+<pre><span class="you">Intent constraint:</span>
+  "Score users by social behaviour for eligibility"
+
+<span class="ai">ivd_validate:</span> PASS — structure OK
+
+<span class="note">→ Article 5 social scoring ships in a well-formed intent.</span></pre>
+      </div>
+      <div class="contrast-col">
+        <span class="contrast-label good">With TrustLint</span>
+<pre><span class="you">Same intent after scaffold</span>
+
+<span class="ai">trustlint check:</span>
+  [CRITICAL] EU_AI_ACT_ART5_SOCIAL_SCORING_001
+
+<span class="ok">→ Blocked locally and in CI before merge.</span></pre>
+      </div>
+    </div>
+
+    <div class="steps" style="margin-bottom:24px;">
+      <div class="step">
+        <span class="step-num">1</span>
+        <div class="step-body">
+          <h3>Scaffold + validate (IVD MCP)</h3>
+          <p><code style="color:var(--accent2);">ivd_scaffold</code> → <code style="color:var(--accent2);">ivd_validate</code> — constraints and verification gating.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div class="step-body">
+          <h3>Compliance scan (TrustLint)</h3>
+          <p><code style="color:#60a5fa;">./scripts/compliance/check.sh</code> — EU jurisdiction, critical/high threshold. Bundled rules via <code style="color:var(--accent2);">pip install trustlint</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div class="step-body">
+          <h3>CI gate (auditable)</h3>
+          <p>GitHub Actions job <code style="color:var(--accent2);">compliance</code> repeats the same command — REUSE / OpenSSF pattern.</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+      Agent ergonomics: fenced <code style="color:#60a5fa;">&lt;BEGIN-COMPLYEDGE v1.0&gt;</code> block in
+      <code style="color:var(--accent2);">.cursorrules</code> (recipe
+      <code style="color:var(--accent2);">compliance-trustlint.yaml</code>).
+      Cloud audit (<code style="color:var(--accent2);">trustlint scan</code>) is BYOK opt-in — never shipped in the OSS bundle.
+    </p>
+
+    <div class="btn-row">
+      <a href="https://complyedge.io" target="_blank" class="btn btn-primary" style="background:#2563eb;border-color:#2563eb;">ComplyEdge →</a>
+      <a href="https://github.com/leocelis/ivd/blob/main/recipes/compliance-trustlint.yaml" target="_blank" class="btn btn-secondary">IVD recipe →</a>
+      <a href="https://github.com/ComplyEdge/complyedge/tree/main/packages/trustlint" target="_blank" class="btn btn-secondary">TrustLint OSS →</a>
+    </div>
+  </div>
+</section>
+
 <!-- JUDGMENT -->
 <section class="section" id="judgment">
   <div class="wrap">
@@ -1270,6 +1346,7 @@ If you approve, the command will be: rm -rf ...
       <li><a href="https://github.com/leocelis/ivd" target="_blank">GitHub</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/framework.md" target="_blank">Spec</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank">Canon</a></li>
+      <li><a href="https://complyedge.io" target="_blank">ComplyEdge</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank">Judgment</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/cookbook.md" target="_blank">Cookbook</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/LICENSE" target="_blank">MIT</a></li>

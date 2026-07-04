@@ -1,0 +1,12 @@
+# Optional local gate — mirrors CI TrustLint step.
+# Install: pip install pre-commit && pre-commit install
+
+repos:
+  - repo: local
+    hooks:
+      - id: trustlint-ivd-artifacts
+        name: TrustLint EU AI Act (IVD LLM-facing artifacts)
+        entry: scripts/compliance/check.sh
+        language: script
+        pass_filenames: false
+        files: '(^recipes/|^templates/|_intent\.yaml$)'

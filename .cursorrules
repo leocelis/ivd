@@ -313,6 +313,34 @@ If `client_enforcement.implementation_complete_blocked` is true after validate/r
 # <END-IVD v1.11>
 
 
+# <BEGIN-COMPLYEDGE v1.0>
+# ==============================================================================
+# ComplyEdge TrustLint — EU AI Act compliance gate (offline / free tier)
+# ==============================================================================
+# Source: ivd/recipes/compliance-trustlint.yaml v1.0
+# Tool: pip install 'trustlint>=2.0.0' · https://complyedge.io
+# Do not modify by hand — reload from recipe to refresh.
+
+## ComplyEdge Rule CE-1: TrustLint after scaffold
+
+After `ivd_scaffold`, editing any `*_intent.yaml`, or changing files under
+`recipes/` or `templates/` that an LLM agent reads:
+
+1. RUN `./scripts/compliance/check.sh` (or `trustlint check <file> -j EU`)
+   on every changed LLM-facing artifact BEFORE declaring the work done.
+2. If TrustLint reports critical/high violations — FIX the YAML content
+   (remove or rephrase prohibited practices), re-run until clean.
+3. Do NOT embed `COMPLYEDGE_API_KEY` or call `trustlint scan` unless the
+   user explicitly opts into BYOK cloud audit.
+
+IVD constraint validation and TrustLint are complementary:
+- `ivd_validate` → structure, tests, verification gating
+- TrustLint → EU AI Act / regulatory content in LLM-facing text
+
+CI enforces the same gate on push/PR — local check is not optional ergonomics.
+# <END-COMPLYEDGE v1.0>
+
+
 # <BEGIN-CANON v1.0>
 # ==============================================================================
 # Canon — Human Translation Layer (Phase 0a Rules)

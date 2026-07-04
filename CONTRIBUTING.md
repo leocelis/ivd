@@ -10,6 +10,19 @@ IVD is a research-grounded methodology for human-AI collaboration. Every design 
 
 This will evolve as the project matures and external validation grows.
 
+## EU AI Act compliance (TrustLint)
+
+IVD ships with **[ComplyEdge TrustLint](https://complyedge.io)** — offline EU AI Act screening on all LLM-facing artifacts (`recipes/`, `templates/`, `*_intent.yaml`). No API key required.
+
+```bash
+pip install 'trustlint>=2.0.0'
+./scripts/compliance/check.sh
+```
+
+CI runs the same gate on every PR. If you propose recipe or intent changes, they must pass TrustLint before merge. Optional local hook: `pre-commit install` (see `.pre-commit-config.yaml`).
+
+Cloud audit (`trustlint scan`) is BYOK opt-in — never commit `COMPLYEDGE_API_KEY`.
+
 ## Reporting Bugs
 
 Open an issue with:

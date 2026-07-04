@@ -1,0 +1,19 @@
+# TrustLint — ComplyEdge offline compliance gate for IVD
+# https://complyedge.io · pip install 'trustlint>=2.0.0'
+#
+# Scans LLM-facing artifacts (recipes, intents, templates) against EU AI Act
+# Article 5 and related rules. No API key. No cloud dependency to merge.
+
+jurisdiction: EU
+severity_threshold: high
+
+include:
+  - "recipes/**/*.yaml"
+  - "templates/**/*.yaml"
+  - "**/*_intent.yaml"
+
+exclude:
+  - ".venv/**"
+  - "**/brain/**"
+  - "**/__pycache__/**"
+  - ".git/**"

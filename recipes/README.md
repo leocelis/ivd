@@ -6,6 +6,7 @@ Reusable patterns for common development scenarios.
 
 ### Verification & Agent Discipline
 - **agent-rules-ivd.yaml** — IVD verification rules for agent instruction files (`.cursorrules`, `.clinerules`, Copilot system prompts). Embeds the full 6-rule IVD workflow: intent before implementation, post-implementation verification protocol, stress-test step, empirical refinement, constraint quality. **Start here.**
+- **compliance-trustlint.yaml** — ComplyEdge TrustLint EU AI Act gate (offline, free tier). Run `./scripts/compliance/check.sh` after `ivd_scaffold` or recipe/intent edits; CI blocks merge on critical/high violations. Recipe ships `<BEGIN-COMPLYEDGE v1.0>` agent block + `.trustlint.yaml` + pre-commit hook. No API key in repo.
 - **canon-rules.yaml** — Canon (Human Translation Layer) rules block (Phase 0a). Teaches any LLM-driven agent to emit R1 setting phase, R2 confidence markers (`✓ verified` / `~ inferred` / `? assumed`), R5 verification beats on irreversible actions, R10 folk-theory corrections, and R14 bounded identity. One canonical source → six per-client adapter views (Cursor, Cline, Claude Code, Copilot, Codex, Windsurf). Verified programmatically by the `canon_check` MCP tool and detected/installed via `canon_check_rules_installed` (never writes — always asks).
 
 ### Multi-Agent Patterns
