@@ -7,7 +7,7 @@
 # Usage (from repo root):
 #   ./scripts/compliance/check.sh
 #
-# Requires: pip install 'trustlint>=2.0.0'
+# Requires: pip install 'trustlint>=2.0.0' && trustlint rules update
 # No COMPLYEDGE_API_KEY — offline Tier 1 regex only.
 
 set -euo pipefail
@@ -16,17 +16,26 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 JURISDICTION="${TRUSTLINT_JURISDICTION:-EU}"
+RULES_HOME="${HOME}/.trustlint/rules"
 
 if ! command -v trustlint >/dev/null 2>&1; then
   echo "ERROR: trustlint not found. Install: pip install 'trustlint>=2.0.0'" >&2
   exit 2
 fi
 
-# PyPI 2.0.0+ bundles rules; older installs may need rules update.
-if ! trustlint rules list -j "$JURISDICTION" >/dev/null 2>&1; then
-  echo "TrustLint rules missing — running trustlint rules update..." >&2
-  trustlint rules update
-fi
+ensure_rules() {
+  if [ ! -d "$RULES_HOME" ] || [ -z "$(find "$RULES_HOME" -name '*.yaml' -print -quit 2>/dev/null)" ]; then
+    echo "TrustLint rules missing — running trustlint rules update..." >&2
+    trustlint rules update
+  fi
+  probe_out="$(trustlint check --text "compliance probe" -j "$JURISDICTION" 2>&1)" || true
+  if echo "$probe_out" | grep -q "No rules loaded"; then
+    echo "ERROR: TrustLint rules not loaded after update" >&2
+    exit 2
+  fi
+}
+
+ensure_rules
 
 checked=0
 failed=0

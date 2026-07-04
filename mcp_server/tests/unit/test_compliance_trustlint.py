@@ -37,6 +37,13 @@ class TestComplianceRecipe:
 
 
 class TestComplianceCheckScript:
+    @pytest.fixture(autouse=True)
+    def _ensure_trustlint_rules(self):
+        """PyPI wheel may not bundle rules — download once per session."""
+        rules_home = Path.home() / ".trustlint" / "rules"
+        if not rules_home.exists() or not any(rules_home.rglob("*.yaml")):
+            subprocess.run(["trustlint", "rules", "update"], check=True, timeout=120)
+
     def test_check_script_exists_and_executable(self):
         assert CHECK_SCRIPT.is_file()
 
