@@ -141,6 +141,9 @@ integrations:
   - pattern: "agent-rules-ivd recipe"
     relationship: "TrustLint runs AFTER ivd_validate in the IVD loop; does not replace Rule 2 verification protocol."
 
+  - pattern: "complyedge-platform/docs/development/oss-trustlint-adoption-guide.md"
+    relationship: "CE canonical OSS adoption guide — IVD is reference implementation; Horizon is phase 2."
+
   - pattern: "canon-rules recipe"
     relationship: "Canon governs reply format; TrustLint governs regulatory content in artifacts the agent loads."
 
