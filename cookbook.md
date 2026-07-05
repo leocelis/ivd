@@ -92,7 +92,7 @@ IVD scaffolds YAML that AI agents **read at runtime**. Constraint validation (`i
 **ComplyEdge TrustLint** closes that gap — offline, free tier, no API key:
 
 ```bash
-pip install 'trustlint>=2.0.0'
+pip install 'trustlint>=2.0.1'
 ./scripts/compliance/check.sh
 ```
 

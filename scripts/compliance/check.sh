@@ -7,7 +7,7 @@
 # Usage (from repo root):
 #   ./scripts/compliance/check.sh
 #
-# Requires: pip install 'trustlint>=2.0.0'
+# Requires: pip install 'trustlint>=2.0.1'
 # Rules: downloaded from public ComplyEdge/complyedge release (see bootstrap_rules).
 # No COMPLYEDGE_API_KEY — offline Tier 1 regex only.
 
@@ -22,7 +22,7 @@ RULES_CACHE="${REPO_ROOT}/.trustlint-cache/rules"
 RULES_DIR=""
 
 if ! command -v trustlint >/dev/null 2>&1; then
-  echo "ERROR: trustlint not found. Install: pip install 'trustlint>=2.0.0'" >&2
+  echo "ERROR: trustlint not found. Install: pip install 'trustlint>=2.0.1'" >&2
   exit 2
 fi
 

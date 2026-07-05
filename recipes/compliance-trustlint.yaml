@@ -88,7 +88,7 @@ agent_rules_block:
     # ComplyEdge TrustLint — EU AI Act compliance gate (offline / free tier)
     # ==============================================================================
     # Source: ivd/recipes/compliance-trustlint.yaml v1.0
-    # Tool: pip install 'trustlint>=2.0.0' · https://complyedge.io
+    # Tool: pip install 'trustlint>=2.0.1' · https://complyedge.io
     # Do not modify by hand — reload from recipe to refresh.
 
     ## ComplyEdge Rule CE-1: TrustLint after scaffold

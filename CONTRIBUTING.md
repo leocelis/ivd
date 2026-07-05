@@ -15,7 +15,7 @@ This will evolve as the project matures and external validation grows.
 IVD ships with **[ComplyEdge TrustLint](https://complyedge.io)** — offline EU AI Act screening on all LLM-facing artifacts (`recipes/`, `templates/`, `*_intent.yaml`). No API key required for the offline gate.
 
 ```bash
-pip install 'trustlint>=2.0.0'
+pip install 'trustlint>=2.0.1'
 ./scripts/compliance/check.sh
 ```
 

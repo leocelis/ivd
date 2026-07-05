@@ -276,6 +276,8 @@ Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine
 
 IVD integrates **[ComplyEdge](https://complyedge.io)** TrustLint on every LLM-facing artifact: offline EU AI Act screening in CI, plus optional runtime `/v1/check` for a live enforcement seal and trust page.
 
+ComplyEdge is developed by the same author; IVD runs it on itself as its first production integration — the seal at the top of this README is live enforcement data, not a logo.
+
 ```
 ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
                     ↓ BYOK opt-in
@@ -290,7 +292,7 @@ ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
 | **Agent rule** | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` (recipe [`compliance-trustlint`](recipes/compliance-trustlint.yaml)) |
 
 ```bash
-pip install 'trustlint>=2.0.0'
+pip install 'trustlint>=2.0.1'
 ./scripts/compliance/check.sh
 # optional — requires COMPLYEDGE_API_KEY in env only:
 ./scripts/compliance/runtime_check.sh
