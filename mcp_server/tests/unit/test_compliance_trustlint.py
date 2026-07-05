@@ -96,14 +96,16 @@ class TestComplianceCheckScript:
         assert "EU_AI_ACT" in proc.stdout + proc.stderr or "SOCIAL" in proc.stdout.upper()
 
 
-class TestCustomerZeroCanon:
-    def test_customer0_doc_exists(self):
-        doc = REPO_ROOT / "docs" / "COMPLYEDGE_CUSTOMER0.md"
+class TestComplyEdgeIntegration:
+    def test_complyedge_integration_doc_exists(self):
+        doc = REPO_ROOT / "docs" / "integrations" / "COMPLYEDGE.md"
         assert doc.is_file()
         text = doc.read_text(encoding="utf-8")
         assert "ivd" in text
         assert "runtime_check.sh" in text
         assert "trust.complyedge.io/ivd" in text
+        assert "Customer #0" not in text
+        assert "dogfood" not in text.lower()
 
     def test_runtime_check_script_exists(self):
         script = REPO_ROOT / "scripts" / "compliance" / "runtime_check.sh"

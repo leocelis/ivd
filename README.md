@@ -272,9 +272,9 @@ Full prompt list, methodology, per-prompt side-by-sides, and expected output:
 
 Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine source: [`canon/`](canon/).
 
-### ComplyEdge TrustLint — EU AI Act protection (offline + runtime proof)
+### ComplyEdge TrustLint — EU AI Act protection (offline + runtime)
 
-IVD dogfoods **[ComplyEdge](https://complyedge.io)** as Customer #0 — offline TrustLint on every LLM-facing artifact, plus optional runtime `/v1/check` for live audit proof.
+IVD integrates **[ComplyEdge](https://complyedge.io)** TrustLint on every LLM-facing artifact: offline EU AI Act screening in CI, plus optional runtime `/v1/check` for a live enforcement seal and trust page.
 
 ```
 ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
@@ -296,7 +296,7 @@ pip install 'trustlint>=2.0.0'
 ./scripts/compliance/runtime_check.sh
 ```
 
-Canon: [`docs/COMPLYEDGE_CUSTOMER0.md`](docs/COMPLYEDGE_CUSTOMER0.md). Pattern: REUSE CLI + CI + OpenSSF automated gates. IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
+Integration guide: [`docs/integrations/COMPLYEDGE.md`](docs/integrations/COMPLYEDGE.md). Pattern: REUSE CLI + CI + OpenSSF automated gates. IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
 
 ---
 

@@ -26,7 +26,7 @@ export COMPLYEDGE_API_KEY=ce_...   # env only — never commit
 ./scripts/compliance/runtime_check.sh
 ```
 
-Runtime checks feed the live [enforcement seal](https://api.complyedge.io/v1/public/badge/ivd.svg) and [trust page](https://trust.complyedge.io/ivd). See [`docs/COMPLYEDGE_CUSTOMER0.md`](docs/COMPLYEDGE_CUSTOMER0.md).
+Runtime checks feed the live [enforcement seal](https://api.complyedge.io/v1/public/badge/ivd.svg) and [trust page](https://trust.complyedge.io/ivd). See [`docs/integrations/COMPLYEDGE.md`](docs/integrations/COMPLYEDGE.md).
 
 Cloud audit (`trustlint scan`) is BYOK opt-in — never commit `COMPLYEDGE_API_KEY`.
 

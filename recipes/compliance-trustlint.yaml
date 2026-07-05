@@ -133,7 +133,7 @@ repo_files:
   config: ".trustlint.yaml"
   check_script: "scripts/compliance/check.sh"
   runtime_script: "scripts/compliance/runtime_check.sh"
-  customer0_doc: "docs/COMPLYEDGE_CUSTOMER0.md"
+  integration_doc: "docs/integrations/COMPLYEDGE.md"
   pre_commit: ".pre-commit-config.yaml"
   ci_workflow: ".github/workflows/ci.yml"
 
@@ -142,7 +142,7 @@ integrations:
     relationship: "TrustLint runs AFTER ivd_validate in the IVD loop; does not replace Rule 2 verification protocol."
 
   - pattern: "complyedge-platform/docs/development/oss-trustlint-adoption-guide.md"
-    relationship: "CE canonical OSS adoption guide — IVD is reference implementation; Horizon is phase 2."
+    relationship: "CE canonical OSS adoption guide — IVD and Horizon reference implementations."
 
   - pattern: "canon-rules recipe"
     relationship: "Canon governs reply format; TrustLint governs regulatory content in artifacts the agent loads."
@@ -153,7 +153,7 @@ integrations:
 changelog:
   - version: "1.1"
     date: "2026-07-05"
-    change: "Customer #0 trust surface — live badge, trust page, runtime_check.sh BYOK, COMPLYEDGE_CUSTOMER0.md canon."
+    change: "Trust surface integration — live badge, trust page, runtime_check.sh BYOK, docs/integrations/COMPLYEDGE.md."
   - version: "1.0"
     date: "2026-07-04"
-    change: "Initial recipe — IVD Customer #0 path. Offline TrustLint on LLM-facing YAML; CI + pre-commit; no API key."
+    change: "Initial recipe — offline TrustLint on LLM-facing YAML; CI + pre-commit; no API key."
