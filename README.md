@@ -9,7 +9,9 @@
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
   <a href="https://github.com/leocelis/ivd/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/leocelis/ivd/ci.yml?branch=main&style=flat-square&label=tests" alt="Tests"></a>
-  <a href="https://complyedge.io"><img src="https://img.shields.io/badge/EU%20AI%20Act-TrustLint%20protected-2563eb?style=flat-square" alt="EU AI Act protected by ComplyEdge TrustLint"></a>
+  <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
+    <img src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge — runtime enforcement status" height="26">
+  </a>
 </p>
 
 <p align="center">
@@ -270,27 +272,31 @@ Full prompt list, methodology, per-prompt side-by-sides, and expected output:
 
 Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine source: [`canon/`](canon/).
 
-### ComplyEdge TrustLint — EU AI Act protection (offline)
+### ComplyEdge TrustLint — EU AI Act protection (offline + runtime proof)
 
-IVD's own recipes, intents, and templates are scanned by **[ComplyEdge TrustLint](https://complyedge.io)** — offline, free tier, no API key. Every LLM-facing YAML is checked against EU AI Act Article 5 and related rules before merge.
+IVD dogfoods **[ComplyEdge](https://complyedge.io)** as Customer #0 — offline TrustLint on every LLM-facing artifact, plus optional runtime `/v1/check` for live audit proof.
 
 ```
-ivd_scaffold → ivd_validate → trustlint check → fix → CI green
+ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
+                    ↓ BYOK opt-in
+              runtime_check.sh → /v1/check → live seal + trust page
 ```
 
 | Layer | What |
 |-------|------|
-| **Local** | `./scripts/compliance/check.sh` after scaffold or recipe/intent edits |
-| **CI** | Same gate in `.github/workflows/ci.yml` — merge blocked on critical/high EU violations |
-| **Agent rule** | `<BEGIN-COMPLYEDGE v1.0>` block in `.cursorrules` (recipe [`compliance-trustlint`](recipes/compliance-trustlint.yaml)) |
-| **Opt-in cloud** | `trustlint scan` + BYOK — not required for OSS |
+| **Offline (required)** | `./scripts/compliance/check.sh` — EU Article 5 scan, no API key |
+| **CI gate** | `.github/workflows/ci.yml` job `compliance` — blocks merge on critical/high |
+| **Runtime (BYOK)** | `./scripts/compliance/runtime_check.sh` — feeds live badge + [trust page](https://trust.complyedge.io/ivd) |
+| **Agent rule** | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` (recipe [`compliance-trustlint`](recipes/compliance-trustlint.yaml)) |
 
 ```bash
 pip install 'trustlint>=2.0.0'
 ./scripts/compliance/check.sh
+# optional — requires COMPLYEDGE_API_KEY in env only:
+./scripts/compliance/runtime_check.sh
 ```
 
-Pattern follows canonical OSS compliance gates (REUSE CLI + CI, OpenSSF automated checks). IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
+Canon: [`docs/COMPLYEDGE_CUSTOMER0.md`](docs/COMPLYEDGE_CUSTOMER0.md). Pattern: REUSE CLI + CI + OpenSSF automated gates. IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
 
 ---
 

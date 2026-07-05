@@ -106,12 +106,14 @@ ivd_scaffold → ivd_validate → trustlint check → fix violations → CI gree
 
 | Gate | Command |
 |------|---------|
-| Local | `./scripts/compliance/check.sh` |
+| Local (offline) | `./scripts/compliance/check.sh` |
+| Local (runtime BYOK) | `./scripts/compliance/runtime_check.sh` |
 | CI | `.github/workflows/ci.yml` job `compliance` |
 | Pre-commit | `pre-commit install` (optional) |
 | Agent rule | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` |
+| Live proof | [trust.complyedge.io/ivd](https://trust.complyedge.io/ivd) · [enforcement seal](https://api.complyedge.io/v1/public/badge/ivd.svg) |
 
-Recipe: [`recipes/compliance-trustlint.yaml`](recipes/compliance-trustlint.yaml). Product: [complyedge.io](https://complyedge.io).
+Recipe: [`recipes/compliance-trustlint.yaml`](recipes/compliance-trustlint.yaml). Customer #0 canon: [`docs/COMPLYEDGE_CUSTOMER0.md`](docs/COMPLYEDGE_CUSTOMER0.md).
 
 Cloud audit (`trustlint scan`) requires BYOK — never commit `COMPLYEDGE_API_KEY` to the repo.
 

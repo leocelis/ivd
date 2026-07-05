@@ -132,6 +132,8 @@ install_targets:
 repo_files:
   config: ".trustlint.yaml"
   check_script: "scripts/compliance/check.sh"
+  runtime_script: "scripts/compliance/runtime_check.sh"
+  customer0_doc: "docs/COMPLYEDGE_CUSTOMER0.md"
   pre_commit: ".pre-commit-config.yaml"
   ci_workflow: ".github/workflows/ci.yml"
 
@@ -146,6 +148,9 @@ integrations:
     relationship: "Same architecture: offline CLI + identical CI command + optional pre-commit."
 
 changelog:
+  - version: "1.1"
+    date: "2026-07-05"
+    change: "Customer #0 trust surface — live badge, trust page, runtime_check.sh BYOK, COMPLYEDGE_CUSTOMER0.md canon."
   - version: "1.0"
     date: "2026-07-04"
     change: "Initial recipe — IVD Customer #0 path. Offline TrustLint on LLM-facing YAML; CI + pre-commit; no API key."

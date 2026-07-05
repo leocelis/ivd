@@ -94,3 +94,22 @@ class TestComplianceCheckScript:
         )
         assert proc.returncode == 1
         assert "EU_AI_ACT" in proc.stdout + proc.stderr or "SOCIAL" in proc.stdout.upper()
+
+
+class TestCustomerZeroCanon:
+    def test_customer0_doc_exists(self):
+        doc = REPO_ROOT / "docs" / "COMPLYEDGE_CUSTOMER0.md"
+        assert doc.is_file()
+        text = doc.read_text(encoding="utf-8")
+        assert "ivd" in text
+        assert "runtime_check.sh" in text
+        assert "trust.complyedge.io/ivd" in text
+
+    def test_runtime_check_script_exists(self):
+        script = REPO_ROOT / "scripts" / "compliance" / "runtime_check.sh"
+        assert script.is_file()
+
+    def test_readme_live_badge_embed(self):
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        assert "api.complyedge.io/v1/public/badge/ivd.svg" in readme
+        assert "trust.complyedge.io/ivd" in readme

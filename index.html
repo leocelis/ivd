@@ -623,8 +623,8 @@
       Hallucinations happen because vague prompts leave the AI with gaps to fill.
       IVD fixes this: the AI writes a <strong>structured intent artifact</strong> with constraints
       and tests, implements against it, and verifies — before you see a single line of code.
-      <strong style="color:#60a5fa;font-weight:500">EU AI Act protected</strong> — every LLM-facing
-      recipe and intent is scanned by <a href="https://complyedge.io" target="_blank" style="color:#60a5fa;text-decoration:none;">ComplyEdge TrustLint</a> before merge.
+      <strong style="color:#60a5fa;font-weight:500">EU AI Act protected</strong> — offline TrustLint on every LLM-facing artifact;
+      live <a href="https://trust.complyedge.io/ivd" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;text-decoration:none;">runtime enforcement seal</a> via ComplyEdge Customer #0.
     </p>
     <div class="btn-row">
       <a href="#quickstart" class="btn btn-primary">Get started →</a>
@@ -1056,6 +1056,12 @@ If you approve, the command will be: rm -rf ...
       Cloud audit (<code style="color:var(--accent2);">trustlint scan</code>) is BYOK opt-in — never shipped in the OSS bundle.
     </p>
 
+    <p style="margin-bottom:20px;">
+      <a href="https://trust.complyedge.io/ivd" target="_blank" rel="noopener noreferrer" id="ce-trust-link" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+        <span id="ce-badge-slot" style="display:inline-block;min-height:26px;min-width:180px;line-height:0;" aria-label="ComplyEdge runtime enforcement seal — loading"></span>
+      </a>
+    </p>
+
     <div class="btn-row">
       <a href="https://complyedge.io" target="_blank" class="btn btn-primary" style="background:#2563eb;border-color:#2563eb;">ComplyEdge →</a>
       <a href="https://github.com/leocelis/ivd/blob/main/recipes/compliance-trustlint.yaml" target="_blank" class="btn btn-secondary">IVD recipe →</a>
@@ -1377,6 +1383,28 @@ If you approve, the command will be: rm -rf ...
     });
     block.appendChild(btn);
   });
+</script>
+<script>
+  (function loadComplyEdgeSeal() {
+    var slot = document.getElementById('ce-badge-slot');
+    if (!slot) return;
+    var url = 'https://api.complyedge.io/v1/public/badge/ivd.svg';
+    fetch(url, { credentials: 'omit' })
+      .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
+      .then(function (raw) {
+        var t = raw.trim();
+        if (t.indexOf('PHN2') === 0 || t.indexOf('PD94') === 0) {
+          t = atob(t);
+        }
+        slot.innerHTML = t;
+        slot.setAttribute('aria-label', 'ComplyEdge runtime enforcement seal');
+      })
+      .catch(function () {
+        slot.textContent = 'ComplyEdge seal unavailable';
+        slot.style.fontSize = '12px';
+        slot.style.color = 'var(--muted)';
+      });
+  })();
 </script>
 </body>
 </html>
