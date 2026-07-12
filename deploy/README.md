@@ -34,8 +34,10 @@ The `scan_directory` function in `mcp_server/knowledge/brain.py` is the authorit
 | Git | `.gitignore` | `mcp_server/brain/`, `temp/`, `.env` — never even pushed |
 | Embeddings | `brain.SKIP_DIRS` + `PRIVATE_PREFIX = "_"` + dotfile rule | any `_*` dir, any `.*` dir, `mcp_server/`, `deploy/`, `temp/`, etc. |
 
-Private maintainer docs belong in a separate private repository (not in this OSS repo).
-The `_private/` convention in `SKIP_DIRS` remains for underscore-prefixed dirs if present.
+Maintainer runbooks live outside this OSS repo. Local secrets: gitignored
+`.env` (see `.env.example`). Production secrets: DigitalOcean App Platform
+environment variables — never commit them. The underscore-prefix skip in
+`SKIP_DIRS` remains a safety net for any local `_*` directories.
 
 ## Prerequisites
 
@@ -64,10 +66,12 @@ run_command: "python deploy/wsgi.py --port 8080"
 
 The `build_command` is intentionally a single call to `deploy/build.sh` so that ALL build steps are version-controlled in this repo (and reviewable in PRs) rather than living in the DO dashboard. To change build behavior, edit `deploy/build.sh` and push — no dashboard edit required.
 
-To update the live app spec with `doctl`, point to your own `app.yaml` (see the [doctl docs](https://docs.digitalocean.com/reference/doctl/reference/apps/update/)):
+To update the live app spec with `doctl`, use a local spec file with secret
+placeholders only — set real values in the DO dashboard (see the
+[doctl docs](https://docs.digitalocean.com/reference/doctl/reference/apps/update/)):
 
 ```bash
-doctl apps update <app_id> --spec path/to/app.yaml
+doctl apps update <app_id> --spec path/to/local-app.yaml
 ```
 
 **One-time DO dashboard update required:** if your DO app is currently configured with a different `build_command`, change it once to `bash deploy/build.sh` (Settings → App Spec → edit `build_command`). After that, no further dashboard edits are needed for build-time changes.
