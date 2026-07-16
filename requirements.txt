@@ -2,7 +2,7 @@
 # Root-level file for DigitalOcean App Platform auto-detection
 
 # MCP protocol
-mcp==1.23.0
+mcp==1.27.2
 
 # HTTP server (must be compatible with mcp version above)
 starlette==1.3.1
