@@ -11,7 +11,6 @@ can serve every tool correctly.
 """
 
 import json
-import os
 
 import pytest
 
@@ -389,7 +388,7 @@ class TestSearch:
 
 
 # ---------------------------------------------------------------------------
-# Meta: all registered tools respond without crashing (30 = 16 core + 9 judgment + 4 Canon + 1 opt-in)
+# Meta: all registered tools respond without crashing (31 = 18 core + 9 judgment + 4 Canon)
 # ---------------------------------------------------------------------------
 
 class TestAllToolsRespond:
@@ -409,6 +408,7 @@ class TestAllToolsRespond:
         ("ivd_discover_goal", {}),
         ("ivd_teach_concept", {"concept": "REST API"}),
         ("ivd_search", {"query": "principles"}),
+        ("ivd_import_spec", {"spec_path": "nonexistent.md", "source_format": "openspec"}),
     ]
 
     @pytest.mark.parametrize("tool_name,args", TOOL_CALLS, ids=[t[0] for t in TOOL_CALLS])
@@ -438,7 +438,7 @@ class TestAllToolsRespond:
         assert len(canon_tools) == 4, f"Expected 4 canon_* tools, got {sorted(canon_tools)}"
         judgment_tools = {n for n in registered if n.startswith("ivd_judgment_")}
         assert len(judgment_tools) == 9, f"Expected 9 ivd_judgment_* tools, got {sorted(judgment_tools)}"
-        assert len(registered) == 30, (
-            f"Expected 30 tools total (16 core + 9 judgment + 4 Canon + 1 opt-in); "
+        assert len(registered) == 31, (
+            f"Expected 31 tools total (18 core + 9 judgment + 4 Canon); "
             f"registry now reports {len(registered)}"
         )

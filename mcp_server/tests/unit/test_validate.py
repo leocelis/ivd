@@ -494,3 +494,18 @@ class TestBackwardCompatibility:
         gating = with_root.get("verification_gating") or {}
         unverified = gating.get("constraints_unverified") or []
         assert "c" not in unverified
+
+    def test_imported_from_block_does_not_break_validation(self):
+        """imported_from (used by ivd_import_spec) is an unrecognized optional
+        top-level key — validate must not treat it as invalid structure."""
+        yaml_str = _intent_with(
+            "constraints:\n  - name: c\n    requirement: r\n    test: t.py::t\n",
+            extra=(
+                "imported_from:\n"
+                "  tool: openspec\n"
+                "  source_path: openspec/specs/ui/spec.md\n"
+            ),
+        )
+        result = json.loads(validate_artifact_tool(yaml_str, "intent"))
+        assert result["errors"] == []
+        assert result["valid"] is True

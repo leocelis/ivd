@@ -1,9 +1,9 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 30 tools.
+IVD MCP Tool Registry — registration and dispatch for all 31 tools.
 
-  - 16 core tools (Intent, Implementation, Verification phases)
+  - 18 core tools (Intent, Implementation, Verification phases)
   - 9  judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
                        server-level opt-out: `IVD_JUDGMENT_TOOLS_ENABLED=false`.
                        See ivd/judgment_layer.md and ivd/judgment/ engine
@@ -33,6 +33,7 @@ from mcp_server.tools import (
     validate_artifact_tool,
     review_intent_tool,
     run_constraint_tests_tool,
+    import_spec_tool,
     init_project_tool,
     scaffold_artifact_tool,
     find_artifacts_tool,
@@ -64,7 +65,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 30 IVD MCP tools (16 core + 9 judgment-phase + 4 Canon-phase + 1 opt-in test runner, IVD v3.1)."""
+    """Return all 31 IVD MCP tools (18 core + 9 judgment-phase + 4 Canon-phase, IVD v3.1)."""
     return [
         Tool(
             name="ivd_get_context",
@@ -114,6 +115,15 @@ def get_all_tools() -> List[Tool]:
                 "project_root": {"type": "string", "description": "Path to repo root where tests live (defaults to IVD framework root when omitted)."},
                 "timeout_sec": {"type": "integer", "description": "Total timeout budget in seconds (default 120).", "default": 120},
             }, "required": ["artifact_yaml"]},
+        ),
+        Tool(
+            name="ivd_import_spec",
+            description="Parse a GitHub Spec Kit or OpenSpec artifact (spec.md) into a constraint scaffold. Read-only, no LLM call. Extracts User Story / Requirement + Given/When/Then scenarios and returns agent_instructions for drafting IVD constraints with a real test: field — the binding neither source format provides.",
+            inputSchema={"type": "object", "properties": {
+                "spec_path": {"type": "string", "description": "Path to the spec.md file (absolute, or relative to project_root)."},
+                "source_format": {"type": "string", "enum": ["spec-kit", "openspec"], "description": "Which tool produced this spec file."},
+                "project_root": {"type": "string", "description": "Path to repo root, used to resolve a relative spec_path (defaults to IVD framework root when omitted)."},
+            }, "required": ["spec_path", "source_format"]},
         ),
         Tool(
             name="ivd_init",
@@ -361,6 +371,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_validate": lambda artifact_yaml, artifact_type="intent", project_root=None, **_: validate_artifact_tool(artifact_yaml, artifact_type, project_root),
     "ivd_review_intent": lambda artifact_yaml, **_: review_intent_tool(artifact_yaml),
     "ivd_run_constraint_tests": lambda artifact_yaml, project_root=None, timeout_sec=120, **_: run_constraint_tests_tool(artifact_yaml, project_root, timeout_sec),
+    "ivd_import_spec": lambda spec_path, source_format, project_root=None, **_: import_spec_tool(spec_path, source_format, project_root),
     "ivd_init": lambda project_root, auto_fill=True, **_: init_project_tool(project_root, auto_fill),
     "ivd_scaffold": lambda level, name, module_path=None, coordinator_path=None, project_root=None, **_: scaffold_artifact_tool(level, name, module_path, coordinator_path, project_root),
     "ivd_find_artifacts": lambda scope="all", project_root=None, **_: find_artifacts_tool(scope, project_root),

@@ -9,6 +9,10 @@ Reusable patterns for common development scenarios.
 - **compliance-trustlint.yaml** — ComplyEdge TrustLint EU AI Act gate (offline, free tier). Run `./scripts/compliance/check.sh` after `ivd_scaffold` or recipe/intent edits; CI blocks merge on critical/high violations. Recipe ships `<BEGIN-COMPLYEDGE v1.0>` agent block + `.trustlint.yaml` + pre-commit hook. No API key in repo.
 - **canon-rules.yaml** — Canon (Human Translation Layer) rules block (Phase 0a). Teaches any LLM-driven agent to emit R1 setting phase, R2 confidence markers (`✓ verified` / `~ inferred` / `? assumed`), R5 verification beats on irreversible actions, R10 folk-theory corrections, and R14 bounded identity. One canonical source → six per-client adapter views (Cursor, Cline, Claude Code, Copilot, Codex, Windsurf). Verified programmatically by the `canon_check` MCP tool and detected/installed via `canon_check_rules_installed` (never writes — always asks).
 
+### Spec-Tool Integration
+- **import-spec-kit.yaml** — Parse a GitHub Spec Kit `spec.md` (User Story + Given/When/Then) into an IVD constraint scaffold via `ivd_import_spec`, then bind each acceptance scenario to a real, executable test — the binding Spec Kit's own format doesn't provide by default.
+- **import-openspec.yaml** — Parse an OpenSpec delta `spec.md` (Requirement + Scenario, GIVEN/WHEN/THEN/AND) via `ivd_import_spec`. Complements, not replaces, OpenSpec's own `/opsx:verify` — that command judges coverage by LLM keyword search over the codebase; this recipe adds a requirement that a real test must pass.
+
 ### Multi-Agent Patterns
 - **coordinator-intent-propagation.yaml** — Multi-agent coordination with intent delegation (coordinator writes intent for each agent it routes to)
 - **agent-capability-propagation.yaml** — Propagate agent capabilities up to coordinator routing (`interface.routing`); keeps LLM routing descriptions in sync with agent evolution

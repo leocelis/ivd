@@ -5,9 +5,9 @@ Environment variable validation for IVD MCP Server.
 
 Single source of truth for required environment variables.
 Used by:
-  - server.py     → validates at boot (refuses to start if missing)
-  - deploy.sh     → validates before deploy (gates on missing vars)
-  - test suite    → prevents regressions
+  - server.py       → validates at boot (refuses to start if missing)
+  - deploy/build.sh → validates before deploy (gates on missing vars)
+  - test suite      → prevents regressions
 
 When adding a new env var dependency:
   1. Add it here (REQUIRED_ENV_VARS_REMOTE or REQUIRED_ENV_VARS_ALL)

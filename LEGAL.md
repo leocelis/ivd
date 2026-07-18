@@ -87,11 +87,11 @@ if you are relying on copyright protection for AI-generated artifacts.
 associated logos are common law marks under continuous use. Unauthorized use of these
 names in competing products, services, or marketing materials is not permitted.
 
-> ~ inferred: USPTO and EUIPO trademark registration for "IVD" and "Intent-Verified
-> Development" is under consideration. Until registered marks are in place, protection
-> is limited to the geographic areas of actual commercial use. Common law rights do
-> exist but are harder to enforce internationally than a registered mark. Do not use
-> these names in any way that could imply affiliation with or endorsement by IVD.
+No USPTO or EUIPO trademark registration currently exists for "IVD" or "Intent-Verified
+Development." Until registered marks are in place, protection is limited to the
+geographic areas of actual commercial use. Common law rights do exist but are harder to
+enforce internationally than a registered mark. Do not use these names in any way that
+could imply affiliation with or endorsement by IVD.
 
 ---
 

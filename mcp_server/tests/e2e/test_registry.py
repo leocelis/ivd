@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 30 tools are registered (16 core + 9 judgment + 4 canon + 1 opt-in test runner)
+- All 31 tools are registered (18 core + 9 judgment + 4 canon)
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -13,7 +13,7 @@ import json
 
 from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 
-EXPECTED_TOOL_COUNT = 30
+EXPECTED_TOOL_COUNT = 31
 
 
 class TestToolRegistry:
@@ -34,7 +34,7 @@ class TestToolRegistry:
         core = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_review_intent",
-            "ivd_run_constraint_tests",
+            "ivd_run_constraint_tests", "ivd_import_spec",
             "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
             "ivd_assess_coverage",
@@ -110,6 +110,35 @@ class TestCallTool:
         result = call_tool("ivd_teach_concept", {"concept": "ETL"})
         assert isinstance(result, str)
         assert "ETL" in result
+
+    def test_import_spec_via_dispatch(self, tmp_path):
+        """Proves ivd_import_spec is reachable through the real MCP call_tool
+        path (Tool schema + TOOL_HANDLERS), not just importable as a bare
+        function — the two have drifted independently before in this repo."""
+        spec_file = tmp_path / "spec.md"
+        spec_file.write_text(
+            "### Requirement: Sample\n"
+            "The system MUST do the thing.\n\n"
+            "#### Scenario: It happens\n"
+            "- GIVEN a precondition\n"
+            "- WHEN an action occurs\n"
+            "- THEN the outcome holds\n"
+        )
+        result = call_tool("ivd_import_spec", {
+            "spec_path": "spec.md",
+            "source_format": "openspec",
+            "project_root": str(tmp_path),
+        })
+        assert isinstance(result, str)
+        data = json.loads(result)
+        assert data["ok"] is True
+        assert data["requirements"][0]["name"] == "sample"
+
+    def test_import_spec_missing_required_arg_via_dispatch(self):
+        """source_format is a required schema field — dispatch must not crash
+        when it's omitted, matching this repo's error-JSON-not-exception convention."""
+        result = call_tool("ivd_import_spec", {"spec_path": "spec.md"})
+        assert isinstance(result, str)
 
     def test_result_is_always_string(self):
         """call_tool must always return a string, never dict/list."""

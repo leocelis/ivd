@@ -689,6 +689,12 @@ constraints:
 #   # joint_test is a legacy alias for joint_satisfaction_test.
 #   joint_satisfaction_test: "tests/test_joint.py::test_all_constraints_on_one_output"
 
+# OPTIONAL: traceability when constraints above were drafted from an external
+# spec artifact (e.g. via ivd_import_spec) rather than from a human description.
+# imported_from:
+#   tool: "spec-kit"      # "spec-kit" | "openspec"
+#   source_path: "specs/001-feature-name/spec.md"
+
 # WHY this approach?
 rationale:
   decision: "Key decision made"

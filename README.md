@@ -9,9 +9,6 @@
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
   <a href="https://github.com/leocelis/ivd/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/leocelis/ivd/ci.yml?branch=main&style=flat-square&label=tests" alt="Tests"></a>
-  <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
-    <img src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge — runtime enforcement status" height="26">
-  </a>
 </p>
 
 <p align="center">
@@ -41,10 +38,8 @@ AI:  [builds with wrong columns]         AI:  [writes intent.yaml with constrain
 You: "No, these columns, ISO dates"      You:  "Yes, that's what I meant"
 AI:  [rewrites, still wrong]             AI:  [implements, verifies against constraints]
 You: "Still not right..."                You:  "Done. First try."
-  Many turns. Many hallucinations.         One turn. Zero hallucinations.*
+  Many turns. Many hallucinations.         One turn. Mismatches caught by the constraint check, not by you.
 ```
-
-\* Conditions apply — see [LEGAL.md §4](LEGAL.md#4-marketing-claims--scope-and-limits).
 
 **IVD saturates the contextual channel** with structured, verifiable intent — so the model has nothing to guess.
 
@@ -53,6 +48,18 @@ You: "Still not right..."                You:  "Done. First try."
 ## Quick Start
 
 **Works locally. No API key required. Under 5 minutes.**
+
+### 0. See it work first (30 seconds, no setup)
+
+```bash
+git clone https://github.com/leocelis/ivd.git && cd ivd
+python3 examples/intent_demo/run_demo.py
+```
+
+Runs offline. Shows a vague prompt producing a hallucinated implementation, then
+the same request run against a structured intent artifact — with the constraint
+check catching the mismatch before you'd ever see it. This is the core loop this
+README is about; everything below is how to wire it into your own agent.
 
 ### 1. Clone and setup
 
@@ -64,6 +71,11 @@ cd ivd
 
 ### 2. Add to your IDE
 
+**Important:** `command` must point at the **venv's** Python — `setup.sh` installs
+IVD's dependencies into `.venv/`, not your system Python. Using `"command": "python"`
+here will fail with `ModuleNotFoundError`. Replace `/path/to/ivd` with your actual
+clone path.
+
 **Cursor** (Settings → Features → MCP):
 
 ```json
@@ -71,7 +83,7 @@ cd ivd
   "servers": {
     "ivd": {
       "type": "stdio",
-      "command": "python",
+      "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
       "cwd": "/path/to/ivd"
     }
@@ -85,7 +97,7 @@ cd ivd
 {
   "mcpServers": {
     "ivd": {
-      "command": "python",
+      "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
       "cwd": "/path/to/ivd"
     }
@@ -99,13 +111,17 @@ cd ivd
 {
   "mcpServers": {
     "ivd": {
-      "command": "python",
+      "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
       "cwd": "/path/to/ivd"
     }
   }
 }
 ```
+
+> A `pyproject.toml` now ships in the repo (`pip install .` or `pip install -e .`
+> gives you an `ivd-mcp` console command). A PyPI release (`uvx ivd-mcp`, no clone
+> required) is planned — see [ROADMAP.md](ROADMAP.md).
 
 ### 3. Use it
 
@@ -115,7 +131,7 @@ Ask your AI agent to use IVD tools. For example:
 - *"Use ivd_scaffold to create an intent for my user authentication module"*
 - *"Use ivd_validate to check my intent artifact"*
 
-That's it. 27 of 28 tools work immediately with zero configuration.
+That's it. 30 of 31 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
 
 ### 4. Enable semantic search (optional)
 
@@ -145,15 +161,18 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 
 ## MCP Tools
 
-28 tools available to any MCP-compatible AI agent (15 core + 9 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` added in v3.1) + 4 Canon tools added in v3.1):
+31 tools available to any MCP-compatible AI agent (18 core + 9 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` added in v3.1) + 4 Canon tools added in v3.1):
 
-### Core (15)
+### Core (18)
 
 | Tool | What it does |
 |------|-------------|
 | `ivd_get_context` | Load framework principles, cookbook, or cheatsheet |
 | `ivd_search` | Semantic search across all IVD knowledge |
 | `ivd_validate` | Validate an intent artifact against IVD rules |
+| `ivd_review_intent` | Rank constraints by risk before implementation (human review gate) |
+| `ivd_run_constraint_tests` | Opt-in runner for allowlisted pytest nodes referenced by an intent |
+| `ivd_import_spec` | Parse a GitHub Spec Kit or OpenSpec `spec.md` into a constraint scaffold |
 | `ivd_scaffold` | Generate a new intent artifact from a template |
 | `ivd_init` | Initialize IVD in an existing project |
 | `ivd_assess_coverage` | Scan a project and report intent coverage |
@@ -272,33 +291,24 @@ Full prompt list, methodology, per-prompt side-by-sides, and expected output:
 
 Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine source: [`canon/`](canon/).
 
-### ComplyEdge TrustLint — EU AI Act protection (offline + runtime)
+### Integrations
 
-IVD integrates **[ComplyEdge](https://complyedge.io)** TrustLint on every LLM-facing artifact: offline EU AI Act screening in CI, plus optional runtime `/v1/check` for a live enforcement seal and trust page.
+**ComplyEdge TrustLint** (optional, `pip install ivd-mcp[compliance]`) — offline EU AI
+Act screening on LLM-facing artifacts (`recipes/`, `templates/`, `*_intent.yaml`), built
+by the same author and dogfooded on this repo.
 
-ComplyEdge is developed by the same author; IVD runs it on itself as its first production integration — the seal at the top of this README is live enforcement data, not a logo.
-
-```
-ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
-                    ↓ BYOK opt-in
-              runtime_check.sh → /v1/check → live seal + trust page
-```
-
-| Layer | What |
-|-------|------|
-| **Offline (required)** | `./scripts/compliance/check.sh` — EU Article 5 scan, no API key |
-| **CI gate** | `.github/workflows/ci.yml` job `compliance` — blocks merge on critical/high |
-| **Runtime (BYOK)** | `./scripts/compliance/runtime_check.sh` — feeds live badge + [trust page](https://trust.complyedge.io/ivd) |
-| **Agent rule** | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` (recipe [`compliance-trustlint`](recipes/compliance-trustlint.yaml)) |
+<a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
+  <img src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge — runtime enforcement status" height="26">
+</a>
 
 ```bash
-pip install 'trustlint>=2.0.1'
+pip install 'ivd-mcp[compliance]'
 ./scripts/compliance/check.sh
-# optional — requires COMPLYEDGE_API_KEY in env only:
-./scripts/compliance/runtime_check.sh
 ```
 
-Integration guide: [`docs/integrations/COMPLYEDGE.md`](docs/integrations/COMPLYEDGE.md). Pattern: REUSE CLI + CI + OpenSSF automated gates. IVD constraint validation catches structure; TrustLint catches prohibited regulatory content in the artifacts agents read.
+CI runs this as an informational check (not merge-blocking — see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Details:
+[`docs/integrations/COMPLYEDGE.md`](docs/integrations/COMPLYEDGE.md).
 
 ---
 
@@ -322,13 +332,15 @@ Deep dive: [purpose.md](purpose.md) · [framework.md](framework.md) · [cheatshe
 
 ## Recipes
 
-18 reusable patterns (see [recipes README](recipes/README.md)):
+20 reusable patterns (see [recipes README](recipes/README.md)):
 
 | Recipe | Pattern |
 |--------|---------|
 | [agent-rules-ivd](recipes/agent-rules-ivd.yaml) | Embed IVD verification in `.cursorrules` or any agent config |
 | [compliance-trustlint](recipes/compliance-trustlint.yaml) | ComplyEdge TrustLint — EU AI Act offline gate on recipes, intents, templates (CI + pre-commit) |
 | [canon-rules](recipes/canon-rules.yaml) | Canon Phase 0a — pasteable Human-Translation-Layer rules block (R1/R2/R5/R10/R14) for Cursor / Cline / Claude Code / Copilot / Codex / Windsurf. Composes with the four `canon_*` MCP tools. |
+| [import-spec-kit](recipes/import-spec-kit.yaml) | Parse a GitHub Spec Kit `spec.md` into IVD constraints via `ivd_import_spec` |
+| [import-openspec](recipes/import-openspec.yaml) | Parse an OpenSpec delta `spec.md` into IVD constraints via `ivd_import_spec` |
 | [workflow-orchestration](recipes/workflow-orchestration.yaml) | Multi-step process orchestration |
 | [agent-classifier](recipes/agent-classifier.yaml) | AI classification agents |
 | [agent-role-based](recipes/agent-role-based.yaml) | Context-dependent agent behavior |
@@ -341,6 +353,9 @@ Deep dive: [purpose.md](purpose.md) · [framework.md](framework.md) · [cheatshe
 | [teaching-before-intent](recipes/teaching-before-intent.yaml) | Teach concepts before writing intent |
 | [discovery-before-intent](recipes/discovery-before-intent.yaml) | Goal discovery before intent |
 | [doc-meeting-insights](recipes/doc-meeting-insights.yaml) | Documentation extraction from meetings |
+| [capture-correction](recipes/capture-correction.yaml) | Judgment — capture a raw correction ledger entry |
+| [comparison-pair](recipes/comparison-pair.yaml) | Judgment — Pearl Rung-1 comparison-pair capture |
+| [distill-pattern](recipes/distill-pattern.yaml) | Judgment — cluster codified corrections into a Pattern |
 
 ---
 
@@ -431,7 +446,7 @@ Once you have an API key, use the URL that matches your client:
 }
 ```
 
-All 28 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
+All 31 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
 ---
 
@@ -439,13 +454,18 @@ All 28 tools are available on the hosted server, including `ivd_search` (embeddi
 
 | Document | Purpose |
 |----------|---------|
-| [**judgment_explained.md**](judgment_explained.md) | **Start here** — plain-English on-ramp: what problem the Judgment phase solves and how, in 5 minutes |
-| [purpose.md](purpose.md) | Why IVD exists — the cognitive case, two knowledge systems |
-| [framework.md](framework.md) | Complete specification — principles, rules, validation |
-| [judgment_layer.md](judgment_layer.md) | Judgment phase (v3.0) — the 4th phase, opt-in (canonical spec) |
-| [canon_layer.md](canon_layer.md) | Canon phase (v3.1) — Phase 0 human translation layer (canonical spec) |
+| [**examples/intent_demo/**](examples/intent_demo/) | **Start here** — run it, don't read it: the core loop in ~30 seconds, offline |
+| [docs/positioning.md](docs/positioning.md) | IVD vs. Spec Kit / Kiro / plan mode / CLAUDE.md — where IVD helps and where it doesn't |
 | [cookbook.md](cookbook.md) | Practical guide — step-by-step with real examples |
 | [cheatsheet.md](cheatsheet.md) | Quick reference — one-page summary |
+| [purpose.md](purpose.md) | Why IVD exists — the cognitive case, two knowledge systems |
+| [framework.md](framework.md) | Complete specification — principles, rules, validation |
+| [judgment_explained.md](judgment_explained.md) | Judgment phase (optional 4th phase) — plain-English on-ramp |
+| [judgment_layer.md](judgment_layer.md) | Judgment phase (v3.0) — canonical spec |
+| [canon_layer.md](canon_layer.md) | Canon phase (v3.1) — Phase 0 human translation layer (canonical spec) |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Dev setup, how to add a tool, lint/typecheck, tests |
+| [ROADMAP.md](ROADMAP.md) | What's shipped, what's next, what's explicitly not planned |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [DECISIONS.md](DECISIONS.md) | Architectural Decision Records (ADRs) |
 
 ---

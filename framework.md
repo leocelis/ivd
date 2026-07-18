@@ -818,6 +818,13 @@ constraints:
     test: "path/to/test.py::test_name"
     consequence_if_violated: "What breaks if this fails"
 
+# OPTIONAL: set when constraints above were drafted from an external spec
+# artifact (e.g. a GitHub Spec Kit or OpenSpec spec.md) via ivd_import_spec,
+# rather than from a human description.
+# imported_from:
+#   tool: "spec-kit"      # "spec-kit" | "openspec"
+#   source_path: "specs/001-feature-name/spec.md"
+
 # WHY this approach?
 rationale:
   decision: "Key decision made"

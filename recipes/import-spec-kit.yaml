@@ -1,0 +1,91 @@
+# ==============================================================================
+# IVD Recipe: Import GitHub Spec Kit
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-07-18
+# Category: workflow_patterns
+# Principle: 2 (Understanding Must Be Executable) + 6 (AI as Understanding Partner)
+# Status: Canonical
+# ==============================================================================
+
+recipe:
+  name: "Import GitHub Spec Kit"
+  version: "1.0"
+  status: "canonical"
+  category: "workflow_patterns"
+  created: "2026-07-18"
+  author: "IVD Framework"
+
+  description: |
+    GitHub Spec Kit (github/spec-kit) produces a spec.md per feature with
+    ### User Story N (Priority: PN) blocks, each containing an
+    **Acceptance Scenarios**: list of Given/When/Then lines. Spec Kit's own
+    tasks-template.md states tests are "OPTIONAL — only include them if
+    explicitly requested": by default, an acceptance scenario is never bound
+    to an executable test. This recipe adds that binding without replacing
+    Spec Kit — it consumes the spec.md Spec Kit already produced.
+
+  applies_to:
+    - "Project already uses `/specify` (Spec Kit) and has a spec.md to implement against"
+    - "User wants constraint verification (a failing test, not a manual re-read) before declaring a Spec Kit feature done"
+
+  when_to_use:
+    - "spec.md exists for the feature and implementation hasn't started yet"
+    - "User asks to verify a Spec Kit feature is actually implemented correctly, not just that tasks.md checkboxes are checked"
+
+  when_NOT_to_use:
+    - "No spec.md exists yet — write it with Spec Kit's own /specify flow first"
+    - "The feature is trivial (typo, rename) — skip straight to implementation"
+    - "The team has no interest in machine-checked verification, only wants the planning artifacts Spec Kit already provides"
+
+# ------------------------------------------------------------------------------
+# STEPS
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  steps:
+    - step: 1
+      name: "Parse the spec"
+      description: "Call ivd_import_spec with the Spec Kit spec.md path"
+      tool_call: |
+        ivd_import_spec(
+          spec_path="specs/001-feature-name/spec.md",
+          source_format="spec-kit",
+          project_root="."
+        )
+      output: "requirements[]: one entry per User Story, each with parsed Given/When/Then scenarios"
+
+    - step: 2
+      name: "Draft constraints"
+      description: |
+        For each requirement returned, the agent (not the tool — see
+        agent_instructions in the response) drafts one IVD constraint:
+        name, requirement (prose stating what must hold), and a real test:
+        field pointing at an executable pytest node. This is the one binding
+        Spec Kit's own format does not provide by default.
+      output: "constraints[] block ready to paste into an intent artifact"
+
+    - step: 3
+      name: "Scaffold or extend the intent artifact"
+      description: "Use ivd_scaffold for a new module/task intent, or add the constraints block to an existing one. Set imported_from: {tool: spec-kit, source_path: <spec.md path>} for traceability."
+
+    - step: 4
+      name: "Validate"
+      description: "ivd_validate the resulting intent artifact"
+
+    - step: 5
+      name: "Stress-test, implement, verify"
+      description: "Continue with the standard IVD flow: Rule 4 stress test → constraint-segmented implementation → ivd_run_constraint_tests"
+      reference: "framework.md Principle 6, Steps 4-6"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  tool: "ivd_import_spec (mcp_server/tools/import_spec.py)"
+  upstream_project: "https://github.com/github/spec-kit"
+  upstream_template_verified_against: "https://github.com/github/spec-kit/blob/main/templates/spec-template.md"
+  positioning: "docs/positioning.md — IVD as the verification layer, not a Spec Kit replacement"
+  related_recipes:
+    - "import-openspec.yaml (same pattern, OpenSpec's more structured Requirement/Scenario format)"

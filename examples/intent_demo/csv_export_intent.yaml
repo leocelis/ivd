@@ -1,0 +1,36 @@
+# examples/intent_demo/csv_export_intent.yaml
+#
+# The intent artifact for this demo's scenario. This is the same "CSV export
+# for admin compliance reporting" example used throughout framework.md,
+# purpose.md, and README.md — here it is a real, checked-in artifact with
+# real tests behind it, not a documentation snippet.
+
+intent:
+  summary: "Export user data to CSV for admin compliance reporting"
+  goal: "Enable admins to download user data in a compliant, auditable format"
+  success_metric: "Export is admin-gated, column-exact, and ISO-8601 dated"
+  stakeholders: ["Compliance team", "Admin users"]
+
+constraints:
+  - name: "admin_only"
+    requirement: "Only requests from a user with role == 'admin' may generate the export"
+    test: "test_csv_export.py::test_admin_required"
+    consequence_if_violated: "Non-admin users can exfiltrate user PII via the export endpoint"
+
+  - name: "column_schema"
+    requirement: "CSV header is exactly: user_id,email,created_at,last_login,status"
+    test: "test_csv_export.py::test_column_schema"
+    consequence_if_violated: "Downstream compliance tooling parses the wrong columns silently"
+
+  - name: "iso_dates"
+    requirement: "created_at and last_login are formatted as ISO 8601 (YYYY-MM-DDTHH:MM:SS)"
+    test: "test_csv_export.py::test_iso_dates"
+    consequence_if_violated: "Non-ISO dates break the compliance system's date parser"
+
+rationale:
+  decision: "Three constraints, each independently testable, each with a named consequence"
+  evidence: "This file — the tests below actually run against both implementations in this demo"
+
+implementation:
+  current: "correct_export.py"
+  tests: "test_csv_export.py"

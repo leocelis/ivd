@@ -1,0 +1,94 @@
+# ==============================================================================
+# IVD Recipe: Import OpenSpec
+# ==============================================================================
+# Version: 1.0
+# Created: 2026-07-18
+# Category: workflow_patterns
+# Principle: 2 (Understanding Must Be Executable) + 6 (AI as Understanding Partner)
+# Status: Canonical
+# ==============================================================================
+
+recipe:
+  name: "Import OpenSpec"
+  version: "1.0"
+  status: "canonical"
+  category: "workflow_patterns"
+  created: "2026-07-18"
+  author: "IVD Framework"
+
+  description: |
+    OpenSpec (Fission-AI/OpenSpec) organizes specs as ### Requirement: <name>
+    blocks, each with one or more #### Scenario: <name> blocks using GIVEN/
+    WHEN/THEN (and AND) bullet lines — already close to machine-parseable.
+    OpenSpec ships its own /opsx:verify command (the openspec-verify-change
+    skill), but its verification is LLM keyword-search over the codebase
+    ("search codebase for keywords related to the requirement... assess if
+    implementation likely exists") and existence-checks whether a test
+    happens to cover a scenario — it does not execute a test and require it
+    to pass. This recipe adds that binding: a real test: field per
+    requirement, executed by ivd_run_constraint_tests, without replacing
+    OpenSpec's proposal/apply/archive workflow.
+
+  applies_to:
+    - "Project uses OpenSpec (openspec/specs/, openspec/changes/) and has a delta spec.md to implement against"
+    - "User wants a requirement verified by a passing test, not by an LLM's plausibility judgment over the codebase"
+
+  when_to_use:
+    - "A change's delta spec (openspec/changes/<id>/specs/<domain>/spec.md) exists and implementation hasn't started"
+    - "Before running /opsx:verify — or as a stronger substitute for its scenario-coverage check"
+
+  when_NOT_to_use:
+    - "No change/delta spec exists yet — run OpenSpec's own /opsx:propose first"
+    - "The requirement genuinely cannot be reduced to an executable assertion (pure visual/UX judgment) — OpenSpec's own LLM-review verify step is the right tool there"
+
+# ------------------------------------------------------------------------------
+# STEPS
+# ------------------------------------------------------------------------------
+
+implementation_pattern:
+  steps:
+    - step: 1
+      name: "Parse the delta spec"
+      description: "Call ivd_import_spec with the OpenSpec delta spec.md path"
+      tool_call: |
+        ivd_import_spec(
+          spec_path="openspec/changes/add-dark-mode/specs/ui/spec.md",
+          source_format="openspec",
+          project_root="."
+        )
+      output: "requirements[]: one entry per ### Requirement:, each with parsed GIVEN/WHEN/THEN scenarios (AND lines folded into the preceding field)"
+
+    - step: 2
+      name: "Draft constraints"
+      description: |
+        For each requirement, the agent (per agent_instructions in the tool
+        response) drafts one IVD constraint: name (reuse the parsed name),
+        requirement (the MUST/SHALL prose), and a real test: field. This is
+        the execution binding OpenSpec's own Scenario format does not provide.
+      output: "constraints[] block ready to paste into an intent artifact"
+
+    - step: 3
+      name: "Scaffold or extend the intent artifact"
+      description: "Use ivd_scaffold, or add to an existing intent. Set imported_from: {tool: openspec, source_path: <delta spec.md path>} for traceability."
+
+    - step: 4
+      name: "Validate"
+      description: "ivd_validate the resulting intent artifact"
+
+    - step: 5
+      name: "Stress-test, implement, verify"
+      description: "Continue with the standard IVD flow: Rule 4 stress test → constraint-segmented implementation → ivd_run_constraint_tests. Results can inform (but do not overwrite) OpenSpec's own /opsx:verify report — IVD does not write into openspec/changes/."
+      reference: "framework.md Principle 6, Steps 4-6"
+
+# ------------------------------------------------------------------------------
+# REFERENCES
+# ------------------------------------------------------------------------------
+
+references:
+  tool: "ivd_import_spec (mcp_server/tools/import_spec.py)"
+  upstream_project: "https://github.com/Fission-AI/OpenSpec"
+  upstream_docs_verified_against: "https://github.com/Fission-AI/OpenSpec/blob/main/docs/getting-started.md"
+  upstream_verify_skill_read: "https://github.com/Fission-AI/OpenSpec/blob/main/skills/openspec-verify-change/SKILL.md"
+  positioning: "docs/positioning.md — IVD as the verification layer, not an OpenSpec replacement"
+  related_recipes:
+    - "import-spec-kit.yaml (same pattern, Spec Kit's freer-form Given/When/Then prose)"

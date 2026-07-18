@@ -31,6 +31,10 @@ jobs:
   compliance:
     name: TrustLint (EU AI Act)
     runs-on: ubuntu-latest
+    # Informational, not a merge gate: check.sh fetches a rule corpus from a
+    # ComplyEdge GitHub release at CI time. A failure/rate-limit there is not
+    # a defect in the contributor's PR, so it must not block merges.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
