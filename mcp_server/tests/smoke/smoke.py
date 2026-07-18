@@ -100,8 +100,8 @@ def check_health(base_url):
         return False
 
     tools_count = data.get("tools_count", 0)
-    # 31 = 18 core + 9 judgment + 4 Canon (IVD v3.1).
-    expected_tools = 31
+    # 32 = 18 core + 10 judgment + 4 Canon (IVD v3.1).
+    expected_tools = 32
     if tools_count != expected_tools:
         fail(f"Expected {expected_tools} tools, got {tools_count}")
         return False

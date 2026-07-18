@@ -41,6 +41,7 @@ from mcp_server.tools.judgment import (
     judgment_detect_patterns_tool,
     judgment_inject_context_tool,
     judgment_propose_recommendation_tool,
+    judgment_resolve_tool,
     judgment_check_installed_tool,
 )
 from mcp_server.tools.canon import (
@@ -78,6 +79,7 @@ __all__ = [
     "judgment_detect_patterns_tool",
     "judgment_inject_context_tool",
     "judgment_propose_recommendation_tool",
+    "judgment_resolve_tool",
     "judgment_check_installed_tool",
     # Canon — Human Translation Layer (Phase 0b, hosted inside the IVD MCP server)
     "canon_render_tool",

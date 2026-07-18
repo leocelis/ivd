@@ -39,7 +39,7 @@ def get_context_tool() -> str:
         ],
         "judgment_phase": {
             "status": "opt-in (v3.0; refactored into engine package in v3.1)",
-            "activation": "Run ivd_judgment_init at the project root to create the .judgment/ folder. The 9 judgment tools are dormant until that folder exists. Server-level opt-out via IVD_JUDGMENT_TOOLS_ENABLED=false (mirrors Canon's IVD_CANON_TOOLS_ENABLED knob).",
+            "activation": "Run ivd_judgment_init at the project root to create the .judgment/ folder. The 10 judgment tools are dormant until that folder exists. Server-level opt-out via IVD_JUDGMENT_TOOLS_ENABLED=false (mirrors Canon's IVD_CANON_TOOLS_ENABLED knob).",
             "engine_package": "ivd/judgment/ — vendored engine (schema, store, freshness, detect, inject, validate). Mirrors ivd/canon/. Stamps engine_version + reproducible hashes on Pattern.detection_hash and InjectionResult.injection_hash.",
             "loop": [
                 "0. Baseline & Goal Calibration",

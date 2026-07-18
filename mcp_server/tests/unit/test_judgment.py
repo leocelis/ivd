@@ -80,6 +80,7 @@ from mcp_server.tools.judgment import (
     judgment_inject_context_tool,
     judgment_pair_tool,
     judgment_propose_recommendation_tool,
+    judgment_resolve_tool,
     judgment_save_codified_tool,
 )
 
@@ -93,6 +94,7 @@ JUDGMENT_TOOL_NAMES: Set[str] = {
     "ivd_judgment_detect_patterns",
     "ivd_judgment_inject_context",
     "ivd_judgment_propose_recommendation",
+    "ivd_judgment_resolve",
     "ivd_judgment_check_installed",
 }
 
@@ -199,9 +201,12 @@ class TestJudgmentEnginePackageIsolation:
         # the long codify prompt template + per-tool docstrings preserved).
         assert facade.stat().st_size > 0
         line_count = len(text.splitlines())
-        assert line_count < 1100, (
+        # Guard against re-inlining the engine (that would add hundreds of lines).
+        # Bumped 1100 → 1150 in v3.1 when the 10th tool (ivd_judgment_resolve)
+        # was added — legitimate incremental growth, not a re-inline.
+        assert line_count < 1150, (
             f"mcp_server/tools/judgment.py is {line_count} lines — "
-            "the thin-facade refactor (R1) should keep this under 1100."
+            "the thin-facade refactor (R1) should keep this under 1150."
         )
         # And it must import every core engine concept from the package.
         assert "from judgment import" in text, (
@@ -406,6 +411,9 @@ class TestJudgmentMcpOptOut:
             json.loads(judgment_inject_context_tool(project_root_arg=str(tmp_path))),
             json.loads(judgment_propose_recommendation_tool(
                 pattern_id="x", project_root_arg=str(tmp_path)
+            )),
+            json.loads(judgment_resolve_tool(
+                entry_id="x", outcome="o", project_root_arg=str(tmp_path)
             )),
             json.loads(judgment_check_installed_tool(project_root_arg=str(tmp_path))),
         ]
@@ -858,3 +866,112 @@ class TestJudgmentIVDRepoActivation:
             f"No activated Judgment project found for IVD root. "
             f"Got: {json.dumps(projects, indent=2)}"
         )
+
+
+# ===========================================================================
+# 9. ivd_judgment_resolve — outcome logging (closes the loop, step 5)
+# ===========================================================================
+
+class TestJudgmentResolve:
+    """resolve records a resolution and transitions codified|paired → resolved."""
+
+    def test_resolve_transitions_codified_to_resolved(self, initialized: Path):
+        eid = _seed_codified(initialized, cause="root cause A")
+        out = json.loads(judgment_resolve_tool(
+            entry_id=eid, outcome="fix applied and verified", held=True,
+            fix_applied="patched the prompt", project_root_arg=str(initialized),
+        ))
+        assert out["ok"] is True
+        assert out["state"] == "resolved"
+        assert out["resolution"]["outcome"] == "fix applied and verified"
+        assert out["resolution"]["held"] is True
+        assert out["resolution"]["fix_applied"] == "patched the prompt"
+        assert "resolved_at" in out["resolution"]
+        # File actually moved on disk.
+        assert not (initialized / ".judgment" / "ledger" / "codified" / f"{eid}.yaml").exists()
+        resolved_fp = initialized / ".judgment" / "ledger" / "resolved" / f"{eid}.yaml"
+        assert resolved_fp.exists()
+        payload = yaml.safe_load(resolved_fp.read_text())
+        assert payload["state"] == "resolved"
+        assert payload["resolution"]["outcome"] == "fix applied and verified"
+        assert any(c.get("change") == "resolved" for c in payload.get("changelog", []))
+
+    def test_resolve_requires_outcome(self, initialized: Path):
+        eid = _seed_codified(initialized, cause="root cause B")
+        out = json.loads(judgment_resolve_tool(
+            entry_id=eid, outcome="  ", project_root_arg=str(initialized),
+        ))
+        assert out["ok"] is False
+        assert any("outcome" in e for e in out["errors"])
+
+    def test_resolve_rejects_raw_entry_with_hint(self, initialized: Path):
+        cap = json.loads(judgment_capture_tool(
+            raw_correction="uncodified", domain="t", project_root_arg=str(initialized),
+        ))
+        out = json.loads(judgment_resolve_tool(
+            entry_id=cap["entry_id"], outcome="x", project_root_arg=str(initialized),
+        ))
+        assert out["ok"] is False
+        assert "raw" in out["error"]
+
+    def test_resolve_missing_entry(self, initialized: Path):
+        out = json.loads(judgment_resolve_tool(
+            entry_id="does-not-exist", outcome="x", project_root_arg=str(initialized),
+        ))
+        assert out["ok"] is False
+        assert "not found" in out["error"]
+
+    def test_resolved_entry_still_counts_toward_detection(self, initialized: Path):
+        """A resolved entry keeps its diagnosed_cause in the detection corpus."""
+        ids = [_seed_codified(initialized, cause="shared cause") for _ in range(3)]
+        judgment_resolve_tool(
+            entry_id=ids[0], outcome="done", project_root_arg=str(initialized),
+        )
+        out = json.loads(judgment_detect_patterns_tool(project_root_arg=str(initialized)))
+        assert out["ok"] is True
+        assert len(out["promoted_patterns"]) >= 1
+
+
+# ===========================================================================
+# 10. ruled_out injection layer — rejected pairs surface as a do-not-retry veto
+# ===========================================================================
+
+class TestJudgmentRuledOutLayer:
+    """REJECTED comparison-pair hypotheses surface in the ruled_out layer."""
+
+    def _make_rejected_pair(self, project: Path, hypothesis: str) -> str:
+        out = json.loads(judgment_pair_tool(
+            domain="t",
+            run_a={"ref": "a"}, run_b={"ref": "b"},
+            observed_differences=["some diff"],
+            diagnostic_hypotheses=[
+                {"hypothesis": hypothesis, "competing_hypotheses": ["rival"]}
+            ],
+            notes="disproven on retest",
+            project_root_arg=str(project),
+        ))
+        # Mark it rejected on disk (the disposition a human/agent makes after retest).
+        fp = project / ".judgment" / "ledger" / "paired" / f"{out['entry_id']}.yaml"
+        payload = yaml.safe_load(fp.read_text())
+        payload["injection_status"] = "rejected"
+        fp.write_text(yaml.safe_dump(payload, sort_keys=False))
+        return out["entry_id"]
+
+    def test_inject_context_has_ruled_out_layer(self, initialized: Path):
+        out = json.loads(judgment_inject_context_tool(project_root_arg=str(initialized)))
+        assert "ruled_out" in out["context"]
+        assert out["context"]["ruled_out"] == []  # empty by default
+
+    def test_rejected_pair_surfaces_in_ruled_out(self, initialized: Path):
+        self._make_rejected_pair(initialized, "stale cache is the cause")
+        out = json.loads(judgment_inject_context_tool(project_root_arg=str(initialized)))
+        ruled = out["context"]["ruled_out"]
+        assert len(ruled) == 1
+        assert ruled[0]["hypothesis"] == "stale cache is the cause"
+        assert ruled[0]["competing_hypotheses"] == ["rival"]
+
+    def test_rejected_pair_not_in_what_works(self, initialized: Path):
+        """A rejected pair must NOT leak into the corroborated what_works layer."""
+        self._make_rejected_pair(initialized, "wrong theory")
+        out = json.loads(judgment_inject_context_tool(project_root_arg=str(initialized)))
+        assert out["context"]["what_works"] == []

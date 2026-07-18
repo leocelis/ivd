@@ -1,10 +1,10 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 31 tools.
+IVD MCP Tool Registry — registration and dispatch for all 32 tools.
 
   - 18 core tools (Intent, Implementation, Verification phases)
-  - 9  judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
+  - 10 judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
                        server-level opt-out: `IVD_JUDGMENT_TOOLS_ENABLED=false`.
                        See ivd/judgment_layer.md and ivd/judgment/ engine
                        package. Tool #9 — `ivd_judgment_check_installed` —
@@ -52,6 +52,7 @@ from mcp_server.tools import (
     judgment_detect_patterns_tool,
     judgment_inject_context_tool,
     judgment_propose_recommendation_tool,
+    judgment_resolve_tool,
     judgment_check_installed_tool,
     canon_render_tool,
     canon_check_tool,
@@ -65,7 +66,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 31 IVD MCP tools (18 core + 9 judgment-phase + 4 Canon-phase, IVD v3.1)."""
+    """Return all 32 IVD MCP tools (18 core + 10 judgment-phase + 4 Canon-phase, IVD v3.1)."""
     return [
         Tool(
             name="ivd_get_context",
@@ -215,14 +216,14 @@ def get_all_tools() -> List[Tool]:
 
         # -------------------------------------------------------------------
         # Judgment Phase (IVD v3.0; refactored v3.1) — opt-in via
-        # `<project_root>/.judgment/`. All 9 tools are dormant unless that
+        # `<project_root>/.judgment/`. All 10 tools are dormant unless that
         # folder exists. Server-level opt-out: IVD_JUDGMENT_TOOLS_ENABLED=false
         # (mirrors Canon's IVD_CANON_TOOLS_ENABLED knob; tools remain
         # registered when disabled and return an `enabled=false` payload).
         # -------------------------------------------------------------------
         Tool(
             name="ivd_judgment_init",
-            description="Bootstrap the IVD Judgment phase for a project. Creates `<project_root>/.judgment/` with subfolders (baselines, ledger/{raw,codified,paired,resolved,archived}, patterns, recommendations) and seeds per-domain baseline.yaml files. After this runs, the other 7 ivd_judgment_* tools become active. (IVD v3.0)",
+            description="Bootstrap the IVD Judgment phase for a project. Creates `<project_root>/.judgment/` with subfolders (baselines, ledger/{raw,codified,paired,resolved,archived}, patterns, recommendations) and seeds per-domain baseline.yaml files. After this runs, the other 9 ivd_judgment_* tools become active. (IVD v3.0)",
             inputSchema={"type": "object", "properties": {
                 "project_root": {"type": "string", "description": "Path to repo root (absolute or relative)."},
                 "domains": {"type": "array", "items": {"type": "string"}, "description": "Optional list of domain ids to seed baselines for (e.g. ['gaming', 'orchestration'])."},
@@ -284,7 +285,7 @@ def get_all_tools() -> List[Tool]:
         ),
         Tool(
             name="ivd_judgment_inject_context",
-            description="Return prioritized Judgment context for downstream agents. Three layers: (1) distilled patterns (active, freshness ∈ {fresh, aging}, sorted by weighted_confidence × member_count), (2) recent codified corrections in the same domain (last 5), (3) What Works hypotheses (only corroborated comparison pairs). Soft token_budget cap. Use this to inject judgment knowledge into the next agent run's system message. Dormant unless `.judgment/` exists. (IVD v3.0)",
+            description="Return prioritized Judgment context for downstream agents. Four layers: (1) distilled patterns (active, freshness ∈ {fresh, aging}, sorted by weighted_confidence × member_count), (2) recent codified corrections in the same domain (last 5), (3) ruled_out — REJECTED comparison-pair hypotheses (do-not-retry veto), (4) What Works hypotheses (only corroborated comparison pairs). Soft token_budget cap. Use this to inject judgment knowledge into the next agent run's system message. Dormant unless `.judgment/` exists. (IVD v3.0)",
             inputSchema={"type": "object", "properties": {
                 "domain": {"type": "string", "description": "Optional: filter all layers to one domain."},
                 "task_type": {"type": "string", "description": "Optional: task context hint (e.g. 'generate-script'). Echoed back in response; reserved for task-scoped injection in a future release."},
@@ -300,6 +301,18 @@ def get_all_tools() -> List[Tool]:
                 "notes": {"type": "string", "description": "Optional notes."},
                 "project_root": {"type": "string", "description": "Optional path to repo root."},
             }, "required": ["pattern_id"]},
+        ),
+        Tool(
+            name="ivd_judgment_resolve",
+            description="Close the loop on a ledger entry: record what happened after the fix was applied and whether it held, then transition the entry codified|paired → resolved. This is the outcome-logging step — without it, a future run re-derives a diagnosis that was already settled. Writes a `resolution` block ({outcome, held?, fix_applied?, resolved_at}) and moves the entry to `.judgment/ledger/resolved/`. Dormant unless `.judgment/` exists. (IVD v3.1)",
+            inputSchema={"type": "object", "properties": {
+                "entry_id": {"type": "string", "description": "Ledger entry id (must be in state codified or paired)."},
+                "outcome": {"type": "string", "description": "What happened after the fix was applied (required)."},
+                "held": {"type": "boolean", "description": "Optional: did the fix hold / did it actually work?"},
+                "fix_applied": {"type": "string", "description": "Optional: what fix was actually applied."},
+                "notes": {"type": "string", "description": "Optional notes."},
+                "project_root": {"type": "string", "description": "Optional path to repo root."},
+            }, "required": ["entry_id", "outcome"]},
         ),
         Tool(
             name="ivd_judgment_check_installed",
@@ -391,6 +404,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_judgment_detect_patterns": lambda domain=None, min_members=3, project_root=None, **_: judgment_detect_patterns_tool(project_root, domain, min_members),
     "ivd_judgment_inject_context": lambda domain=None, task_type=None, token_budget=1500, project_root=None, **_: judgment_inject_context_tool(project_root, domain, task_type, token_budget),
     "ivd_judgment_propose_recommendation": lambda pattern_id, notes=None, project_root=None, **_: judgment_propose_recommendation_tool(pattern_id, project_root, notes),
+    "ivd_judgment_resolve": lambda entry_id, outcome, held=None, fix_applied=None, notes=None, project_root=None, **_: judgment_resolve_tool(entry_id, outcome, held, fix_applied, notes, project_root),
     "ivd_judgment_check_installed": lambda workspace_root=None, max_depth=3, project_root=None, **_: judgment_check_installed_tool(project_root, workspace_root, max_depth),
     # Canon — Human Translation Layer (Phase 0b, hosted inside this IVD MCP server)
     "canon_render": lambda text=None, contract=None, stakes=None, domain_pack=None, identity_statement=None, output_format="markdown", **_: canon_render_tool(text, contract, stakes, domain_pack, identity_statement, output_format),

@@ -3,7 +3,7 @@
 """
 IVD Judgment Phase MCP tools — Phase 4 of IVD (v3.0+, refactored in v3.1).
 
-Nine tools (8 originals + ivd_judgment_check_installed, R6):
+Ten tools:
 
   1. ivd_judgment_init                    — bootstrap .judgment/
   2. ivd_judgment_capture                 — write a raw ledger entry
@@ -13,7 +13,8 @@ Nine tools (8 originals + ivd_judgment_check_installed, R6):
   6. ivd_judgment_detect_patterns         — cluster ledger entries into patterns
   7. ivd_judgment_inject_context          — prioritized judgment context
   8. ivd_judgment_propose_recommendation  — draft recommendation against a pattern
-  9. ivd_judgment_check_installed         — workspace-level activation visibility (R6)
+  9. ivd_judgment_resolve                 — record an entry's resolution (→ resolved)
+  10. ivd_judgment_check_installed        — workspace-level activation visibility (R6)
 
 All tools are *dormant* unless ``<project_root>/.judgment/`` exists at the
 resolved project root (per-project opt-in gate). Additionally, the entire
@@ -822,7 +823,97 @@ def judgment_propose_recommendation_tool(
 
 
 # =============================================================================
-# Tool 9: ivd_judgment_check_installed (R6 — analog to canon_check_rules_installed)
+# Tool 9: ivd_judgment_resolve
+# =============================================================================
+
+def judgment_resolve_tool(
+    entry_id: str,
+    outcome: str,
+    held: Optional[bool] = None,
+    fix_applied: Optional[str] = None,
+    notes: Optional[str] = None,
+    project_root_arg: Optional[str] = None,
+) -> str:
+    """Close the loop on a ledger entry: record its resolution and transition
+    codified|paired → resolved.
+
+    This is the outcome-logging step (ITV loop step 5): after a fix is applied,
+    record what happened and whether it held, so a future run sees a settled
+    entry rather than re-deriving the same diagnosis. Writes ``resolution`` on
+    the entry and moves it to ``.judgment/ledger/resolved/``.
+    """
+    print(colored(f"[{LOG}] ivd_judgment_resolve: entry_id={entry_id}", "cyan"))
+
+    gate, store = _gate("ivd_judgment_resolve", project_root_arg)
+    if gate is not None:
+        return gate
+
+    if not (outcome or "").strip():
+        return json.dumps({
+            "ok": False,
+            "tool": "ivd_judgment_resolve",
+            "errors": ["outcome is required (what happened after the fix was applied)"],
+        }, indent=2)
+
+    # A resolvable entry lives in codified or paired. If it is instead raw,
+    # already resolved, or archived, say so specifically.
+    from judgment.store import read_yaml
+    from_state = next(
+        (st for st in ("codified", "paired") if store.ledger_path(st, entry_id).exists()),
+        None,
+    )
+    if from_state is None:
+        _hints = {
+            "raw": "still raw — codify it first (ivd_judgment_save_codified)",
+            "resolved": "already resolved",
+            "archived": "archived",
+        }
+        elsewhere = next(
+            (st for st in _hints if store.ledger_path(st, entry_id).exists()), None
+        )
+        err = (
+            f"Cannot resolve {entry_id}: {_hints[elsewhere]}."
+            if elsewhere else f"Ledger entry not found in any state: {entry_id}"
+        )
+        return json.dumps({"ok": False, "tool": "ivd_judgment_resolve", "error": err}, indent=2)
+
+    from_path = store.ledger_path(from_state, entry_id)
+    payload = read_yaml(from_path) or {}
+
+    resolution: Dict[str, Any] = {"outcome": outcome.strip(), "resolved_at": _now_iso()}
+    if held is not None:
+        resolution["held"] = bool(held)
+    if fix_applied:
+        resolution["fix_applied"] = fix_applied
+    if notes:
+        resolution["notes"] = notes
+
+    payload["state"] = "resolved"
+    payload["resolution"] = resolution
+    payload.setdefault("changelog", []).append({"date": _today(), "change": "resolved"})
+
+    target = store.ledger_path("resolved", entry_id)
+    write_yaml(target, payload)
+    from_path.unlink(missing_ok=True)
+
+    return json.dumps({
+        "ok": True,
+        "tool": "ivd_judgment_resolve",
+        "entry_id": entry_id,
+        "from": str(from_path),
+        "to": str(target),
+        "state": "resolved",
+        "resolution": resolution,
+        "next_step": (
+            "This entry is settled. Its diagnosed_cause still counts toward pattern "
+            "detection; if the fix did NOT hold (held=false), consider a comparison_pair "
+            "marking the disproven theory rejected so it surfaces in the ruled_out layer."
+        ),
+    }, indent=2)
+
+
+# =============================================================================
+# Tool 10: ivd_judgment_check_installed (R6 — analog to canon_check_rules_installed)
 # =============================================================================
 
 def judgment_check_installed_tool(

@@ -131,7 +131,7 @@ Ask your AI agent to use IVD tools. For example:
 - *"Use ivd_scaffold to create an intent for my user authentication module"*
 - *"Use ivd_validate to check my intent artifact"*
 
-That's it. 30 of 31 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
+That's it. 31 of 32 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
 
 ### 4. Enable semantic search (optional)
 
@@ -161,7 +161,7 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 
 ## MCP Tools
 
-31 tools available to any MCP-compatible AI agent (18 core + 9 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` added in v3.1) + 4 Canon tools added in v3.1):
+32 tools available to any MCP-compatible AI agent (18 core + 10 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` and `ivd_judgment_resolve` added in v3.1) + 4 Canon tools added in v3.1):
 
 ### Core (18)
 
@@ -186,7 +186,7 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 | `ivd_discover_goal` | Help users who don't know what to ask |
 | `ivd_teach_concept` | Explain concepts before writing intent |
 
-### Judgment Phase (9) *— dormant unless `<project_root>/.judgment/` exists*
+### Judgment Phase (10) *— dormant unless `<project_root>/.judgment/` exists*
 
 > **New to Judgment?** Read [`judgment_explained.md`](judgment_explained.md) first
 > — plain-English "what problem it solves and how" in 5 minutes — then the tool
@@ -202,6 +202,7 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 | `ivd_judgment_detect_patterns` | Cluster ledger entries into patterns |
 | `ivd_judgment_inject_context` | Prioritized judgment context for downstream agents |
 | `ivd_judgment_propose_recommendation` | Draft recommendation against a pattern (with `build/buy/hire/partner` sub-types) |
+| `ivd_judgment_resolve` | Close the loop: record an entry's resolution (outcome, whether it held) and move it `codified\|paired → resolved`, so future runs don't re-derive a settled diagnosis. (v3.1) |
 | `ivd_judgment_check_installed` | Detect whether `<project_root>/.judgment/` exists. **Never writes to disk** — returns the ready-to-call init payload the agent must offer to the user with explicit permission. (v3.1) |
 
 **Architecture (v3.1):** substance lives in the [`ivd/judgment/`](judgment/) engine package (typed `@dataclass` schemas; `engine_version` + reproducible SHA-256 hash on `Pattern` and `InjectionResult` for diffability and audit). `mcp_server/tools/judgment.py` is a thin facade that dispatches to the engine. Mirrors the Canon (Phase 0) architecture for symmetry. Server-level kill switch: `IVD_JUDGMENT_TOOLS_ENABLED=false`.
@@ -446,7 +447,7 @@ Once you have an API key, use the URL that matches your client:
 }
 ```
 
-All 31 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
+All 32 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
 ---
 

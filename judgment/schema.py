@@ -402,6 +402,12 @@ class Pattern:
     scope: Dict[str, Any] = dataclasses.field(
         default_factory=lambda: {"systems": [], "models": [], "recipes": []}
     )
+    # Authored craft-guidance (do/never/related), preserved across re-detection.
+    # `recommended_fix` is the "do"; these are the human-curated "never" rules and
+    # the files the pattern applies to. Not part of detection_hash — they are
+    # annotations on the engine's cluster, not inputs the engine detects.
+    never: List[str] = dataclasses.field(default_factory=list)
+    related_files: List[str] = dataclasses.field(default_factory=list)
     depth_distribution: Dict[str, int] = dataclasses.field(default_factory=dict)
     tool_origin: Dict[str, Any] = dataclasses.field(default_factory=dict)
     status: str = "active"
@@ -442,6 +448,8 @@ class Pattern:
             "scope": self.scope,
             "diagnosed_cause": self.diagnosed_cause,
             "recommended_fix": self.recommended_fix,
+            "never": self.never,
+            "related_files": self.related_files,
             "fix_action_type": self.fix_action_type,
             "members": self.members,
             "member_count": self.member_count,
@@ -466,6 +474,8 @@ class Pattern:
             diagnosed_cause=data.get("diagnosed_cause", ""),
             recommended_fix=data.get("recommended_fix", ""),
             fix_action_type=data.get("fix_action_type", ""),
+            never=list(data.get("never") or []),
+            related_files=list(data.get("related_files") or []),
             members=list(data.get("members") or []),
             member_count=int(data.get("member_count", 0)),
             weighted_confidence=float(data.get("weighted_confidence", 0.0)),

@@ -3,12 +3,16 @@
 """
 Judgment engine — prioritized context injection for downstream agents.
 
-Three layers, in priority order:
+Four layers, in priority order:
   1. patterns               — distilled (3+ members), freshness ∈ {fresh, aging},
                               sorted by weighted_confidence × member_count.
   2. recent_corrections     — last 5 codified entries in the same domain
                               (still useful even before a pattern exists).
-  3. what_works             — corroborated comparison_pair hypotheses
+  3. ruled_out              — REJECTED comparison_pair hypotheses (Pearl Rung-1 →
+                              "this was tried and disproven; do not retry it").
+                              A hard veto layer: negative knowledge the loop needs
+                              so it does not re-derive an already-falsified theory.
+  4. what_works             — corroborated comparison_pair hypotheses
                               (Pearl Rung-1 → "this rivals these alternatives").
 
 A soft token budget (4 chars per token proxy) trims the lowest-priority layers
@@ -90,7 +94,9 @@ def inject_context(
     recent_layer.sort(key=lambda x: (x.get("created") or ""), reverse=True)
     recent_layer = recent_layer[:5]
 
-    # Layer 3: what_works — corroborated comparison pairs
+    # Layer 3: ruled_out — REJECTED comparison pairs (a hard veto: do not retry).
+    # Layer 4: what_works — corroborated comparison pairs.
+    ruled_out_layer = []
     what_works_layer = []
     for state, fp, payload in store.iter_ledger("paired", "resolved"):
         if payload.get("kind") != "comparison_pair":
@@ -98,30 +104,43 @@ def inject_context(
         cls = payload.get("classification") or {}
         if domain and cls.get("domain") != domain:
             continue
-        if payload.get("injection_status") != InjectionStatus.CORROBORATED.value:
-            continue
-        for dh in payload.get("diagnostic_hypotheses") or []:
-            what_works_layer.append({
-                "from_pair": payload.get("id"),
-                "domain": cls.get("domain"),
-                "hypothesis": dh.get("hypothesis"),
-                "competing_hypotheses": dh.get("competing_hypotheses"),
-            })
+        status = payload.get("injection_status")
+        if status == InjectionStatus.REJECTED.value:
+            for dh in payload.get("diagnostic_hypotheses") or []:
+                ruled_out_layer.append({
+                    "from_pair": payload.get("id"),
+                    "domain": cls.get("domain"),
+                    "hypothesis": dh.get("hypothesis"),
+                    "competing_hypotheses": dh.get("competing_hypotheses"),
+                    "notes": payload.get("notes"),
+                })
+        elif status == InjectionStatus.CORROBORATED.value:
+            for dh in payload.get("diagnostic_hypotheses") or []:
+                what_works_layer.append({
+                    "from_pair": payload.get("id"),
+                    "domain": cls.get("domain"),
+                    "hypothesis": dh.get("hypothesis"),
+                    "competing_hypotheses": dh.get("competing_hypotheses"),
+                })
 
     rendered = {
         "patterns": patterns_layer,
         "recent_corrections": recent_layer,
+        "ruled_out": ruled_out_layer,
         "what_works": what_works_layer,
     }
     text_size = len(json.dumps(rendered))
     truncated = False
     while text_size > char_budget and (
-        rendered["patterns"] or rendered["recent_corrections"] or rendered["what_works"]
+        rendered["patterns"] or rendered["recent_corrections"]
+        or rendered["ruled_out"] or rendered["what_works"]
     ):
         if rendered["what_works"]:
             rendered["what_works"].pop()
         elif rendered["recent_corrections"]:
             rendered["recent_corrections"].pop()
+        elif rendered["ruled_out"]:
+            rendered["ruled_out"].pop()
         elif rendered["patterns"]:
             rendered["patterns"].pop()
         text_size = len(json.dumps(rendered))

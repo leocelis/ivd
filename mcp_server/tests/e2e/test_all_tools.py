@@ -388,7 +388,7 @@ class TestSearch:
 
 
 # ---------------------------------------------------------------------------
-# Meta: all registered tools respond without crashing (31 = 18 core + 9 judgment + 4 Canon)
+# Meta: all registered tools respond without crashing (32 = 18 core + 10 judgment + 4 Canon)
 # ---------------------------------------------------------------------------
 
 class TestAllToolsRespond:
@@ -437,8 +437,8 @@ class TestAllToolsRespond:
         canon_tools = {n for n in registered if n.startswith("canon_")}
         assert len(canon_tools) == 4, f"Expected 4 canon_* tools, got {sorted(canon_tools)}"
         judgment_tools = {n for n in registered if n.startswith("ivd_judgment_")}
-        assert len(judgment_tools) == 9, f"Expected 9 ivd_judgment_* tools, got {sorted(judgment_tools)}"
-        assert len(registered) == 31, (
-            f"Expected 31 tools total (18 core + 9 judgment + 4 Canon); "
+        assert len(judgment_tools) == 10, f"Expected 10 ivd_judgment_* tools, got {sorted(judgment_tools)}"
+        assert len(registered) == 32, (
+            f"Expected 32 tools total (18 core + 10 judgment + 4 Canon); "
             f"registry now reports {len(registered)}"
         )

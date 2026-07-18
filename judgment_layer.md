@@ -306,7 +306,11 @@ prioritizes by signal strength:
 
 1. **Distilled patterns** (≥ 3 members, fresh or aging) — highest signal
 2. **Recent codified corrections** in the same domain (last 3–5 resolved entries)
-3. **What Works layer** — corroborated comparison-pair hypotheses, presented
+3. **Ruled-out layer** — `injection_status: rejected` comparison-pair
+   hypotheses, presented as a **do-not-retry veto** ("this was tried and
+   disproven; do not re-derive it"). Negative knowledge the loop needs so it
+   does not spend a round re-proposing an already-falsified theory.
+4. **What Works layer** — corroborated comparison-pair hypotheses, presented
    as **generative guidance** ("when X, prefer Y") rather than failure
    avoidance ("don't do X").
 
@@ -332,10 +336,23 @@ budget").
 
 ## Step 9 — Resolve / Archive
 
+`ivd_judgment_resolve(entry_id, outcome, held?, fix_applied?)` closes the loop
+on a single entry: it records a `resolution` block (`outcome`, optional `held`
+= did the fix actually work, optional `fix_applied`, auto-stamped `resolved_at`)
+and transitions the entry `codified | paired → resolved`. This is the
+outcome-logging step — without it a future run re-derives a diagnosis that was
+already settled. A resolved entry keeps its `diagnosed_cause` in the detection
+corpus (it still counts toward pattern promotion).
+
 When a recommendation is applied:
-- All member ledger entries transition `pattern-member → resolved`
-- `resolved_by_recommendation_id` and `resolved_at` are set
+- Member ledger entries are resolved via `ivd_judgment_resolve` (record the
+  outcome and whether the fix held)
+- `resolved_at` is set on each entry's `resolution` block
 - The pattern transitions `open → addressed`
+
+If a fix did **not** hold (`held: false`), capture a `comparison_pair` and mark
+it `rejected` so the disproven theory surfaces in the **ruled-out** injection
+layer (Step 8) — a hard veto against retrying it.
 
 After 90 days resolved (configurable), entries transition `resolved →
 archived` and stop being injected. The pattern remains visible but is no
@@ -407,7 +424,7 @@ on day one. Forcing it everywhere would dilute the rest of IVD.
 
 ---
 
-## Tool Surface (9 tools)
+## Tool Surface (10 tools)
 
 | Tool | Purpose |
 |---|---|
@@ -419,9 +436,10 @@ on day one. Forcing it everywhere would dilute the rest of IVD.
 | `ivd_judgment_detect_patterns` | Scan ledger; create/update patterns |
 | `ivd_judgment_inject_context` | Return prioritized context block for downstream agents |
 | `ivd_judgment_propose_recommendation` | Draft a recommendation against a pattern |
+| `ivd_judgment_resolve` | Record an entry's resolution; transition `codified\|paired → resolved` (v3.1) |
 | `ivd_judgment_check_installed` | Workspace/project activation visibility (read-only; v3.1, R6) |
 
-All 9 are gated by the `.judgment/` folder check (per-project) AND by the
+All 10 are gated by the `.judgment/` folder check (per-project) AND by the
 server-level `IVD_JUDGMENT_TOOLS_ENABLED=false` opt-out (mirrors Canon's
 `IVD_CANON_TOOLS_ENABLED`; tools remain registered when disabled, returning
 an `enabled=false` payload, so the MCP catalog stays ABI-stable). Implementation:
@@ -486,3 +504,13 @@ source of truth.
   read-only). Adds `mcp_server/tests/unit/test_judgment.py` with 53 tests
   across 11 classes (R5). No on-disk schema or wire-protocol changes —
   every existing `.judgment/` folder continues to work.
+- **v1.2** (IVD v3.1) — Closes the loop's outcome and negative-knowledge gaps.
+  Adds the 10th tool `ivd_judgment_resolve` — records an entry's `resolution`
+  (`outcome`, optional `held` / `fix_applied`, `resolved_at`) and transitions
+  `codified | paired → resolved` (Step 9 previously had no tool). Adds a 4th
+  injection layer, **ruled_out**, surfacing `injection_status: rejected`
+  comparison-pair hypotheses as a do-not-retry veto (Step 8). Adds authored
+  `never` / `related_files` fields to `Pattern` (do/never/related craft
+  guidance), preserved across re-detection and excluded from `detection_hash`
+  (annotations, not detected inputs). Additive-only: every existing
+  `.judgment/` folder continues to work; new fields default empty.

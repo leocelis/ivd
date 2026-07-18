@@ -9,6 +9,19 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- Judgment phase — closed two loop gaps (see `judgment_layer.md` v1.2):
+  - Added `ivd_judgment_resolve` MCP tool — records an entry's resolution
+    (`outcome`, optional `held` / `fix_applied`, auto `resolved_at`) and
+    transitions `codified | paired → resolved`. Step 9 of the loop previously
+    had no tool, so outcomes were never logged and future runs re-derived
+    settled diagnoses. Tool count: 31 → 32 (10 judgment).
+  - Added a 4th `ivd_judgment_inject_context` layer, **ruled_out** — surfaces
+    `injection_status: rejected` comparison-pair hypotheses as a do-not-retry
+    veto (negative knowledge), so the loop does not re-propose a falsified theory.
+  - Added authored `never` / `related_files` fields to `Pattern` (do/never/related
+    craft guidance), preserved across re-detection, excluded from `detection_hash`.
+  - Additive-only: existing `.judgment/` folders keep working; new fields default
+    empty. 8 new tests in `test_judgment.py`.
 - Added `ivd_import_spec` MCP tool — parses a GitHub Spec Kit or OpenSpec `spec.md`
   into an IVD constraint scaffold (User Story / Requirement + Given/When/Then
   scenarios), read-only, no LLM call. Neither source format binds a scenario to an

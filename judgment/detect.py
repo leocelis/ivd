@@ -147,6 +147,9 @@ def detect_patterns(
             diagnosed_cause=causes.most_common(1)[0][0] if causes else "",
             recommended_fix=fixes.most_common(1)[0][0] if fixes else "",
             fix_action_type=fix_action_types.most_common(1)[0][0] if fix_action_types else "",
+            # Preserve human-authored craft guidance across re-detection.
+            never=(existing.never if existing else []),
+            related_files=(existing.related_files if existing else []),
             members=member_ids,
             member_count=len(members),
             depth_distribution=dict(depth_counts),

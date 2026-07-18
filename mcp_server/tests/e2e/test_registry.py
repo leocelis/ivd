@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 31 tools are registered (18 core + 9 judgment + 4 canon)
+- All 32 tools are registered (18 core + 10 judgment + 4 canon)
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -13,7 +13,7 @@ import json
 
 from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 
-EXPECTED_TOOL_COUNT = 31
+EXPECTED_TOOL_COUNT = 32
 
 
 class TestToolRegistry:
@@ -50,6 +50,7 @@ class TestToolRegistry:
             "ivd_judgment_detect_patterns",
             "ivd_judgment_inject_context",
             "ivd_judgment_propose_recommendation",
+            "ivd_judgment_resolve",
             "ivd_judgment_check_installed",
         }
         canon = {
