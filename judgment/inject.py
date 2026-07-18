@@ -3,7 +3,10 @@
 """
 Judgment engine — prioritized context injection for downstream agents.
 
-Four layers, in priority order:
+Four layers (rendered in this order). Under the soft token budget the
+lowest-retention layers are trimmed first — what_works, then recent_corrections,
+then ruled_out, then patterns — so patterns and the ruled_out veto survive
+budget pressure the longest:
   1. patterns               — distilled (3+ members), freshness ∈ {fresh, aging},
                               sorted by weighted_confidence × member_count.
   2. recent_corrections     — last 5 codified entries in the same domain
@@ -12,11 +15,14 @@ Four layers, in priority order:
                               "this was tried and disproven; do not retry it").
                               A hard veto layer: negative knowledge the loop needs
                               so it does not re-derive an already-falsified theory.
+                              Retained ahead of recent_corrections on purpose — a
+                              falsified theory is more costly to re-explore than a
+                              raw recent note is to lose.
   4. what_works             — corroborated comparison_pair hypotheses
                               (Pearl Rung-1 → "this rivals these alternatives").
 
-A soft token budget (4 chars per token proxy) trims the lowest-priority layers
-first. The InjectionResult is stamped with engine_version + a reproducible
+A soft token budget (4 chars per token proxy) enforces the trim order above.
+The InjectionResult is stamped with engine_version + a reproducible
 ``injection_hash`` so callers can diff context across runs (R3 — borrowed
 from Canon's audit hash).
 

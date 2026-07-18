@@ -21,7 +21,9 @@ both. See [ROADMAP.md](ROADMAP.md).
   - Added authored `never` / `related_files` fields to `Pattern` (do/never/related
     craft guidance), preserved across re-detection, excluded from `detection_hash`.
   - Additive-only: existing `.judgment/` folders keep working; new fields default
-    empty. 8 new tests in `test_judgment.py`.
+    empty. 9 new tests in `test_judgment.py` (incl. a re-detection regression
+    guard: authored `never`/`related_files` survive re-detect and stay out of
+    `detection_hash`).
 - Added `ivd_import_spec` MCP tool — parses a GitHub Spec Kit or OpenSpec `spec.md`
   into an IVD constraint scaffold (User Story / Requirement + Given/When/Then
   scenarios), read-only, no LLM call. Neither source format binds a scenario to an

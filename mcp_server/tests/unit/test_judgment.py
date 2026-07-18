@@ -554,6 +554,45 @@ class TestJudgmentEndToEndLoop:
         assert p["member_count"] == PATTERN_PROMOTION_THRESHOLD
         assert p["freshness"] in ("fresh", "aging")
 
+    def test_redetect_preserves_authored_never_and_related_files(self, initialized: Path):
+        """Re-running detect_patterns must NOT clobber authored craft guidance
+        (never / related_files), and must NOT change detection_hash — those
+        fields are annotations on the cluster, excluded from the hash.
+
+        Guards the preservation path in detect.py
+        (never=existing.never if existing else []) and the hash exclusion in
+        Pattern.compute_hash(). Without this test a refactor of either could
+        silently drop human-authored guidance.
+        """
+        for i in range(PATTERN_PROMOTION_THRESHOLD):
+            _seed_codified(initialized, cause="root cause R", raw_correction=f"r{i}")
+        first = json.loads(judgment_detect_patterns_tool(project_root_arg=str(initialized)))
+        pid = first["promoted_patterns"][0]["pattern_id"]
+
+        # Hand-author craft guidance onto the persisted pattern.
+        store = JudgmentStore(initialized)
+        pattern = store.read_pattern(pid)
+        assert pattern is not None
+        hash_before = pattern.detection_hash
+        pattern.never = ["do NOT retry the naive single-pass approach"]
+        pattern.related_files = ["src/pipeline/runner.py"]
+        store.write_pattern(pattern)  # re-stamps hash; excluded fields must not move it
+
+        # Re-detect over the same (unchanged) ledger.
+        json.loads(judgment_detect_patterns_tool(project_root_arg=str(initialized)))
+
+        after = store.read_pattern(pid)
+        assert after is not None
+        assert after.never == ["do NOT retry the naive single-pass approach"], (
+            "authored `never` was clobbered by re-detection"
+        )
+        assert after.related_files == ["src/pipeline/runner.py"], (
+            "authored `related_files` was clobbered by re-detection"
+        )
+        assert after.detection_hash == hash_before, (
+            "detection_hash moved — never/related_files must be excluded from it"
+        )
+
     def test_detect_patterns_does_not_promote_below_threshold(
         self, initialized: Path
     ):
