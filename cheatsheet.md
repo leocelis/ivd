@@ -404,10 +404,11 @@ AI reviewers enter as `source: runtime` — **not** weighted by `domain_depth`. 
 | `ivd_judgment_detect_patterns` | Cluster ledger into patterns |
 | `ivd_judgment_inject_context` | Prioritized context for downstream agents |
 | `ivd_judgment_propose_recommendation` | Draft recommendation against a pattern |
+| `ivd_judgment_resolve` | Record an entry's resolution; `codified\|paired → resolved` (v3.1) |
 | `ivd_judgment_check_installed` | Workspace/project activation visibility (read-only; v3.1) |
 
 **Server-level opt-out:** set `IVD_JUDGMENT_TOOLS_ENABLED=false` to disable
-all 9 tools without de-registering them (mirrors `IVD_CANON_TOOLS_ENABLED`).
+all 10 tools without de-registering them (mirrors `IVD_CANON_TOOLS_ENABLED`).
 
 ### See it work (5-second runnable showcase)
 

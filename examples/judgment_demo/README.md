@@ -375,7 +375,7 @@ sees it.
 ## Where to go next
 
 - The Judgment phase canonical spec: [`ivd/judgment_layer.md`](../../judgment_layer.md)
-- The 9 Judgment MCP tools: [`ivd/cheatsheet.md`](../../cheatsheet.md) §Part 2.5
+- The 10 Judgment MCP tools: [`ivd/cheatsheet.md`](../../cheatsheet.md) §Part 2.5
 - The full IVD framework: [`ivd/framework.md`](../../framework.md) §Principle 9
 - Principle 9 — "Judgment Compounds": [`ivd/cookbook.md`](../../cookbook.md)
 - Run the full integration test suite:

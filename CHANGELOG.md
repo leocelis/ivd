@@ -9,6 +9,12 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **Security:** bumped `mcp` 1.23.0 → 1.28.1 (`requirements.txt`,
+  `mcp_server/requirements.txt`, `pyproject.toml` floor), clearing all 6 open
+  Dependabot alerts (3 advisories: HTTP transport principal-verification,
+  experimental task-handler isolation, WS Host/Origin validation). Validated
+  in an isolated venv: server imports clean and the full transport/registry/
+  auth surface passes.
 - Judgment phase — closed two loop gaps (see `judgment_layer.md` v1.2):
   - Added `ivd_judgment_resolve` MCP tool — records an entry's resolution
     (`outcome`, optional `held` / `fix_applied`, auto `resolved_at`) and

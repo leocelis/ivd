@@ -66,7 +66,7 @@ def get_context_tool() -> str:
             ],
             "artifact_types": ["baseline", "ledger_entry", "comparison_pair", "pattern"],
             "canonical_doc": "ivd/judgment_layer.md",
-            "opt_out": "Set IVD_JUDGMENT_TOOLS_ENABLED=false on the IVD MCP server to disable all 9 Judgment tools (they remain registered but return a 'disabled' payload). Tool signatures never change mid-major version.",
+            "opt_out": "Set IVD_JUDGMENT_TOOLS_ENABLED=false on the IVD MCP server to disable all 10 Judgment tools (they remain registered but return a 'disabled' payload). Tool signatures never change mid-major version.",
         },
         "when_to_use_ivd": [
             "New AI agents or major agent modifications",
