@@ -1,6 +1,6 @@
 # Terms of Service
 
-> **Version:** 1.0 · **Effective:** May 10, 2026
+> **Version:** 1.1 · **Effective:** July 19, 2026
 >
 > These Terms of Service ("Terms") govern your access to and use of the IVD framework,
 > the hosted MCP server at `mcp.ivdframework.dev`, the website at `ivdframework.dev`,
@@ -49,6 +49,8 @@ control. You are responsible for all activity under your key.
 
 ## 3. Acceptable Use
 
+### 3.1 General Restrictions
+
 You may use the Service for any lawful purpose consistent with these Terms. You must not:
 
 1. Use the Service to process, transmit, or store **personal data** in violation of
@@ -67,6 +69,41 @@ You may use the Service for any lawful purpose consistent with these Terms. You 
 7. Share, resell, or sub-license hosted server access to third parties.
 8. Use the Service in any manner that violates these Terms, the MIT License, or
    applicable law.
+
+### 3.2 Prohibited Content
+
+Every hosted-server tool call transmits the arguments you provide (Section 6). You must
+not use any tool argument, correction text, recipe content, or other input to the
+Service to create, store, transmit, or request generation of:
+
+1. Child sexual abuse material (CSAM) or content that sexualizes minors in any way,
+   including AI-generated depictions.
+2. Content that facilitates terrorism, mass violence, or the development of weapons,
+   explosives, or other means of causing mass harm.
+3. Malware, exploit code, or attack tooling intended for unauthorized access to systems
+   you do not own or have explicit permission to test.
+4. Content that infringes another party's copyright, trademark, patent, or other
+   intellectual property right.
+5. Non-consensual intimate imagery, or content generated for the purpose of harassing,
+   stalking, or doxxing a specific individual.
+6. Content that violates applicable export control or sanctions law (including use of
+   the Service by, or on behalf of, a party subject to U.S. or EU sanctions).
+
+This list is illustrative, not exhaustive — the general prohibition in Section 3.1.3
+("cause harm... or violate applicable law") governs beyond these examples. This section
+applies to the hosted server; it does not, and cannot, govern content you create or
+transmit in a self-hosted deployment, which runs entirely on your own infrastructure
+outside IVD's operational control.
+
+**Enforcement:** IVD may remove access, suspend or revoke your API key, and refuse
+further service to anyone who violates this section, per Section 11 (Termination).
+IVD may preserve records of a suspected violation and disclose them to law enforcement
+or other authorities where required by legal process, consistent with the "compliance
+with a legal obligation" basis (GDPR Art. 6(1)(c)) already used for security-incident
+records under the [Privacy Policy](PRIVACY_POLICY.md) §1.4.
+
+If you believe content on IVD infrastructure violates this section or infringes your
+intellectual property, report it to [leo@leocelis.com](mailto:leo@leocelis.com).
 
 ---
 
@@ -143,6 +180,33 @@ The full disclaimer is in [LEGAL.md §15](LEGAL.md).
 **Marketing claims** ("zero hallucinations," "one turn") apply under specific conditions
 described in [LEGAL.md §4](LEGAL.md) and are not general guarantees. See that section
 before relying on those claims in procurement, compliance, or litigation contexts.
+
+### 7.1 No Third-Party Beneficiaries; AI Output Not Endorsed
+
+These Terms create rights and obligations only between you and IVD. **No third party —
+including an end user of a system you build with IVD, or anyone affected by content an
+AI agent generated using IVD tools — is a third-party beneficiary of these Terms or may
+enforce any provision of them.**
+
+IVD does not review, curate, endorse, verify, or take editorial responsibility for
+output an AI agent generates using IVD tools (intent artifacts, scaffolded code,
+Judgment patterns, or any other tool output), whether or not you subsequently publish,
+distribute, or rely on that output. AI output is probabilistic, not deterministic, and
+is not tested, verified, or guaranteed accurate by IVD before it reaches you. You are
+solely responsible for reviewing AI-generated output — per IVD's own Step 3 human
+review gate (framework.md, Principle 6) — before any consequential, public, or
+production use. Skipping that review does not transfer the resulting risk to IVD.
+
+**A known open question, not resolved by this section:** the contractual limitations in
+Sections 9 and 10 of these Terms, and the indemnification in Section 10, bind you as a
+party to this agreement — they do not necessarily bind a third party who was never a
+user and never agreed to these Terms, and who might bring a direct claim (e.g., a tort
+claim) arising from AI-generated content a user of IVD subsequently published. This
+section states IVD's position and reduces that exposure but does not eliminate the
+underlying legal question, which is fact- and jurisdiction-dependent. If you are
+building a system where this scenario is a material risk (e.g., IVD-assisted content
+reaching the public at scale), consult qualified legal counsel about your own exposure
+and IVD's, rather than relying on this section alone.
 
 ---
 

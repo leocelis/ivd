@@ -629,6 +629,60 @@ official source URL verified on 2026-05-10. Linked from README.md's License sect
 
 ---
 
+## FDR-025: Bad-Actor-User Gaps in the Legal Document Set
+
+**Date:** 2026-07-19
+**Status:** Fixed (Canonical)
+**Identified by:** Threat-model review against a "bad actor user" scenario (hosted
+server abuse, self-hosted misuse, unauthorized forks, contribution provenance,
+third-party AI-output claims)
+
+**Gap:** The legal document set (LEGAL.md, TERMS_OF_SERVICE.md, PRIVACY_POLICY.md,
+CONTRIBUTING.md) covered privacy, AI limitations, and IVD's own liability exposure
+thoroughly, but had four specific gaps against a bad-actor-user threat model:
+
+1. No explicit prohibition on illegal *content* (as distinct from illegal AI systems)
+   transmitted through hosted-server tool arguments, and no stated basis for
+   preserving records or cooperating with legal process.
+2. No disclaimer distancing IVD from unauthorized forks or impersonators that use the
+   IVD name to defraud or harm their own users, while blame lands on the real project.
+3. No contributor-provenance warranty — a gap that is low-risk today (PRs closed) but
+   would matter as soon as recipe/doc contributions open, per ROADMAP.md.
+4. No "no third-party beneficiaries" clause or AI-output-not-endorsed language — the
+   existing indemnification/limitation-of-liability sections bind contracting users,
+   not a non-user third party who might bring a direct claim over AI-generated content
+   a user later published.
+
+**Analysis:** Patterns researched from established precedent rather than drafted from
+assumption: GitHub's Acceptable Use Policies (illegal content, IP infringement,
+impersonation categories) and Anthropic's Usage Policy (CSAM, weapons, malicious cyber
+operations categories) for gap 1; OpenSSL's trademark policy disclaimer pattern
+("X is not affiliated with [project]... not liable for damages from its use") for gap 2;
+the Linux Foundation's Developer Certificate of Origin 1.1 — the standard used by the
+Linux kernel, Kubernetes, Docker, and GitLab — for gap 3; and the standard SaaS/AI
+"outputs are probabilistic, not verified or endorsed, human review required before
+consequential use" disclaimer pattern for gap 4. Gap 4 is explicitly flagged in the
+added text itself as reducing, not eliminating, an open legal question — the
+contractual mechanism cannot fully resolve a non-contracting third party's potential
+direct tort claim; that residual question is out of scope for a documentation change
+and is flagged for qualified legal counsel if it becomes material.
+
+**Decision:** Add all four to the existing documents rather than create new ones,
+keeping the legal surface area from growing beyond what's already in place:
+- TERMS_OF_SERVICE.md §3 restructured into 3.1 (existing Acceptable Use list,
+  unchanged) + new 3.2 Prohibited Content (gap 1) + new 7.1 No Third-Party
+  Beneficiaries; AI Output Not Endorsed (gap 4).
+- LEGAL.md §2 gains an "Unauthorized forks and impersonators" paragraph (gap 2).
+- CONTRIBUTING.md gains a "Contribution Ownership (Developer Certificate of Origin)"
+  section, scoped to apply to today's issue-based recipe/feedback path and to future
+  pull requests (gap 3).
+- TERMS_OF_SERVICE.md → v1.1, LEGAL.md → v2.1, both effective 2026-07-19.
+
+**Changes:** `TERMS_OF_SERVICE.md` (§3 restructured, new §3.2, new §7.1),
+`LEGAL.md` (§2 addition, version bump), `CONTRIBUTING.md` (new DCO section)
+
+---
+
 ## Template for New Entries
 
 ```markdown

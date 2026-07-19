@@ -1,6 +1,6 @@
 # Legal Notices and Disclaimers
 
-> **Version:** 2.0 · **Effective:** May 10, 2026
+> **Version:** 2.1 · **Effective:** July 19, 2026
 >
 > This document applies to the IVD framework (ivdframework.dev), the hosted MCP server
 > at `mcp.ivdframework.dev`, the open-source repository at github.com/leocelis/ivd,
@@ -32,7 +32,7 @@ helps software teams write structured intent artifacts and run AI-assisted verif
 workflows against those artifacts. It is:
 
 - A workflow tool for making AI development intent explicit and verifiable
-- A collection of 28 MCP tools accessible to AI coding agents
+- A collection of 32 MCP tools accessible to AI coding agents
 - An open-source project (MIT License) with an optional hosted server component
 
 IVD is **not**:
@@ -92,6 +92,17 @@ Development." Until registered marks are in place, protection is limited to the
 geographic areas of actual commercial use. Common law rights do exist but are harder to
 enforce internationally than a registered mark. Do not use these names in any way that
 could imply affiliation with or endorsement by IVD.
+
+**Unauthorized forks and impersonators:** the MIT License (see `LICENSE`) grants broad
+rights to the source code — it does not grant the right to use the "IVD" or
+"Intent-Verified Development" names, or to represent a fork, clone, or derivative
+service as the official project. **IVD (Leo Celis) is not responsible for the content,
+conduct, security practices, or representations of any unauthorized fork, clone, or
+service that uses the IVD name or implies affiliation without the written authorization
+described above** — including any harm, loss, or liability arising from a user's
+reliance on such an unauthorized service believing it to be official IVD. If you
+encounter a product or service falsely claiming to be, or be affiliated with, IVD,
+report it to [leo@leocelis.com](mailto:leo@leocelis.com).
 
 ---
 
@@ -291,7 +302,7 @@ Do not transmit the following through hosted-server tool arguments:
 
 ### 5.6 API key security (R-019)
 
-IVD API keys are bearer tokens. A compromised key grants access to all 28 IVD tools
+IVD API keys are bearer tokens. A compromised key grants access to all 32 IVD tools
 under your identity. There is no per-key scope, IP restriction, rate limiting, or
 automatic expiry. If you believe your key has been exposed: (1) revoke it immediately
 via the IVD dashboard, (2) audit any recent tool call logs, (3) if personal data was
@@ -339,7 +350,7 @@ without triggering any liability on IVD's part:
 - New deployments (which invalidate active MCP sessions — see §3.8)
 - Cold starts after container scale-down (5–30 seconds of first-call latency)
 - Redis outages (which prevent new MCP sessions from being established)
-- OpenAI API outages or key expiry (which degrade `ivd_search` only; other 27 tools
+- OpenAI API outages or key expiry (which degrade `ivd_search` only; other 31 tools
   continue to function)
 - Build or embedding pipeline failures during deployment
 
@@ -775,8 +786,10 @@ All legal sources cited in this document, with official URLs and verification da
 
 ---
 
-*Version 2.0 — expanded from v1.0 with full risk coverage, owner-protective clauses,
-and addressing all gaps identified in the cross-check revision of 2026-05-10.*
+*Version 2.1 — added the unauthorized-fork/impersonation disclaimer (§2) addressing a
+gap identified in the bad-actor-user threat review of 2026-07-19 (FDR-025). Version 2.0
+expanded from v1.0 with full risk coverage, owner-protective clauses, and addressing all
+gaps identified in the cross-check revision of 2026-05-10.*
 
 *This document is not legal advice. Consult qualified legal counsel before making
 compliance or legal decisions based on this text.*
