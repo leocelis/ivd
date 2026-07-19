@@ -1,6 +1,6 @@
 # Legal Notices and Disclaimers
 
-> **Version:** 2.1 · **Effective:** July 19, 2026
+> **Version:** 2.2 · **Effective:** July 19, 2026
 >
 > This document applies to the IVD framework (ivdframework.dev), the hosted MCP server
 > at `mcp.ivdframework.dev`, the open-source repository at github.com/leocelis/ivd,
@@ -541,23 +541,38 @@ development tool used. If you are building an Annex III system using IVD:
 - You must implement Article 14 human oversight. IVD's Step 3 review supports this
   requirement; skipping it eliminates the compliant gate
 
+**Timeline note (updated 2026-07-19):** the Annex III high-risk system compliance
+deadline, originally August 2026, has been postponed by the Digital Omnibus on AI to
+**December 2, 2027** (high-risk systems embedded in regulated products: August 2, 2028).
+GPAI model provider obligations (Article 53+) remain in application since August 2, 2025
+and are unaffected by this delay. Verify the current date against the official timeline
+before relying on any specific deadline — the EU has amended this schedule once already
+and may do so again.
+
 **Source:** <https://artificialintelligenceact.eu/article/14/>  
-**Source:** <https://artificialintelligenceact.eu/article/25/>
+**Source:** <https://artificialintelligenceact.eu/article/25/>  
+**Source:** <https://ai-act-service-desk.ec.europa.eu/en/ai-act/timeline/timeline-implementation-eu-ai-act>
 
-### 11.2 Colorado AI Act (Colo. Rev. Stat. § 6-1-1701 — SB 24-205)
+### 11.2 Colorado — Automated Decision-Making Technology (Colo. Rev. Stat. tit. 6 — SB 26-189)
 
-Effective June 30, 2026, this statute requires developers and deployers of high-risk AI
-systems used in consequential decisions (employment, housing, financial services,
-insurance, education, healthcare, legal services) to:
+**Updated 2026-07-19:** Colorado's original AI Act (SB 24-205, cited in earlier versions
+of this document) was **repealed and replaced** by SB 26-189, signed May 14, 2026,
+following a federal magistrate's stay of SB 24-205 enforcement and a constitutional
+challenge joined by the DOJ. The replacement is narrower: it drops the SB 24-205 duty of
+care and mandatory algorithmic impact assessments, and substitutes disclosure and
+record-keeping obligations with a 60-day pre-enforcement cure period (sunsets January 1,
+2030). The bill is generally effective August 12, 2026; the developer technical-
+documentation and consumer-notice obligations described below phase in January 1, 2027.
 
-- Conduct algorithmic discrimination impact assessments
-- Notify affected consumers before consequential automated decisions
-- Provide the right to appeal and request human review
+If you deploy an IVD-assisted automated-decision-making system affecting Colorado
+residents in employment, housing, financial services, insurance, healthcare, or
+government benefits, you must:
 
-These obligations apply to you if you deploy an IVD-assisted system making consequential
-decisions affecting Colorado residents.
+- Provide "clear and conspicuous notice" to consumers at the point of interaction
+- Give consumers the right to request meaningful human review of an adverse outcome
+- Retain compliance records for three years
 
-**Source:** <https://leg.colorado.gov/bills/SB24-205>
+**Source:** <https://leg.colorado.gov/bills/sb26-189>
 
 ### 11.3 GDPR (Regulation (EU) 2016/679)
 
@@ -579,6 +594,52 @@ information), CCPA/CPRA applies to your processing of California residents' data
 provides no CCPA compliance functionality, tooling, or documentation.
 
 **Source:** <https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=3.&lawCode=CIV&part=4&title=1.81.5.>
+
+### 11.5 California — SB 53 (TFAIA) and AB 2013 (added 2026-07-19)
+
+**SB 53, the Transparency in Frontier Artificial Intelligence Act**, signed September 29,
+2025, effective January 1, 2026, requires "large frontier developers" (a threshold based
+on compute and revenue) to publish safety frameworks, report critical safety incidents,
+and provide whistleblower protections. It targets frontier *model developers*, not
+downstream deployers — it applies to you only if you are training or fine-tuning a
+frontier-scale model, not if you are using IVD to build applications on top of one.
+
+**AB 2013, the GAI Training Data Transparency Act**, effective January 1, 2026, requires
+developers of generative AI systems to publicly document the provenance of training
+data. If you build a generative AI product using IVD and make training-data
+representations to your users, those representations are yours to substantiate — IVD
+provides no training-data provenance tooling.
+
+**Source:** <https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB53>  
+**Source:** <https://www.gov.ca.gov/2025/09/29/governor-newsom-signs-sb-53-advancing-californias-world-leading-artificial-intelligence-industry/>
+
+### 11.6 Texas — Responsible AI Governance Act, "TRAIGA" (Tex. H.B. 149) (added 2026-07-19)
+
+Signed June 22, 2025, effective January 1, 2026. TRAIGA prohibits specific AI practices
+(intentional discrimination against a protected class, manipulation causing
+self-harm/violence, generating unlawful CSAM or deepfakes) and applies to developers and
+deployers doing business in Texas or serving Texas residents. Enforcement is exclusively
+by the Texas Attorney General — there is no private right of action — with penalties of
+$10,000–$200,000 per violation depending on severity and curability.
+
+If you deploy an IVD-assisted AI system serving Texas residents, TRAIGA's prohibited-
+practice list applies to your system regardless of the tools used to build it.
+
+**Source:** <https://capitol.texas.gov/BillLookup/History.aspx?LegSess=89R&Bill=HB149>
+
+### 11.7 Illinois — Human Rights Act AI Employment Amendments (Public Act 103-0804) (added 2026-07-19)
+
+Effective January 1, 2026, this amendment to the Illinois Human Rights Act makes it a
+civil rights violation for an employer to use AI that has a discriminatory effect on a
+protected class in employment decisions (recruitment, hiring, promotion, discharge,
+discipline, or terms of employment), or to use zip code as a proxy for a protected
+class. Employers must provide notice when AI is used in covered employment decisions.
+
+If you use IVD to help build an AI system used in employment decisions affecting
+Illinois employees or applicants, this obligation is yours regardless of the
+development toolchain.
+
+**Source:** <https://www.ilga.gov/ftp/legislation/103/BillStatus/HTML/10300HB3773.html>
 
 ---
 
@@ -780,16 +841,28 @@ All legal sources cited in this document, with official URLs and verification da
 | FTC — AI privacy/confidentiality (Jan 2024) | <https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/01/ai-companies-uphold-your-privacy-confidentiality-commitments> | 2026-05-10 |
 | FTC Operation AI Comply (Sept 2024) | <https://www.ftc.gov/news-events/news/press-releases/2024/09/ftc-announces-crackdown-deceptive-ai-claims-schemes> | 2026-05-10 |
 | CCPA/CPRA statute | <https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=3.&lawCode=CIV&part=4&title=1.81.5.> | 2026-05-10 |
-| Colorado SB 24-205 (AI Act) | <https://leg.colorado.gov/bills/SB24-205> | 2026-05-10 |
+| Colorado SB 26-189 (repeals/replaces SB 24-205) | <https://leg.colorado.gov/bills/sb26-189> | 2026-07-19 |
+| EU AI Act implementation timeline (official, incl. Digital Omnibus delay) | <https://ai-act-service-desk.ec.europa.eu/en/ai-act/timeline/timeline-implementation-eu-ai-act> | 2026-07-19 |
+| California SB 53 (TFAIA) | <https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB53> | 2026-07-19 |
+| Texas HB 149 (TRAIGA) | <https://capitol.texas.gov/BillLookup/History.aspx?LegSess=89R&Bill=HB149> | 2026-07-19 |
+| Illinois Public Act 103-0804 (HB 3773) | <https://www.ilga.gov/ftp/legislation/103/BillStatus/HTML/10300HB3773.html> | 2026-07-19 |
+| Developer Certificate of Origin 1.1 | <https://developercertificate.org/> | 2026-07-19 |
+| GitHub Acceptable Use Policies (prohibited-content pattern) | <https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies> | 2026-07-19 |
+| Anthropic Usage Policy (prohibited-content categories) | <https://www.anthropic.com/legal/aup> | 2026-07-19 |
 | OpenAI Data Processing Addendum | <https://openai.com/policies/data-processing-addendum/> | 2026-05-10 |
 | DigitalOcean Data Processing Agreement | <https://www.digitalocean.com/legal/data-processing-agreement> | 2026-05-10 |
 
 ---
 
-*Version 2.1 — added the unauthorized-fork/impersonation disclaimer (§2) addressing a
-gap identified in the bad-actor-user threat review of 2026-07-19 (FDR-025). Version 2.0
-expanded from v1.0 with full risk coverage, owner-protective clauses, and addressing all
-gaps identified in the cross-check revision of 2026-05-10.*
+*Version 2.2 — corrected §11.2 (Colorado's SB 24-205 was repealed and replaced by
+SB 26-189 in May 2026), updated §11.1's EU AI Act high-risk deadline (postponed to
+December 2027), and added §11.5–11.7 covering California SB 53/AB 2013, Texas TRAIGA,
+and Illinois Public Act 103-0804 — all enacted or taking effect since this document's
+prior revision (FDR-026, regulatory-currency review of 2026-07-19). Version 2.1 added
+the unauthorized-fork/impersonation disclaimer (§2) addressing a gap identified in the
+bad-actor-user threat review of 2026-07-19 (FDR-025). Version 2.0 expanded from v1.0
+with full risk coverage, owner-protective clauses, and addressing all gaps identified
+in the cross-check revision of 2026-05-10.*
 
 *This document is not legal advice. Consult qualified legal counsel before making
 compliance or legal decisions based on this text.*

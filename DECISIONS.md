@@ -683,6 +683,53 @@ keeping the legal surface area from growing beyond what's already in place:
 
 ---
 
+## FDR-026: Regulatory-Currency Gaps in LEGAL.md §11 (Deployer Obligations)
+
+**Date:** 2026-07-19
+**Status:** Fixed (Canonical)
+**Identified by:** Extended research pass following FDR-025, checking whether the
+state/regional AI-law citations in §11 were still accurate given the pace of 2026
+legislative activity
+
+**Gap:** Two factual accuracy problems and three coverage gaps:
+
+1. **Stale/incorrect:** §11.2 described Colorado's SB 24-205 as the governing statute,
+   effective June 30, 2026. SB 24-205 was repealed and replaced by SB 26-189 (signed
+   May 14, 2026) after a federal magistrate stayed its enforcement and the DOJ joined a
+   constitutional challenge. The document was citing a law that no longer exists in the
+   form described — a materially wrong statement, not merely an outdated one.
+2. **Missing context:** §11.1 described EU AI Act Article 25 deployer obligations
+   without noting that the Annex III high-risk-system compliance deadline had been
+   postponed from August 2026 to December 2027 under the Digital Omnibus on AI. Not
+   wrong, but materially incomplete for anyone using this section to plan around a date.
+3. **Coverage gaps:** three state AI laws enacted or taking effect since the document's
+   May 2026 revision were absent entirely — California SB 53 (TFAIA) + AB 2013, Texas
+   HB 149 (TRAIGA), and Illinois Public Act 103-0804 (AI employment discrimination
+   amendments to the Human Rights Act). All three impose deployer obligations squarely
+   within IVD's own stated audience (teams building AI-powered systems).
+
+**Analysis:** A legal-notices document that cites a repealed statute as current is a
+misstatement of fact regardless of intent — this is the kind of error the document's own
+citation discipline (every claim backed by a source URL with a verification date) exists
+to prevent, and it happened because no process re-verified older citations as the
+regulatory landscape moved. Every new citation added here was checked against either an
+official government source (EU AI Act Service Desk, Colorado General Assembly, Texas
+Legislature, Illinois General Assembly, California Legislative Information) or corroborated
+across multiple independent law-firm client alerts before being written — not asserted
+from a single search summary.
+
+**Decision:** Correct §11.2 in place (Colorado), add a dated timeline note to §11.1 (EU),
+and add §11.5 (California), §11.6 (Texas), §11.7 (Illinois) following the existing
+subsection format exactly. Update the §20 Reference Index with the new/corrected sources
+and their verification date. Bump LEGAL.md to v2.2. Explicitly out of scope for this
+FDR: a full 50-state survey — the three added states were the ones with confirmed 2026
+enactments relevant to IVD's deployer-obligations framing, not an exhaustive sweep.
+
+**Changes:** `LEGAL.md` (§11.1 timeline note, §11.2 rewritten, new §11.5–§11.7,
+§20 Reference Index updated, version bump to 2.2)
+
+---
+
 ## Template for New Entries
 
 ```markdown
