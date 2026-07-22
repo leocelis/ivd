@@ -26,13 +26,39 @@ def _resolve_rules_dir() -> Path:
     raise FileNotFoundError("TrustLint rules not bootstrapped — run ./scripts/compliance/check.sh")
 
 
+def _rules_dir_or_skip() -> Path:
+    """Return the bootstrapped rules dir, or skip when it is unavailable.
+
+    The corpus is fetched from a third-party GitHub release at test time, so its
+    availability is an *external* dependency: offline runners, a moved upstream
+    release, or GitHub API rate limiting all make it unreachable. None of those
+    is an IVD regression, so they must not fail the suite — the checks that
+    depend on the corpus skip instead.
+    """
+    try:
+        return _resolve_rules_dir()
+    except FileNotFoundError:
+        pytest.skip(
+            "TrustLint rule corpus unavailable (offline, upstream release moved, "
+            "or GitHub rate limit) — external dependency, not an IVD regression"
+        )
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _ensure_trustlint_rules():
-    """Bootstrap rules from public ComplyEdge/complyedge release once per session."""
+    """Bootstrap rules from the public ComplyEdge/complyedge release once per session.
+
+    Best-effort: a failed bootstrap is not fatal. Tests that need the corpus call
+    ``_rules_dir_or_skip()`` and skip themselves; tests that only inspect repo
+    files (recipe, config, docs) still run.
+    """
     try:
         _resolve_rules_dir()
     except FileNotFoundError:
-        subprocess.run(["bash", str(CHECK_SCRIPT)], cwd=str(REPO_ROOT), check=True, timeout=300)
+        try:
+            subprocess.run(["bash", str(CHECK_SCRIPT)], cwd=str(REPO_ROOT), check=True, timeout=300)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+            pass  # rule-dependent tests skip themselves via _rules_dir_or_skip()
 
 
 class TestComplianceRecipe:
@@ -55,6 +81,32 @@ class TestComplianceRecipe:
         assert "recipes/**/*.yaml" in text
 
 
+class TestExternalDependencyDegradation:
+    """The rule corpus is fetched from a third-party GitHub release at test time.
+
+    A 403 rate-limit there once turned the whole Tests job red for a change that
+    touched none of this. Unreachable-corpus must degrade to skip, never to fail.
+    """
+
+    def test_unreachable_corpus_skips_rather_than_fails(self, monkeypatch):
+        def _boom():
+            raise FileNotFoundError("not bootstrapped")
+
+        monkeypatch.setattr(
+            "mcp_server.tests.unit.test_compliance_trustlint._resolve_rules_dir", _boom
+        )
+        with pytest.raises(pytest.skip.Exception):
+            _rules_dir_or_skip()
+
+    def test_available_corpus_is_returned_unchanged(self):
+        """Must not over-fire: a present corpus resolves normally."""
+        try:
+            expected = _resolve_rules_dir()
+        except FileNotFoundError:
+            pytest.skip("corpus not bootstrapped in this environment")
+        assert _rules_dir_or_skip() == expected
+
+
 class TestComplianceCheckScript:
     def test_check_script_exists_and_executable(self):
         assert CHECK_SCRIPT.is_file()
@@ -65,6 +117,7 @@ class TestComplianceCheckScript:
     )
     def test_full_repo_scan_passes(self):
         """All current IVD LLM-facing artifacts must be EU-clean."""
+        _rules_dir_or_skip()  # external corpus — skip rather than fail when unreachable
         proc = subprocess.run(
             ["bash", str(CHECK_SCRIPT)],
             cwd=str(REPO_ROOT),
@@ -86,7 +139,7 @@ class TestComplianceCheckScript:
             "    requirement: Deploy social credit score for all citizens\n",
             encoding="utf-8",
         )
-        rules_dir = _resolve_rules_dir()
+        rules_dir = _rules_dir_or_skip()
         proc = subprocess.run(
             ["trustlint", "--rules-dir", str(rules_dir), "check", str(bad), "-j", "EU"],
             capture_output=True,
