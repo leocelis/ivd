@@ -172,9 +172,11 @@ recommends human-in-the-loop processes for consequential outputs.
 
 At high constraint density (above approximately 10–15 constraints per artifact), LLMs
 begin silently violating earlier constraints to satisfy later ones. IFScale 2025 reports
-~68% constraint compliance accuracy at high density. `ivd_validate` does not warn on
-constraint count. This is a known statistical failure mode that users accept when writing
-dense artifacts.
+~68% constraint compliance accuracy at high density. `ivd_validate` warns when an
+artifact exceeds the 7-constraint budget and advises splitting into sub-module intents,
+but the warning is advisory — it does not block, and the underlying statistical failure
+mode remains a property of the model, not of the artifact. Users who proceed past the
+warning accept that risk.
 
 ### 3.8 MCP Session Expiry After Server Restart (R-012)
 
@@ -198,6 +200,24 @@ generation will not be found by search. The tool succeeds and returns zero resul
 which looks like "no relevant documentation exists" rather than "index is stale."
 The tool does not report index freshness or document count. Hosted-server embeddings are
 regenerated on every deploy; self-hosted users must run `embed.sh` manually.
+
+### 3.11 Process Attestation Is Agent-Supplied (R-036)
+
+`ivd_attest` checks whether an agent followed the IVD method — segmentation at 3+
+constraints, re-reading the intent from disk, per-constraint coverage, joint
+satisfaction. **It cannot observe the agent's execution.** Every input except one is
+the agent's own report, so a determined or malfunctioning agent can submit a fully
+compliant attestation describing work it did not do.
+
+The tool's value is that it converts a *silent* omission into an *explicit, auditable
+claim*. It raises the floor; it does not close the gap.
+
+The single exception is the provenance cross-check: whether a constraint's only
+evidence is an AI-written test is derived from the artifact, not the attestation, so a
+claimed `PASS` on an `ai_generated`-only constraint is downgraded to
+`NEEDS_EXTERNAL_ORACLE` regardless of what the agent asserts. That check is not
+self-graded; the rest are. Do not represent an `ivd_attest` COMPLIANT verdict to a
+third party as independent verification that the work was performed.
 
 ---
 

@@ -1,0 +1,156 @@
+# attest_intent.yaml
+# Task-Level Intent: Process Attestation Gate
+#
+# Co-located: mcp_server/intents/attest_intent.yaml
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "process_attestation"
+  category: "verification"
+  tags: ["attestation", "rule-1", "rule-2", "rule-4", "process-compliance"]
+  status: "implemented"
+  introduced_version: "3.2.0"
+
+intent:
+  summary: "Close the artifact-vs-process gap: ivd_validate checks the YAML, but nothing checks that the agent actually followed IVD's method. ivd_attest makes skipping visible."
+  goal: |
+    IVD's strongest rules are discipline, not gates. An agent can skip the Rule 4
+    stress test, single-pass 9 constraints against Rule 1, never re-read from disk
+    per Rule 2, and still emit an artifact that ivd_validate passes clean.
+
+    This is the read-acknowledge-violate failure mode (framework.md, Principle 6)
+    applied to IVD's own rules — the framework is not exempt from the pathology it
+    was built to catch.
+
+    ivd_attest takes the intent artifact plus the agent's structured attestation
+    and mechanically checks process compliance against IVD's own rules. It cannot
+    force compliance, but it converts a silent skip into a reported gap.
+
+    ARCHITECTURE: structure-only MCP tool — no LLM in the server, no network, no
+    filesystem writes. It compares two documents and reports. Mirrors the
+    review_gate and validate tools.
+
+    HONEST BOUND: the attestation is still agent-supplied. This raises the floor
+    from "invisible skip" to "visible claim", and the provenance cross-check
+    (constraint 6) is the one assertion the agent cannot self-grade — it is
+    derived from the artifact, not the attestation.
+  success_metric: |
+    - A 3+ constraint intent attested as single_pass is reported as a Rule 1 VIOLATION.
+    - An attestation missing any constraint's status is reported INCOMPLETE, naming it.
+    - A constraint whose only test is ai_generated cannot be attested PASS — it is
+      downgraded to NEEDS_EXTERNAL_ORACLE regardless of what the agent claimed.
+    - Workflow/system intents lacking evaluation.cycle termination fields warn on validate.
+    - No LLM call, no network, no disk write in the attest path.
+  stakeholders:
+    - "AI agents running the IVD workflow"
+    - "Humans reviewing whether an agent actually followed the method"
+
+constraints:
+  - name: "segmentation_violation_detected"
+    requirement: "constraint_count >= 3 with implementation_mode 'single_pass' yields verdict VIOLATION citing Rule 1."
+    test: "mcp_server/tests/unit/test_attest.py::TestRuleOneSegmentation::test_single_pass_at_threshold_is_violation"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "The mandatory-segmentation rule stays unenforceable and silently skippable."
+    priority: 3
+
+  - name: "reread_from_disk_required"
+    requirement: "reread_from_disk false or absent yields verdict VIOLATION citing Rule 2 step 1."
+    test: "mcp_server/tests/unit/test_attest.py::TestRuleTwoReread::test_missing_reread_is_violation"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "Lost-in-the-middle re-grounding degrades to an unchecked claim."
+    priority: 4
+
+  - name: "termination_expected_for_workflow_system"
+    requirement: "ivd_validate warns when a workflow- or system-level intent has no evaluation.cycle with max_iterations and a stop condition. Warning only — never an error."
+    test: "mcp_server/tests/unit/test_attest.py::TestTerminationExpectation::test_workflow_without_cycle_warns"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "MAST's termination failure mode (12.4%) stays uncovered by default."
+    priority: 5
+
+  - name: "structure_only_no_side_effects"
+    requirement: "attest_tool performs no LLM call, no network request, and no filesystem write."
+    test: "mcp_server/tests/unit/test_attest.py::TestArchitecture::test_no_side_effects"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "Breaks the structure-only server invariant shared with validate and review_gate."
+    priority: 6
+
+  - name: "per_constraint_coverage_enforced"
+    requirement: "Every constraint named in the intent must carry a status in the attestation; any omission yields INCOMPLETE naming the missing constraint."
+    test: "mcp_server/tests/unit/test_attest.py::TestRuleTwoCoverage::test_missing_constraint_status_is_incomplete"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "An agent can report success while silently omitting the constraint it failed."
+    priority: 2
+
+  - name: "joint_satisfaction_required_at_threshold"
+    requirement: "constraint_count >= 3 without a joint_satisfaction verdict yields INCOMPLETE citing Rule 2."
+    test: "mcp_server/tests/unit/test_attest.py::TestRuleTwoJoint::test_joint_required_at_threshold"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "Individual-pass is accepted as joint-pass — the UltraBench failure mode."
+    priority: 1
+
+  # CRITICAL — ordered last per Rule 4 probe 4 (position bias: later constraints
+  # receive stronger attention). This is the one check the agent cannot self-grade:
+  # it is derived from the artifact's own provenance data, not from the attestation.
+  - name: "provenance_cross_check_overrides_claim"
+    requirement: "A constraint whose test_provenance is ai_generated with no execution_oracle is reported NEEDS_EXTERNAL_ORACLE even when the attestation claims PASS."
+    test: "mcp_server/tests/unit/test_attest.py::TestProvenanceCrossCheck::test_ai_generated_pass_is_downgraded"
+    test_provenance: "human_authored"
+    entropy: "near-zero"
+    consequence_if_violated: "The agent grades its own homework — Rule 3's provenance gate becomes advisory."
+    priority: 0
+
+constraint_satisfiability:
+  conflicts_checked: true
+  known_tensions:
+    - tension: "Strictness vs. adoption: erroring on every gap would make attest unusable on legacy intents."
+      resolution: "Three-tier verdict (COMPLIANT / INCOMPLETE / VIOLATION). Only Rule 1 and Rule 2 step 1 breaches are VIOLATION; coverage gaps are INCOMPLETE; termination is a validate warning only."
+    - tension: "Attestation is agent-supplied, so it can be falsified wholesale."
+      resolution: "Accepted and documented in the goal. The provenance cross-check is artifact-derived and cannot be overridden by the attestation — that is the non-self-graded floor."
+  simultaneous_satisfaction: "All seven hold on one attest call over one intent + one attestation."
+  joint_satisfaction_test: "mcp_server/tests/unit/test_attest.py::TestJointSatisfaction::test_all_constraints_on_one_attestation"
+
+rationale:
+  decision: "A structure-only attestation gate that cross-checks the agent's process claims against the artifact's own data."
+  reasoning: |
+    Rejected alternative A — trust the agent's prose report: that is the status quo,
+    and it is exactly what the read-acknowledge-violate research says fails.
+
+    Rejected alternative B — execution-trace observation (would also catch MAST step
+    repetition): requires the server to observe the agent's runtime, which breaks the
+    structure-only architecture and is a far larger surface. Deferred deliberately.
+
+    Chosen: a declarative attestation the agent must fill, checked mechanically, with
+    one artifact-derived assertion (provenance) the agent cannot talk its way past.
+  evidence: "framework.md Principle 6 (read-acknowledge-violate); MAST termination mode 12.4%; LEGAL.md R-002/R-007 (rules that are convention-only)."
+  date: "2026-07-21"
+
+alternatives:
+  - name: "execution_trace_observation"
+    rejected_because: "Breaks structure-only server invariant; would also address MAST step repetition (15.7%) but at a much larger surface. Deferred, not dismissed."
+
+risks:
+  - condition: "Agents fabricate a fully-compliant attestation."
+    mitigation: "Provenance cross-check is artifact-derived. Full falsification requires deliberate misreporting, which is a visible, auditable claim rather than a silent omission."
+
+implementation:
+  current: "mcp_server/tools/attest.py"
+  tests: "mcp_server/tests/unit/test_attest.py"
+
+verification:
+  test_cases:
+    - name: "3+ constraints attested single_pass"
+      expect: "VIOLATION, rule 'Rule 1', names segmentation"
+    - name: "attestation claims PASS on an ai_generated-only constraint"
+      expect: "constraint reported NEEDS_EXTERNAL_ORACLE, not PASS"

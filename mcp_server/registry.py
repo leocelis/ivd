@@ -1,9 +1,9 @@
 # mcp_server/registry.py
 
 """
-IVD MCP Tool Registry — registration and dispatch for all 32 tools.
+IVD MCP Tool Registry — registration and dispatch for all 33 tools.
 
-  - 18 core tools (Intent, Implementation, Verification phases)
+  - 19 core tools (Intent, Implementation, Verification phases)
   - 10 judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
                        server-level opt-out: `IVD_JUDGMENT_TOOLS_ENABLED=false`.
                        See ivd/judgment_layer.md and ivd/judgment/ engine
@@ -34,6 +34,7 @@ from mcp_server.tools import (
     review_intent_tool,
     run_constraint_tests_tool,
     import_spec_tool,
+    attest_tool,
     init_project_tool,
     scaffold_artifact_tool,
     find_artifacts_tool,
@@ -66,7 +67,7 @@ from mcp_server.tools import (
 # =============================================================================
 
 def get_all_tools() -> List[Tool]:
-    """Return all 32 IVD MCP tools (18 core + 10 judgment-phase + 4 Canon-phase, IVD v3.1)."""
+    """Return all 33 IVD MCP tools (19 core + 10 judgment-phase + 4 Canon-phase, IVD v3.1)."""
     return [
         Tool(
             name="ivd_get_context",
@@ -116,6 +117,14 @@ def get_all_tools() -> List[Tool]:
                 "project_root": {"type": "string", "description": "Path to repo root where tests live (defaults to IVD framework root when omitted)."},
                 "timeout_sec": {"type": "integer", "description": "Total timeout budget in seconds (default 120).", "default": 120},
             }, "required": ["artifact_yaml"]},
+        ),
+        Tool(
+            name="ivd_attest",
+            description="Process-attestation gate: check that the agent actually FOLLOWED the IVD method, not just that the artifact is well-formed. Takes the intent plus a structured attestation and mechanically checks Rule 1 (segmentation mandatory at 3+ constraints), Rule 2 (re-read from disk, per-constraint coverage, joint satisfaction), Rule 3 (provenance cross-check — an ai_generated-only test cannot be attested PASS; this is artifact-derived and overrides the agent's claim), and Rule 4 probe coverage. Returns COMPLIANT | INCOMPLETE | VIOLATION. Structure-only: no LLM, no network, no disk write.",
+            inputSchema={"type": "object", "properties": {
+                "artifact_yaml": {"type": "string", "description": "YAML content of the intent artifact that was implemented."},
+                "attestation_yaml": {"type": "string", "description": "YAML attestation: implementation_mode (segmented|single_pass), reread_from_disk (bool), constraint_status (map of constraint name -> PASS|FAIL|NEEDS_REVIEW|NEEDS_EXTERNAL_ORACLE|UNVERIFIED), joint_satisfaction, stress_test.probes_run (list)."},
+            }, "required": ["artifact_yaml", "attestation_yaml"]},
         ),
         Tool(
             name="ivd_import_spec",
@@ -385,6 +394,7 @@ TOOL_HANDLERS: Dict[str, Callable] = {
     "ivd_review_intent": lambda artifact_yaml, **_: review_intent_tool(artifact_yaml),
     "ivd_run_constraint_tests": lambda artifact_yaml, project_root=None, timeout_sec=120, **_: run_constraint_tests_tool(artifact_yaml, project_root, timeout_sec),
     "ivd_import_spec": lambda spec_path, source_format, project_root=None, **_: import_spec_tool(spec_path, source_format, project_root),
+    "ivd_attest": lambda artifact_yaml, attestation_yaml, **_: attest_tool(artifact_yaml, attestation_yaml),
     "ivd_init": lambda project_root, auto_fill=True, **_: init_project_tool(project_root, auto_fill),
     "ivd_scaffold": lambda level, name, module_path=None, coordinator_path=None, project_root=None, **_: scaffold_artifact_tool(level, name, module_path, coordinator_path, project_root),
     "ivd_find_artifacts": lambda scope="all", project_root=None, **_: find_artifacts_tool(scope, project_root),

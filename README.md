@@ -131,7 +131,7 @@ Ask your AI agent to use IVD tools. For example:
 - *"Use ivd_scaffold to create an intent for my user authentication module"*
 - *"Use ivd_validate to check my intent artifact"*
 
-That's it. 31 of 32 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
+That's it. 32 of 33 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
 
 ### 4. Enable semantic search (optional)
 
@@ -161,9 +161,9 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 
 ## MCP Tools
 
-32 tools available to any MCP-compatible AI agent (18 core + 10 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` and `ivd_judgment_resolve` added in v3.1) + 4 Canon tools added in v3.1):
+33 tools available to any MCP-compatible AI agent (19 core + 10 Judgment tools (8 added in v3.0; `ivd_judgment_check_installed` and `ivd_judgment_resolve` added in v3.1) + 4 Canon tools added in v3.1):
 
-### Core (18)
+### Core (19)
 
 | Tool | What it does |
 |------|-------------|
@@ -172,6 +172,7 @@ The key insight: clarification happens at the **intent stage**, not after code. 
 | `ivd_validate` | Validate an intent artifact against IVD rules |
 | `ivd_review_intent` | Rank constraints by risk before implementation (human review gate) |
 | `ivd_run_constraint_tests` | Opt-in runner for allowlisted pytest nodes referenced by an intent |
+| `ivd_attest` | Process-attestation gate — check the agent actually *followed* the method (segmentation, re-read, coverage, joint satisfaction), not just that the artifact is well-formed |
 | `ivd_import_spec` | Parse a GitHub Spec Kit or OpenSpec `spec.md` into a constraint scaffold |
 | `ivd_scaffold` | Generate a new intent artifact from a template |
 | `ivd_init` | Initialize IVD in an existing project |
@@ -447,7 +448,7 @@ Once you have an API key, use the URL that matches your client:
 }
 ```
 
-All 32 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
+All 33 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
 ---
 

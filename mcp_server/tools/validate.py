@@ -66,6 +66,33 @@ def _constraint_is_unverified(constraint: dict, root: Path) -> bool:
     return _repo_file_missing(_test_file_part(test), root)
 
 
+_TERMINATION_LEVELS = ("workflow", "system")
+_STOP_FIELDS = ("stop_when", "escalate_when")
+
+
+def _missing_termination_contract(artifact: dict) -> bool:
+    """True when a workflow/system intent declares no bounded-iteration contract.
+
+    Structure-only: checks that `evaluation.cycle` carries `max_iterations` plus at
+    least one stop/escalate condition. Task- and module-level intents are exempt —
+    they describe a single unit of work, not an execution loop.
+    """
+    scope = artifact.get("scope")
+    if not isinstance(scope, dict) or scope.get("level") not in _TERMINATION_LEVELS:
+        return False
+
+    evaluation = artifact.get("evaluation")
+    if not isinstance(evaluation, dict):
+        return True
+    cycle = evaluation.get("cycle")
+    if not isinstance(cycle, dict):
+        return True
+
+    has_bound = cycle.get("max_iterations") is not None
+    has_stop = any(cycle.get(f) for f in _STOP_FIELDS)
+    return not (has_bound and has_stop)
+
+
 def _validate_execution_oracle(
     cname: str,
     oracle: object,
@@ -558,6 +585,18 @@ def validate_artifact_tool(
                     warnings.append(
                         f"{constraint_count} constraints exceeds budget {_CONSTRAINT_BUDGET} — split into "
                         "sub-module intents rather than packing more constraints into one artifact."
+                    )
+
+                # Termination expectation: workflow- and system-level intents describe
+                # multi-step or autonomous execution, where "no stopping condition" is a
+                # real failure mode (unbounded iteration / unaware of termination).
+                # Warning only — never an error, so legacy intents keep validating.
+                if _missing_termination_contract(artifact):
+                    warnings.append(
+                        "workflow/system-level intent has no 'evaluation.cycle' termination contract "
+                        "(max_iterations + a stop condition). Unbounded iteration and unclear "
+                        "completion are among the largest multi-agent failure modes — declare "
+                        "max_iterations, stop_when, and escalate_when."
                     )
 
         # Joint satisfaction: when a constraint_satisfiability block exists, check joint satisfaction fields.

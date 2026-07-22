@@ -2505,7 +2505,7 @@ would dilute the rest of IVD.
 | `ivd_judgment_propose_recommendation` | Draft a recommendation against a pattern |
 | `ivd_judgment_check_installed` | Workspace/project activation visibility (read-only; v3.1) |
 
-Total IVD tool surface in v3.1: **32** (18 core + 10 Judgment + 4 Canon).
+Total IVD tool surface in v3.1: **33** (19 core + 10 Judgment + 4 Canon).
 Server-level opt-out for the Judgment tools: `IVD_JUDGMENT_TOOLS_ENABLED=false`
 (mirrors Canon's `IVD_CANON_TOOLS_ENABLED`; tools remain registered when
 disabled and return an `enabled=false` payload).

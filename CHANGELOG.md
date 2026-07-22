@@ -9,6 +9,32 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **Added `ivd_attest` — the process-attestation gate (33 tools, 19 core).**
+  `ivd_validate` checks the *artifact*; nothing checked whether the agent actually
+  *followed* the method. An agent could skip the Rule 4 stress test, single-pass nine
+  constraints against Rule 1, never re-read from disk per Rule 2, and still emit an
+  artifact that validates clean — the read-acknowledge-violate failure mode turned on
+  IVD's own rules. `ivd_attest` mechanically checks Rule 1 (segmentation mandatory at
+  3+ constraints), Rule 2 (re-read, per-constraint coverage, joint satisfaction),
+  Rule 3 (provenance cross-check), and Rule 4 probe coverage, returning
+  COMPLIANT | INCOMPLETE | VIOLATION.
+  The load-bearing check is the **provenance cross-check**: it is derived from the
+  artifact rather than the attestation, so a claimed `PASS` on a constraint whose only
+  evidence is an `ai_generated` test is downgraded to `NEEDS_EXTERNAL_ORACLE`
+  regardless of what the agent asserts — the one assertion an agent cannot self-grade.
+  Structure-only (no LLM, no network, no disk write). Governed by
+  `mcp_server/intents/attest_intent.yaml`; 24 new tests.
+  Honest bound documented in LEGAL.md §3.11: the attestation is agent-supplied, so this
+  converts a *silent* skip into a *visible claim* — it raises the floor, it does not
+  close the gap.
+- **`ivd_validate` now warns when a workflow- or system-level intent declares no
+  termination contract** (`evaluation.cycle` with `max_iterations` + a stop condition).
+  Unbounded iteration and unclear completion are among the largest multi-agent failure
+  modes; task/module intents are exempt. Warning only — never an error, so legacy
+  intents keep validating.
+- **Fixed a stale claim in LEGAL.md §3.7 (R-006):** it stated `ivd_validate` "does not
+  warn on constraint count." It does — the 7-constraint budget has been enforced at
+  `validate.py`. Corrected to describe the advisory warning accurately.
 - **Security:** bumped `mcp` 1.23.0 → 1.28.1 (`requirements.txt`,
   `mcp_server/requirements.txt`, `pyproject.toml` floor), clearing all 6 open
   Dependabot alerts (3 advisories: HTTP transport principal-verification,

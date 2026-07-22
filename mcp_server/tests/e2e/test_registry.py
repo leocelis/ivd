@@ -3,7 +3,7 @@
 """End-to-end tests for the tool registry and dispatch layer.
 
 Verifies:
-- All 32 tools are registered (18 core + 10 judgment + 4 canon)
+- All 33 tools are registered (19 core + 10 judgment + 4 canon)
 - call_tool dispatches correctly
 - Unknown tools return error
 - Tool results are strings (JSON or text)
@@ -13,7 +13,7 @@ import json
 
 from mcp_server.registry import get_all_tools, call_tool, TOOL_HANDLERS
 
-EXPECTED_TOOL_COUNT = 32
+EXPECTED_TOOL_COUNT = 33
 
 
 class TestToolRegistry:
@@ -34,7 +34,7 @@ class TestToolRegistry:
         core = {
             "ivd_get_context", "ivd_load_recipe", "ivd_load_template",
             "ivd_list_recipes", "ivd_validate", "ivd_review_intent",
-            "ivd_run_constraint_tests", "ivd_import_spec",
+            "ivd_run_constraint_tests", "ivd_import_spec", "ivd_attest",
             "ivd_init", "ivd_scaffold",
             "ivd_find_artifacts", "ivd_check_placement", "ivd_list_features",
             "ivd_assess_coverage",
@@ -140,6 +140,28 @@ class TestCallTool:
         when it's omitted, matching this repo's error-JSON-not-exception convention."""
         result = call_tool("ivd_import_spec", {"spec_path": "spec.md"})
         assert isinstance(result, str)
+
+    def test_attest_via_dispatch(self):
+        """Proves ivd_attest is reachable through the real MCP call_tool path,
+        and that the provenance cross-check survives dispatch — the check that
+        overrides an agent's own PASS claim is the reason this tool exists."""
+        artifact = (
+            "constraints:\n"
+            "  - name: c0\n    requirement: r\n    test: t.py::c0\n    test_provenance: ai_generated\n"
+        )
+        attestation = (
+            "implementation_mode: segmented\n"
+            "reread_from_disk: true\n"
+            "constraint_status:\n  c0: PASS\n"
+        )
+        result = call_tool("ivd_attest", {
+            "artifact_yaml": artifact,
+            "attestation_yaml": attestation,
+        })
+        assert isinstance(result, str)
+        data = json.loads(result)
+        assert data["ok"] is True
+        assert data["effective_constraint_status"]["c0"] == "NEEDS_EXTERNAL_ORACLE"
 
     def test_result_is_always_string(self):
         """call_tool must always return a string, never dict/list."""

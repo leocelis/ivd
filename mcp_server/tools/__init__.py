@@ -1,10 +1,10 @@
 # mcp_server/tools/__init__.py
 
 """
-IVD MCP Tools — 31 executable functions for AI agents.
+IVD MCP Tools — 33 executable functions for AI agents.
 
 Split into logical modules for maintainability.
-  - 18 core tools (Intent, Implementation, Verification phases)
+  - 19 core tools (Intent, Implementation, Verification phases)
   - 9  judgment tools (Judgment phase, opt-in via `<project_root>/.judgment/`;
        server-level opt-out: `IVD_JUDGMENT_TOOLS_ENABLED=false`. The 9th tool
        — ``ivd_judgment_check_installed`` — is workspace-level activation
@@ -22,6 +22,7 @@ from mcp_server.tools.validate import validate_artifact_tool
 from mcp_server.tools.review_gate import review_intent_tool
 from mcp_server.tools.run_constraint_tests import run_constraint_tests_tool
 from mcp_server.tools.import_spec import import_spec_tool
+from mcp_server.tools.attest import attest_tool
 from mcp_server.tools.scaffold import scaffold_artifact_tool, init_project_tool
 from mcp_server.tools.discover import (
     find_artifacts_tool,
@@ -60,6 +61,7 @@ __all__ = [
     "review_intent_tool",
     "run_constraint_tests_tool",
     "import_spec_tool",
+    "attest_tool",
     "scaffold_artifact_tool",
     "init_project_tool",
     "find_artifacts_tool",

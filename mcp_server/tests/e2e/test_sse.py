@@ -50,8 +50,8 @@ class TestSSEHealth:
     def test_health_has_tool_count(self, sse_client):
         response = sse_client.get("/health")
         data = response.json()
-        # 32 = 18 core + 10 judgment + 4 Canon (IVD v3.1).
-        assert data["tools_count"] == 32
+        # 33 = 19 core + 10 judgment + 4 Canon (IVD v3.1).
+        assert data["tools_count"] == 33
 
     def test_health_has_server_name(self, sse_client):
         response = sse_client.get("/health")
