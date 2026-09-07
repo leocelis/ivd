@@ -93,5 +93,5 @@ export COMPLYEDGE_API_KEY=ce_...
 - Recipe: `recipes/compliance-trustlint.yaml`
 - Agent rule: `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules`
 - CE embed guide: https://complyedge.io/docs/trust-badge.html
-- CE OSS adoption guide: `complyedge-platform/docs/development/oss-trustlint-adoption-guide.md`
+- Public CE OSS: [ComplyEdge/complyedge](https://github.com/ComplyEdge/complyedge)
 - Horizon variant: [leocelis/horizon](https://github.com/leocelis/horizon) → `docs/integrations/COMPLYEDGE.md`
