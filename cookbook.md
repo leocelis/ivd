@@ -111,7 +111,7 @@ ivd_scaffold → ivd_validate → trustlint check → fix violations → CI gree
 | CI | `.github/workflows/ci.yml` job `compliance` |
 | Pre-commit | `pre-commit install` (optional) |
 | Agent rule | `<BEGIN-COMPLYEDGE v1.0>` in `.cursorrules` |
-| Live proof | [trust.complyedge.io/ivd](https://trust.complyedge.io/ivd) · [enforcement seal](https://api.complyedge.io/v1/public/badge/ivd.svg) |
+| Live proof | [trust.complyedge.io/ivd](https://trust.complyedge.io/ivd) · [enforcement seal](https://eu.api.complyedge.io/v1/public/badge/ivd.svg) |
 
 Recipe: [`recipes/compliance-trustlint.yaml`](recipes/compliance-trustlint.yaml). Integration guide: [`docs/integrations/COMPLYEDGE.md`](docs/integrations/COMPLYEDGE.md).
 

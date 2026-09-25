@@ -1388,7 +1388,7 @@ If you approve, the command will be: rm -rf ...
   (function loadComplyEdgeSeal() {
     var slot = document.getElementById('ce-badge-slot');
     if (!slot) return;
-    var url = 'https://api.complyedge.io/v1/public/badge/ivd.svg';
+    var url = 'https://eu.api.complyedge.io/v1/public/badge/ivd.svg';
     fetch(url, { credentials: 'omit' })
       .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
       .then(function (raw) {

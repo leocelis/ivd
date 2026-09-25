@@ -26,8 +26,8 @@ ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
 
 | Surface | URL |
 |---------|-----|
-| Enforcement seal (SVG) | https://api.complyedge.io/v1/public/badge/ivd.svg |
-| Trust JSON | https://api.complyedge.io/v1/public/trust/ivd |
+| Enforcement seal (SVG) | https://eu.api.complyedge.io/v1/public/badge/ivd.svg |
+| Trust JSON | https://eu.api.complyedge.io/v1/public/trust/ivd |
 | Trust page | https://trust.complyedge.io/ivd |
 | Origin site (badge host) | https://ivdframework.dev |
 | Overview on site | https://ivdframework.dev/#complyedge |

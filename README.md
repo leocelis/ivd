@@ -300,7 +300,7 @@ Act screening on LLM-facing artifacts (`recipes/`, `templates/`, `*_intent.yaml`
 by the same author and dogfooded on this repo.
 
 <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
-  <img src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge — runtime enforcement status" height="26">
+  <img src="https://eu.api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge — runtime enforcement status" height="26">
 </a>
 
 ```bash
