@@ -26,8 +26,8 @@ ivd_scaffold → ivd_validate → trustlint check (offline) → CI green
 
 | Surface | URL |
 |---------|-----|
-| Enforcement seal (SVG) | https://eu.api.complyedge.io/v1/public/badge/ivd.svg |
-| Trust JSON | https://eu.api.complyedge.io/v1/public/trust/ivd |
+| Enforcement seal (SVG) | https://api.complyedge.io/v1/public/badge/ivd.svg |
+| Trust JSON | https://api.complyedge.io/v1/public/trust/ivd |
 | Trust page | https://trust.complyedge.io/ivd |
 | Origin site (badge host) | https://ivdframework.dev |
 | Overview on site | https://ivdframework.dev/#complyedge |
@@ -50,7 +50,7 @@ Recipes, templates, all `*_intent.yaml`, and root `ivd_system_intent.yaml` — s
 2. Enable public trust:
 
 ```bash
-curl -s -X PATCH https://eu.api.complyedge.io/v1/tenant/trust \
+curl -s -X PATCH https://api.complyedge.io/v1/tenant/trust \
   -H "Authorization: Bearer $COMPLYEDGE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"trust_public_enabled": true, "public_slug": "ivd", "display_name": "IVD Framework", "website_url": "https://ivdframework.dev"}'
