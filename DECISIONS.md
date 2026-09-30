@@ -730,6 +730,32 @@ enactments relevant to IVD's deployer-obligations framing, not an exhaustive swe
 
 ---
 
+## FDR-027: MCP Tool Calls Were Never Screened by ComplyEdge
+
+**Date:** 2026-09-30  
+**Status:** Fixed (Canonical)  
+**Identified by:** Maintainer review of the ComplyEdge integration  
+
+**Gap:** The public enforcement seal counted only the CI probe. None of the 33 MCP
+tools called ComplyEdge, so real tool traffic was never screened or recorded.
+
+**Analysis:** Every tool passes through `registry.call_tool`, so one wrapper covers all
+of them. The ComplyEdge API reference asks for checks on both the input (`prompt`) and
+the output (`output`), with `user_id`, `user_role` and `session_id` for the audit
+record, and never a credential in those fields.
+
+**Decision:** Check arguments before and results after every tool call when
+`COMPLYEDGE_API_KEY` is set; block on a violation, fail open when ComplyEdge is
+unreachable, attribute calls by a hash of the caller's IVD key. ComplyEdge is added as
+a sub-processor in the Privacy Policy (v1.1) and DPA (v1.1).
+
+**Changes:** `mcp_server/compliance.py` (new), `mcp_server/registry.py`,
+`mcp_server/tests/unit/test_runtime_compliance.py` (new),
+`mcp_server/intents/runtime_compliance_intent.yaml` (new), `PRIVACY_POLICY.md`,
+`DATA_PROCESSING_AGREEMENT.md`, `docs/integrations/COMPLYEDGE.md`, `.env.example`
+
+---
+
 ## Template for New Entries
 
 ```markdown

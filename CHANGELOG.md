@@ -9,6 +9,13 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **Every MCP tool call is now screened by ComplyEdge when the server has a key.**
+  `call_tool` checks the arguments (`prompt`) before the tool runs and the result
+  (`output`) before it returns, sending `agent_id`, `jurisdiction` and the audit
+  attribution fields (`user_id` as a hash of the caller's IVD key, `user_role`,
+  `session_id`). A block returns the rule instead of the result; an unreachable
+  ComplyEdge lets the call through. Off without `COMPLYEDGE_API_KEY`. Privacy Policy
+  and DPA list ComplyEdge as a sub-processor (v1.1). See FDR-027.
 - **Added `ivd_attest` — the process-attestation gate (33 tools, 19 core).**
   `ivd_validate` checks the *artifact*; nothing checked whether the agent actually
   *followed* the method. An agent could skip the Rule 4 stress test, single-pass nine

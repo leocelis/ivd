@@ -22,7 +22,8 @@
       --bg3:      #1a1d24;
       --border:   #272b35;
       --text:     #e2e4ea;
-      --muted:    #6b7280;
+      /* 5.6:1 on --bg, 5.3:1 on --bg2, 4.9:1 on --bg3 (WCAG AA body text). Was #6b7280, 3.5-4.0:1. */
+      --muted:    #838b98;
       --accent:   #f0a500;
       --accent2:  #3b82f6;
       --green:    #22c55e;
@@ -434,49 +435,66 @@
     }
 
     /* ── FOOTER ── */
+    /* ── FOOTER ── */
     footer {
-      padding: 40px 0;
+      padding: 56px 0 32px;
       border-top: 1px solid var(--border);
+      background: var(--bg2);
     }
-    footer .wrap {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+    .footer-grid {
+      display: grid;
+      /* 285px = the seal's natural width, so it never shrinks on desktop. */
+      grid-template-columns: minmax(285px, 1.6fr) repeat(3, minmax(0, 1fr));
+      gap: 32px 28px;
+    }
+    .footer-brand p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 12px 0 20px;
+      max-width: 30ch;
     }
     .footer-logo {
       font-family: var(--mono);
-      font-size: 13px;
-      color: var(--muted);
+      font-size: 14px;
+      color: var(--text);
     }
     .footer-logo span { color: var(--accent); }
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 20px;
-      list-style: none;
-    }
-    .footer-links a {
+    .footer-col h3 {
       font-family: var(--mono);
       font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .footer-col ul { list-style: none; display: grid; gap: 10px; }
+    .footer-col a {
+      font-size: 14px;
       color: var(--muted);
     }
-    .footer-links a:hover { color: var(--text); text-decoration: none; }
-    /* Copyright and the ComplyEdge seal share one row under the links. */
-    .footer-meta {
-      flex-basis: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 0.75rem;
-    }
-    .footer-meta p { font-size: 0.7rem; color: var(--dim); }
-    /* The seal's dark half (#1a1a1a) is 1.1:1 on --bg; a 1px --muted ring
-       (3.6:1 vs the seal, 4.0:1 vs --bg) gives it an edge. */
+    .footer-col a:hover { color: var(--text); text-decoration: none; }
+    /* The seal's dark half (#1a1a1a) is 1.1:1 on the page; a 1px --muted ring
+       (5.1:1 vs the seal, 5.3:1 vs --bg2) gives it an edge. */
     .ce-seal { display: block; max-width: 100%; height: auto; border-radius: 5px; box-shadow: 0 0 0 1px var(--muted); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 760px) {
+      .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .footer-brand { grid-column: 1 / -1; }
+    }
 
     /* ── HOSTED BADGE ── */
     .hosted-note {
@@ -1362,24 +1380,43 @@ If you approve, the command will be: rm -rf ...
 <!-- FOOTER -->
 <footer>
   <div class="wrap">
-    <span class="footer-logo"><span>//</span> ivdframework.dev</span>
-    <ul class="footer-links">
-      <li><a href="https://github.com/leocelis/ivd" target="_blank">GitHub</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/framework.md" target="_blank">Spec</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank">Canon</a></li>
-      <li><a href="https://complyedge.io" target="_blank">ComplyEdge</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank">Judgment</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/cookbook.md" target="_blank">Cookbook</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/LICENSE" target="_blank">MIT</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/TERMS_OF_SERVICE.md" target="_blank">Terms</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/PRIVACY_POLICY.md" target="_blank">Privacy</a></li>
-      <li><a href="https://github.com/leocelis/ivd/blob/main/LEGAL.md" target="_blank">Legal</a></li>
-    </ul>
-    <div class="footer-meta">
-      <p>© 2024–2026 IVD Project</p>
-      <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
-        <img class="ce-seal" src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge Enforcement Seal" height="26" />
-      </a>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="footer-logo"><span>//</span> ivdframework.dev</span>
+        <p>Intent-Verified Development: the AI writes the intent, implements against it, and verifies it.</p>
+        <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
+          <img class="ce-seal" src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge Enforcement Seal" height="26" />
+        </a>
+      </div>
+      <div class="footer-col">
+        <h3>Framework</h3>
+        <ul>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/framework.md" target="_blank" rel="noopener noreferrer">Spec</a></li>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank" rel="noopener noreferrer">Canon</a></li>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank" rel="noopener noreferrer">Judgment</a></li>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/cookbook.md" target="_blank" rel="noopener noreferrer">Cookbook</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/leocelis/ivd" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://complyedge.io" target="_blank" rel="noopener noreferrer">ComplyEdge</a></li>
+          <li><a href="https://trust.complyedge.io/ivd" target="_blank" rel="noopener noreferrer">Trust page</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/TERMS_OF_SERVICE.md" target="_blank" rel="noopener noreferrer">Terms</a></li>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/PRIVACY_POLICY.md" target="_blank" rel="noopener noreferrer">Privacy</a></li>
+          <li><a href="https://github.com/leocelis/ivd/blob/main/LEGAL.md" target="_blank" rel="noopener noreferrer">Legal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024–2026 IVD Project</span>
+      <a href="https://github.com/leocelis/ivd/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style="color:inherit;">MIT licensed</a>
     </div>
   </div>
 </footer>

@@ -1,6 +1,6 @@
 # Data Processing Agreement
 
-> **Version:** 1.0 · **Template effective:** May 10, 2026
+> **Version:** 1.1 · **Template effective:** September 30, 2026 (v1.0: May 10, 2026)
 >
 > This Data Processing Agreement ("DPA") is entered into between Leo Celis ("IVD",
 > "Processor") and the organization identified in the signature block below ("Customer",
@@ -139,6 +139,7 @@ data protection obligations equivalent to those in this DPA.
 |---------------|----------|------|-----|
 | DigitalOcean, Inc. | United States | App hosting, managed Redis, infrastructure | <https://www.digitalocean.com/legal/data-processing-agreement> |
 | OpenAI, L.L.C. | United States | Embedding generation for `ivd_search` only | <https://openai.com/policies/data-processing-addendum/> |
+| ComplyEdge | United States | EU AI Act screening of tool call arguments and results; stores a SHA-256 hash of the text, not the text (added September 30, 2026) | <https://complyedge.io/legal/data-processing-agreement.html> |
 
 **Changes to sub-processors:** IVD will give the Controller at least **14 days' prior
 written notice** of any intended change to sub-processors (addition or replacement).

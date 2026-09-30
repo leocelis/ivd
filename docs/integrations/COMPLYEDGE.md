@@ -11,7 +11,8 @@ IVD uses [ComplyEdge](https://complyedge.io) TrustLint on LLM-facing artifacts: 
 | Layer | Mechanism | API key in repo? | Blocks merge? |
 |-------|-----------|------------------|---------------|
 | **Offline gate** | `trustlint check` via `./scripts/compliance/check.sh` | No | Yes (CI `compliance` job) |
-| **Runtime enforcement** | `POST /v1/check` via `./scripts/compliance/runtime_check.sh` | No (BYOK env only) | No (opt-in local / scheduled) |
+| **Runtime enforcement (CI probe)** | `POST /v1/check` via `./scripts/compliance/runtime_check.sh` | No (BYOK env only) | No (opt-in local / scheduled) |
+| **Runtime enforcement (MCP tools)** | `POST /v1/check` around every tool call in `mcp_server/registry.py` → `mcp_server/compliance.py` | No (`COMPLYEDGE_API_KEY` in the server env) | N/A — blocks the tool call |
 | **Public proof** | Live seal + trust JSON | No | N/A |
 
 ```
@@ -62,6 +63,32 @@ curl -s -X PATCH https://api.complyedge.io/v1/tenant/trust \
 export COMPLYEDGE_API_KEY=ce_...
 ./scripts/compliance/runtime_check.sh
 ```
+
+---
+
+## MCP tool calls
+
+When the MCP server's environment has `COMPLYEDGE_API_KEY`, every tool call is checked
+twice by `call_tool` (the single dispatch all 33 tools pass through):
+
+| Check | `direction` | `text` |
+|-------|-------------|--------|
+| Before the tool runs | `prompt` | tool name + JSON arguments |
+| Before the result returns | `output` | the tool's result |
+
+Each check sends `agent_id` (`ivd-mcp`), `jurisdiction` (`EU`) and `context`:
+
+| Field | Remote (SSE / StreamableHTTP) | Local (stdio) |
+|-------|-------------------------------|---------------|
+| `user_id` | `ivdkey:<sha256 prefix of the IVD API key>` (never the key) | `local:<login>` |
+| `user_role` | `mcp_client` | `maintainer` |
+| `session_id` | `Mcp-Session-Id` header or SSE `session_id` | omitted |
+
+A block returns the rule ID and audit event instead of the tool's answer. If ComplyEdge
+cannot be reached the call goes through and the skip is logged on stderr (fail-open).
+Without the key nothing is sent. Optional: `COMPLYEDGE_API_URL` (default
+`https://api.complyedge.io`), `COMPLYEDGE_AGENT_ID`, `COMPLYEDGE_JURISDICTION`,
+`COMPLYEDGE_TIMEOUT_S` (default 5). Tests: `mcp_server/tests/unit/test_runtime_compliance.py`.
 
 ---
 

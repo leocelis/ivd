@@ -1,0 +1,131 @@
+# runtime_compliance_intent.yaml
+# Task-Level Intent: ComplyEdge runtime checks around every MCP tool call
+#
+# Co-located: mcp_server/intents/runtime_compliance_intent.yaml
+
+parent_intent: "../mcp_server_intent.yaml"
+
+scope:
+  level: "task"
+  type: "feature"
+  granularity: "fine"
+
+metadata:
+  feature_id: "runtime_compliance"
+  category: "compliance"
+  tags: ["complyedge", "eu-ai-act", "audit", "mcp-dispatch"]
+  status: "implemented"
+  introduced_version: "3.2.0"
+
+intent:
+  summary: "Screen every MCP tool call's input and output through ComplyEdge POST /v1/check when the server has a key, so the public enforcement seal reflects real tool traffic."
+  goal: |
+    The seal counted only a CI probe; no tool call was ever screened. All 33 tools
+    pass through registry.call_tool, so one wrapper there covers every tool and
+    every future tool, with no per-tool wiring to miss.
+  success_metric: |
+    - With a key: two /v1/check calls per tool call (prompt, then output) carrying
+      agent_id, jurisdiction and context {user_id, user_role, session_id}.
+    - A blocked input never runs the tool; a blocked output is never returned.
+    - ComplyEdge down or erroring never breaks a tool call.
+    - Without a key: zero network calls.
+  stakeholders:
+    - "Hosted MCP users (their tool text is screened; privacy policy v1.1 says so)"
+    - "Readers of the public enforcement seal"
+
+constraints:
+  - name: "checks_both_directions"
+    requirement: "With COMPLYEDGE_API_KEY set, call_tool sends direction 'prompt' (tool name + JSON arguments) before the handler and direction 'output' (the exact returned string) after it."
+    test: "mcp_server/tests/unit/test_runtime_compliance.py::test_real_tool_is_checked_on_the_way_in_and_out"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "differential_test"
+      path: "mcp_server/tests/unit/test_runtime_compliance.py"
+      description: "A local HTTP stub records the real request bodies; the output check's text is compared to the string call_tool actually returned."
+    entropy: "near-zero"
+    assumption_status: "KNOWN"
+    consequence_if_violated: "The seal claims enforcement over traffic it never saw."
+
+  - name: "attribution_never_a_credential"
+    requirement: "context.user_id is 'ivdkey:' + first 12 hex of sha256(IVD API key) remotely or 'local:<login>' over stdio; user_role is 'mcp_client' or 'maintainer'; session_id comes from the Mcp-Session-Id header or the SSE session_id query. Neither the IVD key nor the ComplyEdge key appears in any request body."
+    test: "mcp_server/tests/unit/test_runtime_compliance.py::test_real_tool_is_checked_on_the_way_in_and_out"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "differential_test"
+      path: "mcp_server/tests/unit/test_runtime_compliance.py"
+      description: "Stub-captured bodies are searched for both key strings."
+    entropy: "near-zero"
+    assumption_status: "KNOWN"
+    consequence_if_violated: "A caller's API key lands in a third party's audit log."
+
+  - name: "block_is_enforced"
+    requirement: "allowed=false on the prompt check returns the blocked message without running the handler; allowed=false on the output check replaces the result with the blocked message."
+    test: "mcp_server/tests/unit/test_runtime_compliance.py::test_blocked_input_never_runs_the_tool"
+    regression_tests:
+      - "mcp_server/tests/unit/test_runtime_compliance.py::test_blocked_output_is_not_returned"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "differential_test"
+      path: "mcp_server/tests/unit/test_runtime_compliance.py"
+      description: "The fake tool records whether it ran; the stub returns a block."
+    entropy: "near-zero"
+    assumption_status: "KNOWN"
+    consequence_if_violated: "A decision recorded as 'blocked' was delivered anyway."
+
+  - name: "fail_open_and_off_by_default"
+    requirement: "An HTTP error, timeout or unreachable ComplyEdge returns the tool's normal result (skip logged on stderr, never stdout: stdio carries the protocol). Without COMPLYEDGE_API_KEY no request is made."
+    test: "mcp_server/tests/unit/test_runtime_compliance.py::test_unreachable_complyedge_fails_open"
+    regression_tests:
+      - "mcp_server/tests/unit/test_runtime_compliance.py::test_server_error_fails_open"
+      - "mcp_server/tests/unit/test_runtime_compliance.py::test_no_key_means_no_checks"
+    test_provenance: "execution_derived"
+    execution_oracle:
+      type: "differential_test"
+      path: "mcp_server/tests/unit/test_runtime_compliance.py"
+      description: "Closed port and HTTP 500 stub; tool output compared to the no-check result."
+    entropy: "near-zero"
+    assumption_status: "KNOWN"
+    consequence_if_violated: "A compliance-service outage takes IVD down, or OSS users send data they never opted into."
+
+constraint_satisfiability:
+  conflicts_checked:
+    - "block_is_enforced vs fail_open: only an explicit allowed=false blocks; absence of a verdict allows. IVD is not a high-risk system, so availability wins over fail-closed."
+  simultaneous_satisfaction: "All four hold on one remote tool call: both checks sent, attribution clean, allow verdict returns the real result."
+  priority_order: ["attribution_never_a_credential", "block_is_enforced", "checks_both_directions", "fail_open_and_off_by_default"]
+  joint_satisfaction_test: "mcp_server/tests/unit/test_runtime_compliance.py::test_real_tool_is_checked_on_the_way_in_and_out"
+
+rationale:
+  decision: "One fail-open wrapper in registry.call_tool, checking input and output, active only with COMPLYEDGE_API_KEY."
+  reasoning: |
+    One dispatch point means every tool, including future ones, is covered with no
+    per-tool wiring to forget. ComplyEdge's API reference places the check on both
+    the prompt and the output, and names user_id / user_role / session_id as the
+    audit attribution fields, forbidding credentials in them. Fail-open because IVD
+    is developer tooling, not a high-risk system: availability outranks a missed check.
+  evidence: "complyedge.io/docs/api-reference.html (POST /v1/check); complyedge.io/docs/quick-start.html section 6."
+  date: "2026-09-30"
+
+alternatives:
+  - name: "per_tool_wiring"
+    rejected_because: "33 call sites with no completeness oracle; a new tool would ship unscreened."
+  - name: "fail_closed"
+    rejected_because: "A ComplyEdge outage would take down every IVD tool for every user."
+
+risks:
+  - condition: "Two extra round trips per tool call add latency."
+    mitigation: "5s timeout (COMPLYEDGE_TIMEOUT_S); observed ~200ms per check from CI."
+  - condition: "Hosted users' tool text leaves IVD."
+    mitigation: "Privacy Policy and DPA v1.1 list ComplyEdge; it stores a hash of the text, not the text."
+
+implementation:
+  current: "mcp_server/compliance.py, mcp_server/registry.py (call_tool)"
+  tests: "mcp_server/tests/unit/test_runtime_compliance.py"
+
+verification:
+  test_cases:
+    - name: "remote call with key"
+      expect: "two checks, prompt then output, ivdkey:<hash> attribution, session id from header"
+    - name: "prompt check blocks"
+      expect: "handler never runs; message names the rule and audit event"
+    - name: "ComplyEdge unreachable"
+      expect: "normal tool result"

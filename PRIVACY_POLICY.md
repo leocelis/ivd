@@ -1,6 +1,6 @@
 # Privacy Policy
 
-> **Version:** 1.0 · **Effective:** May 10, 2026
+> **Version:** 1.1 · **Effective:** September 30, 2026 (v1.0: May 10, 2026)
 >
 > This Privacy Policy applies to the IVD website (`ivdframework.dev`), the hosted MCP
 > server (`mcp.ivdframework.dev`), and all associated services (collectively, the
@@ -29,7 +29,8 @@ handles all data protection inquiries.*
 provide. This includes `yaml_content`, `project_root`, `artifact_path`, correction
 text, `query` strings, and any other parameters in the tool call.
 
-**Why:** To execute the requested tool and return a result to your MCP client.
+**Why:** To execute the requested tool and return a result to your MCP client, and
+to screen each call against the EU AI Act (see "Compliance screening" below).
 
 **Legal basis (GDPR Art. 6):** Legitimate interests (Art. 6(1)(f)) — processing is
 necessary to provide the service you requested. For users in a contractual relationship
@@ -40,6 +41,24 @@ beyond the active processing session. However, **provider-level operational logs
 retain records of requests for up to 30 days as part of normal infrastructure operations
 (see Sub-processors, Section 4). IVD does not use tool argument content for model
 training, analytics, or any purpose other than executing the requested tool.
+
+**Compliance screening (ComplyEdge):** When enabled on the hosted server, each tool
+call is sent to ComplyEdge twice: the tool name and arguments before the tool runs,
+and the tool's result before it is returned. ComplyEdge checks the text against its EU
+AI Act rules and returns allow or block; a blocked call returns the rule instead of the
+result. With each check IVD sends a pseudonymous caller ID (a truncated SHA-256 hash of
+your IVD API key, never the key itself), the role `mcp_client`, and your MCP session
+ID. ComplyEdge keeps a SHA-256 hash of the checked text, not the text itself, together
+with the decision, rule IDs, timestamps and those three identifiers, for 180 days, in
+the United States. These records feed IVD's public
+[enforcement seal](https://trust.complyedge.io/ivd), which shows only aggregate counts.
+If ComplyEdge is unreachable, the tool runs without the check. Self-hosted and local
+(stdio) servers send nothing to ComplyEdge unless their operator sets
+`COMPLYEDGE_API_KEY`.
+
+**Legal basis for screening (GDPR Art. 6):** Legitimate interests (Art. 6(1)(f)) —
+keeping the hosted service's inputs and outputs within EU AI Act Article 5 limits and
+keeping a verifiable record of those checks.
 
 **Warning:** IVD's hosted server is not designed for personal data. **Do not transmit
 personal data** (names, emails, IDs, or any information relating to an identified or
@@ -143,9 +162,11 @@ handles data only as necessary to perform their specific function.
 |---------------|----------|------|------------|
 | DigitalOcean, Inc. | United States | App hosting, Redis session management, infrastructure logs | [Privacy Policy](https://www.digitalocean.com/legal/privacy-policy) · [DPA](https://www.digitalocean.com/legal/data-processing-agreement) |
 | OpenAI, L.L.C. | United States | Embedding generation for `ivd_search` (query text sent to embeddings API) | [Privacy Policy](https://openai.com/policies/privacy-policy/) · [DPA](https://openai.com/policies/data-processing-addendum/) |
+| ComplyEdge | United States | EU AI Act screening of tool call arguments and results (stores a hash of the text, not the text) | [Privacy Policy](https://complyedge.io/legal/privacy-policy.html) · [DPA](https://complyedge.io/legal/data-processing-agreement.html) |
 
 IVD will update this table when sub-processors change. Material changes will be noted
-in `DECISIONS.md`.
+in `DECISIONS.md`. ComplyEdge was added on September 30, 2026 (FDR-027). ComplyEdge is
+built by the same author as IVD.
 
 **OpenAI data handling note:** IVD uses the OpenAI API via the standard API endpoint.
 Per OpenAI's API data usage policy (as of this Policy's effective date), API inputs are

@@ -19,11 +19,13 @@ IVD MCP Tool Registry — registration and dispatch for all 33 tools.
 """
 
 import json
+import sys
 import time
 from typing import Any, Callable, Dict, List, Optional
 
 from mcp.types import Tool
 
+from mcp_server import compliance
 from mcp_server.logger import extract_key_id, extract_origin_ip, log_tool_call
 from mcp_server.tools import (
     get_context_tool,
@@ -428,6 +430,16 @@ TOOL_HANDLERS: Dict[str, Callable] = {
 # Dispatch
 # =============================================================================
 
+def _note_fail_open(tool_name: str, direction: str, verdict: "compliance.Verdict") -> None:
+    """A check that could not run lets the call through; say so on stderr."""
+    if verdict.error:
+        print(
+            f"[ivd-mcp] ComplyEdge {direction} check for {tool_name} skipped "
+            f"({verdict.error}); tool call allowed",
+            file=sys.stderr,
+        )
+
+
 def call_tool(
     tool_name: str,
     arguments: dict,
@@ -462,22 +474,49 @@ def call_tool(
         )
         return f"Error: Unknown tool '{tool_name}'"
 
+    # ComplyEdge runtime enforcement (off without COMPLYEDGE_API_KEY): the
+    # arguments are checked before the tool runs, the result before it returns.
+    ce_ctx = compliance.attribution(api_key, request) if compliance.enabled() else None
+    if ce_ctx is not None:
+        verdict = compliance.check(compliance.arguments_text(tool_name, arguments), "prompt", ce_ctx)
+        _note_fail_open(tool_name, "prompt", verdict)
+        if not verdict.allowed:
+            blocked = compliance.blocked_message(tool_name, "input", verdict)
+            log_tool_call(
+                tool=tool_name,
+                duration_ms=int((time.time() - start) * 1000),
+                status="blocked",
+                key_id=extract_key_id(api_key),
+                origin_ip=extract_origin_ip(request),
+                payload_preview=json.dumps(arguments),
+                response_preview=blocked,
+            )
+            return blocked
+
     try:
         handler = TOOL_HANDLERS[tool_name]
         result = handler(**arguments)
+        status = "ok"
 
-        elapsed_ms = int((time.time() - start) * 1000)
-        
         if isinstance(result, (dict, list)):
             result_str = json.dumps(result, indent=2, default=str)
         else:
             result_str = str(result)
 
+        if ce_ctx is not None:
+            verdict = compliance.check(result_str, "output", ce_ctx)
+            _note_fail_open(tool_name, "output", verdict)
+            if not verdict.allowed:
+                result_str = compliance.blocked_message(tool_name, "output", verdict)
+                status = "blocked"
+
+        elapsed_ms = int((time.time() - start) * 1000)
+
         # Log successful tool call
         log_tool_call(
             tool=tool_name,
             duration_ms=elapsed_ms,
-            status="ok",
+            status=status,
             key_id=extract_key_id(api_key),
             origin_ip=extract_origin_ip(request),
             payload_preview=json.dumps(arguments),
