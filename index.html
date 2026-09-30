@@ -453,7 +453,8 @@
     .footer-logo span { color: var(--accent); }
     .footer-links {
       display: flex;
-      gap: 20px;
+      flex-wrap: wrap;
+      gap: 8px 20px;
       list-style: none;
     }
     .footer-links a {
@@ -462,6 +463,20 @@
       color: var(--muted);
     }
     .footer-links a:hover { color: var(--text); text-decoration: none; }
+    /* Copyright and the ComplyEdge seal share one row under the links. */
+    .footer-meta {
+      flex-basis: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 0.75rem;
+    }
+    .footer-meta p { font-size: 0.7rem; color: var(--dim); }
+    /* The seal's dark half (#1a1a1a) is 1.1:1 on --bg; a 1px --muted ring
+       (3.6:1 vs the seal, 4.0:1 vs --bg) gives it an edge. */
+    .ce-seal { display: block; max-width: 100%; height: auto; border-radius: 5px; box-shadow: 0 0 0 1px var(--muted); }
 
     /* ── HOSTED BADGE ── */
     .hosted-note {
@@ -1058,7 +1073,7 @@ If you approve, the command will be: rm -rf ...
 
     <p style="margin-bottom:20px;">
       <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
-        <img src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge Enforcement Seal" height="26" />
+        <img class="ce-seal" src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge Enforcement Seal" height="26" />
       </a>
     </p>
 
@@ -1360,7 +1375,12 @@ If you approve, the command will be: rm -rf ...
       <li><a href="https://github.com/leocelis/ivd/blob/main/PRIVACY_POLICY.md" target="_blank">Privacy</a></li>
       <li><a href="https://github.com/leocelis/ivd/blob/main/LEGAL.md" target="_blank">Legal</a></li>
     </ul>
-    <p style="font-size:0.7rem;color:var(--dim);margin-top:0.75rem;">© 2024–2026 IVD Project</p>
+    <div class="footer-meta">
+      <p>© 2024–2026 IVD Project</p>
+      <a href="https://trust.complyedge.io/ivd" rel="noopener noreferrer">
+        <img class="ce-seal" src="https://api.complyedge.io/v1/public/badge/ivd.svg" alt="ComplyEdge Enforcement Seal" height="26" />
+      </a>
+    </div>
   </div>
 </footer>
 

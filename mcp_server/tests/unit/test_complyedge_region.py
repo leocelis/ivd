@@ -34,7 +34,13 @@ def test_no_tracked_file_points_at_the_eu_api():
 
 
 def test_readme_and_site_embed_the_us_seal_as_an_image():
-    for name in ("README.md", "index.html"):
+    for name, attrs in (("README.md", ""), ("index.html", 'class="ce-seal" ')):
         text = (ROOT / name).read_text()
-        assert f'<img src="{SEAL}" alt="ComplyEdge Enforcement Seal" height="26" />' in text, name
+        assert f'<img {attrs}src="{SEAL}" alt="ComplyEdge Enforcement Seal" height="26" />' in text, name
         assert 'href="https://trust.complyedge.io/ivd"' in text, name
+
+
+def test_site_footer_carries_the_seal():
+    text = (ROOT / "index.html").read_text()
+    footer = text[text.index("<footer>"):text.index("</footer>")]
+    assert f'<img class="ce-seal" src="{SEAL}" alt="ComplyEdge Enforcement Seal" height="26" />' in footer
