@@ -26,7 +26,7 @@ from mcp.server import Server
 from mcp.server.sse import SseServerTransport
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from mcp.server.stdio import stdio_server
-from mcp.types import TextContent, Tool
+from mcp.types import CallToolResult, TextContent, Tool
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.requests import Request
@@ -112,7 +112,7 @@ async def list_tools() -> List[Tool]:
 
 
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: dict) -> List[TextContent]:
+async def handle_call_tool(name: str, arguments: dict) -> List[TextContent] | CallToolResult:
     """Handle tool invocation."""
     try:
         loop = asyncio.get_event_loop()
@@ -123,8 +123,14 @@ async def handle_call_tool(name: str, arguments: dict) -> List[TextContent]:
         api_key = ctx.get("api_key") if ctx else None
         request = ctx.get("request") if ctx else None
         
-        result = await loop.run_in_executor(None, call_tool, name, arguments, api_key, request)
-        return [TextContent(type="text", text=result)]
+        # ComplyEdge Log IDs go back in _meta, outside the checked text, so the
+        # caller can store them beside its copy of the text.
+        log_ids: dict = {}
+        result = await loop.run_in_executor(None, call_tool, name, arguments, api_key, request, log_ids)
+        content = [TextContent(type="text", text=result)]
+        if log_ids:
+            return CallToolResult(content=content, _meta={"complyedge": log_ids})
+        return content
     except Exception as e:
         error_msg = f"Error executing {name}: {e}"
         return [TextContent(type="text", text=error_msg)]

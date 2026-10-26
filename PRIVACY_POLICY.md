@@ -1,6 +1,6 @@
 # Privacy Policy
 
-> **Version:** 1.1 · **Effective:** September 30, 2026 (v1.0: May 10, 2026)
+> **Version:** 1.2 · **Effective:** October 26, 2026 (v1.1: September 30, 2026; v1.0: May 10, 2026)
 >
 > This Privacy Policy applies to the IVD website (`ivdframework.dev`), the hosted MCP
 > server (`mcp.ivdframework.dev`), and all associated services (collectively, the
@@ -48,9 +48,12 @@ and the tool's result before it is returned. ComplyEdge checks the text against 
 AI Act rules and returns allow or block; a blocked call returns the rule instead of the
 result. With each check IVD sends a pseudonymous caller ID (a truncated SHA-256 hash of
 your IVD API key, never the key itself), the role `mcp_client`, and your MCP session
-ID. ComplyEdge keeps a SHA-256 hash of the checked text, not the text itself, together
-with the decision, rule IDs, timestamps and those three identifiers, for 180 days, in
-the United States. These records feed IVD's public
+ID. ComplyEdge keeps a keyed fingerprint (HMAC-SHA-256) of the checked text, not the
+text itself, together with the decision, rule IDs and timestamps, and stores the caller
+and session IDs only as keyed pseudonyms, for 184 days, in the United States. Each check
+returns a Log ID (`event_id`); IVD hands both Log IDs back to you with the tool result,
+so you can later confirm with ComplyEdge that the text you kept is the text that was
+checked. IVD keeps no copy of the text for this. These records feed IVD's public
 [enforcement seal](https://trust.complyedge.io/ivd), which shows only aggregate counts.
 If ComplyEdge is unreachable, the tool runs without the check. Self-hosted and local
 (stdio) servers send nothing to ComplyEdge unless their operator sets

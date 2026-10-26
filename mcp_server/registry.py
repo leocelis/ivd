@@ -445,6 +445,7 @@ def call_tool(
     arguments: dict,
     api_key: Optional[str] = None,
     request: Optional[Any] = None,
+    log_ids: Optional[dict] = None,
 ) -> str:
     """
     Execute a tool with the given arguments.
@@ -454,6 +455,9 @@ def call_tool(
         arguments: Tool arguments
         api_key: API key (optional, for logging)
         request: Request object (optional, for IP extraction)
+        log_ids: Optional dict filled with the ComplyEdge Log IDs of this call,
+            {"input_event_id", "output_event_id"} (None where a check did not
+            run), so the server can hand them to the caller outside the text.
     
     Returns:
         Tool execution result as string
@@ -480,6 +484,8 @@ def call_tool(
     if ce_ctx is not None:
         verdict = compliance.check(compliance.arguments_text(tool_name, arguments), "prompt", ce_ctx)
         _note_fail_open(tool_name, "prompt", verdict)
+        if log_ids is not None:
+            log_ids.update(input_event_id=verdict.event_id, output_event_id=None)
         if not verdict.allowed:
             blocked = compliance.blocked_message(tool_name, "input", verdict)
             log_tool_call(
@@ -506,6 +512,8 @@ def call_tool(
         if ce_ctx is not None:
             verdict = compliance.check(result_str, "output", ce_ctx)
             _note_fail_open(tool_name, "output", verdict)
+            if log_ids is not None:
+                log_ids["output_event_id"] = verdict.event_id
             if not verdict.allowed:
                 result_str = compliance.blocked_message(tool_name, "output", verdict)
                 status = "blocked"

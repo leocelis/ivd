@@ -90,6 +90,31 @@ Without the key nothing is sent. Optional: `COMPLYEDGE_API_URL` (default
 `https://api.complyedge.io`), `COMPLYEDGE_AGENT_ID`, `COMPLYEDGE_JURISDICTION`,
 `COMPLYEDGE_TIMEOUT_S` (default 5). Tests: `mcp_server/tests/unit/test_runtime_compliance.py`.
 
+### Log IDs
+
+ComplyEdge keeps a keyed fingerprint of each checked text, never the text. Every check
+returns an `event_id` (the Log ID), and a Log ID only proves something next to a copy
+of the text. IVD keeps none, so every checked tool call returns both Log IDs in the
+result's `_meta`, outside the text:
+
+```json
+{"_meta": {"complyedge": {"input_event_id": "...", "output_event_id": "..."}}}
+```
+
+A Log ID is `null` when that check did not run (ComplyEdge unreachable, or an input
+block that stopped the call). Without the key there is no `_meta`. The text you receive
+is exactly the text that was checked, so store each Log ID next to your copy:
+
+| Log ID | Text it covers |
+|--------|----------------|
+| input | `<tool name> <arguments as JSON with sorted keys>` |
+| output | the tool result's text |
+
+A text longer than 50,000 characters is checked on its first 50,000. Later,
+`POST /v1/audit/verify` with a Log ID and your copy answers whether they match
+([how audit reconciliation works](https://complyedge.io/docs/audit-reconciliation.html)).
+Tests: `mcp_server/tests/unit/test_complyedge_log_ids.py`.
+
 ---
 
 ## CI

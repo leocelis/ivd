@@ -9,6 +9,12 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **ComplyEdge Log IDs reach the caller.** Every checked tool call returns
+  `_meta["complyedge"] = {input_event_id, output_event_id}`, outside the result text,
+  which is returned exactly as checked. With the caller's copy of the text, each Log ID
+  verifies through ComplyEdge `POST /v1/audit/verify`. Privacy Policy and DPA describe
+  the keyed fingerprint, pseudonymous IDs and 184-day retention.
+
 - **Every MCP tool call is now screened by ComplyEdge when the server has a key.**
   `call_tool` checks the arguments (`prompt`) before the tool runs and the result
   (`output`) before it returns, sending `agent_id`, `jurisdiction` and the audit
