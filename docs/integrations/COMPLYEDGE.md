@@ -88,7 +88,7 @@ A block returns the rule ID and audit event instead of the tool's answer. If Com
 cannot be reached the call goes through and the skip is logged on stderr (fail-open).
 Without the key nothing is sent. Optional: `COMPLYEDGE_API_URL` (default
 `https://api.complyedge.io`), `COMPLYEDGE_AGENT_ID`, `COMPLYEDGE_JURISDICTION`,
-`COMPLYEDGE_TIMEOUT_S` (default 5). Tests: `mcp_server/tests/unit/test_runtime_compliance.py`.
+`COMPLYEDGE_TIMEOUT_S` (default 15: a cold ComplyEdge instance can take ~8 s to answer, and a check that times out is skipped, verdict and Log ID with it). Tests: `mcp_server/tests/unit/test_runtime_compliance.py`.
 
 ### Log IDs
 

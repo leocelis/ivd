@@ -9,6 +9,9 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **ComplyEdge checks wait 15 s by default (was 5).** A cold ComplyEdge instance answers in
+  about 8 s; with 5 s the check was skipped, so the caller lost the verdict and the Log ID
+  of a record ComplyEdge had written. `COMPLYEDGE_TIMEOUT_S` still overrides it.
 - **ComplyEdge Log IDs reach the caller.** Every checked tool call returns
   `_meta["complyedge"] = {input_event_id, output_event_id}`, outside the result text,
   which is returned exactly as checked. With the caller's copy of the text, each Log ID

@@ -25,7 +25,7 @@ Env:
   COMPLYEDGE_API_URL      default https://api.complyedge.io
   COMPLYEDGE_AGENT_ID     default ivd-mcp
   COMPLYEDGE_JURISDICTION default EU
-  COMPLYEDGE_TIMEOUT_S    default 5
+  COMPLYEDGE_TIMEOUT_S    default 15 (a cold ComplyEdge instance answers in ~8 s; a shorter wait drops its verdict and Log ID)
 """
 
 from __future__ import annotations
@@ -104,7 +104,7 @@ def check(text: str, direction: str, context: dict) -> Verdict:
             f"{url}/v1/check",
             json=body,
             headers={"Authorization": f"Bearer {key}"},
-            timeout=float(os.environ.get("COMPLYEDGE_TIMEOUT_S", "5")),
+            timeout=float(os.environ.get("COMPLYEDGE_TIMEOUT_S", "15")),
         )
         if resp.status_code != 200:
             return Verdict(error=f"HTTP {resp.status_code}")
