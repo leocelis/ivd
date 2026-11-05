@@ -70,7 +70,7 @@ recipe:
     - "Agent replies are plausible but the user can't tell what's verified vs guessed"
     - "Irreversible operations slip through without an explicit checkpoint"
     - "Project communicates with non-technical stakeholders who need clear scaffolding"
-    - "Composes with Phase 0b: when both this rules block AND the Canon MCP tools are active, the agent both follows the rules AND calls canon_check to programmatically verify (NFR-LA5 composition lift ≥ 10pp)"
+    - "Composes with Phase 0b: when both this rules block AND the Canon MCP tools are active, the agent both follows the rules AND calls canon_check to programmatically verify"
 
   when_NOT_to_use:
     - "Pure machine-to-machine pipelines with no human reader"
@@ -272,8 +272,7 @@ agent_rules_block:
     If the IVD MCP server is installed, after producing a substantive reply
     you MAY call `canon_check` (the Canon MCP tool inside the IVD MCP server)
     to programmatically verify R1/R2/R5/R10/R14 on the reply you just wrote.
-    The composition (rules + verifier) lifts paired audit pass rates by
-    ≥ 10 percentage points over rules alone (NFR-LA5).
+    The rules tell the agent what to do and `canon_check` verifies that it did.
     # <END-CANON v1.0>
 
   clinerules_format: |
@@ -337,8 +336,7 @@ agent_rules_block:
     negative arousal.
 
     **Composition hint.** If the IVD MCP server is installed, call `canon_check`
-    on substantive replies to programmatically verify these invariants
-    (NFR-LA5: rules + MCP composition).
+    on substantive replies to programmatically verify these invariants.
     <!-- <END-CANON v1.0> -->
 
   copilot_format: |
@@ -391,7 +389,7 @@ agent_rules_block:
     # fabricated social proof, companionship framing, manufactured negative arousal.
     #
     # If the IVD MCP server is installed, call canon_check on substantive replies
-    # to verify these invariants (Phase 0a + Phase 0b composition, NFR-LA5).
+    # to verify these invariants (Phase 0a + Phase 0b composition).
     # <END-CANON v1.0>
 
   windsurf_format: |
@@ -429,8 +427,7 @@ agent_rules_block:
     social proof, companionship framing, manufactured negative arousal.
 
     **Composition.** If the IVD MCP server is installed, call `canon_check`
-    on substantive replies to verify these invariants (Phase 0a + Phase 0b,
-    NFR-LA5).
+    on substantive replies to verify these invariants (Phase 0a + Phase 0b).
     # <END-CANON v1.0>
 
 # ==============================================================================
@@ -494,7 +491,7 @@ composition:
     not compete: rules instruct the agent on what to write; the MCP tools
     let the agent (or a downstream verifier) check what was actually written.
 
-  recommended_configuration: "Both layers active. The rules block contains an explicit composition hint instructing the agent to call canon_check after producing a substantive reply. NFR-LA5 specifies that the composition lifts paired audit pass rates on R1/R2/R5/R10/R14 by ≥ 10 percentage points over rules alone."
+  recommended_configuration: "Both layers active. The rules block contains an explicit composition hint instructing the agent to call canon_check after producing a substantive reply. The rules tell the agent what to do and canon_check verifies that it did."
 
   zero_config_default: |
     Phase 0b requires no configuration. If the user has the IVD MCP server
@@ -561,7 +558,7 @@ relationships:
   - pattern: "agent-rules-ivd recipe"
     relationship: "Canon Rules and IVD Rules COMPOSE in the same agent instruction file. IVD Rules govern how the agent writes / verifies intent artifacts; Canon Rules govern how the agent talks to the human about anything. Both blocks use the BEGIN/END fence marker convention so canon_check_rules_installed and ivd_init can detect each independently."
   - pattern: "Phase 0b Canon MCP tools (canon_render, canon_check, canon_diff, canon_check_rules_installed)"
-    relationship: "Phase 0a (this recipe) is the instructional layer; Phase 0b is the programmatic verifier. Composition (rules + verifier) is the recommended configuration (NFR-LA5)."
+    relationship: "Phase 0a (this recipe) is the instructional layer; Phase 0b is the programmatic verifier. Composition (rules + verifier) is the recommended configuration."
   - pattern: "Canon engine (ivd/canon/)"
     relationship: "The Canon engine implements R1–R14 in code. This recipe is the natural-language projection of R1, R2, R5, R10, R14 (the Phase 0a subset) into the agent's instruction file."
   - pattern: "Canon Browser Extension (Phase 0c — Canon Dots)"

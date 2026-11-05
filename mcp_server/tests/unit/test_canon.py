@@ -570,14 +570,13 @@ class TestCanonRulesSixClients:
 
     def test_each_adapter_includes_composition_hint(self):
         """Phase 0a rules block must instruct the agent to call canon_check
-        when the IVD MCP is available (Tech Spec §9A.4 / NFR-LA5)."""
+        when the IVD MCP is available."""
         recipe = self._load_recipe()
         adapters = recipe["agent_rules_block"]
         for k in self.ADAPTER_KEYS:
             body = self._norm(adapters[k])
             assert "canon_check" in body, (
-                f"{k} missing the Phase-0a+0b composition hint (call canon_check). "
-                "Required by Tech Spec §9A.4 / NFR-LA5."
+                f"{k} missing the Phase-0a+0b composition hint (call canon_check)."
             )
 
 

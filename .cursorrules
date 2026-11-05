@@ -420,6 +420,5 @@ Do not use any of these patterns in replies:
 If the IVD MCP server is installed, after producing a substantive reply
 you MAY call `canon_check` (the Canon MCP tool inside the IVD MCP server)
 to programmatically verify R1/R2/R5/R10/R14 on the reply you just wrote.
-The composition (rules + verifier) lifts paired audit pass rates by
-≥ 10 percentage points over rules alone (NFR-LA5).
+The rules tell the agent what to do and `canon_check` verifies that it did.
 # <END-CANON v1.0>
