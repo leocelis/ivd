@@ -621,7 +621,7 @@ behavior:
 #   HIGH-ENTROPY:    ❌ REJECTED — "write well", "be creative", "sound professional"
 #                    These trigger parametric averaging (homogenization). Decompose before writing.
 #                    Research: CMU 2025 underspecification study; CS4 2024; 'We're Different, We're
-#                    the Same' arXiv 2501.19361 2025 — LLM outputs more similar to each other than
+#                    the Same' arXiv 2501.19361, 2025 — LLM outputs more similar to each other than
 #                    human outputs are, even cross-model. High-entropy = averaged output.
 #
 # ORDER: List most critical constraints LAST. Position bias (UltraBench 2025) causes LLMs to
