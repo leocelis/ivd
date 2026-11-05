@@ -157,6 +157,8 @@ export OPENAI_API_KEY=your-key
 
 The key insight: clarification happens at the **intent stage**, not after code. The AI writes a verifiable contract, you approve it, then implementation is mechanical — and self-verifying.
 
+If you already use spec-driven development (GitHub Spec Kit, OpenSpec), IVD adds what neither format provides by default: a test bound to each constraint. See [docs/positioning.md](docs/positioning.md).
+
 ---
 
 ## MCP Tools
@@ -295,7 +297,7 @@ Canonical recipe: [`recipes/canon-rules.yaml`](recipes/canon-rules.yaml). Engine
 
 ### Integrations
 
-**ComplyEdge TrustLint** (optional, `pip install ivd-mcp[compliance]`) — offline EU AI
+**ComplyEdge TrustLint** (optional, `pip install 'trustlint>=2.0.1'`) — offline EU AI
 Act screening on LLM-facing artifacts (`recipes/`, `templates/`, `*_intent.yaml`), built
 by the same author and dogfooded on this repo.
 
@@ -304,7 +306,7 @@ by the same author and dogfooded on this repo.
 </a>
 
 ```bash
-pip install 'ivd-mcp[compliance]'
+pip install 'trustlint>=2.0.1'
 ./scripts/compliance/check.sh
 ```
 

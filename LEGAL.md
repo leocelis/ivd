@@ -370,7 +370,7 @@ without triggering any liability on IVD's part:
 - New deployments (which invalidate active MCP sessions — see §3.8)
 - Cold starts after container scale-down (5–30 seconds of first-call latency)
 - Redis outages (which prevent new MCP sessions from being established)
-- OpenAI API outages or key expiry (which degrade `ivd_search` only; other 31 tools
+- OpenAI API outages or key expiry (which degrade `ivd_search` only; other 32 tools
   continue to function)
 - Build or embedding pipeline failures during deployment
 

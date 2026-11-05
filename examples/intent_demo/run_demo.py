@@ -164,7 +164,7 @@ def main() -> int:
         "you, the human, ever had to notice it yourself.\n"
         "\n"
         "This is the entire IVD core loop. Everything else in this repo —\n"
-        "Judgment (examples/judgment_demo/), Canon, the 31 MCP tools — builds\n"
+        "Judgment (examples/judgment_demo/), Canon, the 33 MCP tools — builds\n"
         "on top of this same mechanism: structured constraints with real tests\n"
         "behind them.\n"
     )
