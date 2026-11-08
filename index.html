@@ -705,7 +705,7 @@
     <h2>How IVD works</h2>
     <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
       If you already use spec-driven development (GitHub Spec Kit, OpenSpec), IVD adds what neither format provides by default: a test bound to each constraint.
-      See <a href="https://github.com/leocelis/ivd/blob/main/docs/positioning.md">docs/positioning.md</a>.
+      See <a href="/docs/positioning.html">docs/positioning.md</a>.
     </p>
 
     <div class="steps">
@@ -886,7 +886,7 @@
       <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_save_codified</code>,
       <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_pair</code>,
       <code style="color:var(--accent2);font-family:var(--mono);">ivd_judgment_check_installed</code>
-      — see <a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank">judgment_layer.md</a>
+      — see <a href="/judgment_layer.html" target="_blank">judgment_layer.md</a>
     </p>
 
     <p class="tool-group-label"><span>4 canon tools</span> · phase 0 · human translation layer</p>
@@ -1022,7 +1022,7 @@ If you approve, the command will be: rm -rf ...
     </ul>
 
     <div class="btn-row">
-      <a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank" class="btn btn-secondary">Full Canon spec →</a>
+      <a href="/canon_layer.html" target="_blank" class="btn btn-secondary">Full Canon spec →</a>
       <a href="https://github.com/leocelis/ivd/tree/main/canon/validation" target="_blank" class="btn btn-secondary">Showcase + reproducible evidence →</a>
     </div>
   </div>
@@ -1152,7 +1152,7 @@ If you approve, the command will be: rm -rf ...
     </p>
 
     <div class="btn-row">
-      <a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank" class="btn btn-secondary">Full Judgment spec →</a>
+      <a href="/judgment_layer.html" target="_blank" class="btn btn-secondary">Full Judgment spec →</a>
       <a href="https://github.com/leocelis/ivd/tree/main/examples/judgment_demo" target="_blank" class="btn btn-secondary">Worked demo →</a>
     </div>
   </div>
@@ -1195,9 +1195,10 @@ If you approve, the command will be: rm -rf ...
         <div class="code-block"><code><span class="c-punc">{</span>
   <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
     <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
-      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/.venv/bin/python"</span><span class="c-punc">,</span>
       <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span>
+      <span class="c-key">"env"</span><span class="c-punc">:</span>    <span class="c-punc">{</span> <span class="c-key">"PYTHONPATH"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span> <span class="c-key">"LOG_DIR"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/mcp_server/logs"</span> <span class="c-punc">}</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span></code></div>
@@ -1208,9 +1209,10 @@ If you approve, the command will be: rm -rf ...
         <div class="code-block"><code><span class="c-punc">{</span>
   <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
     <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
-      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/.venv/bin/python"</span><span class="c-punc">,</span>
       <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span>
+      <span class="c-key">"env"</span><span class="c-punc">:</span>    <span class="c-punc">{</span> <span class="c-key">"PYTHONPATH"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span> <span class="c-key">"LOG_DIR"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/mcp_server/logs"</span> <span class="c-punc">}</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span></code></div>
@@ -1218,7 +1220,7 @@ If you approve, the command will be: rm -rf ...
 
       <div class="client-block">
         <div class="client-label">Claude Code <span class="client-path">one-liner</span></div>
-        <div class="code-block"><code><span class="c-cmd">claude mcp add ivd python -m mcp_server.server --cwd /path/to/ivd</span></code></div>
+        <div class="code-block"><code><span class="c-cmd">claude mcp add ivd -e PYTHONPATH=/path/to/ivd -e LOG_DIR=/path/to/ivd/mcp_server/logs -- /path/to/ivd/.venv/bin/python -m mcp_server.server</span></code></div>
       </div>
 
       <div class="client-block">
@@ -1227,9 +1229,10 @@ If you approve, the command will be: rm -rf ...
   <span class="c-key">"servers"</span><span class="c-punc">: {</span>
     <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
       <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"stdio"</span><span class="c-punc">,</span>
-      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"python"</span><span class="c-punc">,</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/.venv/bin/python"</span><span class="c-punc">,</span>
       <span class="c-key">"args"</span><span class="c-punc">:</span>   <span class="c-punc">[</span><span class="c-str">"-m"</span><span class="c-punc">,</span> <span class="c-str">"mcp_server.server"</span><span class="c-punc">],</span>
-      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span>
+      <span class="c-key">"cwd"</span><span class="c-punc">:</span>    <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span>
+      <span class="c-key">"env"</span><span class="c-punc">:</span>    <span class="c-punc">{</span> <span class="c-key">"PYTHONPATH"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd"</span><span class="c-punc">,</span> <span class="c-key">"LOG_DIR"</span><span class="c-punc">:</span> <span class="c-str">"/path/to/ivd/mcp_server/logs"</span> <span class="c-punc">}</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span></code></div>
@@ -1238,8 +1241,9 @@ If you approve, the command will be: rm -rf ...
       <div class="client-block">
         <div class="client-label">Windsurf, Zed, Continue, and other MCP clients</div>
         <p>Any client that speaks MCP (stdio) can connect. Point it at
-        <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">python -m mcp_server.server</code>
-        with <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">cwd</code> set to your clone path.</p>
+        <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">/path/to/ivd/.venv/bin/python -m mcp_server.server</code>
+        with <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">PYTHONPATH</code> set to your clone path and
+        <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">LOG_DIR</code> set to <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">/path/to/ivd/mcp_server/logs</code>, or with <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">cwd</code> set to your clone path.</p>
       </div>
     </div>
 
@@ -1297,9 +1301,12 @@ If you approve, the command will be: rm -rf ...
         <div class="code-block"><code><span class="c-punc">{</span>
   <span class="c-key">"servers"</span><span class="c-punc">: {</span>
     <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
-      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"streamable-http"</span><span class="c-punc">,</span>
+      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"http"</span><span class="c-punc">,</span>
       <span class="c-key">"url"</span><span class="c-punc">:</span>     <span class="c-str">"https://mcp.ivdframework.dev/mcp"</span><span class="c-punc">,</span>
-      <span class="c-key">"headers"</span><span class="c-punc">: {</span> <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span> <span class="c-punc">}</span>
+      <span class="c-key">"headers"</span><span class="c-punc">: {</span>
+        <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span><span class="c-punc">,</span>
+        <span class="c-key">"Accept"</span><span class="c-punc">:</span> <span class="c-str">"application/json, text/event-stream"</span>
+      <span class="c-punc">}</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span></code></div>
@@ -1395,10 +1402,10 @@ If you approve, the command will be: rm -rf ...
       <div class="footer-col">
         <h3>Framework</h3>
         <ul>
-          <li><a href="https://github.com/leocelis/ivd/blob/main/framework.md" target="_blank" rel="noopener noreferrer">Spec</a></li>
-          <li><a href="https://github.com/leocelis/ivd/blob/main/canon_layer.md" target="_blank" rel="noopener noreferrer">Canon</a></li>
-          <li><a href="https://github.com/leocelis/ivd/blob/main/judgment_layer.md" target="_blank" rel="noopener noreferrer">Judgment</a></li>
-          <li><a href="https://github.com/leocelis/ivd/blob/main/cookbook.md" target="_blank" rel="noopener noreferrer">Cookbook</a></li>
+          <li><a href="/framework.html" target="_blank" rel="noopener noreferrer">Spec</a></li>
+          <li><a href="/canon_layer.html" target="_blank" rel="noopener noreferrer">Canon</a></li>
+          <li><a href="/judgment_layer.html" target="_blank" rel="noopener noreferrer">Judgment</a></li>
+          <li><a href="/cookbook.html" target="_blank" rel="noopener noreferrer">Cookbook</a></li>
         </ul>
       </div>
       <div class="footer-col">

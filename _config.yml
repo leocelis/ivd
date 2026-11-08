@@ -1,0 +1,10 @@
+# GitHub Pages build settings for ivdframework.dev.
+# jekyll-sitemap writes /sitemap.xml and, since the repo has no robots.txt, a /robots.txt that points to it.
+url: "https://ivdframework.dev"
+plugins:
+  - jekyll-sitemap
+# Repo working notes, not reader docs: kept off the site and out of the sitemap.
+exclude:
+  - DECISIONS.md
+  - DEVELOPMENT.md
+  - deploy/
