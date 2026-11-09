@@ -1278,13 +1278,13 @@ If you approve, the command will be: rm -rf ...
       </div>
 
       <div class="client-block">
-        <div class="client-label">Claude Desktop <span class="client-path">~/Library/Application Support/Claude/claude_desktop_config.json · SSE</span></div>
+        <div class="client-label">Claude Desktop <span class="client-path">~/Library/Application Support/Claude/claude_desktop_config.json · via mcp-remote (needs Node)</span></div>
         <div class="code-block"><code><span class="c-punc">{</span>
   <span class="c-key">"mcpServers"</span><span class="c-punc">: {</span>
     <span class="c-key">"ivd"</span><span class="c-punc">: {</span>
-      <span class="c-key">"type"</span><span class="c-punc">:</span>    <span class="c-str">"sse"</span><span class="c-punc">,</span>
-      <span class="c-key">"url"</span><span class="c-punc">:</span>     <span class="c-str">"https://mcp.ivdframework.dev/sse"</span><span class="c-punc">,</span>
-      <span class="c-key">"headers"</span><span class="c-punc">: {</span> <span class="c-key">"Authorization"</span><span class="c-punc">:</span> <span class="c-str">"Bearer <span class="c-acc">YOUR_API_KEY</span>"</span> <span class="c-punc">}</span>
+      <span class="c-key">"command"</span><span class="c-punc">:</span> <span class="c-str">"npx"</span><span class="c-punc">,</span>
+      <span class="c-key">"args"</span><span class="c-punc">: [</span><span class="c-str">"-y"</span><span class="c-punc">,</span> <span class="c-str">"mcp-remote"</span><span class="c-punc">,</span> <span class="c-str">"https://mcp.ivdframework.dev/sse"</span><span class="c-punc">,</span>
+               <span class="c-str">"--header"</span><span class="c-punc">,</span> <span class="c-str">"Authorization:Bearer <span class="c-acc">YOUR_API_KEY</span>"</span><span class="c-punc">]</span>
     <span class="c-punc">}</span>
   <span class="c-punc">}</span>
 <span class="c-punc">}</span></code></div>

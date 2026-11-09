@@ -64,9 +64,12 @@ _sse_module.EventSourceResponse = _KeepaliveEventSourceResponse
 _request_context: ContextVar[Optional[dict]] = ContextVar("request_context", default=None)
 
 NAME = "IVD MCP"
+# One version for initialize and /health. Must match pyproject.toml and server.json
+# (mcp_server/tests/unit/test_version_consistency.py).
+SERVER_VERSION = "3.1.2"
 
 # MCP Server instance
-server = Server("ivd-tool")
+server = Server("ivd-tool", version=SERVER_VERSION)
 
 print(colored(f"[{NAME}] Initializing IVD MCP Server...", "magenta"))
 
@@ -203,7 +206,7 @@ def create_app() -> Starlette:
         return JSONResponse({
             "status": "healthy",
             "server": "ivd-tool",
-            "version": "2.0.0",
+            "version": SERVER_VERSION,
             "tools_count": len(tools),
             "transports": ["streamable-http", "sse"],
             "resumable": event_store is not None,

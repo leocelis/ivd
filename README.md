@@ -76,16 +76,19 @@ IVD's dependencies into `.venv/`, not your system Python. Using `"command": "pyt
 here will fail with `ModuleNotFoundError`. Replace `/path/to/ivd` with your actual
 clone path.
 
-**Cursor** (Settings → Features → MCP):
+**Cursor** (`~/.cursor/mcp.json`, or `.cursor/mcp.json` in a project):
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "ivd": {
-      "type": "stdio",
       "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
-      "cwd": "/path/to/ivd"
+      "cwd": "/path/to/ivd",
+      "env": {
+        "PYTHONPATH": "/path/to/ivd",
+        "LOG_DIR": "/path/to/ivd/mcp_server/logs"
+      }
     }
   }
 }
@@ -95,11 +98,16 @@ clone path.
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "ivd": {
+      "type": "stdio",
       "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
-      "cwd": "/path/to/ivd"
+      "cwd": "/path/to/ivd",
+      "env": {
+        "PYTHONPATH": "/path/to/ivd",
+        "LOG_DIR": "/path/to/ivd/mcp_server/logs"
+      }
     }
   }
 }
@@ -113,11 +121,25 @@ clone path.
     "ivd": {
       "command": "/path/to/ivd/.venv/bin/python",
       "args": ["-m", "mcp_server.server"],
-      "cwd": "/path/to/ivd"
+      "cwd": "/path/to/ivd",
+      "env": {
+        "PYTHONPATH": "/path/to/ivd",
+        "LOG_DIR": "/path/to/ivd/mcp_server/logs"
+      }
     }
   }
 }
 ```
+
+**Claude Code:**
+
+```bash
+claude mcp add ivd -e PYTHONPATH=/path/to/ivd -e LOG_DIR=/path/to/ivd/mcp_server/logs -- /path/to/ivd/.venv/bin/python -m mcp_server.server
+```
+
+`PYTHONPATH` lets the server start when a client ignores `cwd` (Cursor and Claude
+Desktop do not document it). `LOG_DIR` keeps logs inside the clone, so the server
+also starts when the client launches it from a read-only folder.
 
 > A `pyproject.toml` now ships in the repo (`pip install .` or `pip install -e .`
 > gives you an `ivd-mcp` console command). A PyPI release (`uvx ivd-mcp`, no clone
@@ -400,7 +422,7 @@ Once you have an API key, use the URL that matches your client:
 |--------|-----|--------|
 | **VS Code / GitHub Copilot** | `https://mcp.ivdframework.dev/mcp` | Streamable HTTP — **do not** use `/sse` here unless your client only offers one URL field; `/mcp` is canonical. |
 | **Cursor** (`type: "sse"`) | `https://mcp.ivdframework.dev/sse` | Legacy SSE (GET EventSource + `POST /messages`). |
-| **Claude Desktop** | `https://mcp.ivdframework.dev/sse` | Same SSE transport as above. |
+| **Claude Desktop** | `https://mcp.ivdframework.dev/sse` | Through `mcp-remote` (config below). |
 
 `POST` to `/sse` is also accepted (alias for Streamable HTTP) for clients that misconfigure the base URL; **`/mcp` is still recommended** for Copilot.
 
@@ -423,11 +445,11 @@ Once you have an API key, use the URL that matches your client:
 
 > **Note:** The `Accept` header is required. VS Code's default HTTP transport only sends `application/json`; the IVD Streamable HTTP endpoint enforces the MCP spec and requires both `application/json` and `text/event-stream` — omitting it returns a 406 error.
 
-**Cursor** (Settings → Features → MCP):
+**Cursor** (`~/.cursor/mcp.json`):
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "ivd-remote": {
       "type": "sse",
       "url": "https://mcp.ivdframework.dev/sse",
@@ -437,18 +459,22 @@ Once you have an API key, use the URL that matches your client:
 }
 ```
 
-**Claude Desktop** (`claude_desktop_config.json`):
+**Claude Desktop** (`claude_desktop_config.json`, through `mcp-remote`, needs Node):
 
 ```json
 {
   "mcpServers": {
     "ivd-remote": {
-      "url": "https://mcp.ivdframework.dev/sse",
-      "headers": { "Authorization": "Bearer your-api-key" }
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.ivdframework.dev/sse",
+               "--header", "Authorization:Bearer your-api-key"]
     }
   }
 }
 ```
+
+Claude Desktop's config file starts local servers; `mcp-remote` is the local
+bridge that carries the API key to the hosted server.
 
 All 33 tools are available on the hosted server, including `ivd_search` (embeddings are pre-generated).
 
