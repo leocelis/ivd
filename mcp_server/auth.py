@@ -8,6 +8,12 @@ Reads API keys from IVD_API_KEYS environment variable.
 For local/stdio: auth not required (process isolation).
 For remote/SSE:  API key required in Authorization header:
     Authorization: Bearer <api_key>
+
+A key is either an operator key (listed in IVD_API_KEYS, full tool set) or,
+when IVD_TENANT_KEY_SECRET is set, a host-derived tenant key (see
+mcp_server/tenant.py). The identity a request runs as is recorded on the
+request scope ("ivd_identity"), and as an authenticated user so the MCP
+transports bind each session to the identity that opened it.
 """
 
 import hashlib
@@ -16,8 +22,11 @@ import secrets
 from functools import wraps
 from typing import Optional, Tuple
 
+from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
+from mcp.server.auth.provider import AccessToken
 from starlette.responses import JSONResponse
 
+from mcp_server import tenant as tenant_keys
 from mcp_server.logger import extract_key_id, extract_origin_ip, log_auth_event
 
 # Environment-based API keys (comma-separated)
@@ -82,6 +91,12 @@ async def validate_api_key(request) -> Tuple[Optional[JSONResponse], Optional[st
         )
         return JSONResponse({"error": "Empty API key"}, status_code=401), None
 
+    if api_key not in VALID_API_KEYS and tenant_keys.secret():
+        # Tenant keys are on. A key that is not an operator key must be a valid
+        # tenant key; the "no keys configured" fallback below never applies,
+        # or any made-up key would get the full tool set.
+        return _validate_tenant_key(request, api_key, origin_ip)
+
     if not VALID_API_KEYS:
         # No keys configured — fall back to auth disabled behavior
         log_auth_event(
@@ -107,7 +122,55 @@ async def validate_api_key(request) -> Tuple[Optional[JSONResponse], Optional[st
         key_id=extract_key_id(api_key),
         origin_ip=origin_ip,
     )
+    _record_identity(request, tenant_keys.operator_identity(api_key))
     return None, api_key
+
+
+def _validate_tenant_key(request, api_key: str, origin_ip: str):
+    """Verify a host-derived tenant key. The tenant, never the key, is logged."""
+    tenant, reason = tenant_keys.verify_tenant_key(api_key)
+    if reason is not None:
+        log_auth_event(
+            status="error",
+            key_id=f"tenant:{tenant}" if tenant else "invalid",
+            origin_ip=origin_ip,
+            error=reason,
+            tenant=tenant,
+        )
+        return JSONResponse({"error": "Invalid API key"}, status_code=401), None
+    log_auth_event(
+        status="ok",
+        key_id=f"tenant:{tenant}",
+        origin_ip=origin_ip,
+        tenant=tenant,
+    )
+    _record_identity(request, tenant_keys.tenant_identity(tenant))
+    return None, api_key
+
+
+def _record_identity(request, identity: "tenant_keys.Identity") -> None:
+    """Attach the identity to this request's scope.
+
+    The MCP transports build their per-message request from the same scope, so
+    tool handlers read the identity of each message, not of the session's
+    first request. Setting ``user`` makes the SDK refuse a session continued
+    with a key that resolves to a different identity.
+    """
+    scope = getattr(request, "scope", None)
+    if not isinstance(scope, dict):
+        return
+    scope["ivd_identity"] = identity
+    scope["user"] = AuthenticatedUser(
+        AccessToken(token="", client_id=identity.principal, scopes=[])
+    )
+
+
+def request_identity(request) -> "Optional[tenant_keys.Identity]":
+    """The identity recorded for a request by validate_api_key, if any."""
+    scope = getattr(request, "scope", None)
+    if not isinstance(scope, dict):
+        return None
+    return scope.get("ivd_identity")
 
 
 def require_auth(func):

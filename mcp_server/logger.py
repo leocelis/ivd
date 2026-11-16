@@ -408,6 +408,7 @@ def log_auth_event(
     key_id: str = "none",
     origin_ip: str = "local",
     error: Optional[str] = None,
+    tenant: Optional[str] = None,
 ) -> None:
     """
     Log an authentication event.
@@ -417,6 +418,7 @@ def log_auth_event(
         key_id: Partial API key (first 8 chars + "...")
         origin_ip: Client IP address
         error: Rejection reason if status is "error"
+        tenant: Tenant id when the key is a host-derived tenant key
     """
     try:
         level = logging.INFO if status == "ok" else logging.WARNING
@@ -427,6 +429,8 @@ def log_auth_event(
             "key_id": key_id,
             "origin_ip": origin_ip,
         }
+        if tenant:
+            extra["tenant"] = tenant
         
         if error:
             extra["error"] = error[:200]  # Truncate errors

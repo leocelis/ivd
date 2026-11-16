@@ -34,10 +34,11 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 from termcolor import colored
 
-from mcp_server.auth import validate_api_key
+from mcp_server.auth import request_identity, validate_api_key
 from mcp_server.env_check import validate_env, REQUIRED_ENV_VARS_REMOTE
 from mcp_server.logger import log_health_check
 from mcp_server.registry import call_tool, get_all_tools
+from mcp_server.tenant import event_scope, tenant_tool_list
 
 # ── SSE Keepalive Patch (for legacy /sse endpoint) ───────────────────────────
 # Still needed for Cursor clients which only support SSE transport.
@@ -107,10 +108,64 @@ class ProxyBufferMiddleware:
             await self.app(scope, receive, send)
 
 
+class _CallerRefused(Exception):
+    """The message may not run: wrong identity for its session, or no request."""
+
+
+_SESSION_OWNER_ATTR = "_ivd_principal"
+_UNSET = object()
+
+
+def _message_caller() -> tuple:
+    """(api_key, request, identity) for the message being handled now.
+
+    Read from the message's own HTTP request, never from ``_request_context``:
+    with stateful Streamable HTTP (and legacy SSE) the server task for a session
+    starts inside the request that opened it, so that context variable keeps
+    the first caller's value for every later message of the session.
+    stdio has no request and runs as the local operator.
+    """
+    try:
+        ctx = server.request_context
+    except LookupError:
+        ctx = None
+    request = getattr(ctx, "request", None) if ctx is not None else None
+    if request is None:
+        if _request_context.get() is not None:
+            # An HTTP session without a per-message request: refuse rather
+            # than guess the caller.
+            raise _CallerRefused("request context missing")
+        return None, None, None
+
+    identity = request_identity(request)
+    principal = identity.principal if identity is not None else None
+    session = getattr(ctx, "session", None)
+    if session is not None:
+        # Second guard behind the SDK's own session binding: a session runs
+        # for the identity that first used it, and no other.
+        owner = getattr(session, _SESSION_OWNER_ATTR, _UNSET)
+        if owner is _UNSET:
+            try:
+                setattr(session, _SESSION_OWNER_ATTR, principal)
+            except Exception:
+                pass
+        elif owner != principal:
+            raise _CallerRefused("session belongs to another identity")
+
+    api_key = None
+    if identity is not None:
+        header = request.headers.get("Authorization", "")
+        api_key = header[7:] if header.startswith("Bearer ") else None
+    return api_key, request, identity
+
+
 @server.list_tools()
 async def list_tools() -> List[Tool]:
-    """Return list of available tools."""
+    """Return list of available tools (only the tenant tools for a tenant key)."""
+    _, _, identity = _message_caller()
     tools = get_all_tools()
+    if identity is not None and identity.tenant is not None:
+        return tenant_tool_list(tools)
     return tools
 
 
@@ -120,16 +175,20 @@ async def handle_call_tool(name: str, arguments: dict) -> List[TextContent] | Ca
     try:
         loop = asyncio.get_event_loop()
         
-        # Get request context (API key, IP) from context vars (SSE mode)
-        # Falls back to None for stdio mode
-        ctx = _request_context.get()
-        api_key = ctx.get("api_key") if ctx else None
-        request = ctx.get("request") if ctx else None
+        # Caller (API key, request, identity) from this message's own request.
+        # None for stdio mode.
+        try:
+            api_key, request, identity = _message_caller()
+        except _CallerRefused:
+            return [TextContent(type="text", text=f"Error: {name} refused for this session")]
+        tenant = identity.tenant if identity is not None else None
         
         # ComplyEdge Log IDs go back in _meta, outside the checked text, so the
         # caller can store them beside its copy of the text.
         log_ids: dict = {}
-        result = await loop.run_in_executor(None, call_tool, name, arguments, api_key, request, log_ids)
+        result = await loop.run_in_executor(
+            None, call_tool, name, arguments, api_key, request, log_ids, tenant
+        )
         content = [TextContent(type="text", text=result)]
         if log_ids:
             return CallToolResult(content=content, _meta={"complyedge": log_ids})
@@ -232,6 +291,10 @@ def create_app() -> Starlette:
             return auth_result
 
         _request_context.set({"api_key": api_key, "request": request})
+        # Resumable-stream events are stored per identity, so a Last-Event-ID
+        # from one caller can never replay another caller's events.
+        identity = request_identity(request)
+        event_scope.set(identity.principal if identity is not None else None)
         try:
             await session_manager.handle_request(
                 request.scope, request.receive, request._send

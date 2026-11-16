@@ -1,6 +1,6 @@
 # IVD: Host-Derived Tenant Keys: Tech Spec
 
-**Status:** PROPOSED (2026-11-15). Not built.
+**Status:** BUILT (2026-11-16). Proposed 2026-11-15.
 **Scope:** the hosted MCP server (`mcp_server/`). Stdio and local use do not change.
 
 ## 1. Problem
@@ -124,9 +124,17 @@ refusal), `mcp_server/tools/validate.py` (no disk checks for a tenant), `mcp_ser
 
 ## 7. Open, named
 
-- The server logs a truncated preview of tool arguments, and keeps an event store for resumable
-  streams. That neither can show one tenant another tenant's content is not yet checked. It is
-  checked in the build, before this is called done.
+- Checked in the build (2026-11-16):
+  - **Argument-preview log:** holds. The preview (truncated, redacted) is written only to the
+    operator's log file and stdout. No tool reads or returns logs, so no caller can see it. A
+    tenant refusal is logged without the arguments.
+  - **Resumable-stream event store:** did NOT hold, and is fixed. The SDK uses the JSON-RPC
+    request id ("1", "2", ...) as the stream id, and the Redis store keyed events by stream id
+    alone, so every session's request-1 events shared one key. Any authenticated caller could
+    send `Last-Event-ID: 1:0` on its own session and replay other callers' results (operator
+    keys included). Events are now keyed by a digest of the request's identity
+    (`mcp_server/tenant.py: event_scope`), so a replay only ever reads its own identity's events.
+    Within one identity, sessions still share stream ids.
 - When the operator sets `COMPLYEDGE_API_KEY`, every call's arguments and result are sent to
   ComplyEdge for screening, and a block replaces the tool's answer. That applies to tenant calls
   too; a host should know its tenants' text goes there.

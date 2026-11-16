@@ -6,8 +6,15 @@ enabling clients to resume sessions after disconnection or server restart.
 
 Events stored in Redis Sorted Sets keyed by stream_id, with monotonic
 counters as scores for ordering. All keys auto-expire after TTL.
+
+Stream ids are JSON-RPC request ids ("1", "2", ...) and repeat across
+sessions, so when the server sets ``event_scope`` (the authenticated
+identity of the request) the events key also carries a digest of that
+identity. A caller replaying with a Last-Event-ID then only ever reads its own
+identity's events, never another caller's.
 """
 
+import hashlib
 import logging
 from collections.abc import Awaitable, Callable
 from typing import Optional
@@ -16,6 +23,7 @@ from mcp.server.streamable_http import EventStore, EventMessage
 from mcp.types import JSONRPCMessage
 
 from mcp_server.redis_utils import get_async_redis_connection
+from mcp_server.tenant import event_scope
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +45,13 @@ class RedisEventStore(EventStore):
         self._prefix = key_prefix
         self._ttl = ttl_seconds
 
+    def _events_key(self, stream_id: str) -> str:
+        scope = event_scope.get()
+        if scope is None:
+            return f"{self._prefix}:events:{stream_id}"
+        digest = hashlib.sha256(scope.encode()).hexdigest()[:16]
+        return f"{self._prefix}:events:{digest}:{stream_id}"
+
     async def store_event(self, stream_id: str, message: JSONRPCMessage) -> str:
         """
         Store an event and return its unique event ID.
@@ -51,7 +66,7 @@ class RedisEventStore(EventStore):
             Event ID in format "stream_id:counter" for resumability tracking
         """
         counter_key = f"{self._prefix}:evt_counter"
-        events_key = f"{self._prefix}:events:{stream_id}"
+        events_key = self._events_key(stream_id)
 
         # Atomic increment for monotonic event IDs
         counter = await self._redis.incr(counter_key)
@@ -102,7 +117,7 @@ class RedisEventStore(EventStore):
             logger.warning("Invalid counter in event ID: %s", last_event_id)
             return None
 
-        events_key = f"{self._prefix}:events:{stream_id}"
+        events_key = self._events_key(stream_id)
 
         # Get all events with score > last_counter (exclusive)
         events = await self._redis.zrangebyscore(

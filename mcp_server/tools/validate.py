@@ -51,13 +51,15 @@ def _looks_like_repo_test_path(file_part: str) -> bool:
     return "/" in file_part or file_part.startswith(_REPO_PATH_PREFIXES)
 
 
-def _repo_file_missing(file_part: str, root: Path) -> bool:
-    if not _looks_like_repo_test_path(file_part):
+def _repo_file_missing(file_part: str, root: Optional[Path]) -> bool:
+    # root is None when disk checks are off (tenant keys): nothing is opened,
+    # so a named path is never reported missing and never probed.
+    if root is None or not _looks_like_repo_test_path(file_part):
         return False
     return not (root / file_part).is_file()
 
 
-def _constraint_is_unverified(constraint: dict, root: Path) -> bool:
+def _constraint_is_unverified(constraint: dict, root: Optional[Path]) -> bool:
     if "test" not in constraint:
         return True
     test = constraint.get("test")
@@ -96,7 +98,7 @@ def _missing_termination_contract(artifact: dict) -> bool:
 def _validate_execution_oracle(
     cname: str,
     oracle: object,
-    root: Path,
+    root: Optional[Path],
     warnings: list,
 ) -> None:
     if not isinstance(oracle, dict):
@@ -122,7 +124,7 @@ def _validate_execution_oracle(
                 )
         for field in ("path", "expected"):
             val = oracle.get(field)
-            if isinstance(val, str) and _looks_like_repo_test_path(val):
+            if root is not None and isinstance(val, str) and _looks_like_repo_test_path(val):
                 if not (root / val).is_file():
                     warnings.append(
                         f"Constraint '{cname}' execution_oracle.{field} not found on disk: {val}"
@@ -141,7 +143,7 @@ def _validate_execution_oracle(
                 "'reference' or 'path'"
             )
         ref = oracle.get("reference") or oracle.get("path")
-        if isinstance(ref, str) and _looks_like_repo_test_path(ref):
+        if root is not None and isinstance(ref, str) and _looks_like_repo_test_path(ref):
             if not (root / ref).is_file():
                 warnings.append(
                     f"Constraint '{cname}' execution_oracle reference not found on disk: {ref}"
@@ -160,7 +162,7 @@ def _extract_joint_satisfaction_test(cs: dict) -> Optional[str]:
 def _evaluate_joint_satisfaction_gating(
     constraint_count: int,
     artifact: dict,
-    root: Path,
+    root: Optional[Path],
 ) -> Optional[Dict]:
     """Joint satisfaction gating report for 3+ constraints. Report-only — never affects valid."""
     if constraint_count < _JOINT_SATISFACTION_THRESHOLD:
@@ -325,6 +327,26 @@ def validate_artifact_tool(
     artifact_yaml: str,
     artifact_type: str = "intent",
     project_root: Optional[str] = None,
+    check_test_paths: bool = True,
+) -> str:
+    """Validate an IVD artifact. See ``_validate_artifact`` for the checks.
+
+    With ``check_test_paths=False`` every result, including parse errors,
+    carries ``test_paths_checked: false``.
+    """
+    out = _validate_artifact(artifact_yaml, artifact_type, project_root, check_test_paths)
+    if check_test_paths:
+        return out
+    result = json.loads(out)
+    result["test_paths_checked"] = False
+    return json.dumps(result, indent=2)
+
+
+def _validate_artifact(
+    artifact_yaml: str,
+    artifact_type: str = "intent",
+    project_root: Optional[str] = None,
+    check_test_paths: bool = True,
 ) -> str:
     """Validate an IVD artifact (structure and required section checks).
 
@@ -334,6 +356,11 @@ def validate_artifact_tool(
 
     When ``project_root`` is set, constraint test paths and execution_oracle
     fixtures resolve against that repo root instead of the IVD framework tree.
+
+    ``check_test_paths=False`` (tenant keys on the hosted server) turns the disk
+    checks off entirely: ``project_root`` is ignored, no path from the YAML is
+    opened or joined to a server folder, and the result carries
+    ``test_paths_checked: false``.
     """
     print(colored(f"[{LOG}] ivd_validate: type={artifact_type}", "cyan"))
 
@@ -369,7 +396,10 @@ def validate_artifact_tool(
     constraint_count = 0
     conflict_prone_needing_execution_derived: List[str] = []
     conflict_prone_missing_anchor: List[str] = []
-    if project_root:
+    framework_root: Optional[Path]
+    if not check_test_paths:
+        framework_root = None
+    elif project_root:
         framework_root = Path(project_root).expanduser().resolve()
         if not framework_root.is_dir():
             warnings.append(
@@ -748,7 +778,6 @@ def validate_artifact_tool(
         "validation_level": "structure_only",
         "note": "Validates structure and required sections. Semantic principle alignment is not checked.",
     }
-
     # Verification gating reports: verification gating reports. Structure-only — does NOT affect valid.
     joint_gating = None
     conflict_gating = None

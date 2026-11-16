@@ -27,6 +27,7 @@ from mcp.types import Tool
 
 from mcp_server import compliance
 from mcp_server.logger import extract_key_id, extract_origin_ip, log_tool_call
+from mcp_server.tenant import tenant_refusal
 from mcp_server.tools import (
     get_context_tool,
     load_recipe_tool,
@@ -426,6 +427,15 @@ TOOL_HANDLERS: Dict[str, Callable] = {
 }
 
 
+# Tenant keys run these handlers instead. They take no path argument (a path
+# argument is refused before dispatch) and ivd_validate runs no disk check.
+TENANT_HANDLERS: Dict[str, Callable] = {
+    "ivd_validate": lambda artifact_yaml, artifact_type="intent", **_: validate_artifact_tool(artifact_yaml, artifact_type, None, check_test_paths=False),
+    "ivd_review_intent": TOOL_HANDLERS["ivd_review_intent"],
+    "canon_check": TOOL_HANDLERS["canon_check"],
+}
+
+
 # =============================================================================
 # Dispatch
 # =============================================================================
@@ -446,6 +456,7 @@ def call_tool(
     api_key: Optional[str] = None,
     request: Optional[Any] = None,
     log_ids: Optional[dict] = None,
+    tenant: Optional[str] = None,
 ) -> str:
     """
     Execute a tool with the given arguments.
@@ -458,11 +469,30 @@ def call_tool(
         log_ids: Optional dict filled with the ComplyEdge Log IDs of this call,
             {"input_event_id", "output_event_id"} (None where a check did not
             run), so the server can hand them to the caller outside the text.
+        tenant: Tenant id when the call was made with a host-derived tenant
+            key. Only TENANT_HANDLERS run, path arguments are refused, and the
+            tenant (never the key) is logged.
     
     Returns:
         Tool execution result as string
     """
     start = time.time()
+    key_id = f"tenant:{tenant}" if tenant else extract_key_id(api_key)
+
+    if tenant is not None:
+        refused = tenant_refusal(tool_name, arguments)
+        if refused is not None:
+            log_tool_call(
+                tool=tool_name,
+                duration_ms=0,
+                status="refused",
+                key_id=key_id,
+                origin_ip=extract_origin_ip(request),
+                payload_preview="",
+                response_preview="",
+                error=refused,
+            )
+            return refused
 
     if tool_name not in TOOL_HANDLERS:
         # Log unknown tool attempt
@@ -470,7 +500,7 @@ def call_tool(
             tool=tool_name,
             duration_ms=0,
             status="error",
-            key_id=extract_key_id(api_key),
+            key_id=key_id,
             origin_ip=extract_origin_ip(request),
             payload_preview=json.dumps(arguments),
             response_preview="",
@@ -492,7 +522,7 @@ def call_tool(
                 tool=tool_name,
                 duration_ms=int((time.time() - start) * 1000),
                 status="blocked",
-                key_id=extract_key_id(api_key),
+                key_id=key_id,
                 origin_ip=extract_origin_ip(request),
                 payload_preview=json.dumps(arguments),
                 response_preview=blocked,
@@ -500,7 +530,7 @@ def call_tool(
             return blocked
 
     try:
-        handler = TOOL_HANDLERS[tool_name]
+        handler = TENANT_HANDLERS[tool_name] if tenant is not None else TOOL_HANDLERS[tool_name]
         result = handler(**arguments)
         status = "ok"
 
@@ -525,7 +555,7 @@ def call_tool(
             tool=tool_name,
             duration_ms=elapsed_ms,
             status=status,
-            key_id=extract_key_id(api_key),
+            key_id=key_id,
             origin_ip=extract_origin_ip(request),
             payload_preview=json.dumps(arguments),
             response_preview=result_str,
@@ -541,7 +571,7 @@ def call_tool(
             tool=tool_name,
             duration_ms=elapsed_ms,
             status="error",
-            key_id=extract_key_id(api_key),
+            key_id=key_id,
             origin_ip=extract_origin_ip(request),
             payload_preview=json.dumps(arguments),
             response_preview="",
