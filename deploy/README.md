@@ -54,6 +54,7 @@ Set these in the DO dashboard (Settings → Environment Variables):
 | `OPENAI_API_KEY` | Yes | Embedding generation + search queries |
 | `REDIS_URL` | Yes | Redis connection string |
 | `IVD_API_KEYS` | Yes | Comma-separated API keys for client auth |
+| `IVD_TENANT_KEY_SECRET` | No | Derived per-tenant keys for a host app ([HOST_APP.md](../docs/integrations/HOST_APP.md)); unset = only `IVD_API_KEYS` authenticate |
 
 ## App Spec
 
