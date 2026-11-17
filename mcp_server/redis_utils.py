@@ -11,7 +11,28 @@ import os
 from typing import Optional
 
 import redis.asyncio as aioredis
+from redis.asyncio.retry import Retry
+from redis.backoff import ExponentialWithJitterBackoff
 from termcolor import colored
+
+
+def _retry() -> Retry:
+    """Three retries with jittered exponential backoff, as redis-py's own default.
+
+    ``from_url`` builds its pool without the client's default ``Retry``, so without
+    this a connection the server closed while idle fails the next command instead
+    of reconnecting. Retries cover ``ConnectionError`` and ``TimeoutError``
+    (https://redis.io/docs/latest/develop/clients/redis-py/produsage/#retries).
+    """
+    return Retry(ExponentialWithJitterBackoff(base=1, cap=10), 3)
+
+
+def _redacted(redis_url: str) -> str:
+    """The URL with any password removed, for logging."""
+    scheme, sep, rest = redis_url.partition("://")
+    if not sep:
+        return "<redis url>"
+    return f"{scheme}://{rest.rsplit('@', 1)[-1]}"
 
 
 def get_async_redis_connection(redis_url: Optional[str] = None) -> aioredis.Redis:
@@ -38,8 +59,8 @@ def get_async_redis_connection(redis_url: Optional[str] = None) -> aioredis.Redi
         redis_url = os.environ.get('REDIS_URL')
     
     if redis_url:
-        print(colored(f"[Redis] Async connection to managed Redis: {redis_url[:50]}...", "cyan"))
-        return aioredis.from_url(redis_url, decode_responses=True)
+        print(colored(f"[Redis] Async connection to managed Redis: {_redacted(redis_url)}", "cyan"))
+        return aioredis.from_url(redis_url, decode_responses=True, retry=_retry())
     else:
         print(colored("[Redis] Async connection to localhost:6379", "cyan"))
-        return aioredis.from_url("redis://localhost:6379", decode_responses=True)
+        return aioredis.from_url("redis://localhost:6379", decode_responses=True, retry=_retry())
