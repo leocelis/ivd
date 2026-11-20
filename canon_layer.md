@@ -98,7 +98,7 @@ Most "make the LLM safer" products fail one of three tests:
 Canon's design passes all three:
 
 1. **Friction.** Rules block is one markdown file edit, one approval. MCP tools are zero-config because they piggyback on IVD's existing MCP connection. No new account, no new key, no new server entry.
-2. **Composition.** Rules block is fenced and versioned (`<BEGIN-CANON v1.0>`/`<END-CANON v1.0>`), so it coexists with everything else in the agent's instruction file and can be replaced or bumped in place. The `canon_check_rules_installed` tool is read-only by contract — verified by the Option B validation below.
+2. **Composition.** Rules block is fenced and versioned (`<BEGIN-CANON v1.0>`/`<END-CANON v1.0>`), so it coexists with everything else in the agent's instruction file and can be replaced or bumped in place. The `canon_check_rules_installed` tool is read-only by contract — verified by `mcp_server/tests/unit/test_canon.py` (the detection tool never writes to disk).
 3. **Degradation.** **0 regressions across 45 measured cells in the showcase run** (see "Proof" below). When the baseline LLM was already doing the right thing, Canon doesn't touch it. It only fires on the cells where the baseline was wrong.
 
 ---
@@ -142,10 +142,10 @@ Numbers below are from `gpt-4o`, temperature=0, 9 prompts, `2025-04-24`. Reprodu
 | **R5 verification beat — destructive-command quartet** | **4 / 4 fired** (none in baseline) |
 | Total actionable R-failures flipped by rules alone | **18 / 25 (72%)** |
 | Regressions introduced | **0 / 45 cells** |
-| LA1 gate (≥ 60% actionable improvement) | **PASS** |
+| Rules-only gate (≥ 60% actionable improvement) | **PASS** |
 | Net behaviour change | **+18 R-invariants** |
 
-The LA1 gate is the `canon_rules_copy_paste_sufficiency` constraint from `canon_system_intent.yaml`. It requires the rules block alone (no MCP tools) to lift ≥ 60% of actionable R-invariant failures. Tonight's 72% clears the gate by 12 points.
+The rules-only gate requires the rules block alone (no MCP tools) to lift ≥ 60% of actionable R-invariant failures. The showcase run's 72% clears it by 12 points.
 
 ### Per-prompt matrix
 

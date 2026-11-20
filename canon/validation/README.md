@@ -57,7 +57,7 @@ python -m canon.validation.validate_mcp
 
 **The zero-write check** reads the original `.cursorrules` content _after_ the
 tool call and asserts it is byte-for-byte identical. This directly validates the
-`canon_check_rules_installed_no_writes` safety constraint from `canon_system_intent.yaml`.
+safety rule that `canon_check_rules_installed` never writes to disk.
 
 **Output files (`results/`):**
 - `mcp_<test_id>.json` — per-call request + full response
@@ -94,8 +94,7 @@ for R1, R2, R5, R14 and computes:
 - `same` — no change
 - `regressed` — rules-on is worse
 
-The **LA1 gate** (constraint `canon_rules_copy_paste_sufficiency` in
-`canon_system_intent.yaml`) requires ≥ 60% paired-improvement rate across
+The **LA1 gate** (the rules-only gate) requires ≥ 60% paired-improvement rate across
 R1/R2/R5/R14 × all fixtures.
 
 **Output files (`results/`):**
@@ -167,8 +166,7 @@ folk-theory and anthropomorphism ceiling demos.
 | LA1 gate (≥ 60% of actionable cells) | **PASS** |
 | R5 verification beat — destructive quartet | **4/4 fired** (none in baseline) |
 
-The LA1 gate is the `canon_rules_copy_paste_sufficiency` constraint from
-`canon_system_intent.yaml` — it requires the rules block alone (no MCP tools)
+The LA1 gate (the rules-only gate) requires the rules block alone (no MCP tools)
 to lift ≥ 60% of actionable R-invariant failures.
 
 **The headline result:** all four destructive-command prompts (rm -rf, force

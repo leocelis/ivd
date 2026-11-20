@@ -3,10 +3,12 @@
 The 30-second version of the whole framework. Run it:
 
 ```bash
-python examples/intent_demo/run_demo.py
+python3 -m venv venv && venv/bin/pip install pytest
+venv/bin/python examples/intent_demo/run_demo.py
 ```
 
-Fully offline, no dependencies beyond `pytest` (already in `[dev]`), no API key.
+Fully offline, no dependencies beyond `pytest`, no API key. After
+`./mcp_server/devops/setup.sh`, `.venv/bin/python` works too (pytest is installed there).
 
 ## What it shows
 

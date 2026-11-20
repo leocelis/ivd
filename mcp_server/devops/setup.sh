@@ -2,12 +2,12 @@
 # mcp_server/devops/setup.sh
 #
 # Set up local development environment:
-# - Creates Python 3.11+ virtual environment
+# - Creates a Python 3.10-3.13 virtual environment
 # - Installs all dependencies from requirements.txt
 # - Validates installation
 #
 # Usage:
-#   ./mcp_server/devops/setup.sh           # Auto-detect Python 3.11+
+#   ./mcp_server/devops/setup.sh           # Auto-detect Python 3.10-3.13
 #   ./mcp_server/devops/setup.sh python3.12  # Use specific Python version
 
 set -euo pipefail
@@ -38,25 +38,26 @@ if [ -n "${1:-}" ]; then
     PYTHON_CMD="$1"
     echo -e "${BLUE}→${RESET} Using specified Python: ${PYTHON_CMD}"
 else
-    echo -e "${BLUE}→${RESET} Auto-detecting Python 3.11+..."
+    echo -e "${BLUE}→${RESET} Auto-detecting Python 3.10-3.13 (the versions pyproject.toml lists)..."
     
-    # Try to find Python 3.11+ in order of preference
-    for py_version in python3.13 python3.12 python3.11 python3.10; do
-        if command -v "$py_version" &> /dev/null; then
+    # Try versioned names first, then plain python3 if its version is in range
+    for py_version in python3.13 python3.12 python3.11 python3.10 python3; do
+        if command -v "$py_version" &> /dev/null \
+            && "$py_version" -c 'import sys; sys.exit(0 if (3, 10) <= sys.version_info[:2] <= (3, 13) else 1)' 2>/dev/null; then
             PYTHON_CMD="$py_version"
             break
         fi
     done
     
     if [ -z "${PYTHON_CMD:-}" ]; then
-        echo -e "${RED}✗ Error: Python 3.10+ not found${RESET}"
+        echo -e "${RED}✗ Error: no Python 3.10-3.13 found${RESET}"
         echo ""
-        echo "Please install Python 3.11+ via:"
-        echo "  - Homebrew: brew install python@3.11"
-        echo "  - pyenv: pyenv install 3.11"
+        echo "Please install Python 3.12 (any of 3.10-3.13 works) via:"
+        echo "  - Homebrew: brew install python@3.12"
+        echo "  - pyenv: pyenv install 3.12"
         echo ""
         echo "Or specify a Python executable:"
-        echo "  $0 /path/to/python3.11"
+        echo "  $0 /path/to/python3.12"
         exit 1
     fi
 fi

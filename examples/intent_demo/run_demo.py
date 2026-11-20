@@ -110,7 +110,21 @@ def summarize_pytest_output(output: str) -> None:
             print(f"  {yellow(line.strip())}")
 
 
+def pytest_available() -> bool:
+    """The demo shells out to pytest; without it every run would read as 0/3."""
+    import importlib.util
+    return importlib.util.find_spec("pytest") is not None
+
+
 def main() -> int:
+    if not pytest_available():
+        print(red("This demo runs real pytest, and pytest is not installed for this Python:"))
+        print(f"  {sys.executable}")
+        print("From the repo root, make a small venv with pytest and run the demo with it:")
+        print("  python3 -m venv venv && venv/bin/pip install pytest")
+        print("  venv/bin/python examples/intent_demo/run_demo.py")
+        print("(or run ./mcp_server/devops/setup.sh and use .venv/bin/python)")
+        return 2
     banner("IVD CORE LOOP — RUNNABLE SHOWCASE", magenta)
     narrate(
         "Prompt: \"Add export to CSV for admin compliance reporting.\"\n"

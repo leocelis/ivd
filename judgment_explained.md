@@ -6,7 +6,7 @@
 >
 > - For the canonical spec: [`judgment_layer.md`](judgment_layer.md)
 > - To watch it work in 5 seconds: [`examples/judgment_demo/`](examples/judgment_demo/)
-> - For the 9 MCP tools cheatsheet: [`cheatsheet.md`](cheatsheet.md) §Part 2.5
+> - For the 10 MCP tools cheatsheet: [`cheatsheet.md`](cheatsheet.md) §Part 2.5
 
 ---
 
@@ -207,7 +207,7 @@ see the live behavioral diff.  Full narrative + verdict:
 ## Where to go next
 
 - **Watch it work:** [`examples/judgment_demo/`](examples/judgment_demo/)
-- **The 9 MCP tools:** [`cheatsheet.md`](cheatsheet.md) §Part 2.5
+- **The 10 MCP tools:** [`cheatsheet.md`](cheatsheet.md) §Part 2.5
 - **The canonical spec (10-step loop, schemas, internals):**
   [`judgment_layer.md`](judgment_layer.md)
 - **Where Judgment fits in the full IVD framework:**

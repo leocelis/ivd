@@ -5,7 +5,7 @@ Informal — updated as priorities shift. For what already shipped, see
 
 ## Shipped
 
-- Core loop: Intent → Implementation → Verification (18 core MCP tools)
+- Core loop: Intent → Implementation → Verification (19 core MCP tools)
 - Spec-tool import (`ivd_import_spec`): parse GitHub Spec Kit / OpenSpec `spec.md`
   into an IVD constraint scaffold
 - Judgment phase (v3.0, opt-in via `.judgment/`) — compounding corrections

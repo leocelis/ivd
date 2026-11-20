@@ -53,7 +53,7 @@ This is the textbook IVD use case:
   ships unnoticed (the test passes!) but corrupts every future
   generation.
 - **The before/after diff is impossible to dismiss.**  The strings
-  `renderWithProviders` and `server.use(http.get(...))` literally do
+  `renderWithProviders` and `src/test/mocks/server` literally do
   not appear in the model's parametric memory of this project.  When
   they appear in the AFTER response, they came from one place: the
   Pattern Judgment promoted from your past corrections.
@@ -65,11 +65,12 @@ This is the textbook IVD use case:
 From the IVD repo root:
 
 ```bash
+# After ./mcp_server/devops/setup.sh (the demo imports the server's dependencies)
 # Offline (no API key — uses outputs literally captured from gpt-4o-mini)
-python examples/judgment_demo/run_demo.py
+.venv/bin/python examples/judgment_demo/run_demo.py
 
 # Live LLM (calls gpt-4o-mini at temperature=0, ~$0.001 / run)
-OPENAI_API_KEY=sk-... python examples/judgment_demo/run_demo.py
+OPENAI_API_KEY=sk-... .venv/bin/python examples/judgment_demo/run_demo.py
 ```
 
 It runs in ~5 seconds.  The terminal prints a colored, narrated walk
@@ -321,8 +322,8 @@ The verdict line the demo prints (representative; n=3 trials with real
 
 ### What this proves
 
-Three string presences in the AFTER response that **literally cannot
-have come from the model's parametric memory**:
+Three strings in the AFTER response that come from the injected Pattern,
+not from the model's defaults:
 
 | String                    | Where it lives                                | Verdict signal              |
 | ------------------------- | --------------------------------------------- | --------------------------- |

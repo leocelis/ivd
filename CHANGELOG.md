@@ -9,6 +9,15 @@ both. See [ROADMAP.md](ROADMAP.md).
 
 ## [Unreleased]
 
+- **Docs and demos say what actually runs.** The core demo stops with install steps when
+  pytest is missing (it used to print "0/3" with nothing above it), and the README step 0
+  makes a small venv with pytest. README: 31 of 33 tools need no configuration
+  (`ivd_run_constraint_tests` needs `IVD_TEST_RUNNER_ENABLED=true`), the server reads its
+  process environment and not `.env`, the Judgment demo runs with `.venv/bin/python`, one
+  Python range (3.10 to 3.13). `setup.sh` also accepts plain `python3` in that range.
+  The e2e `/health` tests check `SERVER_VERSION` instead of "2.0.0" (CI was red since 3.1.2
+  reached `/health`). Stale counts fixed (10 Judgment tools, 19 core) and references to a
+  Canon intent file that is not in the repo removed.
 - **ComplyEdge checks wait 15 s by default (was 5).** A cold ComplyEdge instance answers in
   about 8 s; with 5 s the check was skipped, so the caller lost the verdict and the Log ID
   of a record ComplyEdge had written. `COMPLYEDGE_TIMEOUT_S` still overrides it.
@@ -25,6 +34,9 @@ both. See [ROADMAP.md](ROADMAP.md).
   `session_id`). A block returns the rule instead of the result; an unreachable
   ComplyEdge lets the call through. Off without `COMPLYEDGE_API_KEY`. Privacy Policy
   and DPA list ComplyEdge as a sub-processor (v1.1). See FDR-027.
+
+## [3.1.2] — 2026-07-22 (tag `v3.1.2`)
+
 - **Added `ivd_attest` — the process-attestation gate (33 tools, 19 core).**
   `ivd_validate` checks the *artifact*; nothing checked whether the agent actually
   *followed* the method. An agent could skip the Rule 4 stress test, single-pass nine
@@ -51,6 +63,9 @@ both. See [ROADMAP.md](ROADMAP.md).
 - **Fixed a stale claim in LEGAL.md §3.7 (R-006):** it stated `ivd_validate` "does not
   warn on constraint count." It does — the 7-constraint budget has been enforced at
   `validate.py`. Corrected to describe the advisory warning accurately.
+
+## [3.1.1] — 2026-07-20 (tag `v3.1.1`)
+
 - **Security:** bumped `mcp` 1.23.0 → 1.28.1 (`requirements.txt`,
   `mcp_server/requirements.txt`, `pyproject.toml` floor), clearing all 6 open
   Dependabot alerts (3 advisories: HTTP transport principal-verification,
@@ -98,10 +113,9 @@ both. See [ROADMAP.md](ROADMAP.md).
   Python; dependencies are installed into `.venv/` by `setup.sh`) — now points at the
   venv's Python explicitly.
 
-> **Note on versioning:** the last tagged GitHub release is `v2.4.0` (2026-03-20). The
-> `v3.0` (Judgment phase) and `v3.1` (Canon phase) changes below shipped to `main` but
-> were not tagged/released on GitHub. See [ROADMAP.md](ROADMAP.md) for the plan to close
-> that gap.
+> **Note on versioning:** 3.1.1 and 3.1.2 are tagged (`v3.1.1`, `v3.1.2`) on the commits
+> that published them to the MCP registry. The `v3.0` (Judgment phase) and `v3.1.0`
+> (Canon phase) changes below shipped to `main` without a tag. See [ROADMAP.md](ROADMAP.md).
 
 ## [3.1.0] — 2026-04-23 (shipped to main, not yet tagged)
 

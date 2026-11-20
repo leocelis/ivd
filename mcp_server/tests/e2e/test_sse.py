@@ -13,7 +13,7 @@ import json
 import pytest
 from starlette.testclient import TestClient
 
-from mcp_server.server import create_sse_app
+from mcp_server.server import SERVER_VERSION, create_sse_app
 
 
 @pytest.fixture
@@ -62,8 +62,8 @@ class TestSSEHealth:
         response = sse_client.get("/health")
         data = response.json()
         assert "version" in data
-        # Version should be 2.0.0 after StreamableHTTP upgrade
-        assert data["version"] == "2.0.0"
+        # /health reports the one server version (pyproject, server.json, initialize)
+        assert data["version"] == SERVER_VERSION
 
     def test_health_has_transports(self, sse_client):
         """Health should report both transports after upgrade."""

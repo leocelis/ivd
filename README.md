@@ -5,8 +5,8 @@
 
 <p align="center">
   <a href="https://github.com/leocelis/ivd/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-3.1-blue?style=flat-square" alt="Version"></a>
-  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.12"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/version-3.1.2-blue?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/python-3.10%E2%80%933.13-blue?style=flat-square&logo=python&logoColor=white" alt="Python 3.10–3.13"></a>
   <a href="https://github.com/leocelis/ivd"><img src="https://img.shields.io/badge/MCP-compatible-purple?style=flat-square" alt="MCP Compatible"></a>
   <a href="https://github.com/leocelis/ivd/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/leocelis/ivd/ci.yml?branch=main&style=flat-square&label=tests" alt="Tests"></a>
 </p>
@@ -49,14 +49,16 @@ You: "Still not right..."                You:  "Done. First try."
 
 **Works locally. No API key required. Under 5 minutes.**
 
-### 0. See it work first (30 seconds, no setup)
+### 0. See it work first (30 seconds, needs only pytest)
 
 ```bash
 git clone https://github.com/leocelis/ivd.git && cd ivd
-python3 examples/intent_demo/run_demo.py
+python3 -m venv venv && venv/bin/pip install pytest
+venv/bin/python examples/intent_demo/run_demo.py
 ```
 
-Runs offline. Shows a vague prompt producing a hallucinated implementation, then
+Runs offline. The demo runs real pytest, so it needs a Python with pytest; the
+small `venv/` above is only for this demo. Shows a vague prompt producing a hallucinated implementation, then
 the same request run against a structured intent artifact — with the constraint
 check catching the mismatch before you'd ever see it. This is the core loop this
 README is about; everything below is how to wire it into your own agent.
@@ -153,7 +155,7 @@ Ask your AI agent to use IVD tools. For example:
 - *"Use ivd_scaffold to create an intent for my user authentication module"*
 - *"Use ivd_validate to check my intent artifact"*
 
-That's it. 32 of 33 tools work immediately with zero configuration — only `ivd_search` needs an `OPENAI_API_KEY`.
+That's it. 31 of 33 tools work with no configuration. `ivd_search` needs an `OPENAI_API_KEY`, and `ivd_run_constraint_tests` runs only when `IVD_TEST_RUNNER_ENABLED=true` (see [Configuration](#configuration)).
 
 ### 4. Enable semantic search (optional)
 
@@ -235,24 +237,24 @@ If you already use spec-driven development (GitHub Spec Kit, OpenSpec), IVD adds
 **See it work.** A runnable showcase walks through the full Judgment loop end-to-end — capture three real-world AI corrections, codify them, promote a Pattern, and watch the same LLM (`gpt-4o-mini`, temperature=0) generate **different** code on the same request after the Pattern enters its system message. No trust required — run it, read the terminal.
 
 ```bash
-# From the ivd/ directory — runs offline, no API key required
-python examples/judgment_demo/run_demo.py
+# From the ivd/ directory, after setup.sh — runs offline, no API key required
+.venv/bin/python examples/judgment_demo/run_demo.py
 
-# Add OPENAI_API_KEY (in .env after setup) to see the live behavioral diff
-OPENAI_API_KEY=sk-... python examples/judgment_demo/run_demo.py
+# Add OPENAI_API_KEY to see the live behavioral diff
+OPENAI_API_KEY=sk-... .venv/bin/python examples/judgment_demo/run_demo.py
 ```
 
-The showcase simulates 3 weeks of an AI coding agent ignoring this project's React testing conventions across 3 different test files (`PaymentForm.test.tsx`, `MetricsCard.test.tsx`, `ProfileSettings.test.tsx`), feeds the 3 corrections through the 9 `ivd_judgment_*` tools, and writes 4 human-readable artifacts to `examples/judgment_demo/output/`: `before.md` (the agent's system message without Judgment), `after.md` (with the Pattern injected), `diff.md` (what Judgment added), and `llm_responses.md` (side-by-side Vitest test files with verdict).
+The showcase simulates 3 weeks of an AI coding agent ignoring this project's React testing conventions across 3 different test files (`PaymentForm.test.tsx`, `MetricsCard.test.tsx`, `ProfileSettings.test.tsx`), feeds the 3 corrections through the Judgment tools (`init`, `capture`, `save_codified`, `detect_patterns`, `inject_context`), and writes 4 human-readable artifacts to `examples/judgment_demo/output/`: `before.md` (the agent's system message without Judgment), `after.md` (with the Pattern injected), `diff.md` (what Judgment added), and `llm_responses.md` (side-by-side Vitest test files with verdict).
 
 Why this scenario: the project's testing conventions (`renderWithProviders` helper in `src/test/test-utils.tsx`, MSW server in `src/test/mocks/server.ts`, `userEvent.setup()` discipline) live ONLY in the repo. They do not exist in the LLM's training data, so a static system-prompt nudge cannot solve it — the model has to inherit the lesson from YOUR repo. That is precisely the use case Judgment is built for.
 
-Representative result on the live LLM (`gpt-4o-mini`, temperature=0, n=3 trials, ~$0.001):
+Representative result on the live LLM (`gpt-4o-mini`, temperature=0, n=3 trials, ~$0.001). Without a key the demo prints a recorded response of the same shape:
 
 | Metric | Result |
 |---|---|
 | Framework defaults the BEFORE agent reached for | **2–3 of 3** (raw `vi.fn()` API mocks, bare `render()`, `userEvent.click` without `setup()`) |
-| Project conventions the AFTER agent adopted     | **3 of 3** (`server.use(http.get(...))`, `renderWithProviders(<Foo />)`, `const user = userEvent.setup()`) |
-| Project-local strings in AFTER (impossible from training data) | **`renderWithProviders`**, **`src/test/mocks/server`**, **`src/test/test-utils`** |
+| Project conventions the AFTER agent adopted     | **3 of 3** (the project's MSW server through `server.use(...)`, `renderWithProviders(<Foo />)`, `const user = userEvent.setup()`) |
+| Project-local strings in AFTER (they come from the injected Pattern) | **`renderWithProviders`**, **`src/test/mocks/server`**, **`src/test/test-utils`** |
 | `injection_hash` change (auditable proof)       | **provably different** |
 
 Full methodology, per-step output, and the regression test that pins every claim:
@@ -307,7 +309,7 @@ Representative result across 9 real user questions (`gpt-4o`, ~$0.08, ~70s):
 | R5 verification beat — destructive-command quartet | **4 / 4 fired** (none in baseline) |
 | Total actionable R-failures flipped by rules alone | **18 / 25 (72%)** |
 | Regressions introduced | **0** |
-| LA1 gate (≥ 60% actionable improvement) | **PASS** |
+| Rules-only gate (the rules block alone fixes ≥ 60% of actionable failures) | **PASS** |
 | Net behaviour change | **+18 R-invariants** across 45 cells |
 
 Full prompt list, methodology, per-prompt side-by-sides, and expected output:
@@ -387,15 +389,14 @@ Deep dive: [purpose.md](purpose.md) · [framework.md](framework.md) · [cheatshe
 
 ## Configuration
 
-IVD works out of the box with zero configuration. Optional settings for advanced use:
-
-```bash
-cp .env.example .env
-```
+IVD works out of the box with no configuration. The MCP server reads these from its
+process environment, so set them in your IDE config's `env` block (next to
+`PYTHONPATH` and `LOG_DIR`). The server does not read `.env`; `embed.sh` and `search.sh` do.
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `OPENAI_API_KEY` | For `ivd_search` | Generate embeddings and run semantic search |
+| `IVD_TEST_RUNNER_ENABLED` | For `ivd_run_constraint_tests` | Set to `true` to let the server run the pytest nodes an intent names (off by default) |
 | `REDIS_URL` | No | Session storage for remote server deployment |
 | `IVD_API_KEYS` | No | Auth for remote server deployment |
 

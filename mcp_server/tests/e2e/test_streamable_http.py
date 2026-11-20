@@ -11,7 +11,7 @@ import json
 import pytest
 from starlette.testclient import TestClient
 
-from mcp_server.server import create_app
+from mcp_server.server import SERVER_VERSION, create_app
 
 
 @pytest.fixture
@@ -78,11 +78,11 @@ class TestHealthEndpoint:
         data = response.json()
         assert data["server"] == "ivd-tool"
 
-    def test_health_has_version_2(self, http_client):
-        """Version should be 2.0.0 after StreamableHTTP upgrade."""
+    def test_health_has_version(self, http_client):
+        """/health reports the one server version (pyproject, server.json, initialize)."""
         response = http_client.get("/health")
         data = response.json()
-        assert data["version"] == "2.0.0"
+        assert data["version"] == SERVER_VERSION
 
     def test_health_reports_transports(self, http_client):
         """Health should report both streamable-http and sse transports."""
